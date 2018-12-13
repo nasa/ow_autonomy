@@ -1,0 +1,10 @@
+Command pprint (...);
+
+Stub:
+{
+    In String description;
+    In Int duration;
+
+    pprint (description);
+    Wait duration;
+}
