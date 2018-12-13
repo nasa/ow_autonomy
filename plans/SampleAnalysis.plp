@@ -1,0 +1,9 @@
+LibraryAction Downlink();
+
+SampleAnalysis:
+{
+  In String instrument;
+
+  // Do analysis
+  LibraryCall Downlink();
+}

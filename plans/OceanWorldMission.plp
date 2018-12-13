@@ -1,0 +1,193 @@
+// High-level notional plan for lander autonomy.
+
+/* To Do:
+   - deal with potential random resets, i.e. due to radiation
+   - save/resume state across sleep/wake cycle
+   - fail operational
+   - for each timeout: retry/failure semantics
+*/
+
+#include "OceanWorldDefs.h"
+
+Real Lookup ExcavationTimeout;
+
+LibraryAction Downlink();
+LibraryAction Image(...);
+LibraryAction ImageSampleSite();
+
+// The following are adapted from the Phoenix lander activity dictionary.
+
+Command RA_DIG (length: Real, width: Real, depth: Real,
+                slope_angle: Real, trench_start: Real[3],
+                data_generation_rate: Real, energy_consumption_rate: Real);
+
+Command hga_comm (duration: Real);
+    
+
+OceanWorldMission: Concurrence
+{
+    //    StartCondition CheckoutComplete
+    
+    ContingencyMonitors: Concurrence
+    {
+        BatteryMonitor:
+        {
+        }
+        ThermalMonitor:
+        {
+        }
+        UplinkMonitor:
+        {
+        }
+    }
+
+    Mission: CheckedSequence
+    {
+        Panorama: Concurrence
+        {
+            StereoImage:
+            {
+                StartCondition ... ;
+                SkipCondition ... ;
+                ...
+            }
+        }
+
+        ImageWorkspace:
+        {
+            LibraryCall Image(...);
+        }
+
+        SurfaceInterrogation:
+        {
+        }
+
+        GetTrenchTarget:
+        {
+            // TODO: invoke comms, reset on failure.
+            LibraryCall DownlinkImage(...);
+            Try
+            {
+                GetInfoFromGround:
+                {
+                    Boolean numAttempts = 0;
+                    RepeatCondition AttemptGround.OUTCOME = FAILURE;
+                    InvariantCondition numAttempts < 2;
+                    AttemptGround:
+                    {
+                        InvariantCondition
+                            Lookup(time) < (GetInfoFromGround.EXECUTING.START +
+                                            Lookup(GetTrenchTargetTimeout));
+
+                        EndCondition Lookup(...);
+                        numAttempts = numAttempts + 1;
+                    }
+                }
+                GetTrenchTargetOnboard:
+                {
+                }
+            }
+        }
+
+        Excavation: CheckedSequence
+        {
+            Boolean AcceptableDepth = false;
+            RepeatCondition ! AcceptableDepth;
+            InvariantCondition
+                Lookup(time) < (Excavation.EXECUTING.START +
+                                Lookup(ExcavationTimeout));
+            DigAndFilm: Concurrence
+                {
+                    Boolean DiggingSafe = true;
+              
+                    DigTrench:
+                    {
+                        InvariantCondition DiggingSafe;
+                        EndCondition (CommandHandle(RA_DIG) == COMMAND_SUCCESS ||
+                                      Lookup(Time) >= (DigTrench.EXECUTING.START
+                                                       + DigTrenchTimeout));
+                        RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
+                                Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
+                                Lookup(TrenchStart), DigDataGenerationRate,
+                                DigEnergyConsumptionRate);
+                    }
+                    FilmDig:
+                    {
+                        Repeat DigTrench.State == EXECUTING;
+                        LibraryCall Image(...);
+                        Wait(FilmInterval);
+                    }
+                    SenseDig:
+                    {
+                        Repeat DigTrench.State == EXECUTING;
+                        DiggingSafe = ...;
+                        Wait(SenseDigInterval);
+                    }
+                }
+            RemoveTailings:
+            {
+            }
+            Image:
+            {
+            }
+            AssessDepth:
+            {
+                AcceptableDepth = ... ;
+            }
+        }
+
+        Downlink(...);
+        
+        CollectionAndTransfer:
+        {
+            InstrumentID InstrumentID;
+            Real SampleAmount;
+            Boolean CollectMore = true;
+            InvariantCondition
+                Lookup(time) < (CollectionAndTransfer.EXECUTING.START +
+                                Lookup(CollectAndTransferTimeout));
+            RepeatCondition CollectMore;
+            Collect:
+            {
+                EndCondition ...; // Material Property Sensing
+                RA_COLLECT(...);
+            }
+            ImageSample:
+            {
+                ALIGN_SAMPLE_AND_CAMERA(...);  // position arm for imaging
+                LibraryCall Image(...);
+            }
+            DownlinkSampleImage:
+            {
+                LibraryCall Downlink();
+            }
+            Transfer:
+            {
+                Dock:
+                {
+                }
+                Unload:
+                {
+                }
+                MeasureSample:
+                {
+                    PostCondition !CollectMore;
+                    CollectMore = ...;
+                }
+                CapSample:
+                {
+                }
+                DeliverSample:
+                {
+                }
+                LibraryCall ImageSampleSite();
+            }
+        }
+        // Spawn a plan that does analysis.
+        // Persists through sleep/wake cycle.
+        // Details outside scope of our simulation.
+        // Model time, energy, and possibly temperature.
+        String id;
+        id = StartPlan("SampleAnalysis", "instrument", InstrumentID);
+    }
+}
