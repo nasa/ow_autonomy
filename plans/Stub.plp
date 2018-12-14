@@ -2,9 +2,9 @@ Command pprint (...);
 
 Stub:
 {
-    In String description;
+    In String desc;
     In Int duration;
 
-    pprint (description);
+    pprint (desc);
     Wait duration;
 }

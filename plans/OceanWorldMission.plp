@@ -11,9 +11,12 @@
 
 Real Lookup ExcavationTimeout;
 
+LibraryAction Stub(String desc, Int duration);
 LibraryAction Downlink();
-LibraryAction Image(...);
+LibraryAction Image();
+LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
+
 
 // The following are adapted from the Phoenix lander activity dictionary.
 
@@ -47,15 +50,14 @@ OceanWorldMission: Concurrence
         {
             StereoImage:
             {
-                StartCondition ... ;
-                SkipCondition ... ;
-                ...
+                Library Call Stub(desc="taking stereo panorama of landing site", 
+                                  duration=10);
             }
         }
 
         ImageWorkspace:
         {
-            LibraryCall Image(...);
+            LibraryCall Image();
         }
 
         SurfaceInterrogation:
@@ -65,26 +67,28 @@ OceanWorldMission: Concurrence
         GetTrenchTarget:
         {
             // TODO: invoke comms, reset on failure.
-            LibraryCall DownlinkImage(...);
+            LibraryCall DownlinkImage();
             Try
             {
                 GetInfoFromGround:
                 {
                     Boolean numAttempts = 0;
-                    RepeatCondition AttemptGround.OUTCOME = FAILURE;
-                    InvariantCondition numAttempts < 2;
+                    RepeatCondition AttemptGround.OUTCOME == FAILURE;
+                    InvariantCondition numAttempts <= 1;
                     AttemptGround:
                     {
                         InvariantCondition
-                            Lookup(time) < (GetInfoFromGround.EXECUTING.START +
+                            Lookup(time) < (AttemptGround.EXECUTING.START +
                                             Lookup(GetTrenchTargetTimeout));
+                        EndCondition Lookup(TrenchTargetReceived);
 
-                        EndCondition Lookup(...);
                         numAttempts = numAttempts + 1;
                     }
                 }
                 GetTrenchTargetOnboard:
                 {
+                  LibraryCall Stub (desc="getting trench target onboard",
+                                    duration=1);
                 }
             }
         }
@@ -114,13 +118,13 @@ OceanWorldMission: Concurrence
                     FilmDig:
                     {
                         Repeat DigTrench.State == EXECUTING;
-                        LibraryCall Image(...);
+                        LibraryCall Image();
                         Wait(FilmInterval);
                     }
                     SenseDig:
                     {
                         Repeat DigTrench.State == EXECUTING;
-                        DiggingSafe = ...;
+                        DiggingSafe = StubTrue;
                         Wait(SenseDigInterval);
                     }
                 }
@@ -132,11 +136,11 @@ OceanWorldMission: Concurrence
             }
             AssessDepth:
             {
-                AcceptableDepth = ... ;
+                AcceptableDepth = StubTrue;
             }
         }
 
-        Downlink(...);
+        Downlink();
         
         CollectionAndTransfer:
         {
@@ -149,13 +153,13 @@ OceanWorldMission: Concurrence
             RepeatCondition CollectMore;
             Collect:
             {
-                EndCondition ...; // Material Property Sensing
-                RA_COLLECT(...);
+                EndCondition Lookup(SampleGood); // Material Property Sensing
+                RA_COLLECT();
             }
             ImageSample:
             {
-                ALIGN_SAMPLE_AND_CAMERA(...);  // position arm for imaging
-                LibraryCall Image(...);
+                ALIGN_SAMPLE_AND_CAMERA();  // position arm for imaging
+                LibraryCall Image();
             }
             DownlinkSampleImage:
             {
@@ -172,7 +176,7 @@ OceanWorldMission: Concurrence
                 MeasureSample:
                 {
                     PostCondition !CollectMore;
-                    CollectMore = ...;
+                    CollectMore = StubFalse;
                 }
                 CapSample:
                 {
