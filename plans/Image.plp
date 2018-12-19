@@ -1,3 +1,6 @@
+Command pprint (...);
+
 Image:
 {
+  pprint ("Imaging...");
 }

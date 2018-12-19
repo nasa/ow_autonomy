@@ -1,9 +1,11 @@
 LibraryAction Downlink();
+Command pprint (...);
 
 SampleAnalysis:
 {
   In String instrument;
 
-  // Do analysis
+  pprint ("Analyzing sample using", instrument, "...");
+
   LibraryCall Downlink();
 }

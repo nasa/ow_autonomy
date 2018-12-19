@@ -3,8 +3,5 @@ Command pprint (...);
 Stub:
 {
     In String desc;
-    In Int duration;
-
-    pprint (desc);
-    Wait duration;
+    pprint ("PLEXIL Stub: ", desc);
 }

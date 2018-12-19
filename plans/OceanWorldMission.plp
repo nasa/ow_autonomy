@@ -17,6 +17,7 @@ LibraryAction Image();
 LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
 
+Command pprint (...);
 
 // The following are adapted from the Phoenix lander activity dictionary.
 
@@ -24,23 +25,26 @@ Command RA_DIG (length: Real, width: Real, depth: Real,
                 slope_angle: Real, trench_start: Real[3],
                 data_generation_rate: Real, energy_consumption_rate: Real);
 
-Command hga_comm (duration: Real);
-    
+// TODO: find out what this is for
+Command hga_comm (duration: Real); 
 
 OceanWorldMission: Concurrence
 {
-    //    StartCondition CheckoutComplete
+    // Assumption: checkout is complete before this node starts.
     
     ContingencyMonitors: Concurrence
     {
         BatteryMonitor:
         {
+            LibraryCall Stub(desc="Monitoring battery...");
         }
         ThermalMonitor:
         {
+            LibraryCall Stub(desc="Monitoring thermal...");
         }
         UplinkMonitor:
         {
+            LibraryCall Stub(desc="Monitoring for uplinks...");
         }
     }
 
@@ -50,8 +54,7 @@ OceanWorldMission: Concurrence
         {
             StereoImage:
             {
-                Library Call Stub(desc="taking stereo panorama of landing site", 
-                                  duration=10);
+                LibraryCall Stub(desc="Taking stereo panorama of landing site.");
             }
         }
 
@@ -62,6 +65,7 @@ OceanWorldMission: Concurrence
 
         SurfaceInterrogation:
         {
+            LibraryCall Stub(desc="Interrogating surface...");            
         }
 
         GetTrenchTarget:
@@ -81,14 +85,15 @@ OceanWorldMission: Concurrence
                             Lookup(time) < (AttemptGround.EXECUTING.START +
                                             Lookup(GetTrenchTargetTimeout));
                         EndCondition Lookup(TrenchTargetReceived);
-
+                        LibraryCall 
+                            Stub(desc="Getting trench target from ground...");
                         numAttempts = numAttempts + 1;
                     }
                 }
+                pprint ("failed.");
                 GetTrenchTargetOnboard:
                 {
-                  LibraryCall Stub (desc="getting trench target onboard",
-                                    duration=1);
+                    LibraryCall Stub(desc="Getting trench target onboard...");
                 }
             }
         }
@@ -118,7 +123,7 @@ OceanWorldMission: Concurrence
                     FilmDig:
                     {
                         Repeat DigTrench.State == EXECUTING;
-                        LibraryCall Image();
+                        LibraryCall Image(desc="trench");
                         Wait(FilmInterval);
                     }
                     SenseDig:
