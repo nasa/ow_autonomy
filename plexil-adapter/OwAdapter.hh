@@ -8,7 +8,7 @@
 #include "InterfaceAdapter.hh"
 #include "Value.hh"
 
-//using namespace PLEXIL;
+using namespace PLEXIL;
 
 class OwAdapter : public InterfaceAdapter
 {

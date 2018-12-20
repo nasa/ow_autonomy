@@ -1,4 +1,5 @@
 #include "OwAdapter.hh"
+#include "subscriber.hh"
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -10,12 +11,15 @@
 #include <StateCacheEntry.hh>
 
 // C++/C
-#include <sstream>
-#include <math.h>
+#include <list>
+//#include <sstream>
+//#include <math.h>
 using std::string;
 using std::vector;
 using std::list;
 using std::copy;
+using std::cerr;
+using std::endl;
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -85,7 +89,7 @@ void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
   if (!isStateSubscribed(state)) return;
-  
+
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }
@@ -173,8 +177,7 @@ void OwAdapter::executeCommand(Command *cmd)
   if (name == "owprint") owprint (cmd->getArgValues());
 
   else {
-    AosEvent(Event::Critical, "OwAdapter:executeCommand").out
-      << "Invalid command " << name;
+    cerr << "Invalid command " << name << endl;
   }
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
@@ -185,12 +188,6 @@ void OwAdapter::executeCommand(Command *cmd)
 
 
 ///////////////////////////// State support //////////////////////////////////
-
-static int angle_between (float waypoint)
-{
-  // Stub
-  return waypoint * 50;
-}
 
 Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
 {
@@ -206,172 +203,10 @@ Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
 
   // TODO: condense the following 3 lookups into one.
   if (state_name == "TrenchLength") {
-    retval = FlightState::instance().lastElementAchieved ();
+    retval = 10; // stub
   }
-  else if (state_name == "RouteFinished") {
-    retval = ! FlightState::instance().clearance.pendingRoute ();
-  }
-  else if (state_name == "PendingRoute") {
-    retval = FlightState::instance().clearance.pendingRoute ();
-  }
-  else if (state_name == "NewRouteSegment") {
-    retval = FlightState::instance().clearance.newRouteSegment ();
-  }
-  else if (state_name == "CurrentRouteSegmentAchieved") {
-    retval = FlightState::instance().clearance.currentRouteSegmentAchieved();
-  }
-  else if (state_name == "RadarVectored") {
-    retval = FlightState::instance().clearance.radarVectored ();
-  }
-  else if (state_name == "RadarVectored2") {
-    retval = FlightState::instance().radarVectored ();
-  }
-  else if (state_name == "ExpectingLateralClearance") {
-    retval = FlightState::instance().clearance.expectingLateralClearance ();
-  }
-  else if (state_name == "ExpectingLateralClearance2") {
-    retval = FlightState::instance().expectingLateralClearance ();
-  }
-  else if (state_name == "ExpectingAltitudeClearance") {
-    retval = FlightState::instance().clearance.expectingAltitudeClearance ();
-  }
-  else if (state_name == "ClearanceAltitude") {
-    retval = FlightState::instance().clearance.clearanceAltitude ();
-  }
-  else if (state_name == "ExpectedAltitude") {
-    retval = FlightState::instance().clearance.expectedAltitude ();
-  }
-  else if (state_name == "MEA") {
-    retval = FlightState::instance().clearance.mea();
-  }
-  else if (state_name == "MessageFromATC") {  // to be deprecated
-    string message = theATC.getTextClearance ();
-    retval = (message == "" ? Unknown : message);
-  }
-  else if (state_name == "TextMessageFromATC") retval = ""; // event only
-  else if (state_name == "RouteFromDM") retval = "";  // event only
-  else if (state_name == "VoiceMessageFromATC") {
-    retval = theATC.voiceMessageArrived();
-  }
-  else if (state_name == "PreviousWaypoint") {
-    string wp;
-    args[0].getValue(wp);
-    retval = FlightState::instance().clearance.previousWaypoint() == wp;
-  }
-  else if (state_name == "LastWaypointReached") {
-    retval = FlightState::instance().prevWaypoint.name;
-  }
-  else if (state_name == "AtFinalApproachFix") {
-    // STUB
-    retval = false;
-  }
-  else if (state_name == "LostCommAdjustmentNeeded") {
-    retval = false; // event only
-  }
-
-  // NEW
-
-  else if (state_name == "ReachedCommandedHeading") {
-    retval = FlightState::instance().reachedCommandedHeading();
-  }
-  else if (state_name == "ReachedCommandedAltitude") {
-    retval = FlightState::instance().reachedCommandedAltitude();
-  }
-  else if (state_name == "ReachedCommandedWaypoint") {
-    retval = FlightState::instance().reachedCommandedWaypoint();
-  }
-  else if (state_name == "ReachedAWaypoint") {
-    retval = FlightState::instance().reachedAWaypoint();
-  }
-  // TODO: combine the following two
-  else if (state_name == "AtClearanceLimit") {
-    retval = FlightState::instance().atClearanceLimit();
-  }
-  else if (state_name == "ReachedClearanceLimit") {
-    // Unlike the previous AtClearanceLimit, which is a state, this lookup is an
-    // EVENT.
-    retval = FlightState::instance().atClearanceLimit();
-  }
-  else if (state_name == "WithinRadioDistanceOfTower") {
-    retval = true;  // STUB
-  }
-  else if (state_name == "ClearanceAmended") {
-    //    retval = FlightState::instance().clearanceAmended();
-    retval = false; // event only
-  }
-  else if (state_name == "ClearanceMissing") {
-    retval = FlightState::instance().clearanceMissing();
-  }
-  else if (state_name == "OnlyAirportNext") {
-    retval = FlightState::instance().onlyAirportNext();
-  }
-  else if (state_name == "Landed") {
-    retval = FlightState::instance().phase == Landed;
-  }
-  else if (state_name == "Holding") {
-    retval = FlightState::instance().holding();
-  }
-  else if (state_name == "EnteringTrafficPattern") {
-    retval = false; // default value; true is only published
-  }
-  else if (state_name == "NextElementReady") {
-    retval = false; // default value; true is only published
-  }
-  else if (state_name == "ReadyForNextElement") {
-    retval = FlightState::instance().readyForNextRouteElement();
-  }
-  else if (state_name == "ReadyForNextLegElement") {
-    retval = FlightState::instance().readyForNextLegElement();
-  }
-  
-  // Terminal Procedure support
-
-  else if (state_name == "CurrentAltitude") {
-    retval = FlightInterface::instance()->currentAltitude();
-  }
-  else if (state_name == "CurrentHeading") {
-    retval = FlightInterface::instance()->currentHeading();
-  }
-  else if (state_name == "ReachedWaypoint") {
-    string wp;
-    args[0].getValue(wp);
-    retval = FlightInterface::instance()->reachedWaypoint(wp);
-  }
-  else if (state_name == "CurrentSpeed") {
-    retval = FlightInterface::instance()->currentAirSpeed();
-  }
-  else if (state_name == "StallSpeed") {
-    retval = 4;
-  }
-  else if (state_name == "TPAltitude") {
-    retval = 25;
-  }
-  else if (state_name == "RunwayDesignation") {
-    stubbed_lookup (state_name, "18");
-    retval = 18;
-  }
-  else if (state_name == "AngleBetween") {
-    if (args.size() == 1) {
-      double waypoint;
-      args[0].getValue(waypoint);
-      std::cout << "AngleBetween looked up with " << waypoint << std::endl;
-      retval = angle_between(waypoint);
-    }
-    else AosEvent(Event::Critical, "OwAdapter::fetch").out
-           << "Expects only one argument: " << state_name;
-  }
-
-  // Support for Langley
-
-  else if (state_name == "ScenarioReady") {
-    // Stub.  Should return true for Ames scenarios.  Needs to be triggered by
-    // CFS message for Langley scenarios.
-    retval = true;
-  }
-
   else {
-    AosEvent(Event::Critical, "OwAdapter::fetch").out
-      << "invalid state: " << state_name;
+    cerr << "invalid state: " << state_name << endl;
     retval = Unknown;
   }
 
@@ -401,7 +236,6 @@ void OwAdapter::unsubscribe (const State& state)
 }
 
 extern "C" {
-  // NOTE: This function IS called, even though cppcheck doesn't think so!
   void initOwAdapter() {
     REGISTER_ADAPTER(OwAdapter, "OwAdapter");
   }
