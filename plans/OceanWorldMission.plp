@@ -9,13 +9,15 @@
 
 #include "OceanWorldDefs.h"
 
-//Bool Lookup TrenchTargetReceived;
+
 Real Lookup TrenchLength;
 Real Lookup TrenchWidth;
+Real Lookup TrenchDepth;
 Real Lookup TrenchSlopeAngle;
-Real Lookup TrenchStart;
+Real[3] Lookup TrenchStart;
+Boolean Lookup TrenchIdentified;
 
-//Bool Lookup SampleGood;
+Boolean Lookup SampleGood;
 
 Real Lookup time;
 Real Lookup ExcavationTimeout;
@@ -30,6 +32,7 @@ LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
 
 Command pprint (...);
+String Command StartPlan (...);
 
 // The following are adapted from the Phoenix lander activity dictionary.
 
@@ -38,6 +41,7 @@ Command RA_DIG (Real length, Real width, Real depth,
                 Real data_generation_rate, Real energy_consumption_rate);
 
 Command RA_COLLECT ();
+Command ALIGN_SAMPLE_AND_CAMERA ();
 
 // TODO: find out what this is for
 Command hga_comm (Real duration);
@@ -90,7 +94,7 @@ OceanWorldMission: Concurrence
             {
                 GetInfoFromGround:
                 {
-                    Boolean numAttempts = 0;
+                    Integer numAttempts = 0;
                     RepeatCondition AttemptGround.outcome == FAILURE;
                     InvariantCondition numAttempts <= 1;
                     AttemptGround:
@@ -98,7 +102,7 @@ OceanWorldMission: Concurrence
                         InvariantCondition
                             Lookup(time) < (AttemptGround.EXECUTING.START +
                                             Lookup(TrenchTargetTimeout));
-                        EndCondition Lookup(TrenchTargetReceived);
+                        EndCondition Lookup(TrenchIdentified);
                         LibraryCall Stub(desc="Getting trench target from ground");
                         numAttempts = numAttempts + 1;
                     }
@@ -125,30 +129,30 @@ OceanWorldMission: Concurrence
                     DigTrench:
                     {
                         InvariantCondition DiggingSafe;
-                        EndCondition (CommandHandle(RA_DIG) == COMMAND_SUCCESS ||
+                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                                       Lookup(time) >= (DigTrench.EXECUTING.START
                                                        + DigTrenchTimeout));
-                        RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
-                                Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
-                                Lookup(TrenchStart), DigDataGenerationRate,
-                                DigEnergyConsumptionRate);
+                        Dig: RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
+                                     Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
+                                     Lookup(TrenchStart), DigDataGenerationRate,
+                                     DigEnergyConsumptionRate);
                     }
                     FilmDig:
                     {
-                        Repeat DigTrench.State == EXECUTING;
+                        Repeat DigTrench.state == EXECUTING;
                         LibraryCall Image(desc="trench");
                         Wait FilmInterval;
                     }
                     SenseDig:
                     {
-                        Repeat DigTrench.State == EXECUTING;
+                        Repeat DigTrench.state == EXECUTING;
                         DiggingSafe = StubTrue;
                         Wait SenseDigInterval;
                     }
                 }
             RemoveTailings:
             {
-                LibraryCall Stub(desc="Removing tailings")
+                LibraryCall Stub(desc="Removing tailings");
             }
             LibraryCall Image(desc="Dig");
             AssessDepth:
@@ -157,7 +161,7 @@ OceanWorldMission: Concurrence
             }
         }
 
-        Downlink();
+        LibraryCall Downlink();
 
         CollectionAndTransfer:
         {
@@ -208,11 +212,14 @@ OceanWorldMission: Concurrence
                 LibraryCall ImageSampleSite();
             }
         }
-        // Spawn a plan that does analysis.
-        // Persists through sleep/wake cycle.
-        // Details outside scope of our simulation.
-        // Model time, energy, and possibly temperature.
-        String id;
-        id = StartPlan("SampleAnalysis");
+        DoSampleAnalysis:
+        {
+            // Spawn a plan that does analysis.
+            // Persists through sleep/wake cycle.
+            // Details outside scope of our simulation.
+            // Model time, energy, and possibly temperature.
+            String id;
+            id = StartPlan("SampleAnalysis");
+        }
     }
 }
