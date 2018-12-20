@@ -1,3 +1,12 @@
+# This Makefile supports a "standalone" build of the PLEXIL adapter in this
+# directory.  It uses the host's default C++ compiler and the PLEXIL installaton
+# indicated by $PLEXIL_HOME.  It installs its product, a dynamic library, in
+# $PLEXIL_HOME/lib.
+
+# Note that this Makefile does not support the deployment version of the PLEXIL
+# application, in which PLEXIL will be integrated using the Robot Operating
+# System (ROS).
+
 include $(PLEXIL_HOME)/makeinclude/standard-defs.make
 
 OSTYPE   ?= $(shell uname -s)
@@ -10,20 +19,26 @@ SRC = subscriber.cc OwAdapter.cc
 
 INC = subscriber.hh OwAdapter.hh
 
-INC_DIRS += $(PLEXIL_HOME)/src/third-party/pugixml/src $(PLEXIL_HOME)/src/utils \
- $(PLEXIL_HOME)/src/value $(PLEXIL_HOME)/src/expr $(PLEXIL_HOME)/src/intfc \
- $(PLEXIL_HOME)/src/exec $(PLEXIL_HOME)/src/app-framework
+# Add our own (not PLEXIL) include directories here.
+INC_DIRS +=
 
-LIBS += pugixml PlexilAppFramework PlexilExec PlexilIntfc PlexilExpr \
-        PlexilValue PlexilUtils
+# Add our own (not PLEXIL) libraries here.
+LIBS +=
 
-LIB_FLAGS += -L $(PLEXIL_HOME)/lib
+# Add our own (not PLEXIL) library flags here.
+LIB_FLAGS +=
 
-LIB_TARGET = lib$(LIB_NAME)$(LIB_EXT)
+# Customize the target library name/location here, if needed.
+#LIB_TARGET =
 
 # Use c++11
-STANDARD_CXXFLAGS += -std=c++11
+# NOTE: Before doing this, PLEXIL needs to built for C++ 11.  The procedure for
+# doing this is not documented, but should amount to adding the '-std=c++11'
+# flag to INITIAL_CXXFLAGS in $PLEXIL_HOME/makeinclude/standard-defs.make.
+# Those of us on the CHAP-E project can also take a look at the plexilz make
+# file.
+#STANDARD_CXXFLAGS += -std=c++11
 
 include $(PLEXIL_HOME)/makeinclude/standard-targets.make
 
-# DO NOT DELETE
+

@@ -3,8 +3,13 @@ the Ocean Worlds lander, namely a PLEXIL application.  See
 plexil.sourceforge.net for information on PLEXIL.
 
 The 'plans' directory contains the PLEXIL plans.
-
-The 'plexil-adapter' directory contains C++ classes and code implementing the
-interface between the PLEXIL plans and the external world (lander, environment).
-
+The 'plexil-adapter' directory contains the supporting code needed to run them.
 See the README files in each subdirectory for more information.
+
+To run the top level plan:
+
+1. Build each subdirectory, in any order, by typing 'make' in the directory.
+2. cd plans
+3. make run
+
+
