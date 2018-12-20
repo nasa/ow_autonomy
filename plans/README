@@ -1,1 +1,9 @@
-This directory contains example PLEXIL plans.
+This directory PLEXIL plans that implement the onboard autonomy for the
+prototypical Ocean World lander.
+
+At the moment, the top level plan is OceanWorldsMission.plp, which implements
+the Sol 0 activities as described in project documentation (to be cited).
+
+The plans must be compiled.  To do so, type 'make'.  This generates .ple files
+from the .plp, and .plx from the .ple.  The .plx files are executed by the
+PLEXIL executive.

@@ -1,0 +1,10 @@
+This directory (repository) contains a candidate onboard autonomy component for
+the Ocean Worlds lander, namely a PLEXIL application.  See
+plexil.sourceforge.net for information on PLEXIL.
+
+The 'plans' directory contains the PLEXIL plans.
+
+The 'plexil-adapter' directory contains C++ classes and code implementing the
+interface between the PLEXIL plans and the external world (lander, environment).
+
+See the README files in each subdirectory for more information.
