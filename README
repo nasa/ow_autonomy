@@ -1,15 +1,17 @@
-This directory (repository) contains a candidate onboard autonomy component for
-the Ocean Worlds lander, namely a PLEXIL application.  See
-plexil.sourceforge.net for information on PLEXIL.
+This directory contains a candidate onboard autonomy component for the Ocean
+Worlds lander, namely a PLEXIL application.
 
 The 'plans' directory contains the PLEXIL plans.
 The 'plexil-adapter' directory contains the supporting code needed to run them.
 See the README files in each subdirectory for more information.
+
+This application has been tested in MacOS, and should work on any operating
+system where PLEXIL is supported, which is most modern Unix-based environments.
+The main prerequisite is a working PLEXIL installation (which has its own
+prerequisites).  See plexil.sourceforge.net for information.
 
 To run the top level plan:
 
 1. Build each subdirectory, in any order, by typing 'make' in the directory.
 2. cd plans
 3. make run
-
-
