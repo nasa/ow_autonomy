@@ -2,4 +2,6 @@
 *.d
 *.ple
 *.plx
+*.epx
+*.dylib
 *.~*

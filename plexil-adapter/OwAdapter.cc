@@ -19,6 +19,7 @@ using std::vector;
 using std::list;
 using std::copy;
 using std::cerr;
+using std::cout;
 using std::endl;
 
 
@@ -39,6 +40,11 @@ static void owprint (const vector<Value>& args)
        iter != args.end();
        iter++) out << *iter;
   cerr << out.str() << endl;
+}
+
+static void unimplemented (const string& name)
+{
+  cout << "Command " << name << " not yet implemented!" << endl;
 }
 
 
@@ -176,6 +182,8 @@ void OwAdapter::executeCommand(Command *cmd)
 
   if (name == "owprint") owprint (cmd->getArgValues());
 
+  if (name == "RA_DIG") unimplemented("RA_DIG");
+
   else {
     cerr << "Invalid command " << name << endl;
   }
@@ -203,7 +211,12 @@ Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
 
   // TODO: condense the following 3 lookups into one.
   if (state_name == "TrenchLength") {
-    retval = 10; // stub
+    stubbed_lookup ("TrenchLength", "10");
+    retval = 10;
+  }
+  else if (state_name == "TrenchIdentified") {
+    stubbed_lookup ("TrenchIdentified", "true");
+    retval = true;
   }
   else {
     cerr << "invalid state: " << state_name << endl;

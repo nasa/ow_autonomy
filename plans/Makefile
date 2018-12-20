@@ -1,7 +1,8 @@
 # A simple Makefile for compiling, running, and testing the PLEXIL plans in this
 # directory (.plp files).
 
-PLANS = OceanWorldMission Downlink Image SampleAnalysis Stub
+PLANS = OceanWorldMission Downlink Image DownlinkImage ImageSampleSite \
+        SampleAnalysis Stub
 
 PLP = $(PLANS:%=%.plp)
 

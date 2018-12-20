@@ -1,0 +1,9 @@
+<Interfaces>
+  <Adapter AdapterType="Utility"/>
+  <Adapter AdapterType="OSNativeTime"/>
+
+  <Adapter AdapterType="OwAdapter">
+    <DefaultCommandAdapter/>
+    <DefaultLookupAdapter/>
+  </Adapter>
+</Interfaces>

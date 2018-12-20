@@ -146,6 +146,7 @@ OceanWorldMission: Concurrence
                     SenseDig:
                     {
                         Repeat DigTrench.state == EXECUTING;
+                        pprint ("Sensing dig...");
                         DiggingSafe = StubTrue;
                         Wait SenseDigInterval;
                     }
