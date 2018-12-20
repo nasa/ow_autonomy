@@ -1,17 +1,19 @@
 # A simple Makefile for compiling, running, and testing the PLEXIL plans in this
 # directory (.plp files).
 
-PLP = Downlink Image OceanWorldMission SampleAnalysis Stub
+PLANS = OceanWorldMission Downlink Image SampleAnalysis Stub
 
-PLE = $(PLP:%=%.ple)
+PLP = $(PLANS:%=%.plp)
 
-PLX = $(PLP:%=%.plx)
+PLE = $(PLANS:%=%.ple)
+
+PLX = $(PLANS:%=%.plx)
 
 #LOG = $(PLP:%=%.log)
 
-# TODO: move plexilpp to plexil-4
-%.ple: %.plp OceanWorldMission.h
-	./plexilpp $<
+
+%.ple: %.plp OceanWorldDefs.h
+	${PLEXIL_HOME}/scripts/plexilpp $<
 
 %.plx: %.ple
 	${PLEXIL_HOME}/scripts/plexilc $<

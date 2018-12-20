@@ -2,5 +2,6 @@ Command pprint (...);
 
 Image:
 {
-  pprint ("Imaging...");
+    In String desc;
+    pprint ("Imaging", desc, "...");
 }

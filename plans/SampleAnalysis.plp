@@ -1,9 +1,11 @@
+#include "OceanWorldDefs.h"
+    
 LibraryAction Downlink();
 Command pprint (...);
 
 SampleAnalysis:
 {
-  In String instrument;
+  In InstrumentId instrument;
 
   pprint ("Analyzing sample using", instrument, "...");
 

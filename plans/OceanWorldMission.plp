@@ -9,11 +9,23 @@
 
 #include "OceanWorldDefs.h"
 
-Real Lookup ExcavationTimeout;
+//Bool Lookup TrenchTargetReceived;
+Real Lookup TrenchLength;
+Real Lookup TrenchWidth;
+Real Lookup TrenchSlopeAngle;
+Real Lookup TrenchStart;
 
-LibraryAction Stub(String desc, Int duration);
+//Bool Lookup SampleGood;
+
+Real Lookup time;
+Real Lookup ExcavationTimeout;
+Real Lookup TrenchTargetTimeout;
+Real Lookup CollectAndTransferTimeout;
+
+
+LibraryAction Stub(In String desc);
 LibraryAction Downlink();
-LibraryAction Image();
+LibraryAction Image(In String desc);
 LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
 
@@ -21,51 +33,53 @@ Command pprint (...);
 
 // The following are adapted from the Phoenix lander activity dictionary.
 
-Command RA_DIG (length: Real, width: Real, depth: Real,
-                slope_angle: Real, trench_start: Real[3],
-                data_generation_rate: Real, energy_consumption_rate: Real);
+Command RA_DIG (Real length, Real width, Real depth,
+                Real slope_angle, Real trench_start[3],
+                Real data_generation_rate, Real energy_consumption_rate);
+
+Command RA_COLLECT ();
 
 // TODO: find out what this is for
-Command hga_comm (duration: Real); 
+Command hga_comm (Real duration);
 
 OceanWorldMission: Concurrence
 {
     // Assumption: checkout is complete before this node starts.
-    
+
     ContingencyMonitors: Concurrence
     {
         BatteryMonitor:
         {
-            LibraryCall Stub(desc="Monitoring battery...");
+            LibraryCall Stub(desc="Monitoring battery");
         }
         ThermalMonitor:
         {
-            LibraryCall Stub(desc="Monitoring thermal...");
+            LibraryCall Stub(desc="Monitoring thermal");
         }
         UplinkMonitor:
         {
-            LibraryCall Stub(desc="Monitoring for uplinks...");
+            LibraryCall Stub(desc="Monitoring for uplinks");
         }
     }
 
-    Mission: CheckedSequence
+    Mission:
     {
         Panorama: Concurrence
         {
             StereoImage:
             {
-                LibraryCall Stub(desc="Taking stereo panorama of landing site.");
+                LibraryCall Stub(desc="Taking stereo panorama of landing site");
             }
         }
 
         ImageWorkspace:
         {
-            LibraryCall Image();
+            LibraryCall Image(desc="workspace");
         }
 
         SurfaceInterrogation:
         {
-            LibraryCall Stub(desc="Interrogating surface...");            
+            LibraryCall Stub(desc="Interrogating surface");
         }
 
         GetTrenchTarget:
@@ -77,28 +91,27 @@ OceanWorldMission: Concurrence
                 GetInfoFromGround:
                 {
                     Boolean numAttempts = 0;
-                    RepeatCondition AttemptGround.OUTCOME == FAILURE;
+                    RepeatCondition AttemptGround.outcome == FAILURE;
                     InvariantCondition numAttempts <= 1;
                     AttemptGround:
                     {
                         InvariantCondition
                             Lookup(time) < (AttemptGround.EXECUTING.START +
-                                            Lookup(GetTrenchTargetTimeout));
+                                            Lookup(TrenchTargetTimeout));
                         EndCondition Lookup(TrenchTargetReceived);
-                        LibraryCall 
-                            Stub(desc="Getting trench target from ground...");
+                        LibraryCall Stub(desc="Getting trench target from ground");
                         numAttempts = numAttempts + 1;
                     }
                 }
                 pprint ("failed.");
                 GetTrenchTargetOnboard:
                 {
-                    LibraryCall Stub(desc="Getting trench target onboard...");
+                    LibraryCall Stub(desc="Getting trench target onboard");
                 }
             }
         }
 
-        Excavation: CheckedSequence
+        Excavation:
         {
             Boolean AcceptableDepth = false;
             RepeatCondition ! AcceptableDepth;
@@ -108,12 +121,12 @@ OceanWorldMission: Concurrence
             DigAndFilm: Concurrence
                 {
                     Boolean DiggingSafe = true;
-              
+
                     DigTrench:
                     {
                         InvariantCondition DiggingSafe;
                         EndCondition (CommandHandle(RA_DIG) == COMMAND_SUCCESS ||
-                                      Lookup(Time) >= (DigTrench.EXECUTING.START
+                                      Lookup(time) >= (DigTrench.EXECUTING.START
                                                        + DigTrenchTimeout));
                         RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
                                 Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
@@ -124,21 +137,20 @@ OceanWorldMission: Concurrence
                     {
                         Repeat DigTrench.State == EXECUTING;
                         LibraryCall Image(desc="trench");
-                        Wait(FilmInterval);
+                        Wait FilmInterval;
                     }
                     SenseDig:
                     {
                         Repeat DigTrench.State == EXECUTING;
                         DiggingSafe = StubTrue;
-                        Wait(SenseDigInterval);
+                        Wait SenseDigInterval;
                     }
                 }
             RemoveTailings:
             {
+                LibraryCall Stub(desc="Removing tailings")
             }
-            Image:
-            {
-            }
+            LibraryCall Image(desc="Dig");
             AssessDepth:
             {
                 AcceptableDepth = StubTrue;
@@ -146,10 +158,9 @@ OceanWorldMission: Concurrence
         }
 
         Downlink();
-        
+
         CollectionAndTransfer:
         {
-            InstrumentID InstrumentID;
             Real SampleAmount;
             Boolean CollectMore = true;
             InvariantCondition
@@ -164,7 +175,7 @@ OceanWorldMission: Concurrence
             ImageSample:
             {
                 ALIGN_SAMPLE_AND_CAMERA();  // position arm for imaging
-                LibraryCall Image();
+                LibraryCall Image(desc="sample");
             }
             DownlinkSampleImage:
             {
@@ -174,20 +185,25 @@ OceanWorldMission: Concurrence
             {
                 Dock:
                 {
+                    LibraryCall Stub(desc="Docking");
                 }
                 Unload:
                 {
+                    LibraryCall Stub(desc="Unloading");
                 }
                 MeasureSample:
                 {
                     PostCondition !CollectMore;
+                    LibraryCall Stub(desc="Measuring Sample");
                     CollectMore = StubFalse;
                 }
                 CapSample:
                 {
+                    LibraryCall Stub(desc="Capping Sample");
                 }
                 DeliverSample:
                 {
+                    LibraryCall Stub(desc="Measuring Sample");
                 }
                 LibraryCall ImageSampleSite();
             }
@@ -197,6 +213,6 @@ OceanWorldMission: Concurrence
         // Details outside scope of our simulation.
         // Model time, energy, and possibly temperature.
         String id;
-        id = StartPlan("SampleAnalysis", "instrument", InstrumentID);
+        id = StartPlan("SampleAnalysis");
     }
 }
