@@ -8,6 +8,10 @@ PLP = $(PLANS:%=%.plp)
 
 PLE = $(PLANS:%=%.ple)
 
+# An intermediate representation generated from .ple, deleted automatically by
+# default.
+EPX = $(PLANS:%=%.epx)
+
 PLX = $(PLANS:%=%.plx)
 
 #LOG = $(PLP:%=%.log)
@@ -25,4 +29,4 @@ run:
 	plexilexec -p OceanWorldMission.plx -c ow-config.xml
 
 clean:
-	@ rm -f $(PLX) $(PLE)
+	@ rm -f $(PLX) $(PLE) $(EPX)
