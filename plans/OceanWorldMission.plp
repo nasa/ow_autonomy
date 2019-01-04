@@ -32,7 +32,11 @@ LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
 
 Command pprint (...);
-String Command StartPlan (...);
+
+// This declaration should work, but doesn't.
+// String Command StartPlan(String plan_name, ...);
+
+String Command StartPlan(...);
 
 // The following are adapted from the Phoenix lander activity dictionary.
 
@@ -68,6 +72,9 @@ OceanWorldMission: Concurrence
 
     Mission:
     {
+        Boolean DeepEnough = false;
+        Boolean CollectMore = true;
+
         Panorama: Concurrence
         {
             StereoImage:
@@ -117,12 +124,10 @@ OceanWorldMission: Concurrence
 
         Excavation:
         {
-            Boolean DeepEnough = false;
-            // Issue with this, reported to Chuck.
-            //            RepeatCondition !DeepEnough;
-            //            InvariantCondition
-                // NOTE: Is 'time' repolled at every iteration?
+            RepeatCondition !DeepEnough;
 // Needs debugging
+//            InvariantCondition
+// NOTE: Is 'time' repolled at every iteration?
 //                Lookup(time) < (Excavation.EXECUTING.START +
 //                                Lookup(ExcavationTimeout));
             DigAndFilm: Concurrence
@@ -171,13 +176,11 @@ OceanWorldMission: Concurrence
         CollectionAndTransfer:
         {
             Real SampleAmount;
-            Boolean CollectMore = true;
 // Needs debugging
 //            InvariantCondition
 //                Lookup(time) < (CollectionAndTransfer.EXECUTING.START +
 //                                Lookup(CollectAndTransferTimeout));
-// Issue with this, reported to Chuck.
-//            RepeatCondition CollectMore;
+            RepeatCondition CollectMore;
             Collect:
             {
                 EndCondition Lookup(SampleGood); // Material Property Sensing
@@ -227,7 +230,7 @@ OceanWorldMission: Concurrence
             // Details outside scope of our simulation.
             // Model time, energy, and possibly temperature.
             String id;
-            id = StartPlan("SampleAnalysis");
+            id = StartPlan("SampleAnalysis", "instrument", 1);
         }
     }
 }
