@@ -117,11 +117,14 @@ OceanWorldMission: Concurrence
 
         Excavation:
         {
-            Boolean AcceptableDepth = false;
-            RepeatCondition ! AcceptableDepth;
-            InvariantCondition
-                Lookup(time) < (Excavation.EXECUTING.START +
-                                Lookup(ExcavationTimeout));
+            Boolean DeepEnough = false;
+            // Issue with this, reported to Chuck.
+            //            RepeatCondition !DeepEnough;
+            //            InvariantCondition
+                // NOTE: Is 'time' repolled at every iteration?
+// Needs debugging
+//                Lookup(time) < (Excavation.EXECUTING.START +
+//                                Lookup(ExcavationTimeout));
             DigAndFilm: Concurrence
                 {
                     Boolean DiggingSafe = true;
@@ -129,9 +132,10 @@ OceanWorldMission: Concurrence
                     DigTrench:
                     {
                         InvariantCondition DiggingSafe;
-                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
-                                      Lookup(time) >= (DigTrench.EXECUTING.START
-                                                       + DigTrenchTimeout));
+// Needs implementation
+//                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
+//                                      Lookup(time) >= (DigTrench.EXECUTING.START
+//                                                       + DigTrenchTimeout));
                         Dig: RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
                                      Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
                                      Lookup(TrenchStart), DigDataGenerationRate,
@@ -155,10 +159,10 @@ OceanWorldMission: Concurrence
             {
                 LibraryCall Stub(desc="Removing tailings");
             }
-            LibraryCall Image(desc="Dig");
+            LibraryCall Image(desc="dig");
             AssessDepth:
             {
-                AcceptableDepth = StubTrue;
+                DeepEnough = StubTrue;
             }
         }
 
@@ -168,10 +172,12 @@ OceanWorldMission: Concurrence
         {
             Real SampleAmount;
             Boolean CollectMore = true;
-            InvariantCondition
-                Lookup(time) < (CollectionAndTransfer.EXECUTING.START +
-                                Lookup(CollectAndTransferTimeout));
-            RepeatCondition CollectMore;
+// Needs debugging
+//            InvariantCondition
+//                Lookup(time) < (CollectionAndTransfer.EXECUTING.START +
+//                                Lookup(CollectAndTransferTimeout));
+// Issue with this, reported to Chuck.
+//            RepeatCondition CollectMore;
             Collect:
             {
                 EndCondition Lookup(SampleGood); // Material Property Sensing
@@ -201,6 +207,7 @@ OceanWorldMission: Concurrence
                     PostCondition !CollectMore;
                     LibraryCall Stub(desc="Measuring Sample");
                     CollectMore = StubFalse;
+                    Wait 1;
                 }
                 CapSample:
                 {

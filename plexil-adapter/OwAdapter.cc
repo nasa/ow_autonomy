@@ -163,6 +163,11 @@ static void stubbed_lookup (const string& name, const string& value)
        << endl;
 }
 
+// NOTE: This macro, and the stub it implements, is temporary.
+#define COMMAND_STUB(command)                   \
+  if (name == #command) {                       \
+    unimplemented(#command);                    \
+  }
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
@@ -181,14 +186,15 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   if (name == "owprint") owprint (cmd->getArgValues());
-
-  if (name == "RA_DIG") unimplemented("RA_DIG");
-
+  else COMMAND_STUB(RA_DIG)
+  else COMMAND_STUB(RA_COLLECT)
+  else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
   else {
     cerr << "Invalid command " << name << endl;
   }
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
+  m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);
   if (retval != Unknown) m_execInterface.handleCommandReturn(cmd, retval);
   m_execInterface.notifyOfExternalEvent();
   debugMsg("OwAdapter:executeCommand", " " << name << " complete");
@@ -196,6 +202,13 @@ void OwAdapter::executeCommand(Command *cmd)
 
 
 ///////////////////////////// State support //////////////////////////////////
+
+// NOTE: This macro, and the stub it implements, is temporary.
+#define STATE_CASE(name,val)                    \
+  if (state_name == #name) {                    \
+    stubbed_lookup (#name, #val);               \
+    retval = val;                               \
+  }
 
 Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
 {
@@ -210,14 +223,21 @@ Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
   // Flight State
 
   // TODO: condense the following 3 lookups into one.
-  if (state_name == "TrenchLength") {
-    stubbed_lookup ("TrenchLength", "10");
-    retval = 10;
-  }
-  else if (state_name == "TrenchIdentified") {
-    stubbed_lookup ("TrenchIdentified", "true");
-    retval = true;
-  }
+  // if (state_name == "TrenchLength") {
+  //   stubbed_lookup ("TrenchLength", "10");
+  //   retval = 10;
+  // }
+  STATE_CASE(TrenchLength, 10)
+  else STATE_CASE(TrenchWidth, 10)
+  else STATE_CASE(TrenchDepth, 2)
+  else STATE_CASE(TrenchSlopeAngle, 30)
+  else STATE_CASE(TrenchStart, 5)
+  else STATE_CASE(TrenchIdentified, true)
+  else STATE_CASE(TrenchTargetTimeout, 60)
+  else STATE_CASE(ExcavationTimeout, 10)
+  else STATE_CASE(ExcavationTimeout, 60)
+  else STATE_CASE(SampleGood, true)
+  else STATE_CASE(CollectAndTransferTimeout, 10)
   else {
     cerr << "invalid state: " << state_name << endl;
     retval = Unknown;
