@@ -75,7 +75,7 @@ OceanWorldMission: Concurrence
         Boolean DeepEnough = false;
         Boolean CollectMore = true;
 
-        Panorama: Concurrence
+        Panorama:
         {
             StereoImage:
             {

@@ -13,10 +13,10 @@ using namespace PLEXIL;
 class OwAdapter : public InterfaceAdapter
 {
 public:
+  // No default constructor, only this specialized one.
   OwAdapter (AdapterExecInterface&, const pugi::xml_node&);
+  ~OwAdapter ();
 
-  // using compiler's default copy constructor, assignment, destructor
-  
   virtual bool initialize();
   virtual bool start();
   virtual bool stop();
@@ -31,7 +31,8 @@ public:
   void propagateValueChange (const State&, const std::vector<Value>&) const;
 
 private:
-  Value fetch (const std::string& state_name, const std::vector<Value>& args);
+  OwAdapter (const OwAdapter&);             // undefined, no copying
+  OwAdapter& operator= (const OwAdapter&);  // undefined, no assignment
 
   bool isStateSubscribed(const State& state) const;
   std::set<State> m_subscribedStates;

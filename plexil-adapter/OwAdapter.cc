@@ -12,8 +12,6 @@
 
 // C++/C
 #include <list>
-//#include <sstream>
-//#include <math.h>
 using std::string;
 using std::vector;
 using std::list;
@@ -21,6 +19,9 @@ using std::copy;
 using std::cerr;
 using std::cout;
 using std::endl;
+
+// Domain
+#include "OwSimProxy.hh"
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -105,16 +106,27 @@ bool OwAdapter::isStateSubscribed(const State& state) const
   return m_subscribedStates.find(state) != m_subscribedStates.end();
 }
 
+///////////////////////////// Domain Support //////////////////////////////////
+
+// We keep the domain interface as lightweight as possible!
+
+static OwSimProxy* TheSimProxy = 0;
 
 
 ///////////////////////////// Member functions //////////////////////////////////
 
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
-                             const pugi::xml_node& configXml) :
+                     const pugi::xml_node& configXml) :
   InterfaceAdapter(execInterface, configXml)
 {
+  TheSimProxy = new OwSimProxy();
   debugMsg("OwAdapter", " created.");
+}
+
+OwAdapter::~OwAdapter ()
+{
+  if (TheSimProxy) delete TheSimProxy;
 }
 
 bool OwAdapter::initialize()
@@ -157,13 +169,7 @@ void OwAdapter::invokeAbort(Command *cmd)
 {
 }
 
-static void stubbed_lookup (const string& name, const string& value)
-{
-  cerr << "WARNING: Stubbed lookup (returning " << value << "): " << name
-       << endl;
-}
-
-// NOTE: This macro, and the stub it implements, is temporary.
+// NOTE: This macro, and the stub it implements, are temporary.
 #define COMMAND_STUB(command)                   \
   if (name == #command) {                       \
     unimplemented(#command);                    \
@@ -203,55 +209,17 @@ void OwAdapter::executeCommand(Command *cmd)
 
 ///////////////////////////// State support //////////////////////////////////
 
-// NOTE: This macro, and the stub it implements, is temporary.
-#define STATE_CASE(name,val)                    \
-  if (state_name == #name) {                    \
-    stubbed_lookup (#name, #val);               \
-    retval = val;                               \
-  }
-
-Value OwAdapter::fetch (const string& state_name, const vector<Value>& args)
-{
-  debugMsg("OwAdapter:fetch",
-           " called on " << state_name << " with " << args.size() << " args");
-  Value retval;
-  string acid; // reused
-
-  // NOTE: A more streamlined approach to dispatching on state name
-  // would be nice.
-
-  // Flight State
-
-  // TODO: condense the following 3 lookups into one.
-  // if (state_name == "TrenchLength") {
-  //   stubbed_lookup ("TrenchLength", "10");
-  //   retval = 10;
-  // }
-  STATE_CASE(TrenchLength, 10)
-  else STATE_CASE(TrenchWidth, 10)
-  else STATE_CASE(TrenchDepth, 2)
-  else STATE_CASE(TrenchSlopeAngle, 30)
-  else STATE_CASE(TrenchStart, 5)
-  else STATE_CASE(TrenchIdentified, true)
-  else STATE_CASE(TrenchTargetTimeout, 60)
-  else STATE_CASE(ExcavationTimeout, 10)
-  else STATE_CASE(ExcavationTimeout, 60)
-  else STATE_CASE(SampleGood, true)
-  else STATE_CASE(CollectAndTransferTimeout, 10)
-  else {
-    cerr << "invalid state: " << state_name << endl;
-    retval = Unknown;
-  }
-
-  debugMsg("OwAdapter:fetch", " " << state_name << " returning " << retval);
-  return retval;
-}
-
-
 void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 {
-  debugMsg("OwAdapter:lookupNow", "Called with state " << state.name());
-  entry.update(fetch(state.name(), state.parameters()));
+  debugMsg("OwAdapter:lookupNow", " called on " << state.name() << " with "
+           << state.parameters().size() << " arguments");
+
+  Value retval = Unknown;  // the value of the queried state
+
+  if (! TheSimProxy->lookup(state.name(), state.parameters(), retval)) {
+    cerr << "Invalid Lookup: " << state.name() << endl;
+  }
+  entry.update(retval);
 }
 
 

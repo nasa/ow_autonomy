@@ -15,9 +15,9 @@ OS_ARCH = $(OSTYPE)-$(MACHTYPE)
 
 LIBRARY = OwAdapter
 
-SRC = subscriber.cc OwAdapter.cc
+SRC = subscriber.cc OwAdapter.cc OwSimProxy.cc
 
-INC = subscriber.hh OwAdapter.hh
+INC = subscriber.hh OwAdapter.hh OwSimProxy.hh
 
 # Add our own (not PLEXIL) include directories here.
 INC_DIRS +=
