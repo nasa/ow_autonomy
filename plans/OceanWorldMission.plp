@@ -33,7 +33,7 @@ LibraryAction ImageSampleSite();
 
 Command pprint (...);
 
-// This declaration should work, but doesn't.
+// This declaration should work, but does not.
 // String Command StartPlan(String plan_name, ...);
 
 String Command StartPlan(...);
