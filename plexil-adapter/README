@@ -1,6 +1,6 @@
 This directory contains C++ classes and code implementing the interface between
-the PLEXIL plans (in ../plans) and the external world (lander, environment).
+the PLEXIL plans (found in ../plans) and the external world (lander,
+environment).
 
 This directory must be built before you can run the plans.  Type 'make' to build
 it, and 'make clean' to remove the build.
-

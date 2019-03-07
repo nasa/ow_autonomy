@@ -1,5 +1,6 @@
-This directory contains PLEXIL plans that implement the onboard autonomy for the
-Ocean World lander.
+This directory contains PLEXIL plans that implement the onboard
+autonomy for the Ocean World lander.  See the parent directory's
+README for context and prerequisites.
 
 The top level plan is OceanWorldMission.plp, which implements the Sol 0
 activities as described in project documentation (to be cited).
@@ -11,6 +12,3 @@ To remove all build products, 'make clean'.
 
 To run the plan, there is a convenient command, 'make run'.  The sister
 directory 'plexil-adapter' must first be built.
-
-At the moment, the plan hangs after some output, because parts needed to
-continue are not yet implemented.  Type Control-C to terminate the plan.

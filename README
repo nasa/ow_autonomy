@@ -5,10 +5,13 @@ The 'plans' directory contains the PLEXIL plans.
 The 'plexil-adapter' directory contains the supporting code needed to run them.
 See the README files in each subdirectory for more information.
 
-This application has been tested in MacOS, and should work on any operating
-system where PLEXIL is supported, which is most modern Unix-based environments.
-The main prerequisite is a working PLEXIL installation (which has its own
-prerequisites).  See plexil.sourceforge.net for information.
+This application has been tested in MacOS and Linux (kubuntu 18.10),
+and should work on any operating system where PLEXIL is supported,
+which is most modern Unix-based environments.
+
+The main prerequisite for building and running this application is a
+working PLEXIL installation (which has its own prerequisites).  See
+plexil.sourceforge.net for instructions.
 
 To run the top level plan:
 
