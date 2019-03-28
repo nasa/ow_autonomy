@@ -237,7 +237,7 @@ void OwAdapter::unsubscribe (const State& state)
 }
 
 extern "C" {
-  void initOwAdapter() {
-    REGISTER_ADAPTER(OwAdapter, "OwAdapter");
+  void initow_adapter() {
+    REGISTER_ADAPTER(OwAdapter, "ow_adapter");
   }
 }
