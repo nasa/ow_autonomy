@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>ow_autonomy</name>
+  <version>0.1.0</version>
+  <description>Autonomy Baseline of the OceanWORLD Simulator</description>
+  <maintainer email="mike.dalal@nasa.gov">Mike Dalal</maintainer>
+  <license>NASA Internal - OpenSoucing is TODO</license>
+  <author email="mike.dalal@nasa.gov">Mike Dalal</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <build_depend>roscpp</build_depend>
+  
+  <run_depend>roscpp</run_depend>
+
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
