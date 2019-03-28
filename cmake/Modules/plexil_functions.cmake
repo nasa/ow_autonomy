@@ -46,13 +46,11 @@ function(add_plexil_plans APP_NAME PLAN_SRC_FILES)
   # Make a custom target that depends on all the plans  
   add_custom_target(${APP_NAME}_plans ALL DEPENDS ${PLAN_LIST})
 
-  foreach(TGT ${APP_INSTALL_LIST})
-    foreach(PLAN_FILE ${PLAN_LIST})
-      install(
-        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PLAN_FILE}
-        DESTINATION ${TGT}/data/plx/plans
-        )
-    endforeach(PLAN_FILE ${PLAN_LIST})
-  endforeach(TGT ${APP_INSTALL_LIST})
+  foreach(PLAN_FILE ${PLAN_LIST})
+    install(
+      FILES ${CMAKE_CURRENT_BINARY_DIR}/${PLAN_FILE}
+      DESTINATION data/plx/plans
+      )
+  endforeach(PLAN_FILE ${PLAN_LIST})
 
 endfunction(add_plexil_plans)
