@@ -25,7 +25,7 @@
 #
 # Routine to add Plexil plans to an app
 #
-function(add_plexil_plans APP_NAME PLAN_SRC_FILES)
+function(add_plexil_plans PLAN_SRC_FILES)
   set(PLAN_LIST)
   foreach(PLAN ${PLAN_SRC_FILES} ${ARGN})
     # Get name without extension (NAME_WE) and append to list of tables
@@ -44,13 +44,53 @@ function(add_plexil_plans APP_NAME PLAN_SRC_FILES)
   endforeach(PLAN ${PLAN_SRC_FILES} ${ARGN})
 
   # Make a custom target that depends on all the plans  
-  add_custom_target(${APP_NAME}_plans ALL DEPENDS ${PLAN_LIST})
+  add_custom_target(PLEXIL_plans ALL DEPENDS ${PLAN_LIST})
 
+  if( NOT PLEXIL_PLAN_DIR )
+    set(PLEXIL_PLAN_DIR data/plx/plans)
+  endif()
+  
   foreach(PLAN_FILE ${PLAN_LIST})
     install(
       FILES ${CMAKE_CURRENT_BINARY_DIR}/${PLAN_FILE}
-      DESTINATION data/plx/plans
+      DESTINATION ${PLEXIL_PLAN_DIR}
       )
+      
+    if( catkin_FOUND )
+      set( PLEXILC_TARGET PLEXILC_${PLAN_FILE} )
+      message(STATUS "PLEXILC_TARGET = ${PLEXILC_TARGET}")
+      
+      add_custom_target( ${PLEXILC_TARGET} ALL DEPENDS ${PLAN_LIST} )
+
+      add_custom_command(
+        TARGET ${PLEXILC_TARGET}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/${PLAN_FILE}
+        ${CATKIN_DEVEL_PREFIX}/${PLEXIL_PLAN_DIR}/${PLAN_FILE})
+    endif()
+    
   endforeach(PLAN_FILE ${PLAN_LIST})
 
 endfunction(add_plexil_plans)
+
+
+##################################################################
+#
+# FUNCTION: add_plexil_configs
+#
+# Routine to copy config file into compiled plan dir
+#
+function(add_plexil_configs PLAN_CFG_FILES)
+
+  foreach(PLAN_CFG_FILE ${PLAN_CFG_FILES})
+    install(FILES ${PLAN_CFG_FILE} DESTINATION ${PLEXIL_PLAN_DIR})
+    if( catkin_FOUND AND CATKIN_DEVEL_PREFIX)
+      exec_program("${CMAKE_COMMAND}" ARGS
+        -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/${PLAN_CFG_FILE}"
+        "${CATKIN_DEVEL_PREFIX}/${PLEXIL_PLAN_DIR}/${PLAN_CFG_FILE}"
+      )
+    endif()
+  endforeach()
+
+endfunction(add_plexil_configs)

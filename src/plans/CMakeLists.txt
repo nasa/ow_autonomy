@@ -2,6 +2,11 @@
 # this directory.
 
 
-file( GLOB PLANS "${CMAKE_CURRENT_SOURCE_DIR}/*.plp" )
+file( GLOB PLEXIL_SRC_PLANS "${CMAKE_CURRENT_SOURCE_DIR}/*.plp" )
+set( PLEXIL_CONFIG_FILES ow-config.xml )
 
-add_plexil_plans(europa_sol_0 ${PLANS})
+set( PLEXIL_PLAN_DIR etc/plexil )
+
+add_plexil_plans( ${PLEXIL_SRC_PLANS} )
+add_plexil_configs( ${PLEXIL_CONFIG_FILES} )
+        

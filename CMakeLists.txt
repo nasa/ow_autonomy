@@ -22,6 +22,9 @@ catkin_package(
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
+catkin_add_env_hooks(60.ow_autonomy
+  SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+
 ###########
 ## Build ##
 ###########
