@@ -32,11 +32,12 @@ function(add_plexil_plans APP_NAME PLAN_SRC_FILES)
     get_filename_component(PLANWE ${PLAN} NAME_WE)
     get_filename_component(PLANEX ${PLAN} EXT)
     get_filename_component(PLANRD ${PLAN} DIRECTORY)
+
     list(APPEND PLAN_LIST "${PLANWE}.plx")
 
     add_custom_command(
       OUTPUT ${PLANWE}.plx
-      COMMAND ${PLEXIL_COMPILER} -o ${PLANWE}.plx ${CMAKE_CURRENT_SOURCE_DIR}/${PLANRD}/${PLANWE}.${PLANEX}
+      COMMAND ${PLEXIL_COMPILER} -o ${PLANWE}.plx ${CMAKE_CURRENT_SOURCE_DIR}/${PLANWE}${PLANEX}
       DEPENDS ${PLAN}
     )
 

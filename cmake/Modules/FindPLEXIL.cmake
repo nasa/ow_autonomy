@@ -8,70 +8,69 @@
 # Output Variables:
 # -----------------
 # PLEXIL_FOUND               : TRUE if search succeded
-# PLEXIL_EXEC_LIBRARY        : full path to Exec_g
-# PLEXIL_UTILS_LIBRARY       : full path to PlexilUtils_g
-# PLEXIL_TINYXML_LIBRARY     : full path to PlexilTinyXml_g
-# PLEXIL_SOCKETS_LIBRARY     : full path to Sockets_g
-# PLEXIL_INTERFACE_LIBRARY   : full path to PlexilInterface_g
-# PLEXIL_CORBA_UTILS_LIBRARY : full path to PlexilCorbaUtils_g
-# PLEXIL_EVENT_CHANNEL_REPORTER_LIBRARY : full path to EventChannelReporter_g
-#
+# PLEXIL_COMPILER            : full path to plexilc
+
+
 ######################################################################
-message(STATUS "Looking for PLEXIL")
+message(STATUS "Looking for PLEXIL...")
 
-include(GetReleaseSearchPath)
+include(GetLibraryList)
 
-set(     PACKAGE PLEXIL )
-set( PACKAGE_DIR plexil_exec )
+find_path( PLEXIL_INCLUDE_DIR
+           NAMES PlexilExec.hh
+           PATH_SUFFIXES include
+           HINTS ENV PLEXIL_HOME )
 
-get_release_search_path( "${PACKAGE}" "${PACKAGE_DIR}" PLEXIL_ROOT_DIR PLEXIL_ROOT )
+if( PLEXIL_INCLUDE_DIR )
+  string(REGEX REPLACE "/[^/]*$" "" PLEXIL_ROOT ${PLEXIL_INCLUDE_DIR} )
+  set( PLEXIL_LIBRARY_DIR ${PLEXIL_ROOT}/lib )
+  
+  find_program( PLEXIL_COMPILER 
+                NAMES plexilc
+                PATH_SUFFIXES scripts bin
+                PATHS ${PLEXIL_ROOT}
+                NO_DEFAULT_PATH )
+                
+  if( PLEXIL_COMPILER ) 
+    include( plexil_functions )
+  endif()
+               
+  set( PLEXIL_LIBS 
+        GanttListener
+        IpcAdapter
+        IpcUtils
+        Launcher
+        LuvListener
+        PlanDebugListener
+        PlexilAppFramework
+        PlexilExec
+        PlexilExpr
+        PlexilIntfc
+        PlexilSockets
+        PlexilUtils
+        PlexilValue
+        PlexilXmlParser
+        pugixml
+        SampleAdapter
+        standalonesimulator
+        UdpAdapter
+        UdpUtils )
+  
+  get_library_list(PLEXIL ${PLEXIL_LIBRARY_DIR} "d" "${PLEXIL_LIBS}")
 
-set( UNIVERSAL_LIB_DIR "lib" )
-find_library( PLEXIL_EXEC_LIBRARY PlexilExec
-  ${RELEASE_SEARCH_PATH}/${UNIVERSAL_LIB_DIR}
-  "${PACKAGE} PlexilExec library"
-)
-#
-# set(  INTERFACE_LIB_DIR "interfaces/lib" )
-# find_library( PLEXIL_INTERFACE_LIBRARY PlexilInterface_g
-#   ${RELEASE_SEARCH_PATH}/${INTERFACE_LIB_DIR}
-#   "${PACKAGE} PlexilInterface_g library"
-# )
+  #message(STATUS "PLEXIL_INCLUDE_DIR = ${PLEXIL_INCLUDE_DIR}")
+  #message(STATUS "       PLEXIL_ROOT = ${PLEXIL_ROOT}")
+  #message(STATUS "   PLEXIL_COMPILER = ${PLEXIL_COMPILER}")
+  
+endif()
 
-#if( PLEXIL_EXEC_LIBRARY AND PLEXIL_INTERFACE_LIBRARY )
-
-  # Set the root to 1 directories above base library.
-  #-----------------------------------------
-  string(REGEX REPLACE "/[^/]*/[^/]*$" "" PLEXIL_ROOT_DIR ${PLEXIL_EXEC_LIBRARY} )
-
-
-  message(STATUS "  Found PLEXIL in ${PLEXIL_ROOT_DIR}")
+if( PLEXIL_COMPILER )
+  message( STATUS "  PLEXIL found in ${PLEXIL_ROOT}." )
   set( PLEXIL_FOUND TRUE )
-  set( PLEXIL_INCLUDE_DIR ${PLEXIL_ROOT_DIR}/include CACHE PATH "Plexil include directory" )
-  set( PLEXIL_LIBRARY_DIR ${PLEXIL_ROOT_DIR}/lib     CACHE PATH "Plexil library directory" )
-  mark_as_advanced(PLEXIL_INCLUDE_DIR)
-  mark_as_advanced(PLEXIL_LIBRARY_DIR)
-  message(STATUS "  Found PLEXIL include ${PLEXIL_INCLUDE_DIR}")
-
-  
-#   find_library( PLEXIL_UTILS_LIBRARY   PlexilUtils_g   ${RELEASE_SEARCH_PATH}/${UNIVERSAL_LIB_DIR} )
-#   find_library( PLEXIL_TINYXML_LIBRARY PlexilTinyXml_g ${RELEASE_SEARCH_PATH}/${UNIVERSAL_LIB_DIR} )
-#   find_library( PLEXIL_SOCKETS_LIBRARY Sockets_g       ${RELEASE_SEARCH_PATH}/${UNIVERSAL_LIB_DIR} )
-#   mark_as_advanced( PLEXIL_EXEC_LIBRARY    )
-#   mark_as_advanced( PLEXIL_UTILS_LIBRARY   )
-#   mark_as_advanced( PLEXIL_TINYXML_LIBRARY )
-#   mark_as_advanced( PLEXIL_SOCKETS_LIBRARY )
-#
-#   find_library( PLEXIL_CORBA_UTILS_LIBRARY PlexilCorbaUtils_g ${RELEASE_SEARCH_PATH}/${INTERFACE_LIB_DIR} )
-#   find_library( PLEXIL_EVENT_CHANNEL_REPORTER_LIBRARY EventChannelReporter_g ${RELEASE_SEARCH_PATH}/${INTERFACE_LIB_DIR} )
-#   mark_as_advanced( PLEXIL_INTERFACE_LIBRARY  )
-#   mark_as_advanced( PLEXIL_CORBA_UTILS_LIBRARY )
-#   mark_as_advanced( PLEXIL_EVENT_CHANNEL_REPORTER_LIBRARY )
-  
-#else( PLEXIL_EXEC_LIBRARY AND PLEXIL_INTERFACE_LIBRARY )
-
-#   set( PLEXIL_FOUND FALSE )
-#   message(STATUS ${RELEASE_SEARCH_ERROR_MESSAGE})
-
-#endif( PLEXIL_EXEC_LIBRARY AND PLEXIL_INTERFACE_LIBRARY )
-
+else()
+  message( STATUS "  PLEXIL NOT found!" )
+  set( PLEXIL_FOUND FALSE )
+  if( PLEXIL_FIND_REQUIRED )
+    message( FATAL_ERROR "Could not find PLEXIL but it is marked as REQUIRED" )
+  endif()
+endif()

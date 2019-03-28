@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 )
 
-list(INSERT CMAKE_MODULE_PATH 0 "@CMAKE_CURRENT_SOURCE_DIR@/cmake/Modules")
+list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 find_package(PLEXIL REQUIRED)
 
 ###################################
@@ -19,7 +19,7 @@ catkin_package(
   LIBRARIES ow_adapter
   CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
-  CFG_EXTRAS ow_autonomy_cmake-extras.cmake
+  CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
 ###########
