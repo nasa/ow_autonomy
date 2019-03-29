@@ -4,19 +4,4 @@ autonomy for the Ocean World lander.
 The top level plan is OceanWorldMission.plp, which implements the Sol 0
 activities as described in project documentation.
 
-There are two ways to build this directory.
-
-1. As part of the OceanWATERS ROS application.  From the 'src' subdirectory of
-   your workspace, enter 'catkin build'.
-
-   
-2. Standalone, in any Unix environment.
-
-a) To compile the plans, type 'make'.  This generates .ple files from the .plp,
-and .plx from the .ple.  The .plx files are executed by the PLEXIL executive.
-
-b) To remove all build products, 'make clean'.
-
-c) To run the plan, there is a convenient command, 'make run'.  The cousin
-directory 'plexil-adapter' must first be built.
-
+See ow_autonomy/README for build instructions.
