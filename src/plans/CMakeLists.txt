@@ -1,0 +1,12 @@
+# A simple Makefile for compiling and running the PLEXIL plans (.plp files) in
+# this directory.
+
+
+file( GLOB PLEXIL_SRC_PLANS "${CMAKE_CURRENT_SOURCE_DIR}/*.plp" )
+set( PLEXIL_CONFIG_FILES ow-config.xml )
+
+set( PLEXIL_PLAN_DIR etc/plexil )
+
+add_plexil_plans( ${PLEXIL_SRC_PLANS} )
+add_plexil_configs( ${PLEXIL_CONFIG_FILES} )
+        
