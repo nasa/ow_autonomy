@@ -34,9 +34,5 @@ in the sense that it does not interface with anything external.
  % cd <workspace>/build/ow_autonomy/src/plans
  % plexilexec -p OceanWorldMission.plx -c ow-config.xml
 
-The second command can be run with:
-
- % make run
-
 
 
