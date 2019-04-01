@@ -13,7 +13,7 @@ OSTYPE   ?= $(shell uname -s)
 MACHTYPE ?= $(shell uname -p)
 OS_ARCH = $(OSTYPE)-$(MACHTYPE)
 
-LIBRARY = OwAdapter
+LIBRARY = ow_adapter
 
 SRC = subscriber.cc OwAdapter.cc OwSimProxy.cc
 
