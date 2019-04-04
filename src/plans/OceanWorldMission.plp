@@ -129,11 +129,8 @@ OceanWorldMission: Concurrence
         Excavation:
         {
             RepeatCondition !DeepEnough;
-// Needs debugging
-//
-//            InvariantCondition
-//                Lookup(time) < (Excavation.EXECUTING.START +
-//                                Lookup(ExcavationTimeout));
+            InvariantCondition
+                Time < (Excavation.EXECUTING.START + Lookup(ExcavationTimeout));
             DigAndFilm: Concurrence
                 {
                     Boolean DiggingSafe = true;
@@ -179,10 +176,9 @@ OceanWorldMission: Concurrence
         CollectionAndTransfer:
         {
             Real SampleAmount;
-// Needs debugging
-           InvariantCondition
-               Time < (CollectionAndTransfer.EXECUTING.START +
-                       Lookup(CollectAndTransferTimeout));
+            InvariantCondition
+                Time < (CollectionAndTransfer.EXECUTING.START +
+                        Lookup(CollectAndTransferTimeout));
             RepeatCondition CollectMore;
             Collect:
             {
