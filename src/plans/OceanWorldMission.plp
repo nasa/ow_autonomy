@@ -75,6 +75,8 @@ OceanWorldMission: Concurrence
         Boolean DeepEnough = false;
         Boolean CollectMore = true;
 
+        Real Time;
+    
         Panorama:
         {
             StereoImage:
@@ -104,11 +106,12 @@ OceanWorldMission: Concurrence
                     Integer numAttempts = 0;
                     RepeatCondition AttemptGround.outcome == FAILURE;
                     InvariantCondition numAttempts <= 1;
+                    Time = Lookup(time);
                     AttemptGround:
                     {
                         InvariantCondition
-                            Lookup(time) < (AttemptGround.EXECUTING.START +
-                                            Lookup(TrenchTargetTimeout));
+                            Time < (AttemptGround.EXECUTING.START +
+                                     Lookup(TrenchTargetTimeout));
                         EndCondition Lookup(TrenchIdentified);
                         LibraryCall Stub(desc="Getting trench target from ground");
                         numAttempts = numAttempts + 1;
@@ -122,12 +125,13 @@ OceanWorldMission: Concurrence
             }
         }
 
+        Time = Lookup(time);
         Excavation:
         {
             RepeatCondition !DeepEnough;
 // Needs debugging
+//
 //            InvariantCondition
-// NOTE: Is 'time' repolled at every iteration?
 //                Lookup(time) < (Excavation.EXECUTING.START +
 //                                Lookup(ExcavationTimeout));
             DigAndFilm: Concurrence
@@ -137,10 +141,9 @@ OceanWorldMission: Concurrence
                     DigTrench:
                     {
                         InvariantCondition DiggingSafe;
-// Needs implementation
-//                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
-//                                      Lookup(time) >= (DigTrench.EXECUTING.START
-//                                                       + DigTrenchTimeout));
+                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
+                                      Time >= (DigTrench.EXECUTING.START
+                                               + DigTrenchTimeout));
                         Dig: RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
                                      Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
                                      Lookup(TrenchStart), DigDataGenerationRate,
@@ -172,14 +175,14 @@ OceanWorldMission: Concurrence
         }
 
         LibraryCall Downlink();
-
+        Time = Lookup(time);
         CollectionAndTransfer:
         {
             Real SampleAmount;
 // Needs debugging
-//            InvariantCondition
-//                Lookup(time) < (CollectionAndTransfer.EXECUTING.START +
-//                                Lookup(CollectAndTransferTimeout));
+           InvariantCondition
+               Time < (CollectionAndTransfer.EXECUTING.START +
+                       Lookup(CollectAndTransferTimeout));
             RepeatCondition CollectMore;
             Collect:
             {
@@ -218,7 +221,7 @@ OceanWorldMission: Concurrence
                 }
                 DeliverSample:
                 {
-                    LibraryCall Stub(desc="Measuring Sample");
+                    LibraryCall Stub(desc="Delivering Sample");
                 }
                 LibraryCall ImageSampleSite();
             }
