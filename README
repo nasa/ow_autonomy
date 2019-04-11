@@ -31,8 +31,6 @@ Run
 At the moment this Plexil application is standalone (regardless of how built)
 in the sense that it does not interface with anything external.
 
- % cd <workspace>/build/ow_autonomy/src/plans
+ % export LD_LIBRARY_PATH=<workspace>/devel/lib:$LD_LIBRARY_PATH
+ % cd <workspace>/devel/etc/plexil
  % plexilexec -p OceanWorldMission.plx -c ow-config.xml
-
-
-
