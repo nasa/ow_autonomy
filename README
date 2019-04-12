@@ -28,9 +28,10 @@ this would be all that's needed, but currently one manual step is needed.  Copy
 Run
 ---
 
-At the moment this Plexil application is standalone (regardless of how built)
-in the sense that it does not interface with anything external.
+At the moment this Plexil application is standalone (regardless of how built) in
+the sense that it does not interface with anything external.  Run it as follows
+(this assumes your ROS environment is set up, i.e. devel/setup.bash has been
+sourced).
 
- % export LD_LIBRARY_PATH=<workspace>/devel/lib:$LD_LIBRARY_PATH
  % cd <workspace>/devel/etc/plexil
  % plexilexec -p OceanWorldMission.plx -c ow-config.xml
