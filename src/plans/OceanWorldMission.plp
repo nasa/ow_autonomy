@@ -16,8 +16,12 @@ Real Lookup TrenchDepth;
 Real Lookup TrenchYaw;
 Real Lookup TrenchPitch;
 Real Lookup TrenchSlopeAngle;
-Real[3] Lookup TrenchStart;
-Real[3] Lookup TrenchDump;
+Real Lookup TrenchStartX;
+Real Lookup TrenchStartY;
+Real Lookup TrenchStartZ;
+Real Lookup TrenchDumpX;
+Real Lookup TrenchDumpY;
+Real Lookup TrenchDumpZ;
 Boolean Lookup TrenchIdentified;
 
 Boolean Lookup SampleGood;
@@ -43,8 +47,10 @@ String Command StartPlan(...);
 
 // The following is taken from the draft JPL lander command dictionary.
 
-Boolean Command DigTrench (Real loc[3], Real depth, Real length, Real width,
-                           Real pitch, Real yaw, Real dump[3]);
+Boolean Command DigTrench (Real startX, Real startY, Real startZ,
+                           Real depth, Real length, Real width, 
+                           Real pitch, Real yaw, 
+                           Real dumpX, Real dumpY, Real dumpZ);
 
 // The following are taken from the Phoenix lander activity dictionary.
 Command RA_COLLECT ();
@@ -148,13 +154,17 @@ OceanWorldMission: Concurrence
                     Dig:
                     {
                         Boolean success;
-                        success = DigTrench (Lookup(TrenchStart),
+                        success = DigTrench (Lookup(TrenchStartX),
+                                             Lookup(TrenchStartY),
+                                             Lookup(TrenchStartZ),
                                              Lookup(TrenchDepth),
                                              Lookup(TrenchLength),
                                              Lookup(TrenchWidth),
                                              Lookup(TrenchPitch),
                                              Lookup(TrenchYaw),
-                                             Lookup(TrenchDump));
+                                             Lookup(TrenchDumpX),
+                                             Lookup(TrenchDumpY),
+                                             Lookup(TrenchDumpZ));
                     }
                     FilmDig:
                     {

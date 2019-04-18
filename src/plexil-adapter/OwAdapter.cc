@@ -193,15 +193,23 @@ void OwAdapter::executeCommand(Command *cmd)
 
   if (name == "owprint") owprint (cmd->getArgValues());
   if (name == "DigTrench") {
-    Real loc[3], dump[3], depth, length, width, pitch, yaw;
-    args[0].getValuePointer(loc);
-    args[1].getValue(depth);
-    args[2].getValue(length);
-    args[3].getValue(width);
-    args[4].getValue(pitch);
-    args[5].getValue(yaw);
-    args[6].getValuePointer(dump);
-    TheSimProxy->DigTrench (loc, depth, length, width, pitch, yaw, dump);
+    Real start_x, start_y, start_z, dump_x, dump_y, dump_z;
+    Real depth, length, width, pitch, yaw;
+      
+    args[0].getValue(start_x);
+    args[1].getValue(start_y);
+    args[2].getValue(start_z);
+    args[3].getValue(depth);
+    args[4].getValue(length);
+    args[5].getValue(width);
+    args[6].getValue(pitch);
+    args[7].getValue(yaw);
+    args[8].getValue(dump_x);
+    args[9].getValue(dump_y);
+    args[10].getValue(dump_z);
+    TheSimProxy->DigTrench (start_x, start_x, start_x, 
+                            depth, length, width, pitch, yaw, 
+                            dump_x, dump_y, dump_z);
   }
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)

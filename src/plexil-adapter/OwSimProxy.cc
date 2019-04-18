@@ -29,17 +29,18 @@ bool OwSimProxy::lookup (const std::string& state_name,
 
   // TODO: streamline this, and make it late-bindable.
 
-  float trench_start[3] = {1,2,0};
-  float trench_dump[3]  = {2,3,1};
-
   STATE_STUB(TrenchLength, 10)
   else STATE_STUB(TrenchWidth, 10)
   else STATE_STUB(TrenchDepth, 2)
   else STATE_STUB(TrenchYaw, 2)
   else STATE_STUB(TrenchPitch, 2)
   else STATE_STUB(TrenchSlopeAngle, 30)
-  else STATE_STUB(TrenchStart, trench_start)
-  else STATE_STUB(TrenchDump, trench_dump)
+  else STATE_STUB(TrenchStartX, 2)
+  else STATE_STUB(TrenchStartY, 3)
+  else STATE_STUB(TrenchStartZ, 1)
+  else STATE_STUB(TrenchDumpX, 0)
+  else STATE_STUB(TrenchDumpY, 0)
+  else STATE_STUB(TrenchDumpZ, 1)
   else STATE_STUB(TrenchIdentified, true)
   else STATE_STUB(TrenchTargetTimeout, 60)
   else STATE_STUB(ExcavationTimeout, 10)
@@ -51,8 +52,10 @@ bool OwSimProxy::lookup (const std::string& state_name,
   return retval;
 }
 
-bool OwSimProxy::DigTrench (float loc[3], float depth, float length, float width,
-			    float pitch, float yaw, float dump[3])
+bool OwSimProxy::DigTrench (float start_x, float start_y, float start_z, 
+                            float depth, float length, float width, 
+                            float pitch, float yaw,
+                            float dump_x, float dump_y, float dump_z)
 {
   cout << "OwSimProxy::DigTrench called" << endl;
   return true;
