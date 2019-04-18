@@ -17,6 +17,9 @@ class OwSimProxy
   bool lookup (const std::string& state_name,
                const std::vector<PLEXIL::Value>& args,
                PLEXIL::Value& value_out);
+  bool DigTrench (float loc[3], float depth, float length, float width,
+		  float pitch, float yaw, float dump[3]);
+
 
  private:
   OwSimProxy (const OwSimProxy&);             // undefined; no copying

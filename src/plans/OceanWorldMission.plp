@@ -13,8 +13,11 @@
 Real Lookup TrenchLength;
 Real Lookup TrenchWidth;
 Real Lookup TrenchDepth;
+Real Lookup TrenchYaw;
+Real Lookup TrenchPitch;
 Real Lookup TrenchSlopeAngle;
 Real[3] Lookup TrenchStart;
+Real[3] Lookup TrenchDump;
 Boolean Lookup TrenchIdentified;
 
 Boolean Lookup SampleGood;
@@ -38,12 +41,12 @@ Command pprint (...);
 
 String Command StartPlan(...);
 
-// The following are adapted from the Phoenix lander activity dictionary.
+// The following is taken from the draft JPL lander command dictionary.
 
-Command RA_DIG (Real length, Real width, Real depth,
-                Real slope_angle, Real trench_start[3],
-                Real data_generation_rate, Real energy_consumption_rate);
+Boolean Command DigTrench (Real loc[3], Real depth, Real length, Real width,
+                           Real pitch, Real yaw, Real dump[3]);
 
+// The following are taken from the Phoenix lander activity dictionary.
 Command RA_COLLECT ();
 Command ALIGN_SAMPLE_AND_CAMERA ();
 
@@ -76,7 +79,7 @@ OceanWorldMission: Concurrence
         Boolean CollectMore = true;
 
         Real Time;
-    
+
         Panorama:
         {
             StereoImage:
@@ -126,40 +129,48 @@ OceanWorldMission: Concurrence
         }
 
         Time = Lookup(time);
+
         Excavation:
         {
             RepeatCondition !DeepEnough;
             InvariantCondition
                 Time < (Excavation.EXECUTING.START + Lookup(ExcavationTimeout));
             DigAndFilm: Concurrence
-                {
-                    Boolean DiggingSafe = true;
+            {
+                Boolean DiggingSafe = true;
 
-                    DigTrench:
+                DigTheTrench:
+                {
+                    InvariantCondition DiggingSafe;
+                    EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
+                                  Time >= (DigTheTrench.EXECUTING.START
+                                           + DigTrenchTimeout));
+                    Dig:
                     {
-                        InvariantCondition DiggingSafe;
-                        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
-                                      Time >= (DigTrench.EXECUTING.START
-                                               + DigTrenchTimeout));
-                        Dig: RA_DIG (Lookup(TrenchLength), Lookup(TrenchWidth),
-                                     Lookup(TrenchDepth), Lookup(TrenchSlopeAngle),
-                                     Lookup(TrenchStart), DigDataGenerationRate,
-                                     DigEnergyConsumptionRate);
+                        Boolean success;
+                        success = DigTrench (Lookup(TrenchStart),
+                                             Lookup(TrenchDepth),
+                                             Lookup(TrenchLength),
+                                             Lookup(TrenchWidth),
+                                             Lookup(TrenchPitch),
+                                             Lookup(TrenchYaw),
+                                             Lookup(TrenchDump));
                     }
                     FilmDig:
                     {
-                        Repeat DigTrench.state == EXECUTING;
+                        Repeat DigTheTrench.state == EXECUTING;
                         LibraryCall Image(desc="trench");
                         Wait FilmInterval;
                     }
                     SenseDig:
                     {
-                        Repeat DigTrench.state == EXECUTING;
+                        Repeat DigTheTrench.state == EXECUTING;
                         pprint ("Sensing dig...");
                         DiggingSafe = StubTrue;
                         Wait SenseDigInterval;
                     }
                 }
+            }
             RemoveTailings:
             {
                 LibraryCall Stub(desc="Removing tailings");
@@ -173,6 +184,7 @@ OceanWorldMission: Concurrence
 
         LibraryCall Downlink();
         Time = Lookup(time);
+
         CollectionAndTransfer:
         {
             Real SampleAmount;

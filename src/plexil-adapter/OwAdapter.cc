@@ -192,7 +192,17 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   if (name == "owprint") owprint (cmd->getArgValues());
-  else COMMAND_STUB(RA_DIG)
+  if (name == "DigTrench") {
+    Real loc[3], dump[3], depth, length, width, pitch, yaw;
+    args[0].getValuePointer(loc);
+    args[1].getValue(depth);
+    args[2].getValue(length);
+    args[3].getValue(width);
+    args[4].getValue(pitch);
+    args[5].getValue(yaw);
+    args[6].getValuePointer(dump);
+    TheSimProxy->DigTrench (loc, depth, length, width, pitch, yaw, dump);
+  }
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
   else {

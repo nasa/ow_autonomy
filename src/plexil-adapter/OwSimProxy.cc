@@ -2,6 +2,7 @@
 #include <iostream>
 
 using std::cerr;
+using std::cout;
 using std::endl;
 using std::string;
 //using namespace PLEXIL;
@@ -28,11 +29,17 @@ bool OwSimProxy::lookup (const std::string& state_name,
 
   // TODO: streamline this, and make it late-bindable.
 
+  float trench_start[3] = {1,2,0};
+  float trench_dump[3]  = {2,3,1};
+
   STATE_STUB(TrenchLength, 10)
   else STATE_STUB(TrenchWidth, 10)
   else STATE_STUB(TrenchDepth, 2)
+  else STATE_STUB(TrenchYaw, 2)
+  else STATE_STUB(TrenchPitch, 2)
   else STATE_STUB(TrenchSlopeAngle, 30)
-  else STATE_STUB(TrenchStart, 5)
+  else STATE_STUB(TrenchStart, trench_start)
+  else STATE_STUB(TrenchDump, trench_dump)
   else STATE_STUB(TrenchIdentified, true)
   else STATE_STUB(TrenchTargetTimeout, 60)
   else STATE_STUB(ExcavationTimeout, 10)
@@ -42,4 +49,11 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else retval = false;
 
   return retval;
+}
+
+bool OwSimProxy::DigTrench (float loc[3], float depth, float length, float width,
+			    float pitch, float yaw, float dump[3])
+{
+  cout << "OwSimProxy::DigTrench called" << endl;
+  return true;
 }
