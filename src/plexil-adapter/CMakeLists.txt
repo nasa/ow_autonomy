@@ -7,7 +7,7 @@ set (HEADERS
 )
 
 set (SOURCES
-  OwAdapter.cc
+  OwAdapterNative.cc
   OwSimProxy.cc
   subscriber.cc
 )
