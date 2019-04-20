@@ -1,7 +1,5 @@
 #include "subscriber.hh"
 
-using std::string;
-
 // The subscribers.  Their naming convention is:
 //   Subscribe<value-type><param-type>...
 

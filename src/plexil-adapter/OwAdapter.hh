@@ -1,7 +1,7 @@
 #ifndef Ow_Adapter
 #define Ow_Adapter
 
-// PLEXIL Interface adapter for Ocean WATERS.
+// PLEXIL Interface adapter.
 
 // PLEXIL API
 #include "Command.hh"
