@@ -8,10 +8,12 @@ set (HEADERS
 
 set (SOURCES
   OwAdapterNative.cc
+  OwAdapterROS.cc
   OwSimProxy.cc
   subscriber.cc
 )
 
+add_definitions(-DUSING_ROS)
 
 add_library(${LIB_NAME} SHARED
   ${HEADERS}
