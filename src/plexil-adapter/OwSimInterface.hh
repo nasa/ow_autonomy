@@ -1,18 +1,16 @@
-#ifndef OwSimProxy_H
-#define OwSimProxy_H
+#ifndef OwSimInterface_H
+#define OwSimInterface_H
 
-// A proxy for the OceanWorlds simulator.  Implements stubs for commands and
-// telemetry.  Used for testing PLEXIL plans and helping to understand and
-// define the required interface and functionality of the actual simulator.
+// Implementation-independent interface to the OceanWorlds simulator.
 
 #include <string>
 #include <vector>
 #include "Value.hh"
 
-class OwSimProxy
+class OwSimInterface
 {
  public:
-  OwSimProxy () { }
+  OwSimInterface () { }
   // Using compiler's destructor.
   bool lookup (const std::string& state_name,
                const std::vector<PLEXIL::Value>& args,
@@ -23,8 +21,8 @@ class OwSimProxy
 
 
  private:
-  OwSimProxy (const OwSimProxy&);             // undefined; no copying
-  OwSimProxy& operator= (const OwSimProxy&);  // undefined; no assignment
+  OwSimInterface (const OwSimInterface&);             // undefined; no copying
+  OwSimInterface& operator= (const OwSimInterface&);  // undefined; no assignment
 
 };
 

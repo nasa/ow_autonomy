@@ -15,7 +15,7 @@ OS_ARCH = $(OSTYPE)-$(MACHTYPE)
 
 LIBRARY = ow_adapter
 
-SRC = subscriber.cc OwAdapter.cc OwSimProxy.cc
+SRC = subscriber.cc OwAdapter.cc OwSimInterfaceNative.cc
 
 INC = subscriber.hh OwAdapter.hh OwSimProxy.hh
 

@@ -21,7 +21,7 @@ using std::cout;
 using std::endl;
 
 // Domain
-#include "OwSimProxy.hh"
+#include "OwSimInterface.hh"
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -110,7 +110,7 @@ bool OwAdapter::isStateSubscribed(const State& state) const
 
 // We keep the domain interface as lightweight as possible!
 
-static OwSimProxy* TheSimProxy = 0;
+static OwSimInterface* TheSimInterface = 0;
 
 
 ///////////////////////////// Member functions //////////////////////////////////
@@ -120,13 +120,13 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml) :
   InterfaceAdapter(execInterface, configXml)
 {
-  TheSimProxy = new OwSimProxy();
+  TheSimInterface = new OwSimInterface();
   debugMsg("OwAdapter", " created.");
 }
 
 OwAdapter::~OwAdapter ()
 {
-  if (TheSimProxy) delete TheSimProxy;
+  if (TheSimInterface) delete TheSimInterface;
 }
 
 bool OwAdapter::initialize()
@@ -207,7 +207,7 @@ void OwAdapter::executeCommand(Command *cmd)
     args[8].getValue(dump_x);
     args[9].getValue(dump_y);
     args[10].getValue(dump_z);
-    TheSimProxy->DigTrench (start_x, start_x, start_x, 
+    TheSimInterface->DigTrench (start_x, start_x, start_x, 
                             depth, length, width, pitch, yaw, 
                             dump_x, dump_y, dump_z);
   }
@@ -234,7 +234,7 @@ void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 
   Value retval = Unknown;  // the value of the queried state
 
-  if (! TheSimProxy->lookup(state.name(), state.parameters(), retval)) {
+  if (! TheSimInterface->lookup(state.name(), state.parameters(), retval)) {
     cerr << "Invalid Lookup: " << state.name() << endl;
   }
   entry.update(retval);

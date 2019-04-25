@@ -1,4 +1,4 @@
-#include "OwSimProxy.hh"
+#include "OwSimInterface.hh"
 #include <iostream>
 
 using std::cerr;
@@ -21,9 +21,9 @@ static void stubbed_lookup (const string& name, const string& value)
     value_out = val;                            \
   }
 
-bool OwSimProxy::lookup (const std::string& state_name,
-                         const std::vector<PLEXIL::Value>& args,
-                         PLEXIL::Value& value_out)
+bool OwSimInterface::lookup (const std::string& state_name,
+                             const std::vector<PLEXIL::Value>& args,
+                             PLEXIL::Value& value_out)
 {
   bool retval = true;
 
@@ -52,11 +52,11 @@ bool OwSimProxy::lookup (const std::string& state_name,
   return retval;
 }
 
-bool OwSimProxy::DigTrench (float start_x, float start_y, float start_z, 
-                            float depth, float length, float width, 
-                            float pitch, float yaw,
-                            float dump_x, float dump_y, float dump_z)
+bool OwSimInterface::DigTrench (float start_x, float start_y, float start_z, 
+                                float depth, float length, float width, 
+                                float pitch, float yaw,
+                                float dump_x, float dump_y, float dump_z)
 {
-  cout << "OwSimProxy::DigTrench called" << endl;
+  cout << "OwSimInterface::DigTrench called" << endl;
   return true;
 }
