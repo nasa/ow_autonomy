@@ -2,13 +2,13 @@ set(LIB_NAME ow_adapter)
 
 set (HEADERS
   OwAdapter.hh
-  OwSimProxy.hh
+  OwSimInterface.hh
   subscriber.hh
 )
 
 set (SOURCES
   OwAdapter.cc
-  OwSimProxy.cc
+  OwSimInterfaceNative.cc
   subscriber.cc
 )
 
