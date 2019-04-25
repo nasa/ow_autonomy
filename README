@@ -22,7 +22,7 @@ this would be all that's needed, but currently one manual step is needed.  Copy
 <workspace>/src/plans/ow-config.xml to <workspace>/build/ow_autonomy/src/plans.
 
 2. Standalone build.  cd to each of src/plexil-adapter and src/plans and type
-'make'.
+'make -f Makefile.gnu'.
 
 
 Run
