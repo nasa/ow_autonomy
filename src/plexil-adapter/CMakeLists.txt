@@ -3,13 +3,16 @@ set(LIB_NAME ow_adapter)
 set (HEADERS
   OwAdapter.hh
   OwSimInterface.hh
+  OwSimProxy.hh
   subscriber.hh
 )
 
 set (SOURCES
   OwAdapter.cc
-  OwSimInterfaceNative.cc
+  OwSimInterfaceROS.cc
+  OwSimProxy.cc
   subscriber.cc
+	autonomy_node.cc
 )
 
 add_definitions(-DUSING_ROS)

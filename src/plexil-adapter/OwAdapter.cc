@@ -21,7 +21,7 @@ using std::cout;
 using std::endl;
 
 // Domain
-#include "OwSimInterface.hh"
+#include "OwSimProxy.hh"
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -110,7 +110,7 @@ bool OwAdapter::isStateSubscribed(const State& state) const
 
 // We keep the domain interface as lightweight as possible!
 
-static OwSimInterface* TheSimInterface = 0;
+static OwSimProxy* TheSimProxy = 0;
 
 
 ///////////////////////////// Member functions //////////////////////////////////
@@ -120,13 +120,13 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml) :
   InterfaceAdapter(execInterface, configXml)
 {
-  TheSimInterface = new OwSimInterface();
+  TheSimProxy = new OwSimProxy();
   debugMsg("OwAdapter", " created.");
 }
 
 OwAdapter::~OwAdapter ()
 {
-  if (TheSimInterface) delete TheSimInterface;
+  if (TheSimProxy) delete TheSimProxy;
 }
 
 bool OwAdapter::initialize()
@@ -192,25 +192,7 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   if (name == "owprint") owprint (cmd->getArgValues());
-  if (name == "DigTrench") {
-    Real start_x, start_y, start_z, dump_x, dump_y, dump_z;
-    Real depth, length, width, pitch, yaw;
-      
-    args[0].getValue(start_x);
-    args[1].getValue(start_y);
-    args[2].getValue(start_z);
-    args[3].getValue(depth);
-    args[4].getValue(length);
-    args[5].getValue(width);
-    args[6].getValue(pitch);
-    args[7].getValue(yaw);
-    args[8].getValue(dump_x);
-    args[9].getValue(dump_y);
-    args[10].getValue(dump_z);
-    TheSimInterface->DigTrench (start_x, start_x, start_x, 
-                            depth, length, width, pitch, yaw, 
-                            dump_x, dump_y, dump_z);
-  }
+  else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
   else {
@@ -234,7 +216,7 @@ void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 
   Value retval = Unknown;  // the value of the queried state
 
-  if (! TheSimInterface->lookup(state.name(), state.parameters(), retval)) {
+  if (! TheSimProxy->lookup(state.name(), state.parameters(), retval)) {
     cerr << "Invalid Lookup: " << state.name() << endl;
   }
   entry.update(retval);
