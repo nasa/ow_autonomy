@@ -1,5 +1,14 @@
 set(LIB_NAME ow_adapter)
 
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${PLEXIL_INCLUDE_DIR}
+)
+
+
+
+#add_dependencies(${LIB_NAME} ow_lander)
+
 set (HEADERS
   OwAdapter.hh
   OwSimInterface.hh
@@ -12,7 +21,7 @@ set (SOURCES
   OwSimInterfaceROS.cc
   OwSimProxy.cc
   subscriber.cc
-	autonomy_node.cc
+#	autonomy_node.cc
 )
 
 add_definitions(-DUSING_ROS)
