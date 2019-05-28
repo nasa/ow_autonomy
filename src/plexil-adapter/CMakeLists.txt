@@ -13,9 +13,15 @@ set (SOURCES
   OwSimProxy.cc
   subscriber.cc
 	autonomy_node.cc
+#	plexil_ros_app.cc
 )
 
 add_definitions(-DUSING_ROS)
+
+include_directories(
+  ${PLEXIL_INCLUDE_DIR}
+)
+message(STATUS "PLEXIL_INCLUDE_DIR = ${PLEXIL_INCLUDE_DIR}")
 
 add_library(${LIB_NAME} SHARED
   ${HEADERS}

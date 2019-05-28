@@ -11,10 +11,12 @@
 
   <build_depend>roscpp</build_depend>
   <build_depend>ow_lander</build_depend>
+  <build_depend>owatb_interface</build_depend>
 
   <run_depend>roscpp</run_depend>
   <run_depend>ow_lander</run_depend>
-
+  <run_depend>owatb_interface</run_depend>
+  
   <export>
     <!-- Other tools can request additional information be placed here -->
 

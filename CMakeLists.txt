@@ -7,16 +7,19 @@ project(ow_autonomy)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
 	ow_lander
+	owatb_interface
 )
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+list(INSERT CMAKE_MODULE_PATH 0
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 find_package(PLEXIL REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp ow_lander
+  CATKIN_DEPENDS roscpp ow_lander owatb_interface
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
