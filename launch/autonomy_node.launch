@@ -1,0 +1,3 @@
+<launch>
+  <node name="autonomy_node" pkg="ow_autonomy" type="autonomy_node" args="" output="screen" />
+</launch>

@@ -17,23 +17,28 @@ int main(int argc, char* argv[])
 
   ros::ServiceClient client =
     n.serviceClient<ow_lander::StartPlanning>("StartPlanning");
-  ow_lander::StartPlanning srv;
-  srv.request.use_defaults = true;
-  srv.request.trench_x = 0.0;
-  srv.request.trench_y = 0.0;
-  srv.request.trench_d = 0.0;
-  srv.request.delete_prev_traj = false;
 
-  if (client.call(srv)) {
-    ROS_INFO("StartPlanning returned: %d, %s",
-             srv.response.success,
-             srv.response.message.c_str());
+  if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
   }
   else {
-    ROS_ERROR("Failed to call service StartPlanning");
-    return 1;
-  }
+    ow_lander::StartPlanning srv;
+    srv.request.use_defaults = true;
+    srv.request.trench_x = 0.0;
+    srv.request.trench_y = 0.0;
+    srv.request.trench_d = 0.0;
+    srv.request.delete_prev_traj = false;
 
+    if (client.call(srv)) {
+      ROS_INFO("StartPlanning returned: %d, %s",
+               srv.response.success,
+               srv.response.message.c_str());
+    }
+    else {
+      ROS_ERROR("Failed to call service StartPlanning");
+    }
+  }
+  
   ros::Rate rate(1);
   while (ros::ok())
   {
