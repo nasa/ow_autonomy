@@ -1,6 +1,7 @@
-// Autonomy ROS node, which is also a PLEXIL application.
+// Autonomy ROS node, which embeds a PLEXIL application.
 
-// Under construction!
+// Under construction!  The current version is skeletal and hardcodes some basic
+// concept proofs.
 
 // ROS
 #include <ros/ros.h>
@@ -17,8 +18,6 @@
 #include "Error.hh"
 #include "PlexilExec.hh"
 #include "ExecApplication.hh"
-#include "ExecListenerFactory.hh" // for REGISTER_EXEC_LISTENER() macro
-#include "ExecListenerFilterFactory.hh" // for REGISTER_EXEC_LISTENER_FILTER() macro
 #include "InterfaceManager.hh"
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
@@ -31,10 +30,6 @@ using PLEXIL::InterfaceSchema;
 using PLEXIL::State;
 using PLEXIL::Value;
 
-// Forwards
-static bool plexil_initialize_interfaces();
-static bool initializeExec();
-
 // C++
 #include <fstream>
 #include <string>
@@ -43,6 +38,7 @@ using std::ostringstream;
 
 static ExecApplication* PlexilApp = NULL;
 
+// Temporary function, a test.
 static void test_service_call ()
 {
   ros::NodeHandle n;
@@ -72,6 +68,7 @@ static void test_service_call ()
   }
 }
 
+// Temporary function, a test of a specific plan.
 static void test_plexil_plan ()
 {
   string plan = ros::package::getPath("ow_autonomy") +
@@ -106,7 +103,7 @@ static void test_plexil_plan ()
   try {
     g_manager->handleValueChange(State::timeState(), 0);
     PlexilApp->step();
-    PlexilApp->step();
+    PlexilApp->step(); // Hack to get us through this plan.
   }
   catch (const Error& e) {
     ostringstream s;
@@ -117,24 +114,6 @@ static void test_plexil_plan ()
   delete doc;
 }
 
-int main(int argc, char* argv[])
-{
-  ros::init(argc, argv, "autonomy_node");
-  ros::NodeHandle n; // Creating here only for side effects.
-  initializeExec();
-
-  // For testing only (works).
-  //  test_service_call();
-
-  test_plexil_plan();
-
-  ros::Rate rate(1);
-  while (ros::ok()) {
-    ros::spinOnce();
-    rate.sleep();
-  }
-  return 0;
-}
 
 static bool plexil_initialize_interfaces()
 {
@@ -215,4 +194,26 @@ static bool initializeExec()
     return false;
   }
   return true;
+}
+
+
+int main(int argc, char* argv[])
+{
+  ros::init(argc, argv, "autonomy_node");
+  ros::NodeHandle n; // Hack (?). Created only for side effects.
+  initializeExec();
+
+  // For testing only (works).
+  //  test_service_call();
+
+  // This is just a test, a proof of concept.  The general functionality of this
+  // node needs design and implementation.
+  test_plexil_plan();
+
+  ros::Rate rate(1);
+  while (ros::ok()) {
+    ros::spinOnce();
+    rate.sleep();
+  }
+  return 0;
 }
