@@ -1,0 +1,8 @@
+Command owprint (...);
+Command StartPlanning();
+
+TestStartPlanning:
+{
+    owprint ("Hello, I want to start planning!");
+    StartPlanning();
+}

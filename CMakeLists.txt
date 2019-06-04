@@ -6,6 +6,7 @@ project(ow_autonomy)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+	roslib
 	ow_lander
 	owatb_interface
 )
@@ -19,7 +20,7 @@ find_package(PLEXIL REQUIRED)
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS roscpp ow_lander owatb_interface
+  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 

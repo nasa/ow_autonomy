@@ -1,7 +1,7 @@
 <Interfaces>
   <Adapter AdapterType="Utility"/>
   <Adapter AdapterType="OSNativeTime"/>
-  <Adapter AdapterType="Launcher"/>     <!-- StartPlan command etc. -->
+<!--  <Adapter AdapterType="Launcher"/> -->
   <Adapter AdapterType="ow_adapter">
     <DefaultCommandAdapter/>
     <DefaultLookupAdapter/>
