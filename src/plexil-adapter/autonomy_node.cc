@@ -13,7 +13,7 @@
 #include "OwAdapter.hh"
 
 // PLEXIL
-#include "AdapterFactory.hh" // for REGISTER_ADAPTER() macro
+#include "AdapterFactory.hh"
 #include "Debug.hh"
 #include "Error.hh"
 #include "PlexilExec.hh"
@@ -36,6 +36,7 @@ using PLEXIL::Value;
 using std::string;
 using std::ostringstream;
 
+// The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
 // Temporary function, a test.
@@ -115,8 +116,12 @@ static void test_plexil_plan ()
 }
 
 
+// PLEXIL application setup functions start here.
+
 static bool plexil_initialize_interfaces()
 {
+  // NOTE: would like to find this file in <catkin-workspace>/devel/etc/plans,
+  // but don't know how.
   string config = ros::package::getPath("ow_autonomy") +
     "/src/plans/ow-config.xml";
   const char* config_file = config.c_str();
@@ -132,8 +137,7 @@ static bool plexil_initialize_interfaces()
   else {
     configElt = configDoc.child(InterfaceSchema::INTERFACES_TAG());
     if (!configDoc.empty() && configElt.empty()) {
-      ROS_ERROR("config file %s has no Interfaces element",
-                config_file);
+      ROS_ERROR("config file %s has no Interfaces element", config_file);
       return false;
     }
   }
@@ -196,11 +200,15 @@ static bool initializeExec()
   return true;
 }
 
+// End of PLEXIL application setup functions.
+
 
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
-  ros::NodeHandle n; // Hack (?). Created only for side effects.
+  // Hack (?). Created only for side effects.  Node won't run otherwise.
+  ros::NodeHandle n;
+
   initializeExec();
 
   // For testing only (works).

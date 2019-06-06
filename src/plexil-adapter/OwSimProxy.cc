@@ -4,7 +4,6 @@
 using std::cerr;
 using std::endl;
 using std::string;
-//using namespace PLEXIL;
 
 static void stubbed_lookup (const string& name, const string& value)
 {

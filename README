@@ -1,8 +1,13 @@
 This directory contains a candidate onboard autonomy component for the Ocean
-Worlds lander, namely a PLEXIL application.
+Worlds lander, namely a ROS node embedding a PLEXIL application.
 
-The 'src/plans' directory contains the PLEXIL plans.
-src/plexil-adapter contains the supporting code needed to run them.
+Contents
+--------
+
+src/plans directory contains the PLEXIL plans.
+
+src/plexil-adapter contains the supporting code needed to run them, and also the
+ROS node implementation (for now).
 
 See the README files in each subdirectory for more information.
 
@@ -10,28 +15,36 @@ See the README files in each subdirectory for more information.
 Build
 -----
 
+% catkin build
+
 A prerequisite for building and running this application is a working PLEXIL
-installation (which has its own prerequisites).  for
-instructions.  The evironment variable PLEXIL_HOME should be set to PLEXIL's
-installation pathname.
+installation (which has its own prerequisites).  for instructions see the
+"Development Environment" Confluence page. The environment variable PLEXIL_HOME
+must be set to PLEXIL's installation pathname.
 
-There are two ways to build this system.
-
-1. ROS build.  In the parent of this directory, type 'catkin build'.  Normally,
-this would be all that's needed, but currently one manual step is needed.  Copy
-<workspace>/src/plans/ow-config.xml to <workspace>/build/ow_autonomy/src/plans.
-
-2. Standalone build.  cd to each of src/plexil-adapter and src/plans and type
-'make -f Makefile.gnu'.
-
+Your ROS environment should also first be set up:
+  source <catkin-workspace>/devel/setup.sh
 
 Run
 ---
 
-At the moment this Plexil application is standalone (regardless of how built) in
-the sense that it does not interface with anything external.  Run it as follows
-(this assumes your ROS environment is set up, i.e. devel/setup.bash has been
-sourced).
+There are two different things you can run.
 
- % cd <workspace>/devel/etc/plexil
+1. The ROS node, which, as a proof of concept, just executes a fixed PLEXIL plan
+that starts an ow_lander service.  Assuming all ROS packages are built, do each
+of the following in their own shell, in this order:
+
+ % roslaunch ow_lander plan_trajectory.launch
+   This brings up RViz and you should see the lander.
+
+ % roslaunch ow_autonomy autonomy_node.launch
+   The lander arm should perform a scooping motion.
+
+
+2. The standalone Sol 0 PLEXIL plan.
+
+ % cd <catkin-workspace>/devel/etc/plexil
  % plexilexec -p OceanWorldMission.plx -c ow-config.xml
+
+   Activities (stubs) should get printed, ending with:
+     Plan complete, Exec exited without errors

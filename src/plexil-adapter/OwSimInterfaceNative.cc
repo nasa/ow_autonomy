@@ -1,3 +1,6 @@
+// A non-ROS implementation of the Simulation Interface.  Not compiled in ROS
+// builds, and probably of interest only to Mike Dalal for development in MacOS.
+
 #include "OwSimInterface.hh"
 #include <iostream>
 
@@ -5,7 +8,6 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
-//using namespace PLEXIL;
 
 static void stubbed_lookup (const string& name, const string& value)
 {

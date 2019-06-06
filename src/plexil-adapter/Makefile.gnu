@@ -1,3 +1,6 @@
+# NOTE: At this moment (6/6/19) this make file is broken -- do not use or review
+# it.  It is not used for the ROS build, and may be removed.
+
 # This Makefile supports a "standalone" build of the PLEXIL adapter in this
 # directory.  It uses the host's default C++ compiler and the PLEXIL installaton
 # indicated by $PLEXIL_HOME.  It installs its product, a dynamic library, in

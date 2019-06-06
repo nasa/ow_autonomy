@@ -1,3 +1,5 @@
+// ROS-based implementation of Sim interface.
+
 #include "OwSimInterface.hh"
 #include <iostream>
 #include <ros/ros.h>

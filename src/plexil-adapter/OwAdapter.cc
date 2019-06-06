@@ -1,3 +1,5 @@
+// Implementation of PLEXIL interface adapter.
+
 #include "OwAdapter.hh"
 #include "subscriber.hh"
 
