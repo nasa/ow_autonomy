@@ -1,6 +1,12 @@
 #include "OwSimProxy.hh"
 #include <iostream>
 
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 using std::cerr;
 using std::endl;
 using std::string;

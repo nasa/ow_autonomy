@@ -1,5 +1,11 @@
 // Autonomy ROS node, which embeds a PLEXIL application.
 
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 // Under construction!  The current version is skeletal and hardcodes some basic
 // concept proofs.
 
@@ -122,8 +128,8 @@ static bool plexil_initialize_interfaces()
 {
   // NOTE: would like to find this file in <catkin-workspace>/devel/etc/plans,
   // but don't know how.
-  string config = ros::package::getPath("ow_autonomy") +
-    "/src/plans/ow-config.xml";
+  string config =
+    ros::package::getPath("ow_autonomy") + "/src/plans/ow-config.xml";
   const char* config_file = config.c_str();
   pugi::xml_document configDoc;
   pugi::xml_node configElt;

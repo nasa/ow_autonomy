@@ -3,6 +3,12 @@
 
 // Constants used in OceanWorld PLEXIL plans and OwSimProxy.
 
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 // NOTE: Guessed/bogus values, some intervals very short for now to reduce
 // testing time.
 

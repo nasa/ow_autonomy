@@ -1,5 +1,11 @@
 // Implementation of PLEXIL interface adapter.
 
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 #include "OwAdapter.hh"
 #include "subscriber.hh"
 

@@ -1,6 +1,12 @@
 // A non-ROS implementation of the Simulation Interface.  Not compiled in ROS
 // builds, and probably of interest only to Mike Dalal for development in MacOS.
 
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 #include "OwSimInterface.hh"
 #include <iostream>
 
@@ -54,8 +60,8 @@ bool OwSimInterface::lookup (const std::string& state_name,
   return retval;
 }
 
-bool OwSimInterface::DigTrench (float start_x, float start_y, float start_z, 
-                                float depth, float length, float width, 
+bool OwSimInterface::DigTrench (float start_x, float start_y, float start_z,
+                                float depth, float length, float width,
                                 float pitch, float yaw,
                                 float dump_x, float dump_y, float dump_z)
 {
