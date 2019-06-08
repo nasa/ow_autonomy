@@ -46,7 +46,7 @@ using std::ostringstream;
 static ExecApplication* PlexilApp = NULL;
 
 // Temporary function, a test.
-static void test_service_call ()
+static void testServiceCall ()
 {
   ros::NodeHandle n;
 
@@ -76,7 +76,7 @@ static void test_service_call ()
 }
 
 // Temporary function, a test of a specific plan.
-static void test_plexil_plan ()
+static void testPlexilPlan ()
 {
   string plan = ros::package::getPath("ow_autonomy") +
     "/src/plans/TestStartPlanning.plx";
@@ -124,7 +124,7 @@ static void test_plexil_plan ()
 
 // PLEXIL application setup functions start here.
 
-static bool plexil_initialize_interfaces()
+static bool plexilInitializeInterfaces()
 {
   // NOTE: would like to find this file in <catkin-workspace>/devel/etc/plans,
   // but don't know how.
@@ -180,8 +180,8 @@ static bool initializeExec()
     PlexilApp = new ExecApplication();
     g_manager = new InterfaceManager(*PlexilApp);
 
-    if (!plexil_initialize_interfaces()) {
-      ROS_ERROR("plexil_initialize_interfaces failed");
+    if (!plexilInitializeInterfaces()) {
+      ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
     }
     if (!PlexilApp->startInterfaces()) {
@@ -212,17 +212,16 @@ static bool initializeExec()
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
-  // Hack (?). Created only for side effects.  Node won't run otherwise.
-  ros::NodeHandle n;
+  ros::NodeHandle nh; // Not used yet. Created to start node.
 
   initializeExec();
 
   // For testing only (works).
-  //  test_service_call();
+  //  testServiceCall();
 
   // This is just a test, a proof of concept.  The general functionality of this
   // node needs design and implementation.
-  test_plexil_plan();
+  testPlexilPlan();
 
   ros::Rate rate(1);
   while (ros::ok()) {

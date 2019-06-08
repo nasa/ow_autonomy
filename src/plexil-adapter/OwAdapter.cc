@@ -193,7 +193,7 @@ void OwAdapter::invokeAbort(Command *cmd)
 
 // Temporary function. This is really just a test, a proof that we can invoke an
 // external service.
-static void start_planning ()
+static void startPlanning ()
 {
   ros::NodeHandle n;
 
@@ -239,7 +239,7 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") start_planning();
+  if (name == "StartPlanning") startPlanning();
   else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)

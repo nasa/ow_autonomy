@@ -11,7 +11,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-static void stubbed_lookup (const string& name, const string& value)
+static void stubbedLookup (const string& name, const string& value)
 {
   cerr << "WARNING: Stubbed lookup (returning " << value << "): " << name
        << endl;
@@ -21,7 +21,7 @@ static void stubbed_lookup (const string& name, const string& value)
 // NOTE: This macro, and the stub it implements, are temporary.
 #define STATE_STUB(name,val)                    \
   if (state_name == #name) {                    \
-    stubbed_lookup (#name, #val);               \
+    stubbedLookup (#name, #val);               \
     value_out = val;                            \
   }
 
