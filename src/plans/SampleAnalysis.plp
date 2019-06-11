@@ -11,7 +11,7 @@ Command pprint (...);
 
 SampleAnalysis:
 {
-  In InstrumentId instrument;
+  In INSTRUMENT_ID instrument;
 
   pprint ("Analyzing sample using", instrument, "...");
 

@@ -156,7 +156,7 @@ OceanWorldMission: Concurrence
                     InvariantCondition DiggingSafe;
                     EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                                   Time >= (DigTheTrench.EXECUTING.START
-                                           + DigTrenchTimeout));
+                                           + DIG_TRENCH_TIMEOUT));
                     Dig:
                     {
                         Boolean success;
@@ -176,14 +176,14 @@ OceanWorldMission: Concurrence
                     {
                         Repeat DigTheTrench.state == EXECUTING;
                         LibraryCall Image(desc="trench");
-                        Wait FilmInterval;
+                        Wait FILM_INTERVAL;
                     }
                     SenseDig:
                     {
                         Repeat DigTheTrench.state == EXECUTING;
                         pprint ("Sensing dig...");
-                        DiggingSafe = StubTrue;
-                        Wait SenseDigInterval;
+                        DiggingSafe = STUB_TRUE;
+                        Wait SENSE_DIG_INTERVAL;
                     }
                 }
             }
@@ -194,7 +194,7 @@ OceanWorldMission: Concurrence
             LibraryCall Image(desc="dig");
             AssessDepth:
             {
-                DeepEnough = StubTrue;
+                DeepEnough = STUB_TRUE;
             }
         }
 
@@ -236,7 +236,7 @@ OceanWorldMission: Concurrence
                 {
                     PostCondition !CollectMore;
                     LibraryCall Stub(desc="Measuring Sample");
-                    CollectMore = StubFalse;
+                    CollectMore = STUB_FALSE;
                     Wait 1;
                 }
                 CapSample:
