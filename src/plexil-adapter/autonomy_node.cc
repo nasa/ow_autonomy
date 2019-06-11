@@ -135,9 +135,9 @@ static bool plexilInitializeInterfaces()
     // But this is, and I don't know a better way to specify this directory
     ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/ow-config.xml";
   const char* config_file = config.c_str();
-  pugi::xml_document configDoc;
-  pugi::xml_node configElt;
-  pugi::xml_parse_result parseResult = configDoc.load_file(config_file);
+  pugi::xml_document config_doc;
+  pugi::xml_node config_elt;
+  pugi::xml_parse_result parseResult = config_doc.load_file(config_file);
   if (parseResult.status != pugi::status_ok) {
     ROS_ERROR("Unable to load config file %s: %s",
               config_file,
@@ -145,21 +145,21 @@ static bool plexilInitializeInterfaces()
     return false;
   }
   else {
-    configElt = configDoc.child(InterfaceSchema::INTERFACES_TAG());
-    if (!configDoc.empty() && configElt.empty()) {
+    config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG());
+    if (!config_doc.empty() && config_elt.empty()) {
       ROS_ERROR("config file %s has no Interfaces element", config_file);
       return false;
     }
   }
 
   try {
-    if (configElt.empty()) {
+    if (config_elt.empty()) {
       // Build default interface configuration if we couldn't load one
       ROS_INFO("Using default interface configuration");
-      configElt = configDoc.append_child(InterfaceSchema::INTERFACES_TAG());
+      config_elt = config_doc.append_child(InterfaceSchema::INTERFACES_TAG());
     }
 
-    if (!PlexilApp->initialize(configElt)) {
+    if (!PlexilApp->initialize(config_elt)) {
       ROS_ERROR("Interface initialization failed");
       return false;
     }
