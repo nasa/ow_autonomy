@@ -79,7 +79,10 @@ static void testServiceCall ()
 static void testPlexilPlan ()
 {
   string plan = ros::package::getPath("ow_autonomy") +
-    "/src/plans/TestStartPlanning.plx";
+    // Hack! This is not where we want to look:
+    // "/src/plans/TestStartPlanning.plx";
+    // But this is, and I don't know a better way to specify this directory:
+    "/../../devel/etc/plexil/TestStartPlanning.plx";
 
   pugi::xml_document* doc = NULL;
   try {
@@ -126,10 +129,11 @@ static void testPlexilPlan ()
 
 static bool plexilInitializeInterfaces()
 {
-  // NOTE: would like to find this file in <catkin-workspace>/devel/etc/plans,
-  // but don't know how.
   string config =
-    ros::package::getPath("ow_autonomy") + "/src/plans/ow-config.xml";
+    // Hack! This is not where we want to look:
+    //    ros::package::getPath("ow_autonomy") + "/src/plans/ow-config.xml";
+    // But this is, and I don't know a better way to specify this directory
+    ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/ow-config.xml";
   const char* config_file = config.c_str();
   pugi::xml_document configDoc;
   pugi::xml_node configElt;
