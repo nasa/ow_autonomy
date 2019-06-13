@@ -31,8 +31,16 @@ Run
 There are two different things you can run.
 
 1. The ROS node, which, as a proof of concept, just executes a fixed PLEXIL plan
-that starts an ow_lander service.  Assuming all ROS packages are built, do each
-of the following in their own shell, in this order:
+that starts an ow_lander service.  First you must get the single_roslaunch_use
+branch of the ow_simulator repository and build it -- master branch will not
+work.
+
+ % roscd ow_lander
+ % git checkout single_roslaunch_use
+ % catkin build ow_lander
+
+Assuming this package, ow_autonomy, and their dependant packages are built, do
+each of the following in their own shell, in this order:
 
  % roslaunch ow_lander plan_trajectory.launch
    This brings up RViz and you should see the lander.
