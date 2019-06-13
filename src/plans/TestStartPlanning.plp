@@ -4,10 +4,11 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command pprint (...);
+Command owprint (...);
+Command StartPlanning();
 
-Image:
+TestStartPlanning:
 {
-    In String desc;
-    pprint ("Imaging", desc, "...");
+    owprint ("Hello, I want to start planning!");
+    StartPlanning();
 }

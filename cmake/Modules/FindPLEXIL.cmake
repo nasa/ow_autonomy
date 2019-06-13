@@ -37,10 +37,10 @@ if( PLEXIL_INCLUDE_DIR )
                
   set( PLEXIL_LIBS 
         GanttListener
-        IpcAdapter
-        IpcUtils
+#        IpcAdapter
+#        IpcUtils
         Launcher
-        LuvListener
+#        LuvListener
         PlanDebugListener
         PlexilAppFramework
         PlexilExec
@@ -51,10 +51,11 @@ if( PLEXIL_INCLUDE_DIR )
         PlexilValue
         PlexilXmlParser
         pugixml
-        SampleAdapter
-        standalonesimulator
-        UdpAdapter
-        UdpUtils )
+#        SampleAdapter
+#        standalonesimulator
+#        UdpAdapter
+#        UdpUtils )
+       )
   
   get_library_list(PLEXIL ${PLEXIL_LIBRARY_DIR} "d" "${PLEXIL_LIBS}")
 

@@ -6,19 +6,21 @@ project(ow_autonomy)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+	roslib
+	ow_lander
+	owatb_interface
 )
 
-list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+list(INSERT CMAKE_MODULE_PATH 0
+	"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
+
 find_package(PLEXIL REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-#  INCLUDE_DIRS include
-  LIBRARIES ow_adapter
-  CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
@@ -29,10 +31,10 @@ catkin_add_env_hooks(60.ow_autonomy
 ## Build ##
 ###########
 
+
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PLEXIL_INCLUDE_DIR}
 )
-
 
 add_subdirectory(src)

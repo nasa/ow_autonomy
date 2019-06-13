@@ -1,5 +1,20 @@
+// Implementation of PLEXIL interface adapter.
+
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 #include "OwAdapter.hh"
 #include "subscriber.hh"
+
+// ROS
+#include <ros/ros.h>
+#include <ros/package.h>
+
+// OW
+#include <ow_lander/StartPlanning.h>
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -175,6 +190,39 @@ void OwAdapter::invokeAbort(Command *cmd)
     unimplemented(#command);                    \
   }
 
+
+// Temporary function. This is really just a test, a proof that we can invoke an
+// external service.
+static void startPlanning ()
+{
+  ros::NodeHandle n;
+
+  ros::ServiceClient client =
+    n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
+
+  if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
+  }
+  else {
+    ow_lander::StartPlanning srv;
+    srv.request.use_defaults = true;
+    srv.request.trench_x = 0.0;
+    srv.request.trench_y = 0.0;
+    srv.request.trench_d = 0.0;
+    srv.request.delete_prev_traj = false;
+
+    if (client.call(srv)) {
+      ROS_INFO("StartPlanning returned: %d, %s",
+               srv.response.success,
+               srv.response.message.c_str());
+    }
+    else {
+      ROS_ERROR("Failed to call service StartPlanning");
+    }
+  }
+}
+
+
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
 //
@@ -191,7 +239,8 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  if (name == "owprint") owprint (cmd->getArgValues());
+  if (name == "StartPlanning") startPlanning();
+  else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
