@@ -125,6 +125,55 @@ static void testPlexilPlan ()
 }
 
 
+static void runPlexilPlan (const string& filename)
+{
+  string plan = ros::package::getPath("ow_autonomy") +
+    // Hack! This is not where we want to look:
+    // "/src/plans/TestStartPlanning.plx";
+    // But this is, and I don't know a better way to specify this directory:
+    "/../../devel/etc/plexil/" + filename;
+
+  pugi::xml_document* doc = NULL;
+  try {
+    doc = PLEXIL::loadXmlFile (plan);
+  }
+  catch (PLEXIL::ParserException const &e) {
+    ROS_ERROR("Load of PLEXIL plan %s failed: %s",
+              plan.c_str(),
+              e.what());
+    return;
+  }
+
+  if (!doc) {
+    ROS_ERROR("PLEXIL plan %s not found", plan.c_str());
+    return;
+  }
+
+  try {
+    g_manager->handleAddPlan(doc->document_element());
+  }
+  catch (PLEXIL::ParserException const &e) {
+    ROS_ERROR("Add of PLEXIL plan %s failed: %s",
+              plan.c_str(),
+              e.what());
+    return;
+  }
+
+  try {
+    g_manager->handleValueChange(State::timeState(), 0);
+    PlexilApp->step();
+    PlexilApp->step(); // Hack to get us through this plan.
+  }
+  catch (const Error& e) {
+    ostringstream s;
+    s << "Exec error: " << e;
+    ROS_ERROR("%s", s.str().c_str());
+  }
+
+  delete doc;
+}
+
+
 // PLEXIL application setup functions start here.
 
 static bool plexilInitializeInterfaces()
@@ -220,12 +269,17 @@ int main(int argc, char* argv[])
 
   initializeExec();
 
-  // For testing only (works).
+  // This tests a service call done directly from this node.  It works.
   //  testServiceCall();
 
-  // This is just a test, a proof of concept.  The general functionality of this
-  // node needs design and implementation.
-  testPlexilPlan();
+  // This tests the loading of a PLEXIL plan (name hardcoded), which invokes a
+  // service call through the PLEXIL adapter.  It works.
+  //  testPlexilPlan();
+
+  if (argc == 2 and strcmp(argv[1], "none")) {
+    // Argument must be the 'plan' argument to the launch file.
+    runPlexilPlan (argv[1]);
+  }
 
   ros::Rate rate(1);
   while (ros::ok()) {
