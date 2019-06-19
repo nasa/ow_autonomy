@@ -16,7 +16,7 @@
 // OW
 #include <owatb_interface/CartesianGuardedMove.h>
 #include <ow_lander/StartPlanning.h>
-#include "OwAdapter.hh"
+#include "OwAdapter.h"
 
 // PLEXIL
 #include "AdapterFactory.hh"

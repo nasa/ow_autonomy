@@ -6,8 +6,8 @@
 // rights reserved.
 // __END_LICENSE__
 
-#include "OwAdapter.hh"
-#include "subscriber.hh"
+#include "OwAdapter.h"
+#include "subscriber.h"
 
 // ROS
 #include <ros/ros.h>
@@ -36,7 +36,7 @@ using std::cout;
 using std::endl;
 
 // Domain
-#include "OwSimProxy.hh"
+#include "OwSimProxy.h"
 
 
 ///////////////////////////// Conveniences //////////////////////////////////

@@ -1,17 +1,17 @@
 set(LIB_NAME ow_adapter)
 
 set (HEADERS
-  OwAdapter.hh
-  OwSimInterface.hh
-  OwSimProxy.hh
-  subscriber.hh
+  OwAdapter.h
+  OwSimInterface.h
+  OwSimProxy.h
+  subscriber.h
 )
 
 set (SOURCES
-  OwAdapter.cc
-  OwSimInterfaceROS.cc
-  OwSimProxy.cc
-  subscriber.cc
+  OwAdapter.cpp
+  OwSimInterfaceROS.cpp
+  OwSimProxy.cpp
+  subscriber.cpp
 )
 
 add_definitions(-DUSING_ROS)
@@ -33,7 +33,7 @@ target_link_libraries(${LIB_NAME}
   ${PLEXIL_LIBRARIES}
 	)
 
-add_executable(autonomy_node autonomy_node.cc)
+add_executable(autonomy_node autonomy_node.cpp)
 
 target_link_libraries(autonomy_node
 	${catkin_LIBRARIES}

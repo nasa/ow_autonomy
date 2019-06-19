@@ -1,4 +1,4 @@
-#include "subscriber.hh"
+#include "subscriber.h"
 
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the

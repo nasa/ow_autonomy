@@ -6,7 +6,7 @@
 // rights reserved.
 // __END_LICENSE__
 
-#include "OwSimInterface.hh"
+#include "OwSimInterface.h"
 #include <iostream>
 #include <ros/ros.h>
 
