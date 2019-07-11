@@ -14,7 +14,9 @@
 #include <ros/package.h>
 
 // OW
+/*  Requires single_roslaunch_use branch of ow_simulator
 #include <ow_lander/StartPlanning.h>
+*/
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -192,7 +194,8 @@ void OwAdapter::invokeAbort(Command *cmd)
 
 
 // Temporary function. This is really just a test, a proof that we can invoke an
-// external service.
+// external service.  NOTE: requires single_roslaunch_use branch of ow_simulator.
+/*
 static void startPlanning ()
 {
   ros::NodeHandle n;
@@ -221,7 +224,7 @@ static void startPlanning ()
     }
   }
 }
-
+*/
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
@@ -239,8 +242,10 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") startPlanning();
-  else if (name == "owprint") owprint (cmd->getArgValues());
+  // Requires single_roslaunch_use branch of ow_simulator
+  //  if (name == "StartPlanning") startPlanning();
+  
+  if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)

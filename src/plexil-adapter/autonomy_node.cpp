@@ -15,7 +15,6 @@
 
 // OW
 #include <owatb_interface/CartesianGuardedMove.h>
-#include <ow_lander/StartPlanning.h>
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -45,37 +44,9 @@ using std::ostringstream;
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-// Temporary function, a test.
-static void testServiceCall ()
-{
-  ros::NodeHandle n;
+// Temporary function, a test of a specific plan.  Requires single_roslaunch_use
+// branch of ow_simulator to work.
 
-  ros::ServiceClient client =
-    n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::StartPlanning srv;
-    srv.request.use_defaults = true;
-    srv.request.trench_x = 0.0;
-    srv.request.trench_y = 0.0;
-    srv.request.trench_d = 0.0;
-    srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
-  }
-}
-
-// Temporary function, a test of a specific plan.
 static void testPlexilPlan ()
 {
   string plan = ros::package::getPath("ow_autonomy") +
@@ -268,13 +239,6 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh; // Not used yet. Created to start node.
 
   initializeExec();
-
-  // This tests a service call done directly from this node.  It works.
-  //  testServiceCall();
-
-  // This tests the loading of a PLEXIL plan (name hardcoded), which invokes a
-  // service call through the PLEXIL adapter.  It works.
-  //  testPlexilPlan();
 
   if (argc == 2 and strcmp(argv[1], "none")) {
     // Argument must be the 'plan' argument to the launch file.
