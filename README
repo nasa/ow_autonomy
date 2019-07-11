@@ -18,7 +18,7 @@ Build
 % catkin build
 
 A prerequisite for building and running this application is a working PLEXIL
-installation (which has its own prerequisites).  for instructions see the
+installation (which has its own prerequisites).  For instructions see the
 "Development Environment" Confluence page. The environment variable PLEXIL_HOME
 must be set to PLEXIL's installation pathname.
 
@@ -28,31 +28,17 @@ Your ROS environment should also first be set up:
 Run
 ---
 
-There are two different things you can run.
+% roslaunch ow_autonomy autonomy_node.launch
 
-1. The ROS node, which, as a proof of concept, just executes a fixed PLEXIL plan
-that starts an ow_lander service.  First you must get the single_roslaunch_use
-branch of the ow_simulator repository and build it -- master branch will not
-work.
+At the moment, the node does nothing.  (A service-calling proof of concept demo
+that previously ran has been removed).
 
- % roscd ow_lander
- % git checkout single_roslaunch_use
- % catkin build ow_lander
-
-Assuming this package, ow_autonomy, and their dependant packages are built, do
-each of the following in their own shell, in this order:
-
- % roslaunch ow_lander plan_trajectory.launch
-   This brings up RViz and you should see the lander.
-
- % roslaunch ow_autonomy autonomy_node.launch
-   The lander arm should perform a scooping motion.
-
-
-2. The standalone Sol 0 PLEXIL plan.
+You can also run the standalone Sol 0 PLEXIL plan outside of ROS:
 
  % cd <catkin-workspace>/devel/etc/plexil
  % plexilexec -p OceanWorldMission.plx -c ow-config.xml
 
-   Activities (stubs) should get printed, ending with:
-     Plan complete, Exec exited without errors
+Activities (which are stubs) should get printed, ending with:
+
+  Plan complete, Exec exited without errors
+	
