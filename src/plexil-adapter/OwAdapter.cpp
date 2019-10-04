@@ -14,9 +14,8 @@
 #include <ros/package.h>
 
 // OW
-/*  Requires single_roslaunch_use branch of ow_simulator
 #include <ow_lander/StartPlanning.h>
-*/
+#include <ow_lander/MoveGuarded.h>
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -193,17 +192,21 @@ void OwAdapter::invokeAbort(Command *cmd)
   }
 
 
-// Temporary function. This is really just a test, a proof that we can invoke an
-// external service.  NOTE: requires single_roslaunch_use branch of ow_simulator.
-/*
+
 static void startPlanning ()
 {
+  // Temporary function. This is really just a test, a proof that we can invoke
+  // an external service.
+
   ros::NodeHandle n;
 
   ros::ServiceClient client =
     n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (! client.isValid()) {
+  if (! client.exists()) {
+    ROS_ERROR("Service client does not exist!");
+  }
+  else if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
   }
   else {
@@ -224,7 +227,47 @@ static void startPlanning ()
     }
   }
 }
-*/
+
+
+static void startMoveGuarded ()
+{
+  // Temporary function. This is really just a test, a proof that we can invoke
+  // an external service.
+
+  ros::NodeHandle n;
+
+  ros::ServiceClient client =
+    n.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
+
+  if (! client.exists()) {
+    ROS_ERROR("Service client does not exist!");
+  }
+  if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
+  }
+  else {
+    ow_lander::MoveGuarded srv;
+    srv.request.use_defaults = true;
+    srv.request.target_x = 0.0;
+    srv.request.target_y = 0.0;
+    srv.request.target_z = 0.0;
+    srv.request.surface_normal_x = 0.0;
+    srv.request.surface_normal_y = 0.0;
+    srv.request.surface_normal_z = 0.0;
+    srv.request.offset_distance = 0.0;
+    srv.request.overdrive_distance = 0.0;
+    srv.request.retract = false;
+
+    if (client.call(srv)) {
+      ROS_INFO("MoveGuarded returned: %d, %s",
+               srv.response.success,
+               srv.response.message.c_str());
+    }
+    else {
+      ROS_ERROR("Failed to call service MoveGuarded");
+    }
+  }
+}
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
@@ -242,10 +285,9 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  // Requires single_roslaunch_use branch of ow_simulator
   //  if (name == "StartPlanning") startPlanning();
-  
-  if (name == "owprint") owprint (cmd->getArgValues());
+  if (name == "StartPlanning") startMoveGuarded();
+  else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)

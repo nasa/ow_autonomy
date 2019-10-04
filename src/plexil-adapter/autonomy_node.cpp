@@ -15,9 +15,7 @@
 
 // OW
 #include <owatb_interface/CartesianGuardedMove.h>
-// The following include currently works only with the single_roslaunch_use
-// branch of ow_simulator
-// #include <ow_lander/StartPlanning.h>
+#include <ow_lander/StartPlanning.h>
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -47,9 +45,8 @@ using std::ostringstream;
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-// Temporary function, a test.  And won't compile without single_roslaunch_use
-// branch of ow_simulator
-/*
+// Temporary function, a test.
+
 static void testServiceCall ()
 {
   ros::NodeHandle n;
@@ -78,13 +75,12 @@ static void testServiceCall ()
     }
   }
 }
-*/
 
-// Temporary function, a test of a specific plan.  Requires single_roslaunch_use
-// branch of ow_simulator to work.
 
 static void testPlexilPlan ()
 {
+  // Temporary function, a test of a specific plan.
+  
   string plan = ros::package::getPath("ow_autonomy") +
     // Hack! This is not where we want to look:
     // "/src/plans/TestStartPlanning.plx";
@@ -231,9 +227,8 @@ int main(int argc, char* argv[])
   //  testServiceCall();
 
   // This is just a test, a proof of concept.  The general functionality of this
-  // node needs design and implementation.  NOTE: requires single_roslaunch_use
-  // branch of ow_simulator to work.
-  //  testPlexilPlan();
+  // node needs design and implementation.
+  testPlexilPlan();
 
   ros::Rate rate(1);
   while (ros::ok()) {
