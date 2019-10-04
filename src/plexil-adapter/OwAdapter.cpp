@@ -198,15 +198,15 @@ static void startPlanning ()
   // Temporary function. This is really just a test, a proof that we can invoke
   // an external service.
 
-  ros::NodeHandle n;
+  ros::NodeHandle n ("planning");
 
   ros::ServiceClient client =
     n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
+  //  if (! client.exists()) {
+  //    ROS_ERROR("Service client does not exist!");
+  //  }
+  if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
   }
   else {
@@ -285,8 +285,7 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  //  if (name == "StartPlanning") startPlanning();
-  if (name == "StartPlanning") startMoveGuarded();
+  if (name == "StartPlanning") startPlanning();
   else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
