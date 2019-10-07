@@ -6,9 +6,15 @@
 
 Command owprint (...);
 Command StartPlanning();
+Command MoveGuarded();
 
-TestStartPlanning:
+TestOwLander:
 {
-    owprint ("Hello, I want to start planning!");
+    owprint ("Starting ow_lander service demo.");
+
+    owprint ("Planning...");
     StartPlanning();
+
+    owprint ("Guarded move...");
+    MoveGuarded();
 }

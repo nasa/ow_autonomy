@@ -45,47 +45,15 @@ using std::ostringstream;
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-// Temporary function, a test.
-
-static void testServiceCall ()
-{
-  ros::NodeHandle n;
-
-  ros::ServiceClient client =
-    n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::StartPlanning srv;
-    srv.request.use_defaults = true;
-    srv.request.trench_x = 0.0;
-    srv.request.trench_y = 0.0;
-    srv.request.trench_d = 0.0;
-    srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
-  }
-}
-
-
-static void testPlexilPlan ()
+static void test_plexil_plan ()
 {
   // Temporary function, a test of a specific plan.
-  
+
   string plan = ros::package::getPath("ow_autonomy") +
     // Hack! This is not where we want to look:
-    // "/src/plans/TestStartPlanning.plx";
+    // "/src/plans/TestOwLander.plx";
     // But this is, and I don't know a better way to specify this directory:
-    "/../../devel/etc/plexil/TestStartPlanning.plx";
+    "/../../devel/etc/plexil/TestOwLander.plx";
 
   pugi::xml_document* doc = NULL;
   try {
@@ -115,8 +83,7 @@ static void testPlexilPlan ()
 
   try {
     g_manager->handleValueChange(State::timeState(), 0);
-    PlexilApp->step();
-    PlexilApp->step(); // Hack to get us through this plan.
+    PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;
@@ -177,7 +144,7 @@ static bool plexilInitializeInterfaces()
 }
 
 
-static bool initializeExec()
+static bool initialize_exec()
 {
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
@@ -221,15 +188,13 @@ int main(int argc, char* argv[])
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle nh; // Not used yet. Created to start node.
 
-  initializeExec();
-
-  // For testing only (works).
-  //  testServiceCall();
+  initialize_exec();
 
   // This is just a test, a proof of concept.  The general functionality of this
   // node needs design and implementation.
-  testPlexilPlan();
+  test_plexil_plan();
 
+  ROS_INFO("PLEXIL test finished.  Autonomy node now just spinning at 1Hz...");
   ros::Rate rate(1);
   while (ros::ok()) {
     ros::spinOnce();

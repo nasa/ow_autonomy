@@ -56,7 +56,7 @@ static void owprint (const vector<Value>& args)
   for (vector<Value>::const_iterator iter = args.begin();
        iter != args.end();
        iter++) out << *iter;
-  cerr << out.str() << endl;
+  cerr << "PLEXIL: " << out.str() << endl;
 }
 
 static void unimplemented (const string& name)
@@ -193,14 +193,13 @@ void OwAdapter::invokeAbort(Command *cmd)
 
 
 
-static void startPlanning ()
+static void start_planning_demo ()
 {
-  // Temporary function. This is really just a test, a proof that we can invoke
-  // an external service.
-
+	
   ros::NodeHandle n ("planning");
 
   ros::ServiceClient client =
+		// NOTE: typo is deliberate
     n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
   //  if (! client.exists()) {
@@ -229,12 +228,11 @@ static void startPlanning ()
 }
 
 
-static void startMoveGuarded ()
+static void move_guarded_demo ()
 {
-  // Temporary function. This is really just a test, a proof that we can invoke
-  // an external service.
-
-  ros::NodeHandle n;
+	ROS_INFO("Entered move_guarded_demo");
+	
+  ros::NodeHandle n ("planning");
 
   ros::ServiceClient client =
     n.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
@@ -285,7 +283,8 @@ void OwAdapter::executeCommand(Command *cmd)
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") startPlanning();
+  if (name == "StartPlanning") start_planning_demo();
+  else if (name == "MoveGuarded") move_guarded_demo();
   else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
