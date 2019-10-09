@@ -195,17 +195,17 @@ void OwAdapter::invokeAbort(Command *cmd)
 
 static void start_planning_demo ()
 {
-	
+
   ros::NodeHandle n ("planning");
 
   ros::ServiceClient client =
 		// NOTE: typo is deliberate
     n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  //  if (! client.exists()) {
-  //    ROS_ERROR("Service client does not exist!");
-  //  }
-  if (! client.isValid()) {
+	if (! client.exists()) {
+		ROS_ERROR("Service client does not exist!");
+	}
+  else if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
   }
   else {
@@ -230,8 +230,6 @@ static void start_planning_demo ()
 
 static void move_guarded_demo ()
 {
-	ROS_INFO("Entered move_guarded_demo");
-	
   ros::NodeHandle n ("planning");
 
   ros::ServiceClient client =
@@ -240,7 +238,7 @@ static void move_guarded_demo ()
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");
   }
-  if (! client.isValid()) {
+  else if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
   }
   else {
@@ -266,6 +264,7 @@ static void move_guarded_demo ()
     }
   }
 }
+
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.

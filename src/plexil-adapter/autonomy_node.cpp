@@ -194,7 +194,6 @@ int main(int argc, char* argv[])
   // node needs design and implementation.
   test_plexil_plan();
 
-  ROS_INFO("PLEXIL test finished.  Autonomy node now just spinning at 1Hz...");
   ros::Rate rate(1);
   while (ros::ok()) {
     ros::spinOnce();

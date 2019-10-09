@@ -10,11 +10,13 @@ Command MoveGuarded();
 
 TestOwLander:
 {
-    owprint ("Starting ow_lander service demo.");
+    owprint ("Starting ow_lander service demo...");
 
     owprint ("Planning...");
     StartPlanning();
 
     owprint ("Guarded move...");
     MoveGuarded();
+
+    owprint ("ow_lander service demo finished.");
 }
