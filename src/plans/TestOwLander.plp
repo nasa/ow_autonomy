@@ -7,6 +7,7 @@
 Command owprint (...);
 Command StartPlanning();
 Command MoveGuarded();
+Command PublishTrajectory();
 
 TestOwLander:
 {
@@ -17,6 +18,9 @@ TestOwLander:
 
     owprint ("Guarded move...");
     MoveGuarded();
+
+    owprint ("Publish trajectory...");
+    PublishTrajectory();
 
     owprint ("ow_lander service demo finished.");
 }

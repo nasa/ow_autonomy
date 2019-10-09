@@ -16,6 +16,7 @@
 // OW
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
+#include <ow_lander/PublishTrajectory.h>
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -265,6 +266,34 @@ static void move_guarded_demo ()
   }
 }
 
+static void publish_trajectory_demo ()
+{
+  ros::NodeHandle n ("planning");
+
+  ros::ServiceClient client =
+    n.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
+
+  if (! client.exists()) {
+    ROS_ERROR("Service client does not exist!");
+  }
+  else if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
+  }
+  else {
+    ow_lander::PublishTrajectory srv;
+    srv.request.use_latest = true;
+    srv.request.trajectory_filename = "ow_lander_trajectory.txt";
+    if (client.call(srv)) {
+      ROS_INFO("PublishTrajectory returned: %d, %s",
+               srv.response.success,
+               srv.response.message.c_str());
+    }
+    else {
+      ROS_ERROR("Failed to call service PublishTrajectory");
+    }
+  }
+}
+
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
@@ -284,6 +313,7 @@ void OwAdapter::executeCommand(Command *cmd)
 
   if (name == "StartPlanning") start_planning_demo();
   else if (name == "MoveGuarded") move_guarded_demo();
+  else if (name == "PublishTrajectory") publish_trajectory_demo();
   else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
