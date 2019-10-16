@@ -30,13 +30,14 @@ Run (ROS nodes)
 
 First launch ow_lander as follows.
 
-% roslaunch ow_lander ow_arm_sim.launch
+% roslaunch ow arm_sim.launch
 
 Then launch the autonomy node:
 
 % roslaunch ow_autonomy autonomy_node.launch
 
-This node loads a specific PLEXIL plan, which calls some ow_lander services.
+This node loads a specific (hardcoded for now) PLEXIL plan, which calls these
+ow_lander services in sequence: StartPlanning, MoveGuarded.
 
 
 Run (standalone plan)
