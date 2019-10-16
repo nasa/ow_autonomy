@@ -37,7 +37,7 @@ Then launch the autonomy node:
 % roslaunch ow_autonomy autonomy_node.launch
 
 This node loads a specific (hardcoded for now) PLEXIL plan, which calls these
-ow_lander services in sequence: StartPlanning, MoveGuarded.
+ow_lander services in sequence: StartPlanning, MoveGuarded, PublishTrajectory
 
 
 Run (standalone plan)
