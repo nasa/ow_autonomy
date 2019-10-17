@@ -14,7 +14,6 @@
 #include <ros/package.h>
 
 // OW
-#include <owatb_interface/CartesianGuardedMove.h>
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -44,63 +43,11 @@ using std::ostringstream;
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-// Temporary function, a test of a specific plan.  Requires single_roslaunch_use
-// branch of ow_simulator to work.
-
-static void testPlexilPlan ()
-{
-  string plan = ros::package::getPath("ow_autonomy") +
-    // Hack! This is not where we want to look:
-    // "/src/plans/TestStartPlanning.plx";
-    // But this is, and I don't know a better way to specify this directory:
-    "/../../devel/etc/plexil/TestStartPlanning.plx";
-
-  pugi::xml_document* doc = NULL;
-  try {
-    doc = PLEXIL::loadXmlFile (plan);
-  }
-  catch (PLEXIL::ParserException const &e) {
-    ROS_ERROR("Load of PLEXIL plan %s failed: %s",
-              plan.c_str(),
-              e.what());
-    return;
-  }
-
-  if (!doc) {
-    ROS_ERROR("PLEXIL plan %s not found", plan.c_str());
-    return;
-  }
-
-  try {
-    g_manager->handleAddPlan(doc->document_element());
-  }
-  catch (PLEXIL::ParserException const &e) {
-    ROS_ERROR("Add of PLEXIL plan %s failed: %s",
-              plan.c_str(),
-              e.what());
-    return;
-  }
-
-  try {
-    g_manager->handleValueChange(State::timeState(), 0);
-    PlexilApp->step();
-    PlexilApp->step(); // Hack to get us through this plan.
-  }
-  catch (const Error& e) {
-    ostringstream s;
-    s << "Exec error: " << e;
-    ROS_ERROR("%s", s.str().c_str());
-  }
-
-  delete doc;
-}
-
-
 static void runPlexilPlan (const string& filename)
 {
   string plan = ros::package::getPath("ow_autonomy") +
     // Hack! This is not where we want to look:
-    // "/src/plans/TestStartPlanning.plx";
+    // "/src/plans/TestOwLander.plx";
     // But this is, and I don't know a better way to specify this directory:
     "/../../devel/etc/plexil/" + filename;
 
@@ -132,8 +79,7 @@ static void runPlexilPlan (const string& filename)
 
   try {
     g_manager->handleValueChange(State::timeState(), 0);
-    PlexilApp->step();
-    PlexilApp->step(); // Hack to get us through this plan.
+    PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;
@@ -194,7 +140,7 @@ static bool plexilInitializeInterfaces()
 }
 
 
-static bool initializeExec()
+static bool initialize_exec()
 {
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
@@ -237,8 +183,6 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle nh; // Not used yet. Created to start node.
-
-  initializeExec();
 
   if (argc == 2 and strcmp(argv[1], "none")) {
     // Argument must be the 'plan' argument to the launch file.
