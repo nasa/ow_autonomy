@@ -37,8 +37,11 @@ using PLEXIL::Value;
 // C++
 #include <fstream>
 #include <string>
+#include <iostream>
 using std::string;
 using std::ostringstream;
+using std::cout;
+using std::endl;
 
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
@@ -186,6 +189,7 @@ int main(int argc, char* argv[])
 
   if (argc == 2 and strcmp(argv[1], "none")) {
     // Argument must be the 'plan' argument to the launch file.
+    cout << "Launch arg: " << argv[1] << endl;
     runPlexilPlan (argv[1]);
   }
 
