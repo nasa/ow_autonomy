@@ -197,11 +197,11 @@ void OwAdapter::invokeAbort(Command *cmd)
 static void start_planning_demo ()
 {
 
-  ros::NodeHandle n ("planning");
+  ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
 		// NOTE: typo is deliberate
-    n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
+    nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
 	if (! client.exists()) {
 		ROS_ERROR("Service client does not exist!");
@@ -231,10 +231,10 @@ static void start_planning_demo ()
 
 static void move_guarded_demo ()
 {
-  ros::NodeHandle n ("planning");
+  ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    n.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
+    nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
 
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");
@@ -268,10 +268,10 @@ static void move_guarded_demo ()
 
 static void publish_trajectory_demo ()
 {
-  ros::NodeHandle n ("planning");
+  ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    n.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
+    nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
 
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");

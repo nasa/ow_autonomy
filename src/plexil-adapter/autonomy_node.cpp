@@ -186,7 +186,7 @@ static bool initialize_exec()
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
-  ros::NodeHandle nh; // Not used yet. Created to start node.
+  ros::NodeHandle node_handle; // Not used yet. Created to start node.
 
   initialize_exec();
 
