@@ -15,9 +15,7 @@
 
 // OW
 #include <owatb_interface/CartesianGuardedMove.h>
-// The following include currently works only with the single_roslaunch_use
-// branch of ow_simulator
-// #include <ow_lander/StartPlanning.h>
+#include <ow_lander/StartPlanning.h>
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -47,49 +45,15 @@ using std::ostringstream;
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-// Temporary function, a test.  And won't compile without single_roslaunch_use
-// branch of ow_simulator
-/*
-static void testServiceCall ()
+static void test_plexil_plan ()
 {
-  ros::NodeHandle n;
+  // Temporary function, a test of a specific plan.
 
-  ros::ServiceClient client =
-    n.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::StartPlanning srv;
-    srv.request.use_defaults = true;
-    srv.request.trench_x = 0.0;
-    srv.request.trench_y = 0.0;
-    srv.request.trench_d = 0.0;
-    srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
-  }
-}
-*/
-
-// Temporary function, a test of a specific plan.  Requires single_roslaunch_use
-// branch of ow_simulator to work.
-
-static void testPlexilPlan ()
-{
   string plan = ros::package::getPath("ow_autonomy") +
     // Hack! This is not where we want to look:
-    // "/src/plans/TestStartPlanning.plx";
+    // "/src/plans/TestOwLander.plx";
     // But this is, and I don't know a better way to specify this directory:
-    "/../../devel/etc/plexil/TestStartPlanning.plx";
+    "/../../devel/etc/plexil/TestOwLander.plx";
 
   pugi::xml_document* doc = NULL;
   try {
@@ -119,8 +83,7 @@ static void testPlexilPlan ()
 
   try {
     g_manager->handleValueChange(State::timeState(), 0);
-    PlexilApp->step();
-    PlexilApp->step(); // Hack to get us through this plan.
+    PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;
@@ -181,7 +144,7 @@ static bool plexilInitializeInterfaces()
 }
 
 
-static bool initializeExec()
+static bool initialize_exec()
 {
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
@@ -223,17 +186,13 @@ static bool initializeExec()
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
-  ros::NodeHandle nh; // Not used yet. Created to start node.
+  ros::NodeHandle node_handle; // Not used yet. Created to start node.
 
-  initializeExec();
-
-  // For testing only (works).
-  //  testServiceCall();
+  initialize_exec();
 
   // This is just a test, a proof of concept.  The general functionality of this
-  // node needs design and implementation.  NOTE: requires single_roslaunch_use
-  // branch of ow_simulator to work.
-  //  testPlexilPlan();
+  // node needs design and implementation.
+  test_plexil_plan();
 
   ros::Rate rate(1);
   while (ros::ok()) {

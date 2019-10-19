@@ -25,13 +25,23 @@ must be set to PLEXIL's installation pathname.
 Your ROS environment should also first be set up:
   source <catkin-workspace>/devel/setup.sh
 
-Run
+Run (ROS nodes)
 ---
+
+First launch ow_lander as follows.
+
+% roslaunch ow arm_sim.launch
+
+Then launch the autonomy node:
 
 % roslaunch ow_autonomy autonomy_node.launch
 
-At the moment, the node does nothing.  (A service-calling proof of concept demo
-that previously ran has been removed).
+This node loads a specific (hardcoded for now) PLEXIL plan, which calls these
+ow_lander services in sequence: StartPlanning, MoveGuarded, PublishTrajectory
+
+
+Run (standalone plan)
+---
 
 You can also run the standalone Sol 0 PLEXIL plan outside of ROS:
 
@@ -41,4 +51,3 @@ You can also run the standalone Sol 0 PLEXIL plan outside of ROS:
 Activities (which are stubs) should get printed, ending with:
 
   Plan complete, Exec exited without errors
-	
