@@ -185,7 +185,7 @@ static bool initialize_exec()
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
-  ros::NodeHandle nh; // Not used yet. Created to start node.
+  ros::NodeHandle node_handle; // Not used yet. Created to start node.
 
   if (argc == 2 and strcmp(argv[1], "none")) {
     // Argument must be the 'plan' argument to the launch file.
