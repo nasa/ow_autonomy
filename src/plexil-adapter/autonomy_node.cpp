@@ -48,11 +48,8 @@ static ExecApplication* PlexilApp = NULL;
 
 static void runPlexilPlan (const string& filename)
 {
-  string plan = ros::package::getPath("ow_autonomy") +
-    // Hack! This is not where we want to look:
-    // "/src/plans/TestOwLander.plx";
-    // But this is, and I don't know a better way to specify this directory:
-    "/../../devel/etc/plexil/" + filename;
+  string plan = (ros::package::getPath("ow_autonomy") +
+                 "/../../devel/etc/plexil/TestOwLander.plx");
 
   pugi::xml_document* doc = NULL;
   try {
@@ -98,11 +95,8 @@ static void runPlexilPlan (const string& filename)
 
 static bool plexilInitializeInterfaces()
 {
-  string config =
-    // Hack! This is not where we want to look:
-    //    ros::package::getPath("ow_autonomy") + "/src/plans/ow-config.xml";
-    // But this is, and I don't know a better way to specify this directory
-    ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/ow-config.xml";
+  string config = (ros::package::getPath("ow_autonomy") +
+                   "/../../devel/etc/plexil/ow-config.xml");
   const char* config_file = config.c_str();
   pugi::xml_document config_doc;
   pugi::xml_node config_elt;
