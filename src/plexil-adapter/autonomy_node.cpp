@@ -49,7 +49,7 @@ static ExecApplication* PlexilApp = NULL;
 static void runPlexilPlan (const string& filename)
 {
   string plan = (ros::package::getPath("ow_autonomy") +
-                 "/../../devel/etc/plexil/TestOwLander.plx");
+                 "/../../devel/etc/plexil/" + filename);
 
   pugi::xml_document* doc = NULL;
   try {
@@ -180,16 +180,11 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle node_handle; // Not used yet. Created to start node.
-
-  /*
-  if (argc == 2 and strcmp(argv[1], "none")) {
-    // Argument must be the 'plan' argument to the launch file.
-    cout << "Launch arg: " << argv[1] << endl;
+  initialize_exec();
+  
+  if (argc == 2) {
     runPlexilPlan (argv[1]);
   }
-  */
-
-  if (argc == 2) runPlexilPlan (argv[1]);
   else cout << "Error: autonomy_node got " << argc << " args, expected 2"
             << endl;
 

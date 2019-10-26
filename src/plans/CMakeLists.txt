@@ -1,6 +1,4 @@
-# A simple Makefile for compiling and running the PLEXIL plans (.plp files) in
-# this directory.
-
+# Builds every .plp file in this directory.  
 
 file( GLOB PLEXIL_SRC_PLANS "${CMAKE_CURRENT_SOURCE_DIR}/*.plp" )
 set( PLEXIL_CONFIG_FILES ow-config.xml )
