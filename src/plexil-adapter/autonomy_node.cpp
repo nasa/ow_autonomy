@@ -14,8 +14,6 @@
 #include <ros/package.h>
 
 // OW
-#include <owatb_interface/CartesianGuardedMove.h>
-#include <ow_lander/StartPlanning.h>
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -39,18 +37,19 @@ using PLEXIL::Value;
 // C++
 #include <fstream>
 #include <string>
+#include <iostream>
 using std::string;
 using std::ostringstream;
+using std::cout;
+using std::endl;
 
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-static void test_plexil_plan ()
+static void runPlexilPlan (const string& filename)
 {
-  // Temporary function, a test of a specific plan.
-
   string plan = (ros::package::getPath("ow_autonomy") +
-                 "/../../devel/etc/plexil/TestOwLander.plx");
+                 "/../../devel/etc/plexil/" + filename);
 
   pugi::xml_document* doc = NULL;
   try {
@@ -181,12 +180,13 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle node_handle; // Not used yet. Created to start node.
-
   initialize_exec();
-
-  // This is just a test, a proof of concept.  The general functionality of this
-  // node needs design and implementation.
-  test_plexil_plan();
+  
+  if (argc == 2) {
+    runPlexilPlan (argv[1]);
+  }
+  else cout << "Error: autonomy_node got " << argc << " args, expected 2"
+            << endl;
 
   ros::Rate rate(1);
   while (ros::ok()) {

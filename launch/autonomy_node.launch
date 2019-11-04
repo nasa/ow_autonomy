@@ -1,3 +1,8 @@
 <launch>
-  <node name="autonomy_node" pkg="ow_autonomy" type="autonomy_node" args="" output="screen" />
+  <arg name="plan" default="TestOwLander.plx"/>
+  <node pkg="ow_autonomy"
+        name="autonomy_node"
+        type="autonomy_node"
+        args="$(arg plan)"
+        output="screen" />
 </launch>
