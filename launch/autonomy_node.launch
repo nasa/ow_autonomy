@@ -1,5 +1,5 @@
 <launch>
-  <arg name="plan" default="TestOwLander.plx"/>
+  <arg name="plan" default="Demo.plx"/>
   <node pkg="ow_autonomy"
         name="autonomy_node"
         type="autonomy_node"

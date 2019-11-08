@@ -43,13 +43,15 @@ using std::ostringstream;
 using std::cout;
 using std::endl;
 
+// Location of PLEXIL files
+static string PlexilDir = "";  // initialized below
+
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
 static void runPlexilPlan (const string& filename)
 {
-  string plan = (ros::package::getPath("ow_autonomy") +
-                 "/../../devel/etc/plexil/" + filename);
+  string plan = (PlexilDir + filename);
 
   pugi::xml_document* doc = NULL;
   try {
@@ -95,8 +97,7 @@ static void runPlexilPlan (const string& filename)
 
 static bool plexilInitializeInterfaces()
 {
-  string config = (ros::package::getPath("ow_autonomy") +
-                   "/../../devel/etc/plexil/ow-config.xml");
+  string config = (PlexilDir + "ow-config.xml");
   const char* config_file = config.c_str();
   pugi::xml_document config_doc;
   pugi::xml_node config_elt;
@@ -137,10 +138,15 @@ static bool plexilInitializeInterfaces()
 }
 
 
-static bool initialize_exec()
+static bool initialize_plexil()
 {
+	// NOTE: this is the best we can do for now.  Eventually these would be in the
+	// install space.
+	PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
+
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
+
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
 
@@ -159,10 +165,7 @@ static bool initialize_exec()
       ROS_ERROR("Stepping exec failed");
       return false;
     }
-
-    // Later.  No libraries yet
-    //    if (!plexil_initialize_library_path())
-    //      return false;
+		PlexilApp->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {
     ostringstream s;
@@ -180,8 +183,8 @@ int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle node_handle; // Not used yet. Created to start node.
-  initialize_exec();
-  
+  initialize_plexil();
+
   if (argc == 2) {
     runPlexilPlan (argv[1]);
   }
