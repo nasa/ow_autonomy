@@ -15,6 +15,6 @@ Demo:
 {
     owprint ("Starting autonomy demo...");
     LibraryCall TestOwLander();
-    LibraryCall TestAntennaCamera();
+    //    LibraryCall TestAntennaCamera();
     owprint ("Autonomy demo finished.");
 }
