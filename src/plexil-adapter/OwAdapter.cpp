@@ -12,6 +12,8 @@
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <std_msgs/Float64.h>
+//#include <sensor_msgs/ChannelFloat32.h>
 
 // OW
 #include <ow_lander/StartPlanning.h>
@@ -295,6 +297,20 @@ static void publish_trajectory_demo ()
 }
 
 
+static void tilt_antenna (double arg) // what does the arg mean?
+{
+  ros::NodeHandle* nhandle = new ros::NodeHandle();
+  ros::Publisher pub =
+    nhandle->advertise<std_msgs::Float64>("/ant_tilt_position_controller/command",1);
+  std_msgs::Float64 val;
+  val.data = arg;
+  pub.publish (val);
+  ROS_INFO ("End of tilt_antenna");
+
+  // Is extra ROS stuff needed? rate, loop, etc.
+}
+
+
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
 //
@@ -308,12 +324,19 @@ void OwAdapter::executeCommand(Command *cmd)
   const vector<Value>& args = cmd->getArgValues();
   copy (args.begin(), args.end(), argv.begin());
 
+  // Argument value holders
+  double double_arg;
+
   // Return values
   Value retval = Unknown;
 
   if (name == "StartPlanning") start_planning_demo();
   else if (name == "MoveGuarded") move_guarded_demo();
   else if (name == "PublishTrajectory") publish_trajectory_demo();
+  else if (name == "TiltAntenna") {
+    args[0].getValue(double_arg);
+    tilt_antenna (double_arg);
+  }
   else if (name == "owprint") owprint (cmd->getArgValues());
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)

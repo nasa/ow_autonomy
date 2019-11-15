@@ -4,17 +4,17 @@
 // rights reserved.
 // __END_LICENSE__
 
-// Demo plan that showcases a variety of lander operations.
+// Demo plan that showcases a variety of lander functions.
 
 LibraryAction TestOwLander();
+LibraryAction TestAntennaCamera();
 
 Command owprint (...);
 
 Demo:
 {
-    owprint ("Starting demo...");
-
+    owprint ("Starting autonomy demo...");
     LibraryCall TestOwLander();
-    
-    owprint ("Demofinished.");
+    LibraryCall TestAntennaCamera();
+    owprint ("Autonomy demo finished.");
 }
