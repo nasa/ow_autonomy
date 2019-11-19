@@ -13,7 +13,6 @@
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <std_msgs/Float64.h>
-//#include <sensor_msgs/ChannelFloat32.h>
 
 // OW
 #include <ow_lander/StartPlanning.h>
@@ -67,6 +66,11 @@ static void unimplemented (const string& name)
   cout << "Command " << name << " not yet implemented!" << endl;
 }
 
+
+// Static data.  Could move into class, though that would end it being ROS-free.
+
+static ros::NodeHandle* GenericNodeHandle;
+static ros::Publisher*  AntennaTiltPublisher;
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -130,6 +134,23 @@ bool OwAdapter::isStateSubscribed(const State& state) const
 // We keep the domain interface as lightweight as possible!
 
 static OwSimProxy* TheSimProxy = 0;
+
+
+///////////////////////////// ROS Support ///////////////////////////////////////
+
+static void init_ros()
+{
+  // Hack
+  static bool initialized = false;
+  
+  if (not initialized) {
+    GenericNodeHandle = new ros::NodeHandle();
+    AntennaTiltPublisher = new ros::Publisher
+      (GenericNodeHandle->advertise<std_msgs::Float64>
+       ("/ant_tilt_position_controller/command", 1));
+    initialized = true;
+  }
+}
 
 
 ///////////////////////////// Member functions //////////////////////////////////
@@ -299,12 +320,9 @@ static void publish_trajectory_demo ()
 
 static void tilt_antenna (double arg) // what does the arg mean?
 {
-  ros::NodeHandle* nhandle = new ros::NodeHandle();
-  ros::Publisher pub =
-    nhandle->advertise<std_msgs::Float64>("/ant_tilt_position_controller/command",1);
-  std_msgs::Float64 val;
-  val.data = arg;
-  pub.publish (val);
+  std_msgs::Float64 msg;
+  msg.data = arg;
+  AntennaTiltPublisher->publish (msg);
   ROS_INFO ("End of tilt_antenna");
 
   // Is extra ROS stuff needed? rate, loop, etc.
@@ -316,6 +334,8 @@ static void tilt_antenna (double arg) // what does the arg mean?
 //
 void OwAdapter::executeCommand(Command *cmd)
 {
+  init_ros();  // Hack.  Move later.
+  
   string name = cmd->getName();
   debugMsg("OwAdapter:executeCommand", " for " << name);
 

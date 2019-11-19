@@ -12,6 +12,7 @@
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <std_msgs/Float64.h>
 
 // OW
 #include "OwAdapter.h"
@@ -49,7 +50,7 @@ static string PlexilDir = "";  // initialized below
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-static void runPlexilPlan (const string& filename)
+static void run_plexil_plan (const string& filename)
 {
   string plan = (PlexilDir + filename);
 
@@ -179,20 +180,40 @@ static bool initialize_plexil()
 // End of PLEXIL application setup functions.
 
 
+static void tilt_antenna (double arg) // what does the arg mean?
+{
+
+  // Is extra ROS stuff needed? rate, loop, etc.
+}
+
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "autonomy_node");
   ros::NodeHandle node_handle; // Not used yet. Created to start node.
   initialize_plexil();
 
+  /*
   if (argc == 2) {
-    runPlexilPlan (argv[1]);
+    run_plexil_plan (argv[1]);
   }
   else cout << "Error: autonomy_node got " << argc << " args, expected 2"
             << endl;
+  */
 
+  // TEST. temporary
+  ros::Publisher pub = node_handle.advertise<std_msgs::Float64>
+    ("/ant_tilt_position_controller/command", 1);
+
+  std_msgs::Float64 msg;
+  msg.data = 1;
+  pub.publish (msg);
+  ROS_INFO ("-- End of tilt_antenna");
+
+
+  ROS_INFO ("-- Before spin");
   ros::Rate rate(1);
   while (ros::ok()) {
+    ROS_INFO ("-- Spinning...");
     ros::spinOnce();
     rate.sleep();
   }
