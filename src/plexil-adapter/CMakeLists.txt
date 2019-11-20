@@ -1,6 +1,8 @@
 set(LIB_NAME ow_adapter)
 
 set (HEADERS
+  OwExecutive.h
+  OwInterface.h
   OwAdapter.h
   OwSimInterface.h
   OwSimProxy.h
@@ -8,6 +10,8 @@ set (HEADERS
 )
 
 set (SOURCES
+  OwExecutive.cpp
+  OwInterface.cpp
   OwAdapter.cpp
   OwSimInterfaceROS.cpp
   OwSimProxy.cpp

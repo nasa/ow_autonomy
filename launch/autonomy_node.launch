@@ -1,8 +1,8 @@
 <launch>
   <arg name="plan" default="Demo.plx"/>
   <node pkg="ow_autonomy"
-        name="autonomy_node"
-        type="autonomy_node"
+        name="autonomy"
+        type="autonomy"
         args="$(arg plan)"
         output="screen" />
 </launch>
