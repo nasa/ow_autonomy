@@ -31,7 +31,7 @@ OwInterface::~OwInterface ()
   if (m_antennaTiltPublisher) delete m_antennaTiltPublisher;
 }
 
-bool OwInterface::initialize()
+void OwInterface::initialize()
 {
   // Hack?  Does this function need to be idempotent?
   static bool initialized = false;
@@ -144,7 +144,7 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-void OwInterface::tiltAntenna (double)
+void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg;

@@ -12,6 +12,7 @@
 
 // OW
 #include "OwExecutive.h"
+#include "OwInterface.h"
 
 int main(int argc, char* argv[])
 {
@@ -24,10 +25,7 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  if (! OwInterface::instance()->initialize()) {
-    ROS_ERROR("Could not initialize OW interface, shutting down.");
-    return 1;
-  }
+  OwInterface::instance()->initialize();
 
   // Run the specified plan
 
@@ -62,7 +60,5 @@ int main(int argc, char* argv[])
 
   // Is this ever reached?
   ROS_INFO("Autonomy node exiting normally.");
-  OwExecutive::shutdown();
   return 0;
 }
-

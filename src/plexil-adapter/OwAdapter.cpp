@@ -221,10 +221,10 @@ void OwAdapter::executeCommand(Command *cmd)
   }
   else if (name == "owprint") owprint (cmd->getArgValues());
   // Sol0 prototype commands
-  else COMMAND_STUB(RA_DIG);
-  else COMMAND_STUB(RA_COLLECT);
-  else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA);
-  else ROS_ERROR("Invalid command %s", name);
+  else COMMAND_STUB(RA_DIG)
+  else COMMAND_STUB(RA_COLLECT)
+  else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
+  else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
   m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);

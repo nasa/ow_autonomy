@@ -15,7 +15,7 @@ class OwInterface
   static OwInterface* instance();
   OwInterface ();
   ~OwInterface ();
-  bool initialize ();
+  void initialize ();
 
   // Temporary "demo" functions
   void startPlanningDemo();
@@ -26,7 +26,7 @@ class OwInterface
 
  private:
   OwInterface (const OwInterface&);            // undefined, no copying
-  OwExecuitve& operator= (const OwExecutive&); // undefined, no assignment
+  OwInterface& operator= (const OwInterface&); // undefined, no assignment
   ros::NodeHandle* m_genericNodeHandle;
   ros::Publisher*  m_antennaTiltPublisher;
 };

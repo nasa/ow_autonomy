@@ -37,12 +37,12 @@ target_link_libraries(${LIB_NAME}
   ${PLEXIL_LIBRARIES}
 	)
 
-add_executable(autonomy_node autonomy_node.cpp)
+add_executable(autonomy autonomy.cpp)
 
-target_link_libraries(autonomy_node
+target_link_libraries(autonomy
 	${catkin_LIBRARIES}
 	${PLEXIL_LIBRARIES}
 	${LIB_NAME})
 
-install(TARGETS autonomy_node
+install(TARGETS autonomy
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
