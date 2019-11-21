@@ -23,12 +23,14 @@ class OwInterface
   void publishTrajectoryDemo();
 
   void tiltAntenna (double);
-
+  void panAntenna (double);
+  )
  private:
   OwInterface (const OwInterface&);            // undefined, no copying
   OwInterface& operator= (const OwInterface&); // undefined, no assignment
   ros::NodeHandle* m_genericNodeHandle;
   ros::Publisher*  m_antennaTiltPublisher;
+  ros::Publisher*  m_antennaPanPublisher;
 };
 
 

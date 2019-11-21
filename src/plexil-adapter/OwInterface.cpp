@@ -35,12 +35,15 @@ void OwInterface::initialize()
 {
   // Hack?  Does this function need to be idempotent?
   static bool initialized = false;
-  
+
   if (not initialized) {
     m_genericNodeHandle = new ros::NodeHandle();
     m_antennaTiltPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_tilt_position_controller/command", 1));
+    m_antennaPanPublisher = new ros::Publisher
+      (m_genericNodeHandle->advertise<std_msgs::Float64>
+       ("/ant_pan_position_controller/command", 1));
     initialized = true;
   }
 }
@@ -148,5 +151,14 @@ void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg;
+  ROS_INFO("Tilt subscribers: %d", m_antennaTiltPublisher->getNumSubscribers())
   m_antennaTiltPublisher->publish (msg);
+}
+
+void OwInterface::panAntenna (double arg)
+{
+  std_msgs::Float64 msg;
+  msg.data = arg;
+  ROS_INFO("Pan subscribers: %d", m_antennaPanPublisher->getNumSubscribers())
+  m_antennaPanPublisher->publish (msg);
 }

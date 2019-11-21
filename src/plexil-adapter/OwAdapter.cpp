@@ -219,6 +219,10 @@ void OwAdapter::executeCommand(Command *cmd)
     args[0].getValue(double_arg);
     OwInterface::instance()->tiltAntenna (double_arg);
   }
+  else if (name == "PanAntenna") {
+    args[0].getValue(double_arg);
+    OwInterface::instance()->panAntenna (double_arg);
+  }
   else if (name == "owprint") owprint (cmd->getArgValues());
   // Sol0 prototype commands
   else COMMAND_STUB(RA_DIG)
