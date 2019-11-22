@@ -8,6 +8,6 @@ Command pprint (...);
 
 Image:
 {
-    In String desc;
-    pprint ("Imaging", desc, "...");
+  In String desc;
+  pprint ("Imaging", desc, "...");
 }

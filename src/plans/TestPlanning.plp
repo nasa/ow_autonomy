@@ -9,6 +9,6 @@ Command StartPlanning();
 
 TestOwLander:
 {
-    owprint ("Planning...");
-    StartPlanning();
+  owprint ("Planning...");
+  StartPlanning();
 }

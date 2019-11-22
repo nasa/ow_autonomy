@@ -7,15 +7,25 @@
 // Test/demo antenna and camera functions.
 
 Command pprint(...);
-Command TiltAntenna (Integer);
+Command TiltAntenna (Real);
+Command PanAntenna (Real);
 
 TestAntennaCamera:
 {
-    pprint ("Starting Antenna/Camera demo...");
-    pprint ("Tilting antenna to 1...");
-    TiltAntenna(1);
-    Wait(3);
-    pprint ("Tilting antenna back to 0...");
-    TiltAntenna(0);
-    pprint ("Antenna/Camera demo finished.");
+  pprint ("Starting Antenna/Camera demo...");
+  pprint ("Tilting antenna to 1...");
+  TiltAntenna(1);
+  // Instead of waiting, would be good to detect when tilt is finished.
+  Wait(5);
+  pprint ("Tilting antenna back to 0...");
+  TiltAntenna(0);
+
+  pprint ("Panning antenna to 1...");
+  PanAntenna(1);
+  // Instead of waiting, would be good to detect when pan is finished.
+  Wait(5);
+  pprint ("Panning antenna back to 0...");
+  PanAntenna(0);
+
+  pprint ("Antenna/Camera demo finished.");
 }

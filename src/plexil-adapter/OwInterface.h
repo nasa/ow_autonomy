@@ -1,6 +1,8 @@
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
+// Interface to lander simulator, and hopefully, eventually the physical testbed!
+
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
@@ -24,7 +26,7 @@ class OwInterface
 
   void tiltAntenna (double);
   void panAntenna (double);
-  )
+
  private:
   OwInterface (const OwInterface&);            // undefined, no copying
   OwInterface& operator= (const OwInterface&); // undefined, no assignment

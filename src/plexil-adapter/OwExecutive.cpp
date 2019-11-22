@@ -180,10 +180,3 @@ bool OwExecutive::initialize ()
 }
 
 // End of PLEXIL application setup functions.
-
-
-static void tilt_antenna (double arg) // what does the arg mean?
-{
-
-  // Is extra ROS stuff needed? rate, loop, etc.
-}

@@ -34,23 +34,23 @@ First launch ow_lander as follows.
 
 Then launch the autonomy node.  The default launch looks like this:
 
-% roslaunch ow_autonomy autonomy_node.launch
+% roslaunch ow_autonomy autonomy.launch
 
-This invocation loads the default PLEXIL plan, TestOwLander.plx, which
-calls these ow_lander services in sequence: StartPlanning,
-MoveGuarded, PublishTrajectory
+This invocation loads the default PLEXIL plan, Demo.plx, which
+demonstrates a variety of lander functions: arm planning, guarded move,
+publishing trajectory (for Gazebo), antenna and camera functions.
 
 Alternatively, you may specify a plan to load.  The default launch is
 equivalent to:
 
-% roslaunch ow_autonomy autonomy_node.launch plan:="TestOwLander.plx"
+% roslaunch ow_autonomy autonomy.launch plan:="Demo.plx"
 
-Use the 'plan' argument to specify any .plx file found in
+Use the 'plan' argument to specify a .plx file found in
 
   <ow_workspace>/devel/etc/plexil
 
-At present, the only other plan that works is TestPlanning.plx.
-
+Note that not all .plx files in this directory will work!  Some are for the
+standalone Sol 0 plan (described below) which are not integrated with ROS.
 
 
 Run (standalone plan)

@@ -1,8 +1,8 @@
 #ifndef Ow_Executive_H
 #define Ow_Executive_H
 
-// Autonomy Executive for OceanWATERS
-// Embeds a PLEXIL executive and wraps a PLEXIL application.
+// Autonomy Executive for OceanWATERS.
+// The implementation embeds a PLEXIL executive and application.
 
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the

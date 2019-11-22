@@ -13,8 +13,8 @@ Command owprint (...);
 
 Demo:
 {
-    owprint ("Starting autonomy demo...");
-    LibraryCall TestOwLander();
-    //    LibraryCall TestAntennaCamera();
-    owprint ("Autonomy demo finished.");
+  owprint ("Starting autonomy demo...");
+  LibraryCall TestOwLander();
+  LibraryCall TestAntennaCamera();
+  owprint ("Autonomy demo finished.");
 }

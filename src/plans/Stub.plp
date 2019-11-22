@@ -8,6 +8,6 @@ Command pprint (...);
 
 Stub:
 {
-    In String desc;
-    pprint ("PLEXIL Stub:", desc, "...");
+  In String desc;
+  pprint ("PLEXIL Stub:", desc, "...");
 }
