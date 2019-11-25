@@ -16,9 +16,6 @@ TestOwLander:
     owprint ("Planning...");
     StartPlanning();
 
-    owprint ("Guarded move...");
-    MoveGuarded();
-
     owprint ("Publish trajectory...");
     PublishTrajectory();
 
