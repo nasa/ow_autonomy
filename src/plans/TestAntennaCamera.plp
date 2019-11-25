@@ -9,23 +9,35 @@
 Command pprint(...);
 Command TiltAntenna (Real);
 Command PanAntenna (Real);
+Command TakePicture();
 
 TestAntennaCamera:
 {
+  // Instead of the Waits, would be good to detect when operation is finished.
+  Integer WaitTime = 5;
+
   pprint ("Starting Antenna/Camera demo...");
-  pprint ("Tilting antenna to 1...");
-  TiltAntenna(1);
-  // Instead of waiting, would be good to detect when tilt is finished.
-  Wait(5);
-  pprint ("Tilting antenna back to 0...");
-  TiltAntenna(0);
 
   pprint ("Panning antenna to 1...");
   PanAntenna(1);
-  // Instead of waiting, would be good to detect when pan is finished.
-  Wait(5);
+  Wait(WaitTime);
+
+  pprint ("Tilting antenna to 3...");
+  TiltAntenna(3);
+  Wait(WaitTime);
+
+  // TODO: add left/right camera trigger
+  pprint ("Taking picture...");
+  TakePicture();
+  Wait(WaitTime);
+
+  pprint ("Tilting antenna back to 0...");
+  TiltAntenna(0);
+  Wait(WaitTime);
+
   pprint ("Panning antenna back to 0...");
   PanAntenna(0);
-
+  Wait(WaitTime);
+  
   pprint ("Antenna/Camera demo finished.");
 }

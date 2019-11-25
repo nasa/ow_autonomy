@@ -1,7 +1,7 @@
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
-// Interface to lander simulator, and hopefully, eventually the physical testbed!
+// Interface to lander simulator, and hopefully in time, the physical testbed.
 
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the
@@ -26,13 +26,16 @@ class OwInterface
 
   void tiltAntenna (double);
   void panAntenna (double);
+  void takePicture ();
 
  private:
   OwInterface (const OwInterface&);            // undefined, no copying
   OwInterface& operator= (const OwInterface&); // undefined, no assignment
+  void checkSubscribers (const ros::Publisher*) const;
   ros::NodeHandle* m_genericNodeHandle;
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;
+  ros::Publisher*  m_leftImageTriggerPublisher;
 };
 
 

@@ -12,6 +12,7 @@
 
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Empty.h>
 
 OwInterface* OwInterface::instance ()
 {
@@ -44,6 +45,9 @@ void OwInterface::initialize()
     m_antennaPanPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_pan_position_controller/command", 1));
+    m_leftImageTriggerPublisher = new ros::Publisher
+      (m_genericNodeHandle->advertise<std_msgs::Empty>
+       ("/NavCamStereo/left/image_trigger", 1));
     initialized = true;
   }
 }
@@ -147,10 +151,18 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
+void OwInterface::checkSubscribers (const ros::Publisher* pub) const
+{
+  if (pub->getNumSubscribers() == 0) {
+    ROS_WARN("No subscribers for topic %s", pub->getTopic().c_str());
+  }
+}
+
 void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg;
+  checkSubscribers (m_antennaTiltPublisher);
   m_antennaTiltPublisher->publish (msg);
 }
 
@@ -158,5 +170,13 @@ void OwInterface::panAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg;
+  checkSubscribers (m_antennaPanPublisher);
   m_antennaPanPublisher->publish (msg);
+}
+
+void OwInterface::takePicture ()
+{
+  std_msgs::Empty msg;
+  checkSubscribers (m_leftImageTriggerPublisher);
+  m_leftImageTriggerPublisher->publish (msg);
 }
