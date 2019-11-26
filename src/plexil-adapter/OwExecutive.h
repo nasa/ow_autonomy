@@ -2,7 +2,9 @@
 #define Ow_Executive_H
 
 // Autonomy Executive for OceanWATERS.
-// The implementation embeds a PLEXIL executive and application.
+
+// The implementation embeds a PLEXIL executive and application.  Because only
+// one PLEXIL executive can run in one process, this class is a singleton.
 
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the
@@ -25,7 +27,7 @@ class OwExecutive
  private:
   OwExecutive (const OwExecutive&);            // undefined (singleton)
   OwExecutive& operator= (const OwExecutive&); // undefined (singleton)
-  static OwExecutive* TheInstance;
+  static OwExecutive* m_instance;
 };
 
 #endif

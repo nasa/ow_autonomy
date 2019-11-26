@@ -4,7 +4,7 @@
   <arg name="plan" default="Demo.plx"/>
   <node pkg="ow_autonomy"
         name="autonomy_node"
-        type="autonomy"
+        type="autonomy_node"
         args="$(arg plan)"
         output="screen" />
 </launch>

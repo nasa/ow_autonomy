@@ -45,18 +45,18 @@ static string PlexilDir = "";  // initialized below
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
 
-OwExecutive* OwExecutive::TheInstance = NULL;
+OwExecutive* OwExecutive::m_instance = NULL;
 
 OwExecutive* OwExecutive::instance ()
 {
   // Very simple singleton
-  if (TheInstance == NULL) TheInstance = new OwExecutive();
-  return TheInstance;
+  if (m_instance == NULL) m_instance = new OwExecutive();
+  return m_instance;
 }
 
 OwExecutive::~OwExecutive()
 {
-  if (TheInstance) delete TheInstance;
+  if (m_instance) delete m_instance;
 }
 
 bool OwExecutive::runPlan (const string& filename)

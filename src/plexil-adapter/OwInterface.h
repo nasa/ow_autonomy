@@ -2,6 +2,8 @@
 #define Ow_Interface_H
 
 // Interface to lander simulator, and hopefully in time, the physical testbed.
+// This class is a singleton because only once instance will ever be needed, in
+// the current overall autonomy scheme.
 
 // __BEGIN_LICENSE__
 // Copyright (c) 2018-2019, United States Government as represented by the
@@ -32,7 +34,7 @@ class OwInterface
   OwInterface (const OwInterface&);            // undefined (singleton)
   OwInterface& operator= (const OwInterface&); // undefined (singleton)
   void checkSubscribers (const ros::Publisher*) const;
-  static OwInterface* TheInstance;
+  static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;

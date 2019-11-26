@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     OwExecutive::instance()->runPlan (argv[1]);
   }
   else {
-    ROS_ERROR("autonomy got %i args, expected 2", argc);
+    ROS_ERROR("autonomy_node got %i args, expected 2", argc);
     return 1;
   }
 
@@ -48,6 +48,6 @@ int main(int argc, char* argv[])
   }
 
   // Is this ever reached?
-  ROS_INFO("Autonomy node exiting normally.");
+  ROS_INFO("autonomy_node exiting normally.");
   return 0;
 }
