@@ -1,0 +1,43 @@
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+// Test/demo antenna and camera functions.
+
+Command pprint(...);
+Command TiltAntenna (Real);
+Command PanAntenna (Real);
+Command TakePicture();
+
+TestAntennaCamera:
+{
+  // Instead of the Waits, would be good to detect when operation is finished.
+  Integer WaitTime = 5;
+
+  pprint ("Starting Antenna/Camera demo...");
+
+  pprint ("Panning antenna to 1...");
+  PanAntenna(1);
+  Wait(WaitTime);
+
+  pprint ("Tilting antenna to 3...");
+  TiltAntenna(3);
+  Wait(WaitTime);
+
+  // TODO: add left/right camera trigger
+  pprint ("Taking picture...");
+  TakePicture();
+  Wait(WaitTime);
+
+  pprint ("Tilting antenna back to 0...");
+  TiltAntenna(0);
+  Wait(WaitTime);
+
+  pprint ("Panning antenna back to 0...");
+  PanAntenna(0);
+  Wait(WaitTime);
+  
+  pprint ("Antenna/Camera demo finished.");
+}

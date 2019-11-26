@@ -1,8 +1,8 @@
 #ifndef Ow_Plexil_Subscriber
 #define Ow_Plexil_Subscriber
 
-// This is a barebones publish-subscribe facility.  It provides a set of
-// subscription functions specific to various combinations of return type and
+// This is a barebones publish-subscribe facility for PLEXIL.  It provides a set
+// of subscription functions specific to various combinations of return type and
 // parameters.
 
 // __BEGIN_LICENSE__

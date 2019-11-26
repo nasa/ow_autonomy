@@ -6,17 +6,14 @@
 // rights reserved.
 // __END_LICENSE__
 
+// OW
 #include "OwAdapter.h"
+#include "OwInterface.h"
 #include "subscriber.h"
 
 // ROS
 #include <ros/ros.h>
-#include <ros/package.h>
-
-// OW
-#include <ow_lander/StartPlanning.h>
-#include <ow_lander/MoveGuarded.h>
-#include <ow_lander/PublishTrajectory.h>
+#include <ros/package.h>  // needed?
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -130,6 +127,7 @@ bool OwAdapter::isStateSubscribed(const State& state) const
 static OwSimProxy* TheSimProxy = 0;
 
 
+
 ///////////////////////////// Member functions //////////////////////////////////
 
 
@@ -193,108 +191,6 @@ void OwAdapter::invokeAbort(Command *cmd)
   }
 
 
-
-static void start_planning_demo ()
-{
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-		// NOTE: typo is deliberate
-    nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
-
-	if (! client.exists()) {
-		ROS_ERROR("Service client does not exist!");
-	}
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::StartPlanning srv;
-    srv.request.use_defaults = true;
-    srv.request.trench_x = 0.0;
-    srv.request.trench_y = 0.0;
-    srv.request.trench_d = 0.0;
-    srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
-  }
-}
-
-
-static void move_guarded_demo ()
-{
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
-
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::MoveGuarded srv;
-    srv.request.use_defaults = true;
-    srv.request.target_x = 0.0;
-    srv.request.target_y = 0.0;
-    srv.request.target_z = 0.0;
-    srv.request.surface_normal_x = 0.0;
-    srv.request.surface_normal_y = 0.0;
-    srv.request.surface_normal_z = 0.0;
-    srv.request.offset_distance = 0.0;
-    srv.request.overdrive_distance = 0.0;
-    srv.request.retract = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("MoveGuarded returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service MoveGuarded");
-    }
-  }
-}
-
-static void publish_trajectory_demo ()
-{
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
-
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
-    ow_lander::PublishTrajectory srv;
-    srv.request.use_latest = true;
-    srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    if (client.call(srv)) {
-      ROS_INFO("PublishTrajectory returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service PublishTrajectory");
-    }
-  }
-}
-
-
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
 //
@@ -308,19 +204,34 @@ void OwAdapter::executeCommand(Command *cmd)
   const vector<Value>& args = cmd->getArgValues();
   copy (args.begin(), args.end(), argv.begin());
 
+  // Argument value holders
+  double double_arg;
+
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") start_planning_demo();
-  else if (name == "MoveGuarded") move_guarded_demo();
-  else if (name == "PublishTrajectory") publish_trajectory_demo();
+  if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
+  else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "PublishTrajectory") {
+    OwInterface::instance()->publishTrajectoryDemo();
+  }
+  else if (name == "TiltAntenna") {
+    args[0].getValue(double_arg);
+    OwInterface::instance()->tiltAntenna (double_arg);
+  }
+  else if (name == "PanAntenna") {
+    args[0].getValue(double_arg);
+    OwInterface::instance()->panAntenna (double_arg);
+  }
+  else if (name == "TakePicture") {
+    OwInterface::instance()->takePicture();
+  }
   else if (name == "owprint") owprint (cmd->getArgValues());
+  // Sol0 prototype commands
   else COMMAND_STUB(RA_DIG)
   else COMMAND_STUB(RA_COLLECT)
   else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
-  else {
-    cerr << "Invalid command " << name << endl;
-  }
+  else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
   m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);

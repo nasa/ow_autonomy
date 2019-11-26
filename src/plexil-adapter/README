@@ -2,7 +2,7 @@ This directory contains C++ classes and code implementing the interface between
 the PLEXIL plans (found in ../plans) and the external world (lander,
 environment).
 
-TEMPORARIY (noted 6/6/19) it also contains the implementation of a ROS node for
-the ow_autonomy package: autonomy_node.cc.  This directory will be refactored.
+TEMPORARILY (noted 6/6/19) it also contains the implementation of a ROS node for
+the ow_autonomy package: autonomy.cpp.  This directory will be refactored.
 
 See ow_autonomy/README for build instructions.
