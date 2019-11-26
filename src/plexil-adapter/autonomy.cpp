@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 {
   // Initializations
 
-  ros::init(argc, argv, "autonomy");
+  ros::init(argc, argv, "autonomy_node");
 
   if (! OwExecutive::instance()->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
@@ -37,19 +37,8 @@ int main(int argc, char* argv[])
     return 1;
   }
 
-  /*
-  // TEST. temporary
-  ros::NodeHandle node_handle;
-  ros::Publisher pub = node_handle.advertise<std_msgs::Float64>
-    ("/ant_tilt_position_controller/command", 1);
+  // ROS Loop
 
-  std_msgs::Float64 msg;
-  msg.data = 1;
-  pub.publish (msg);
-  ROS_INFO ("-- End of tilt_antenna");
-  */
-
-  // Loop
   // NOTE: Why does this run concurrently with plan?
 
   ros::Rate rate(1);

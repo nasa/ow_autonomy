@@ -23,7 +23,6 @@
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
 #include "State.hh"
-
 using PLEXIL::Error;
 using PLEXIL::ExecApplication;
 using PLEXIL::InterfaceManager;
@@ -40,19 +39,25 @@ using std::ostringstream;
 using std::cout;
 using std::endl;
 
-
-OwExecutive* OwExecutive::instance ()
-{
-  // Very simple singleton
-  static OwExecutive* inst = new OwExecutive();  // TODO: eliminate memory leak
-  return inst;
-}
-
 // Location of PLEXIL files
 static string PlexilDir = "";  // initialized below
 
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
+
+OwExecutive* OwExecutive::TheInstance = NULL;
+
+OwExecutive* OwExecutive::instance ()
+{
+  // Very simple singleton
+  if (TheInstance == NULL) TheInstance = new OwExecutive();
+  return TheInstance;
+}
+
+OwExecutive::~OwExecutive()
+{
+  if (TheInstance) delete TheInstance;
+}
 
 bool OwExecutive::runPlan (const string& filename)
 {

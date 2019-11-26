@@ -29,9 +29,10 @@ class OwInterface
   void takePicture ();
 
  private:
-  OwInterface (const OwInterface&);            // undefined, no copying
-  OwInterface& operator= (const OwInterface&); // undefined, no assignment
+  OwInterface (const OwInterface&);            // undefined (singleton)
+  OwInterface& operator= (const OwInterface&); // undefined (singleton)
   void checkSubscribers (const ros::Publisher*) const;
+  static OwInterface* TheInstance;
   ros::NodeHandle* m_genericNodeHandle;
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;

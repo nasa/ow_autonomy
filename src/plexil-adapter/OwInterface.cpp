@@ -14,22 +14,27 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
 
+OwInterface* OwInterface::TheInstance = NULL;
+
 OwInterface* OwInterface::instance ()
 {
   // Very simple singleton
-  static OwInterface* inst = new OwInterface();  // TODO: eliminate memory leak
-  return inst;
+  if (TheInstance == NULL) TheInstance = new OwInterface();
+  return TheInstance;
 }
 
 OwInterface::OwInterface ()
   : m_genericNodeHandle (NULL),
-    m_antennaTiltPublisher (NULL)
+    m_antennaTiltPublisher (NULL),
+    m_leftImageTriggerPublisher (NULL)
 { }
 
 OwInterface::~OwInterface ()
 {
   if (m_genericNodeHandle) delete m_genericNodeHandle;
   if (m_antennaTiltPublisher) delete m_antennaTiltPublisher;
+  if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
+  if (TheInstance) delete TheInstance;
 }
 
 void OwInterface::initialize()
