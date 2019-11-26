@@ -26,6 +26,7 @@ OwInterface* OwInterface::instance ()
 OwInterface::OwInterface ()
   : m_genericNodeHandle (NULL),
     m_antennaTiltPublisher (NULL),
+    m_antennaPanPublisher (NULL),
     m_leftImageTriggerPublisher (NULL)
 { }
 
