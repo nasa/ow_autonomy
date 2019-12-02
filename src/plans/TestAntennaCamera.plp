@@ -22,8 +22,8 @@ TestAntennaCamera:
   PanAntenna(1);
   Wait(WaitTime);
 
-  pprint ("Tilting antenna to 3...");
-  TiltAntenna(3);
+  pprint ("Tilting antenna to 1.2...");
+  TiltAntenna(1.2);
   Wait(WaitTime);
 
   // TODO: add left/right camera trigger
