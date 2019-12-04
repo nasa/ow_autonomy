@@ -69,188 +69,178 @@ OceanWorldMission: Concurrence
 {
   // Assumption: checkout is complete before this node starts.
 
- ContingencyMonitors: Concurrence
+  ContingencyMonitors: Concurrence
+  {
+  BatteryMonitor:
     {
-    BatteryMonitor:
-      {
-        LibraryCall Stub(desc="Monitoring battery");
-      }
-    ThermalMonitor:
-      {
-        LibraryCall Stub(desc="Monitoring thermal");
-      }
-    UplinkMonitor:
-      {
-        LibraryCall Stub(desc="Monitoring for uplinks");
-      }
+      LibraryCall Stub(desc="Monitoring battery");
     }
+  ThermalMonitor:
+    {
+      LibraryCall Stub(desc="Monitoring thermal");
+    }
+  UplinkMonitor:
+    {
+      LibraryCall Stub(desc="Monitoring for uplinks");
+    }
+  }
 
- Mission:
+  Mission: 
   {
     Boolean DeepEnough = false;
     Boolean CollectMore = true;
 
     Real Time;
 
-  Panorama:
+  Panorama: 
+  {
+    StereoImage: 
     {
-    StereoImage:
-      {
-        LibraryCall Stub(desc="Taking stereo panorama of landing site");
-      }
+      LibraryCall Stub(desc="Taking stereo panorama of landing site");
     }
+  }
 
   ImageWorkspace:
-    {
-      LibraryCall Image(desc="workspace");
-    }
+  {
+    LibraryCall Image(desc="workspace");
+  }
 
   SurfaceInterrogation:
-    {
-      LibraryCall Stub(desc="Interrogating surface");
-    }
+  {
+    LibraryCall Stub(desc="Interrogating surface");
+  }
 
   GetTrenchTarget:
-    {
-      // TODO: invoke comms, reset on failure.
-      LibraryCall DownlinkImage();
-      Try
+  {
+    // TODO: invoke comms, reset on failure.
+    LibraryCall DownlinkImage();
+    Try {
+    GetInfoFromGround:
+      {
+        Integer numAttempts = 0;
+        RepeatCondition AttemptGround.outcome == FAILURE;
+        InvariantCondition numAttempts <= 1;
+        Time = Lookup(time);
+      AttemptGround:
         {
-        GetInfoFromGround:
-          {
-            Integer numAttempts = 0;
-            RepeatCondition AttemptGround.outcome == FAILURE;
-            InvariantCondition numAttempts <= 1;
-            Time = Lookup(time);
-          AttemptGround:
-            {
-              InvariantCondition
-                Time < (AttemptGround.EXECUTING.START +
-                        Lookup(TrenchTargetTimeout));
-              EndCondition Lookup(TrenchIdentified);
-              LibraryCall Stub(desc="Getting trench target from ground");
-              numAttempts = numAttempts + 1;
-            }
-          }
-          pprint ("failed.");
-        GetTrenchTargetOnboard:
-          {
-            LibraryCall Stub(desc="Getting trench target onboard");
-          }
+          InvariantCondition
+            Time < (AttemptGround.EXECUTING.START +
+                    Lookup(TrenchTargetTimeout));
+          EndCondition Lookup(TrenchIdentified);
+          LibraryCall Stub(desc="Getting trench target from ground");
+          numAttempts = numAttempts + 1;
         }
+      }
+      pprint ("failed.");
+    GetTrenchTargetOnboard:
+      {
+        LibraryCall Stub(desc="Getting trench target onboard");
+      }
     }
+  }
 
-    Time = Lookup(time);
+  Time = Lookup(time);
 
   Excavation:
-    {
-      RepeatCondition !DeepEnough;
-      InvariantCondition
-        Time < (Excavation.EXECUTING.START + Lookup(ExcavationTimeout));
-    DigAndFilm: Concurrence
-        {
-          Boolean DiggingSafe = true;
+  {
+    RepeatCondition !DeepEnough;
+    InvariantCondition
+      Time < (Excavation.EXECUTING.START + Lookup(ExcavationTimeout));
 
-        DigTheTrench:
-          {
-            InvariantCondition DiggingSafe;
-            EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
-                          Time >= (DigTheTrench.EXECUTING.START
-                                   + DIG_TRENCH_TIMEOUT));
-          Dig:
-            {
-              Boolean success;
-              success = DigTrench (Lookup(TrenchStartX),
-                                   Lookup(TrenchStartY),
-                                   Lookup(TrenchStartZ),
-                                   Lookup(TrenchDepth),
-                                   Lookup(TrenchLength),
-                                   Lookup(TrenchWidth),
-                                   Lookup(TrenchPitch),
-                                   Lookup(TrenchYaw),
-                                   Lookup(TrenchDumpX),
-                                   Lookup(TrenchDumpY),
-                                   Lookup(TrenchDumpZ));
-            }
-          FilmDig:
-            {
-              Repeat DigTheTrench.state == EXECUTING;
-              LibraryCall Image(desc="trench");
-              Wait FILM_INTERVAL;
-            }
-          SenseDig:
-            {
-              Repeat DigTheTrench.state == EXECUTING;
-              pprint ("Sensing dig...");
-              DiggingSafe = STUB_TRUE;
-              Wait SENSE_DIG_INTERVAL;
-            }
-          }
+    DigAndFilm: Concurrence
+    {
+      Boolean DiggingSafe = true;
+
+      DigTheTrench:
+      {
+        InvariantCondition DiggingSafe;
+        EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
+                      Time >= (DigTheTrench.EXECUTING.START
+                               + DIG_TRENCH_TIMEOUT));
+        Dig:
+        {
+          Boolean success;
+          success = DigTrench (Lookup(TrenchStartX),
+                               Lookup(TrenchStartY),
+                               Lookup(TrenchStartZ),
+                               Lookup(TrenchDepth),
+                               Lookup(TrenchLength),
+                               Lookup(TrenchWidth),
+                               Lookup(TrenchPitch),
+                               Lookup(TrenchYaw),
+                               Lookup(TrenchDumpX),
+                               Lookup(TrenchDumpY),
+                               Lookup(TrenchDumpZ));
         }
-    RemoveTailings:
-      {
-        LibraryCall Stub(desc="Removing tailings");
-      }
-      LibraryCall Image(desc="dig");
-    AssessDepth:
-      {
-        DeepEnough = STUB_TRUE;
+        FilmDig:
+        {
+          Repeat DigTheTrench.state == EXECUTING;
+          LibraryCall Image(desc="trench");
+          Wait FILM_INTERVAL;
+        }
+      SenseDig:
+        {
+          Repeat DigTheTrench.state == EXECUTING;
+          pprint ("Sensing dig...");
+          DiggingSafe = STUB_TRUE;
+          Wait SENSE_DIG_INTERVAL;
+        }
       }
     }
 
-    LibraryCall Downlink();
-    Time = Lookup(time);
+    RemoveTailings:
+    {
+      LibraryCall Stub(desc="Removing tailings");
+    }
+    LibraryCall Image(desc="dig");
+  AssessDepth:
+    {
+      DeepEnough = STUB_TRUE;
+    }
+  }
+
+  LibraryCall Downlink();
+  Time = Lookup(time);
 
   CollectionAndTransfer:
-    {
-      Real SampleAmount;
-      InvariantCondition
-        Time < (CollectionAndTransfer.EXECUTING.START +
-                Lookup(CollectAndTransferTimeout));
-      RepeatCondition CollectMore;
+  {
+    Real SampleAmount;
+    InvariantCondition
+      Time < (CollectionAndTransfer.EXECUTING.START +
+              Lookup(CollectAndTransferTimeout));
+    RepeatCondition CollectMore;
+
     Collect:
-      {
-        EndCondition Lookup(SampleGood); // Material Property Sensing
-        RA_COLLECT();
-      }
-    ImageSample:
-      {
-        ALIGN_SAMPLE_AND_CAMERA();  // position arm for imaging
-        LibraryCall Image(desc="sample");
-      }
-    DownlinkSampleImage:
-      {
-        LibraryCall Downlink();
-      }
-    Transfer:
-      {
-      Dock:
-        {
-          LibraryCall Stub(desc="Docking");
-        }
-      Unload:
-        {
-          LibraryCall Stub(desc="Unloading");
-        }
-      MeasureSample:
-        {
-          PostCondition !CollectMore;
-          LibraryCall Stub(desc="Measuring Sample");
-          CollectMore = STUB_FALSE;
-          Wait 1;
-        }
-      CapSample:
-        {
-          LibraryCall Stub(desc="Capping Sample");
-        }
-      DeliverSample:
-        {
-          LibraryCall Stub(desc="Delivering Sample");
-        }
-        LibraryCall ImageSampleSite();
-      }
+    {
+      EndCondition Lookup(SampleGood); // Material Property Sensing
+      RA_COLLECT();
     }
-  DoSampleAnalysis:
+    ImageSample:
+    {
+      ALIGN_SAMPLE_AND_CAMERA();  // position arm for imaging
+      LibraryCall Image(desc="sample");
+    }
+    DownlinkSampleImage:
+    {
+      LibraryCall Downlink();
+    }
+    Transfer:
+    {
+      Dock: LibraryCall Stub(desc="Docking");
+      Unload: LibraryCall Stub(desc="Unloading");
+      MeasureSample:
+      {
+        PostCondition !CollectMore;
+        LibraryCall Stub(desc="Measuring Sample");
+        CollectMore = STUB_FALSE;
+        Wait 1;
+      }
+      CapSample: LibraryCall Stub(desc="Capping Sample");
+      DeliverSample: LibraryCall Stub(desc="Delivering Sample");
+      ImageSampleSite: LibraryCall ImageSampleSite();
+    }
+
+    DoSampleAnalysis:
     {
       // Spawn a plan that does analysis.
       // Persists through sleep/wake cycle.
