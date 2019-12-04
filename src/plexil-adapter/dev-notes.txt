@@ -1,0 +1,49 @@
+Mike Dalal's personal development notes
+
+Sol 0 refinement
+-> Propose work session tomorrow, send list from below
+  Get running again!
+  De-Stub
+    rostopic list for potential candidates
+    Query group for functioniity, and learn contacts:
+      Battery monitor (Chetan, Molly)
+      Thermal monitor (Chetan?)
+      Comms: uplinks (?)
+    Decompose
+      Stereo panorama of landing site
+      Interogate surface
+      Get trench target from ground
+      Get trench target onboard
+      Remove tailings
+      Dock
+      Unload
+      Measure sample
+      Cap sample
+      Deliver sample
+  Refine Commands
+    DigTrench
+      Use JPL's
+      Decompose: see where Anjan is
+    RA_COLLECT
+      What does it mean? What is the OW equivalent? Is it needed?
+   hga_com 
+      What does it mean? What is the OW equivalent? Is it needed?
+     ALIGN_SAMPLE_AND_CAMERA
+      In JPL list?
+      Decompose: start with Terry
+  Refine Library Actions
+    Downlink, DownlinkImage
+      How would we do this?
+    Image
+      Map to current command (is input description useful?)
+    ImageSampleSite
+      How different from "Stereo panorama of landing site"?
+  Rationalize Lookups
+    Trench parameters
+
+  Integrate *something* with ROS
+    Tilt, pan, and take picture?
+
+Misc
+  Get a 3-button mouse!  First, try one.
+
