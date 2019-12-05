@@ -184,12 +184,6 @@ void OwAdapter::invokeAbort(Command *cmd)
 {
 }
 
-// NOTE: This macro, and the stub it implements, are temporary.
-#define COMMAND_STUB(command)                   \
-  if (name == #command) {                       \
-    unimplemented(#command);                    \
-  }
-
 
 // Sends a command (as invoked in a Plexil command node) to the system and sends
 // the status, and return value if applicable, back to the executive.
@@ -212,6 +206,22 @@ void OwAdapter::executeCommand(Command *cmd)
 
   if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "DigTrenchOp") {
+    double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
+    args[0].getValue(x);
+    args[0].getValue(y);
+    args[0].getValue(z);
+    args[0].getValue(depth);
+    args[0].getValue(length);
+    args[0].getValue(width);
+    args[0].getValue(pitch);
+    args[0].getValue(yaw);
+    args[0].getValue(dumpx);
+    args[0].getValue(dumpy);
+    args[0].getValue(dumpz);
+    OwInterface::instance()->digTrench(x, y, z, depth, length, width, 
+                                       pitch, yaw, dumpx, dumpy, dumpz);
+  }
   else if (name == "PublishTrajectory") {
     OwInterface::instance()->publishTrajectoryDemo();
   }
@@ -227,10 +237,6 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->takePicture();
   }
   else if (name == "owprint") owprint (cmd->getArgValues());
-  // Sol0 prototype commands
-  else COMMAND_STUB(RA_DIG)
-  else COMMAND_STUB(RA_COLLECT)
-  else COMMAND_STUB(ALIGN_SAMPLE_AND_CAMERA)
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

@@ -186,3 +186,12 @@ void OwInterface::takePicture ()
   checkSubscribers (m_leftImageTriggerPublisher);
   m_leftImageTriggerPublisher->publish (msg);
 }
+
+void OwInterface::digTrench (double x, double y, double z, 
+                             double depth, double length, double width, 
+                             double pitch, double yaw, 
+                             double dumpx, double dumpy, double dumpz)
+{
+  ROS_WARN("digTrench is unimplemented!");
+}
+

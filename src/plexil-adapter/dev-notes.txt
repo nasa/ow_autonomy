@@ -1,7 +1,6 @@
 Mike Dalal's personal development notes
 
 Sol 0 refinement
--> Propose work session tomorrow, send list from below
   Get running again!
   De-Stub
     rostopic list for potential candidates
@@ -17,21 +16,16 @@ Sol 0 refinement
       Remove tailings
       Dock
       Unload
+      Collect Sample
+      Align Sample and Camera
       Measure sample
       Cap sample
       Deliver sample
   Refine Commands
-    DigTrench
-      Use JPL's
+    DigTrenchOp
       Decompose: see where Anjan is
-    RA_COLLECT
-      What does it mean? What is the OW equivalent? Is it needed?
-   hga_com 
-      What does it mean? What is the OW equivalent? Is it needed?
-     ALIGN_SAMPLE_AND_CAMERA
-      In JPL list?
-      Decompose: start with Terry
   Refine Library Actions
+    Should they be commands?  Or is there PLEXIL-level decomposition?
     Downlink, DownlinkImage
       How would we do this?
     Image
