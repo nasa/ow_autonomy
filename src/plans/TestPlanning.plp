@@ -4,11 +4,13 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command owprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 Command StartPlanning();
 
 TestOwLander:
 {
-  owprint ("Planning...");
+  log_info ("Planning...");
   StartPlanning();
 }

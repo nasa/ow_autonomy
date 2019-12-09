@@ -46,27 +46,29 @@ static Value const Unknown;
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
 
-
-static void owprint (const vector<Value>& args)
+static string log_string (const vector<Value>& args)
 {
   std::ostringstream out;
-
+  out << "PLEXIL: ";
   for (vector<Value>::const_iterator iter = args.begin();
        iter != args.end();
        iter++) out << *iter;
-  cerr << "PLEXIL: " << out.str() << endl;
+  return out.str();
 }
 
 static void log_info (const vector<Value>& args)
 {
-  std::ostringstream out;
+  ROS_INFO("%s", log_string(args).c_str());
+}
 
-  out << "PLEXIL: ";
+static void log_error (const vector<Value>& args)
+{
+  ROS_ERROR("%s", log_string(args).c_str());
+}
 
-  for (vector<Value>::const_iterator iter = args.begin();
-       iter != args.end();
-       iter++) out << *iter;
-  ROS_INFO(out.str());
+static void log_warning (const vector<Value>& args)
+{
+  ROS_WARN("%s", log_string(args).c_str());
 }
 
 static void unimplemented (const string& name)
@@ -218,21 +220,16 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   // Utility commands
-  if (name == "log_info") {
-    args[0].getValue(string_arg);
-    ROS_INFO(string_arg.c_str());
-  }
-  else if (name == "log_warning") {
-    args[0].getValue(string_arg);
-    ROS_WARN(string_arg.c_str());
-  }
-  else if (name == "log_error") {
-    args[0].getValue(string_arg);
-    ROS_ERROR(string_arg.c_str());
-  }
-
+  if (name == "log_info") log_info (cmd->getArgValues());
+  else if (name == "log_warning") log_warning (cmd->getArgValues());
+  else if (name == "log_error") log_error (cmd->getArgValues());
+  // "Demos"
   else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "PublishTrajectory") {
+    OwInterface::instance()->publishTrajectoryDemo();
+  }
+  // Operations
   else if (name == "DigTrenchOp") {
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
     args[0].getValue(x);
@@ -246,11 +243,8 @@ void OwAdapter::executeCommand(Command *cmd)
     args[0].getValue(dumpx);
     args[0].getValue(dumpy);
     args[0].getValue(dumpz);
-    OwInterface::instance()->digTrench(x, y, z, depth, length, width, 
+    OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
-  }
-  else if (name == "PublishTrajectory") {
-    OwInterface::instance()->publishTrajectoryDemo();
   }
   else if (name == "TiltAntenna") {
     args[0].getValue(double_arg);
@@ -263,8 +257,6 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "TakePicture") {
     OwInterface::instance()->takePicture();
   }
-  else if (name == "owprint") owprint (cmd->getArgValues());
-  else if (name == "log_info") log_info (cmd->getArgValues());
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

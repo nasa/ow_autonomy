@@ -4,23 +4,25 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command owprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 Command StartPlanning();
 Command MoveGuarded();
 Command PublishTrajectory();
 
 TestOwLander:
 {
-  owprint ("Starting ow_lander service demo...");
+  log_info ("Starting ow_lander service demo...");
 
-  owprint ("Guarded move...");
+  log_info ("Guarded move...");
   MoveGuarded();
 
-  owprint ("Planning...");
+  log_info ("Planning...");
   StartPlanning();
 
-  owprint ("Publish trajectory...");
+  log_info ("Publish trajectory...");
   PublishTrajectory();
 
-  owprint ("ow_lander service demo finished.");
+  log_info ("ow_lander service demo finished.");
 }
