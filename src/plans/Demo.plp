@@ -9,12 +9,14 @@
 LibraryAction TestOwLander();
 LibraryAction TestAntennaCamera();
 
-Command owprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 
 Demo:
 {
-  owprint ("Starting autonomy demo...");
+  log_info ("Starting autonomy demo...");
   LibraryCall TestOwLander();
   LibraryCall TestAntennaCamera();
-  owprint ("Autonomy demo finished.");
+  log_info ("Autonomy demo finished.");
 }

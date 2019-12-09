@@ -44,7 +44,9 @@ LibraryAction Image(In String desc);
 LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
 
-Command pprint (...);
+Command log_info (String);
+Command log_warning (String);
+Command log_error (String);
 
 // This declaration should work, but does not.
 // String Command StartPlan(String plan_name, ...);
@@ -120,7 +122,7 @@ OceanWorldMission: Concurrence
         {
           LibraryCall Stub(desc="Getting trench target onboard");
         }
-        pprint ("Failed to get trench target!");
+        log_error ("Failed to get trench target!");
       }
     }
 
@@ -166,7 +168,7 @@ OceanWorldMission: Concurrence
           SenseDig:
           {
             Repeat DigTheTrench.state == EXECUTING;
-            pprint ("Sensing dig...");
+            log_info ("Sensing dig...");
             DiggingSafe = STUB_TRUE;
             Wait SENSE_DIG_INTERVAL;
           }

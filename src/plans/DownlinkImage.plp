@@ -4,9 +4,11 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command pprint (...);
+Command log_info (String);
+Command log_warning (String);
+Command log_error (String);
 
 DownlinkImage:
 {
-  pprint ("Downlinking image...");
+  log_info ("Downlinking image...");
 }

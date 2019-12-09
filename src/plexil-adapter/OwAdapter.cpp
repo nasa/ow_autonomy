@@ -57,6 +57,18 @@ static void owprint (const vector<Value>& args)
   cerr << "PLEXIL: " << out.str() << endl;
 }
 
+static void log_info (const vector<Value>& args)
+{
+  std::ostringstream out;
+
+  out << "PLEXIL: ";
+
+  for (vector<Value>::const_iterator iter = args.begin();
+       iter != args.end();
+       iter++) out << *iter;
+  ROS_INFO(out.str());
+}
+
 static void unimplemented (const string& name)
 {
   cout << "Command " << name << " not yet implemented!" << endl;
@@ -200,11 +212,26 @@ void OwAdapter::executeCommand(Command *cmd)
 
   // Argument value holders
   double double_arg;
+  string string_arg;
 
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
+  // Utility commands
+  if (name == "log_info") {
+    args[0].getValue(string_arg);
+    ROS_INFO(string_arg.c_str());
+  }
+  else if (name == "log_warning") {
+    args[0].getValue(string_arg);
+    ROS_WARN(string_arg.c_str());
+  }
+  else if (name == "log_error") {
+    args[0].getValue(string_arg);
+    ROS_ERROR(string_arg.c_str());
+  }
+
+  else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
   else if (name == "DigTrenchOp") {
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
@@ -237,6 +264,7 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->takePicture();
   }
   else if (name == "owprint") owprint (cmd->getArgValues());
+  else if (name == "log_info") log_info (cmd->getArgValues());
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

@@ -4,10 +4,12 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command pprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 
 Image:
 {
   In String desc;
-  pprint ("Imaging", desc, "...");
+  log_info ("Imaging", desc, "...");
 }
