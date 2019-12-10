@@ -1,8 +1,0 @@
-ImageWorkspace:
-{
-  // Capture a panoramic view around the lander.  Parameters to know or decide:
-  //  - Field of view (15% lateral and vertical)
-  //  - Angles to capture (each will be a 360 degree pass)
-  //  - Lateral and vertical overlaps
-  
-}
