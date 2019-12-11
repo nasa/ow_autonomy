@@ -11,5 +11,5 @@ Command log_error (...);
 Image:
 {
   In String desc;
-  log_info ("Imaging", desc, "...");
+  log_info ("Imaging ", desc, "...");
 }

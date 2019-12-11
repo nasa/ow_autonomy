@@ -128,21 +128,17 @@ OceanWorldMission: Concurrence
           EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                         Time >= (DigTheTrench.EXECUTING.START
                                  + DIG_TRENCH_TIMEOUT));
-          Dig:
-          {
-            Boolean success;
-            success = DigTrenchOp (Lookup(TrenchStartX),
-                                   Lookup(TrenchStartY),
-                                   Lookup(TrenchStartZ),
-                                   Lookup(TrenchDepth),
-                                   Lookup(TrenchLength),
-                                   Lookup(TrenchWidth),
-                                   Lookup(TrenchPitch),
-                                   Lookup(TrenchYaw),
-                                   Lookup(TrenchDumpX),
-                                   Lookup(TrenchDumpY),
-                                   Lookup(TrenchDumpZ));
-          }
+          Dig: DigTrenchOp (Lookup(TrenchStartX),
+                            Lookup(TrenchStartY),
+                            Lookup(TrenchStartZ),
+                            Lookup(TrenchDepth),
+                            Lookup(TrenchLength),
+                            Lookup(TrenchWidth),
+                            Lookup(TrenchPitch),
+                            Lookup(TrenchYaw),
+                            Lookup(TrenchDumpX),
+                            Lookup(TrenchDumpY),
+                            Lookup(TrenchDumpZ));
           FilmDig:
           {
             Repeat DigTheTrench.state == EXECUTING;

@@ -4,10 +4,12 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command pprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 
 Stub:
 {
   In String desc;
-  pprint ("PLEXIL Stub:", desc, "...");
+  log_info ("PLEXIL Stub: ", desc, "...");
 }

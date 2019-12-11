@@ -4,9 +4,11 @@
 // rights reserved.
 // __END_LICENSE__
 
-Command pprint (...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 
 ImageSampleSite:
 {
-  pprint ("Imaging sample site...");
+  log_info ("Imaging sample site...");
 }

@@ -187,11 +187,26 @@ void OwInterface::takePicture ()
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::digTrench (double x, double y, double z, 
-                             double depth, double length, double width, 
-                             double pitch, double yaw, 
+void OwInterface::takePanorama (double elev_lo, double elev_hi,
+                                double lat_overlap, double vert_overlap)
+{
+  // Compute increments
+  // Iterate through tilts
+  //   Tilt
+  //   Wait for complete
+  //   Iterate through pan
+  //     Take picture
+  //     Pan
+  //     Wait for complete
+  // Do something with images!
+  ROS_WARN("takePanorama is unimplemented!");
+}
+
+
+void OwInterface::digTrench (double x, double y, double z,
+                             double depth, double length, double width,
+                             double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
   ROS_WARN("digTrench is unimplemented!");
 }
-

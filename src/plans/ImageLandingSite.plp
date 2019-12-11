@@ -1,22 +1,12 @@
-ImageLanding:
+Command TakePanorama (Real elevation_lo, Real elevation_hi,
+                      Real lateral_overlap, Real vertical_overlap);
+                       
+ImageLandingSite:
 {
-  // Capture a panoramic view around the lander.  Parameters to know or decide:
-  //  - Field of view (21 degrees lateral and 15 degrees vertical)
-  //  - Vertical angles to capture
-  //  - Lateral and vertical overlaps
+  // Capture a panoramic view around the lander.  Assumptions:
+  //  - 21 degrees lateral field of view
+  //  - 15 degrees vertical field of view
 
-  // Field of view constants, degrees.
-  Real VerticalFOV = 15.0;
-  Real LateralFOV  = 21.0;
-
-  // Imaging parameters
-  Real MinVerticalAngle  = -45.0;
-  Real MaxVerticalAngle  = -20.0;
-  Real MinLateralAngle   = 0;
-  Real MaxLateralAngle   =  360;
-  Real LateralOverlap    = 2.0;
-  Real VerticalOverlap   = 2.0;
-
-  // Computed
-  Real VerticalIncrement = 13.0;  // VerticalFOV - VerticalOverlap
+  // TODO: tweak
+  TakePanorama (1.3, 1.2, 1.0, 1.0);
 }
