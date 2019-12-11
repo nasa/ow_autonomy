@@ -15,7 +15,7 @@ See the README files in each subdirectory for more information.
 Build
 -----
 
-  % catkin build
+     % catkin build
 
 A prerequisite for building and running this application is a working PLEXIL
 installation, which has its own prerequisites.  For instructions see the
@@ -24,7 +24,7 @@ must be set to PLEXIL's installation pathname.
 
 Your ROS environment should also first be set up:
 
-  source <catkin-workspace>/devel/setup.sh
+     % source <catkin-workspace>/devel/setup.sh
 
 
 Run
@@ -32,11 +32,11 @@ Run
 
 First launch ow_lander as follows.
 
-  % roslaunch ow arm_sim.launch
+     % roslaunch ow arm_sim.launch
 
 Then launch the autonomy node.  The default launch looks like this:
 
-  % roslaunch ow_autonomy autonomy.launch
+     % roslaunch ow_autonomy autonomy.launch
 
 This invocation loads the default PLEXIL plan, Demo.plx, which
 demonstrates a variety of lander functions: arm planning, guarded move,
@@ -45,12 +45,12 @@ publishing trajectory (for Gazebo), antenna and camera functions.
 Alternatively, you may specify a plan to load.  The default launch is
 equivalent to:
 
-  % roslaunch ow_autonomy autonomy.launch plan:="Demo.plx"
+     % roslaunch ow_autonomy autonomy.launch plan:="Demo.plx"
 
 Use the 'plan' argument to specify a .plx file found in
 
-  <ow_workspace>/devel/etc/plexil
+     <ow_workspace>/devel/etc/plexil
 
 An interesting choice is the Europa reference mission prototype:
 
-  % roslaunch ow_autonomy autonomy.launch plan:="OceanWorldMission.plx"
+     % roslaunch ow_autonomy autonomy.launch plan:="OceanWorldMission.plx"
