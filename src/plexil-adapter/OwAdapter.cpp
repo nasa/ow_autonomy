@@ -13,7 +13,6 @@
 
 // ROS
 #include <ros/ros.h>
-//#include <ros/package.h>  // needed?
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
