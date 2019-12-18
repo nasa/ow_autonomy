@@ -50,6 +50,8 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(ExcavationTimeout, 60)
   else STATE_STUB(SampleGood, true)
   else STATE_STUB(CollectAndTransferTimeout, 10)
+  else STATE_STUB(VertFOV, 15)
+  else STATE_STUB(HorizFOV, 22)
   else retval = false;
 
   return retval;

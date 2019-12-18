@@ -1,0 +1,85 @@
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2019, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
+Command TiltAntenna (Real);
+Command PanAntenna (Real);
+Command TakePicture();
+
+Real Lookup VertFOV;
+Real Lookup HorizFOV;
+
+TakePanorama:
+{
+  // All inputs are in degrees
+  In Real TiltMin, TiltMax, PanMin, PanMax;
+  In Real VertOverlap, HorizOverlap;
+
+  // Later:
+  //   - rows, cols
+  //   - image order (top/bottom, right/left - can be enum)
+  //   - image overlap PERCENT
+  //   - azimuth/elevation instead of tilt/pan angles
+  //   - reference frame (lander, level)
+
+  Integer LongWait = 5;
+  Integer ShortWait = 2;
+
+  Real Tilt, Pan, VertFOV, HorizFOV;
+
+  Tilt = TiltMin;
+  Pan = PanMin;
+  VertFOV = Lookup(VertFOV);
+  HorizFOV = Lookup(HorizFOV);
+
+  // Tilt/Pan to min and take first picture
+  TiltAntenna (TiltMin);
+  PanAntenna (PanMin);
+  Wait (LongWait);
+  TakePicture();
+  // Should we wait here?
+
+  IterateTilt:
+  {
+    Boolean Done = false;
+
+    RepeatCondition !Done;
+
+    if (Tilt == TiltMax) Done = true;
+    else Tilt = min (Tilt - VertFOV + VertOverlap, TiltMax);
+    endif;
+    TiltAntenna (Tilt);
+    Wait (ShortWait);
+
+    IteratePan:
+    {
+      Boolean Done = false;
+      Loop:
+      {
+        RepeatCondition !Done;
+
+        if (Pan == PanMax) Done = true;
+        else Pan = min (Pan - HorizFOV + HorizOverlap, PanMax);
+        endif;
+        PanAntenna (Pan);
+        Wait (ShortWait);
+        TakePicture();
+      }
+    }
+  }
+
+  // Compute increments
+  // Iterate through tilts
+  //   Tilt
+  //   Wait for complete
+  //   Iterate through pan
+  //     Take picture
+  //     Pan
+  //     Wait for complete
+  // Do something with images!
+}
