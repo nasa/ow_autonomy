@@ -36,7 +36,7 @@ First launch ow_lander as follows.
 
 Then launch the autonomy node.  The default launch looks like this:
 
-     % roslaunch ow_autonomy autonomy.launch
+     % roslaunch ow_autonomy autonomy_node.launch
 
 This invocation loads the default PLEXIL plan, Demo.plx, which
 demonstrates a variety of lander functions: arm planning, guarded move,
