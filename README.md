@@ -45,7 +45,7 @@ publishing trajectory (for Gazebo), antenna and camera functions.
 Alternatively, you may specify a plan to load.  The default launch is
 equivalent to:
 
-     % roslaunch ow_autonomy autonomy.launch plan:="Demo.plx"
+     % roslaunch ow_autonomy autonomy_node.launch plan:="Demo.plx"
 
 Use the 'plan' argument to specify a .plx file found in
 
@@ -53,4 +53,4 @@ Use the 'plan' argument to specify a .plx file found in
 
 An interesting choice is the Europa reference mission prototype:
 
-     % roslaunch ow_autonomy autonomy.launch plan:="OceanWorldMission.plx"
+     % roslaunch ow_autonomy autonomy_node.launch plan:="OceanWorldMission.plx"
