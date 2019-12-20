@@ -27,10 +27,11 @@ TakePanorama:
   //   - azimuth/elevation instead of tilt/pan angles
   //   - reference frame (lander, level)
 
+  Real D2R = 0.01745; // pi/180
   Integer LongWait = 5;
   Integer ShortWait = 2;
-
   Real Tilt, Pan, VertFOV, HorizFOV;
+  Boolean PanoramaDone = false;
 
   Tilt = TiltMin;
   Pan = PanMin;
@@ -38,25 +39,21 @@ TakePanorama:
   HorizFOV = Lookup(HorizFOV);
 
   // Tilt/Pan to min and take first picture
-  TiltAntenna (TiltMin);
-  PanAntenna (PanMin);
+  log_info ("TiltMin = ", TiltMin, "PanMin = ", PanMin);
+  //  TiltAntenna (TiltMin * D2R);
+  TiltAntenna (0.25);
+  //  PanAntenna (PanMin * D2R);
+  PanAntenna (0.25);
   Wait (LongWait);
   TakePicture();
-  // Should we wait here?
+  // Should we wait after picture command?
 
-  IterateTilt:
+  IterateVertically:
   {
-    Boolean Done = false;
+    RepeatCondition !PanoramaDone;
 
-    RepeatCondition !Done;
-
-    if (Tilt == TiltMax) Done = true;
-    else Tilt = min (Tilt - VertFOV + VertOverlap, TiltMax);
-    endif;
-    TiltAntenna (Tilt);
-    Wait (ShortWait);
-
-    IteratePan:
+    // First pan through range at current tilt
+    Pan:
     {
       Boolean Done = false;
       Loop:
@@ -64,22 +61,25 @@ TakePanorama:
         RepeatCondition !Done;
 
         if (Pan == PanMax) Done = true;
-        else Pan = min (Pan - HorizFOV + HorizOverlap, PanMax);
+        else {
+          Pan = min (Pan + HorizFOV - HorizOverlap, PanMax);
+          log_info ("New pan: ", Pan, ", radians: ", Pan * D2R);
+          PanAntenna (Pan * D2R);
+          Wait (ShortWait);
+          TakePicture();
+        }
         endif;
-        PanAntenna (Pan);
-        Wait (ShortWait);
-        TakePicture();
       }
     }
-  }
 
-  // Compute increments
-  // Iterate through tilts
-  //   Tilt
-  //   Wait for complete
-  //   Iterate through pan
-  //     Take picture
-  //     Pan
-  //     Wait for complete
-  // Do something with images!
+    // Increment tilt for next pan
+    if (Tilt == TiltMax) PanoramaDone = true;
+    else {
+      Tilt = min (Tilt + VertFOV - VertOverlap, TiltMax);
+      log_info ("New tilt degrees: ", Tilt, ", radians: ", Tilt * D2R);
+      TiltAntenna (Tilt * D2R);
+      Wait (ShortWait);
+    }
+    endif;
+  }
 }

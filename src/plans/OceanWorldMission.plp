@@ -83,7 +83,7 @@ OceanWorldMission: Concurrence
     ImageLandingSite: LibraryCall TakePanorama (name="Landing Site",
                                                 HorizOverlap = 2,
                                                 VertOverlap = 2,
-                                                PanMin = 0, PanMax = 360,
+                                                PanMin = 0, PanMax = 30,
                                                 TiltMin = 0, TiltMax = 20);
 
     InterogateSurface: LibraryCall Stub(desc="Interrogating surface");

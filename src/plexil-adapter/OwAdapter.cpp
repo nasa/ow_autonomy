@@ -30,6 +30,10 @@ using std::vector;
 using std::list;
 using std::copy;
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 // Domain
 #include "OwSimProxy.h"
 
@@ -205,7 +209,6 @@ void OwAdapter::executeCommand(Command *cmd)
 
   // Argument value holders
   double double_arg;
-  string string_arg;
 
   // Return values
   Value retval = Unknown;
@@ -237,21 +240,16 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "TakePanorama") {
-    double elev_lo, elev_hi, lat_overlap, vert_overlap;
-    args[0].getValue(elev_lo);
-    args[0].getValue(elev_hi);
-    args[0].getValue(lat_overlap);
-    args[0].getValue(vert_overlap);
-    OwInterface::instance()->takePanorama (elev_lo, elev_hi,
-                                           lat_overlap, vert_overlap);
-  }
   else if (name == "TiltAntenna") {
     args[0].getValue(double_arg);
+    ROS_INFO("Plexil adapter: argument to tilt: %d", double_arg);
+    cout << "Tilt argument from cout: " << double_arg << endl;
     OwInterface::instance()->tiltAntenna (double_arg);
   }
   else if (name == "PanAntenna") {
     args[0].getValue(double_arg);
+    ROS_INFO("Plexil adapter: argument to pan: %d", double_arg);
+    cout << "Pan argument from cout: " << double_arg << endl;
     OwInterface::instance()->panAntenna (double_arg);
   }
   else if (name == "TakePicture") {
