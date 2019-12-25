@@ -169,7 +169,7 @@ void OwInterface::tiltAntenna (double arg)
   std_msgs::Float64 msg;
   msg.data = arg;
   checkSubscribers (m_antennaTiltPublisher);
-  ROS_INFO("Tilting antenna to %d", arg);
+  ROS_INFO("Tilting antenna to %f", arg);
   m_antennaTiltPublisher->publish (msg);
 }
 
@@ -178,7 +178,7 @@ void OwInterface::panAntenna (double arg)
   std_msgs::Float64 msg;
   msg.data = arg;
   checkSubscribers (m_antennaPanPublisher);
-  ROS_INFO("Panning antenna to %d", arg);
+  ROS_INFO("Panning antenna to %f", arg);
   m_antennaPanPublisher->publish (msg);
 }
 

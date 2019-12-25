@@ -30,10 +30,6 @@ using std::vector;
 using std::list;
 using std::copy;
 
-#include <iostream>
-using std::cout;
-using std::endl;
-
 // Domain
 #include "OwSimProxy.h"
 
@@ -242,14 +238,10 @@ void OwAdapter::executeCommand(Command *cmd)
   }
   else if (name == "TiltAntenna") {
     args[0].getValue(double_arg);
-    ROS_INFO("Plexil adapter: argument to tilt: %d", double_arg);
-    cout << "Tilt argument from cout: " << double_arg << endl;
     OwInterface::instance()->tiltAntenna (double_arg);
   }
   else if (name == "PanAntenna") {
     args[0].getValue(double_arg);
-    ROS_INFO("Plexil adapter: argument to pan: %d", double_arg);
-    cout << "Pan argument from cout: " << double_arg << endl;
     OwInterface::instance()->panAntenna (double_arg);
   }
   else if (name == "TakePicture") {
