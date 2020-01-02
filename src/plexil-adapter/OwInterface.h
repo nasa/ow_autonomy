@@ -29,9 +29,11 @@ class OwInterface
   void tiltAntenna (double);
   void panAntenna (double);
   void takePicture ();
-  void digTrench (double x, double y, double z, double depth, 
-                  double length, double width, double pitch, double yaw, 
+  void digTrench (double x, double y, double z, double depth,
+                  double length, double width, double pitch, double yaw,
                   double dumpx, double dumpy, double dumpz);
+  void takePanorama (double elev_lo, double elev_hi,
+                     double lat_overlap, double vert_overlap);
 
  private:
   OwInterface (const OwInterface&);            // undefined (singleton)

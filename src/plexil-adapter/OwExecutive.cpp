@@ -39,8 +39,9 @@ using std::ostringstream;
 using std::cout;
 using std::endl;
 
-// Location of PLEXIL files
-static string PlexilDir = "";  // initialized below
+// DEVEL location of PLEXIL files, initialized in initialize().
+// TODO: make this the INSTALLED location, once we have one for OW.
+static string PlexilDir = "";
 
 // The embedded PLEXIL application
 static ExecApplication* PlexilApp = NULL;
@@ -145,15 +146,32 @@ static bool plexilInitializeInterfaces()
   return true;
 }
 
+static void get_plexil_debug_config()
+{
+  try {
+    string debug_file = PlexilDir + "plexil-debug.cfg";
+    std::ifstream dbgConfig(debug_file.c_str());
+    if (dbgConfig.good()) PLEXIL::readDebugConfigStream(dbgConfig);
+    else ROS_ERROR("Unable to open PLEXIL debug config file %s",
+                   debug_file.c_str());
+  }
+  catch (const Error& e) {
+    std::ostringstream s;
+    e.print(s);
+    ROS_ERROR("Error getting PLEXIL debug config: %s", s.str().c_str());
+  }
+}
 
 bool OwExecutive::initialize ()
 {
-  // NOTE: this is the best we can do for now.  Eventually these would be in the
-  // install space.
+  // NOTE: this is the best we can do for now.  ROS provides no API for devel.
+  //
   PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
+
+  get_plexil_debug_config();
 
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");

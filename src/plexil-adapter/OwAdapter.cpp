@@ -13,7 +13,6 @@
 
 // ROS
 #include <ros/ros.h>
-#include <ros/package.h>  // needed?
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -30,9 +29,6 @@ using std::string;
 using std::vector;
 using std::list;
 using std::copy;
-using std::cerr;
-using std::cout;
-using std::endl;
 
 // Domain
 #include "OwSimProxy.h"
@@ -46,20 +42,29 @@ static Value const Unknown;
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
 
-
-static void owprint (const vector<Value>& args)
+static string log_string (const vector<Value>& args)
 {
   std::ostringstream out;
-
+  out << "PLEXIL: ";
   for (vector<Value>::const_iterator iter = args.begin();
        iter != args.end();
        iter++) out << *iter;
-  cerr << "PLEXIL: " << out.str() << endl;
+  return out.str();
 }
 
-static void unimplemented (const string& name)
+static void log_info (const vector<Value>& args)
 {
-  cout << "Command " << name << " not yet implemented!" << endl;
+  ROS_INFO("%s", log_string(args).c_str());
+}
+
+static void log_error (const vector<Value>& args)
+{
+  ROS_ERROR("%s", log_string(args).c_str());
+}
+
+static void log_warning (const vector<Value>& args)
+{
+  ROS_WARN("%s", log_string(args).c_str());
 }
 
 
@@ -200,30 +205,46 @@ void OwAdapter::executeCommand(Command *cmd)
 
   // Argument value holders
   double double_arg;
+  string string_arg;
 
   // Return values
   Value retval = Unknown;
 
-  if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
+  // Utility commands
+  if (name == "log_info") log_info (cmd->getArgValues());
+  else if (name == "log_warning") log_warning (cmd->getArgValues());
+  else if (name == "log_error") log_error (cmd->getArgValues());
+  // "Demos"
+  else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "PublishTrajectory") {
+    OwInterface::instance()->publishTrajectoryDemo();
+  }
+  // Operations
   else if (name == "DigTrenchOp") {
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
     args[0].getValue(x);
-    args[0].getValue(y);
-    args[0].getValue(z);
-    args[0].getValue(depth);
-    args[0].getValue(length);
-    args[0].getValue(width);
-    args[0].getValue(pitch);
-    args[0].getValue(yaw);
-    args[0].getValue(dumpx);
-    args[0].getValue(dumpy);
-    args[0].getValue(dumpz);
-    OwInterface::instance()->digTrench(x, y, z, depth, length, width, 
+    args[1].getValue(y);
+    args[2].getValue(z);
+    args[3].getValue(depth);
+    args[4].getValue(length);
+    args[5].getValue(width);
+    args[6].getValue(pitch);
+    args[7].getValue(yaw);
+    args[8].getValue(dumpx);
+    args[9].getValue(dumpy);
+    args[10].getValue(dumpz);
+    OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "PublishTrajectory") {
-    OwInterface::instance()->publishTrajectoryDemo();
+  else if (name == "TakePanorama") {
+    double elev_lo, elev_hi, lat_overlap, vert_overlap;
+    args[0].getValue(elev_lo);
+    args[0].getValue(elev_hi);
+    args[0].getValue(lat_overlap);
+    args[0].getValue(vert_overlap);
+    OwInterface::instance()->takePanorama (elev_lo, elev_hi,
+                                           lat_overlap, vert_overlap);
   }
   else if (name == "TiltAntenna") {
     args[0].getValue(double_arg);
@@ -236,7 +257,6 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "TakePicture") {
     OwInterface::instance()->takePicture();
   }
-  else if (name == "owprint") owprint (cmd->getArgValues());
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
@@ -257,7 +277,7 @@ void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
   Value retval = Unknown;  // the value of the queried state
 
   if (! TheSimProxy->lookup(state.name(), state.parameters(), retval)) {
-    cerr << "Invalid Lookup: " << state.name() << endl;
+    ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
   }
   entry.update(retval);
 }

@@ -6,7 +6,9 @@
 
 // Test/demo antenna and camera functions.
 
-Command pprint(...);
+Command log_info (...);
+Command log_warning (...);
+Command log_error (...);
 Command TiltAntenna (Real);
 Command PanAntenna (Real);
 Command TakePicture();
@@ -16,28 +18,28 @@ TestAntennaCamera:
   // Instead of the Waits, would be good to detect when operation is finished.
   Integer WaitTime = 5;
 
-  pprint ("Starting Antenna/Camera demo...");
+  log_info ("Starting Antenna/Camera demo...");
 
-  pprint ("Panning antenna to 1...");
+  log_info ("Panning antenna to 1...");
   PanAntenna(1);
   Wait(WaitTime);
 
-  pprint ("Tilting antenna to 1.2...");
+  log_info ("Tilting antenna to 1.2...");
   TiltAntenna(1.2);
   Wait(WaitTime);
 
   // TODO: add left/right camera trigger
-  pprint ("Taking picture...");
+  log_info ("Taking picture...");
   TakePicture();
   Wait(WaitTime);
 
-  pprint ("Tilting antenna back to 0...");
+  log_info ("Tilting antenna back to 0...");
   TiltAntenna(0);
   Wait(WaitTime);
 
-  pprint ("Panning antenna back to 0...");
+  log_info ("Panning antenna back to 0...");
   PanAntenna(0);
   Wait(WaitTime);
-  
-  pprint ("Antenna/Camera demo finished.");
+
+  log_info ("Antenna/Camera demo finished.");
 }

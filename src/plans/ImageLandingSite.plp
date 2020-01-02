@@ -1,0 +1,12 @@
+Command TakePanorama (Real elevation_lo, Real elevation_hi,
+                      Real lateral_overlap, Real vertical_overlap);
+                       
+ImageLandingSite:
+{
+  // Capture a panoramic view around the lander.  Assumptions:
+  //  - 21 degrees lateral field of view
+  //  - 15 degrees vertical field of view
+
+  // TODO: tweak
+  TakePanorama (1.3, 1.2, 1.0, 1.0);
+}
