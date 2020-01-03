@@ -53,7 +53,7 @@ void OwInterface::initialize()
        ("/ant_pan_position_controller/command", 1));
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/NavCamStereo/left/image_trigger", 1));
+       ("/StereoCamera/left/image_trigger", 1));
     initialized = true;
   }
 }
