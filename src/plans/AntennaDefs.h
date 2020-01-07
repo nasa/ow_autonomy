@@ -15,10 +15,11 @@
 #define VertFOV  10       // Easy value for testing.  Should be 15.
 #define HorizFOV 10       // Easy value for testing.  Should be 21
 
+// All values in degrees
 #define PanMin   0
-#define PanMax   6.2832   // pi*2  or 360 degrees
-#define TiltMin -0.7854   // -pi/4 or 45 degrees upwards
-#define TiltMax  0.7854   //  pi/4or 45 degrees downwards
+#define PanMax   359 
+#define TiltMin  -45
+#define TiltMax  45
 
 
 #endif

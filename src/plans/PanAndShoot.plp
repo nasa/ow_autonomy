@@ -1,3 +1,9 @@
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
 #include "AntennaDefs.h"
 
 Command pan_antenna (Real);
@@ -7,6 +13,7 @@ PanAndShoot:
 {
   In Real PanAngle;
 
+  log_info ("Commanding pan ", PanAngle, " degrees.");
   pan_antenna (PanAngle * D2R);
   Wait (ShortWait);
   take_picture();

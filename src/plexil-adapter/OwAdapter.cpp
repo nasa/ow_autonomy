@@ -1,7 +1,7 @@
 // Implementation of PLEXIL interface adapter.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -57,14 +57,19 @@ static void log_info (const vector<Value>& args)
   ROS_INFO("%s", log_string(args).c_str());
 }
 
+static void log_warning (const vector<Value>& args)
+{
+  ROS_WARN("%s", log_string(args).c_str());
+}
+
 static void log_error (const vector<Value>& args)
 {
   ROS_ERROR("%s", log_string(args).c_str());
 }
 
-static void log_warning (const vector<Value>& args)
+static void log_debug (const vector<Value>& args)
 {
-  ROS_WARN("%s", log_string(args).c_str());
+  ROS_DEBUG("%s", log_string(args).c_str());
 }
 
 

@@ -1,16 +1,15 @@
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
 
 #include "AntennaDefs.h"
 
-Command pprint (...);
-
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
+Command log_debug (...);
 Command tilt_antenna (Real);
 Command pan_antenna (Real);
 
@@ -43,14 +42,45 @@ TakePanorama:
   // Declare plan variables
   Real tilt, pan, tilt_increment, pan_increment;
   Boolean reverse_pan = false;
+  Boolean exit = false;
+
+  ExitCondition exit;
+
+  // Check constraints
+
+  if (TiltLo > TiltHi || TiltLo < TiltMin || TiltHi > TiltMax) {
+    log_error ("TakePanorama: Tilt spec outside valid range, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (PanLo > PanHi || PanLo < PanMin || PanHi > PanMax) {
+    log_error ("TakePanorama: Pan spec outside valid range, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (VertFOV/2 <= VertOverlap) {
+    log_error ("TakePanorama: Vertical overlap too high, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (HorizFOV/2 <= HorizOverlap) {
+    log_error ("TakePanorama: Horizontal overlap too high, exiting.");
+    exit = true;
+  }
+  endif;
 
   // Initialize plan variables
+
   tilt = TiltLo;
   pan = PanLo;
   tilt_increment = (VertFOV / 2) - VertOverlap;
   pan_increment = (HorizFOV / 2) - HorizOverlap;
 
   // Get to initial position
+  log_info ("Commanding tilt ", tilt, " degrees.");
   tilt_antenna (tilt * D2R);
   pan_antenna (pan * D2R);
   Wait (LongWait);
@@ -63,7 +93,6 @@ TakePanorama:
 
 
   // Iterate through tilt
-  pprint ("---- Beginning tilt increment");
   while (tilt + tilt_increment < TiltHi) {
     tilt = tilt + tilt_increment;
     LibraryCall TiltAndImagePass (TiltAngle = tilt,
@@ -73,7 +102,6 @@ TakePanorama:
                                   ReversePan = reverse_pan);
   }
   if (tilt < TiltHi) {
-    pprint ("---- Final tilt increment");
     LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,

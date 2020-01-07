@@ -1,5 +1,5 @@
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -169,7 +169,7 @@ void OwInterface::tiltAntenna (double arg)
   std_msgs::Float64 msg;
   msg.data = arg;
   checkSubscribers (m_antennaTiltPublisher);
-  ROS_INFO("Tilting antenna to %f", arg);
+  ROS_INFO("Tilting antenna to %f radians", arg);
   m_antennaTiltPublisher->publish (msg);
 }
 
@@ -178,7 +178,7 @@ void OwInterface::panAntenna (double arg)
   std_msgs::Float64 msg;
   msg.data = arg;
   checkSubscribers (m_antennaPanPublisher);
-  ROS_INFO("Panning antenna to %f", arg);
+  ROS_INFO("Panning antenna to %f radians", arg);
   m_antennaPanPublisher->publish (msg);
 }
 
