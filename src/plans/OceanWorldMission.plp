@@ -43,10 +43,10 @@ LibraryAction Downlink();
 LibraryAction Image(In String desc);
 LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
-LibraryAction TakePanorama (In String name,
-                            In Real HorizOverlap, In Real VertOverlap,
-                            In Real PanMin, In Real PanMax,
-                            In Real TiltMin, In Real TiltMax);
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
+
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
@@ -80,11 +80,10 @@ OceanWorldMission: Concurrence
 
     Real Time;
 
-    ImageLandingSite: LibraryCall TakePanorama (name="Landing Site",
+    ImageLandingSite: LibraryCall TakePanorama (TiltLo = 0, TiltHi = 30,
+                                                PanLo = 0, PanHi = 30,
                                                 HorizOverlap = 0,
-                                                VertOverlap = 0,
-                                                PanMin = 0, PanMax = 30,
-                                                TiltMin = 0, TiltMax = 30);
+                                                VertOverlap = 0);
 
     InterogateSurface: LibraryCall Stub(desc="Interrogating surface");
 

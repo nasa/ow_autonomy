@@ -1,0 +1,13 @@
+#include "AntennaDefs.h"
+
+Command pan_antenna (Real);
+Command take_picture ();
+
+PanAndShoot:
+{
+  In Real PanAngle;
+
+  pan_antenna (PanAngle * D2R);
+  Wait (ShortWait);
+  take_picture();
+}

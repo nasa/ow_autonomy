@@ -6,6 +6,8 @@
 
 // Test/demo antenna and camera functions.
 
+#include "AntennaDefs.h"
+
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
@@ -16,30 +18,29 @@ Command TakePicture();
 TestAntennaCamera:
 {
   // Instead of the Waits, would be good to detect when operation is finished.
-  Integer WaitTime = 5;
 
   log_info ("Starting Antenna/Camera demo...");
 
   log_info ("Panning antenna to 1...");
   PanAntenna(1);
-  Wait(WaitTime);
+  Wait(LongWait);
 
   log_info ("Tilting antenna to 1.2...");
   TiltAntenna(1.2);
-  Wait(WaitTime);
+  Wait(LongWait);
 
   // TODO: add left/right camera trigger
   log_info ("Taking picture...");
   TakePicture();
-  Wait(WaitTime);
+  Wait(LongWait);
 
   log_info ("Tilting antenna back to 0...");
   TiltAntenna(0);
-  Wait(WaitTime);
+  Wait(LongWait);
 
   log_info ("Panning antenna back to 0...");
   PanAntenna(0);
-  Wait(WaitTime);
+  Wait(LongWait);
 
   log_info ("Antenna/Camera demo finished.");
 }

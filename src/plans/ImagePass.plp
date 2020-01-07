@@ -1,0 +1,35 @@
+Command take_picture();
+LibraryAction PanAndShoot (In Real PanAngle);
+
+ImagePass:
+{
+  In Real PanAngle, PanLo, PanHi, PanIncrement;
+  InOut Boolean ReversePan;
+
+  Real pan;
+  
+  take_picture();
+  pan = PanAngle;
+
+  if (ReversePan) {
+    while (pan - PanIncrement > PanLo) {
+      pan = pan - PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = pan);
+    }
+    if (pan > PanLo) {
+      LibraryCall PanAndShoot (PanAngle = PanLo);
+    }
+    endif;
+  }
+  else {
+    while (pan + PanIncrement < PanHi) {
+      pan = pan + PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = pan);
+    }
+    if (pan < PanHi) {
+      LibraryCall PanAndShoot (PanAngle = PanHi);
+    }
+    endif;
+  }
+  endif;
+}

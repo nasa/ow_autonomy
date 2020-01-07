@@ -4,20 +4,31 @@
 // rights reserved.
 // __END_LICENSE__
 
+#include "AntennaDefs.h"
+
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
-Command TiltAntenna (Real);
-Command PanAntenna (Real);
-Command TakePicture();
+Command tilt_antenna (Real);
+Command pan_antenna (Real);
 
-Real Lookup VertFOV;
-Real Lookup HorizFOV;
+LibraryAction TiltAndImagePass (In Real TiltAngle,
+                                In Real PanAngle,
+                                In Real PanIncrement,
+                                In Real PanLo,
+                                In Real PanHi,
+                                InOut Boolean ReversePan);
+
+LibraryAction ImagePass (In Real PanAngle,
+                         In Real PanIncrement,
+                         In Real PanLo,
+                         In Real PanHi,
+                         InOut Boolean ReversePan);
 
 TakePanorama:
 {
   // All inputs are in degrees
-  In Real TiltMin, TiltMax, PanMin, PanMax;
+  In Real TiltLo, TiltHi, PanLo, PanHi;
   In Real VertOverlap, HorizOverlap;
 
   // Later:
@@ -27,59 +38,43 @@ TakePanorama:
   //   - azimuth/elevation instead of tilt/pan angles
   //   - reference frame (lander, level)
 
-  Real D2R = 0.01745; // pi/180
-  Integer LongWait = 5;
-  Integer ShortWait = 2;
-  Real Tilt, Pan, VertFOV, HorizFOV;
-  Boolean PanoramaDone = false;
+  // Declare plan variables
+  Real tilt, pan, tilt_increment, pan_increment;
+  Boolean reverse_pan = false;
 
-  Tilt = TiltMin;
-  Pan = PanMin;
-  VertFOV = Lookup(VertFOV);
-  HorizFOV = Lookup(HorizFOV);
+  // Initialize plan variables
+  tilt = TiltLo;
+  pan = PanLo;
+  tilt_increment = VertFOV / 2 - VertOverlap;
+  pan_increment = HorizFOV / 2 - HorizOverlap;
 
-  // Tilt/Pan to min and take first picture
-  log_info ("TiltMin = ", TiltMin, "PanMin = ", PanMin);
-  //  TiltAntenna (TiltMin * D2R);
-  TiltAntenna (0.25);
-  //  PanAntenna (PanMin * D2R);
-  PanAntenna (0.25);
+  // Get to initial position
+  tilt_antenna (tilt * D2R);
+  pan_antenna (pan * D2R);
   Wait (LongWait);
-  TakePicture();
-  // Should we wait after picture command?
 
-  IterateVertically:
-  {
-    RepeatCondition !PanoramaDone;
+  // Do a pass from initial position
+  LibraryCall ImagePass (PanAngle = pan,
+                         PanIncrement = pan_increment,
+                         PanLo = PanLo, PanHi = PanHi,
+                         ReversePan = reverse_pan);
 
-    // First pan through range at current tilt
-    Pan:
-    {
-      Boolean Done = false;
-      Loop:
-      {
-        RepeatCondition !Done;
 
-        if (Pan == PanMax) Done = true;
-        else {
-          Pan = min (Pan + HorizFOV - HorizOverlap, PanMax);
-          log_info ("New pan: ", Pan, ", radians: ", Pan * D2R);
-          PanAntenna (Pan * D2R);
-          Wait (ShortWait);
-          TakePicture();
-        }
-        endif;
-      }
-    }
-
-    // Increment tilt for next pan
-    if (Tilt == TiltMax) PanoramaDone = true;
-    else {
-      Tilt = min (Tilt + VertFOV - VertOverlap, TiltMax);
-      log_info ("New tilt degrees: ", Tilt, ", radians: ", Tilt * D2R);
-      TiltAntenna (Tilt * D2R);
-      Wait (ShortWait);
-    }
-    endif;
+  // Iterate through tilt
+  while (tilt + tilt_increment < TiltHi) {
+    tilt = tilt + tilt_increment;
+    LibraryCall TiltAndImagePass (TiltAngle = tilt,
+                                  PanAngle = pan,
+                                  PanIncrement = pan_increment,
+                                  PanLo = PanLo, PanHi = PanHi,
+                                  ReversePan = reverse_pan);
+}
+  if (tilt < TiltHi) {
+    LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
+                                  PanAngle = pan,
+                                  PanIncrement = pan_increment,
+                                  PanLo = PanLo, PanHi = PanHi,
+                                  ReversePan = reverse_pan);
   }
+  endif;
 }
