@@ -6,6 +6,8 @@
 
 #include "AntennaDefs.h"
 
+Command pprint (...);
+
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
@@ -13,16 +15,16 @@ Command tilt_antenna (Real);
 Command pan_antenna (Real);
 
 LibraryAction TiltAndImagePass (In Real TiltAngle,
-                                In Real PanAngle,
+                                InOut Real PanAngle,
                                 In Real PanIncrement,
                                 In Real PanLo,
                                 In Real PanHi,
                                 InOut Boolean ReversePan);
 
-LibraryAction ImagePass (In Real PanAngle,
-                         In Real PanIncrement,
-                         In Real PanLo,
+LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
+                         In Real PanIncrement,
+                         InOut Real PanAngle,
                          InOut Boolean ReversePan);
 
 TakePanorama:
@@ -45,8 +47,8 @@ TakePanorama:
   // Initialize plan variables
   tilt = TiltLo;
   pan = PanLo;
-  tilt_increment = VertFOV / 2 - VertOverlap;
-  pan_increment = HorizFOV / 2 - HorizOverlap;
+  tilt_increment = (VertFOV / 2) - VertOverlap;
+  pan_increment = (HorizFOV / 2) - HorizOverlap;
 
   // Get to initial position
   tilt_antenna (tilt * D2R);
@@ -54,13 +56,14 @@ TakePanorama:
   Wait (LongWait);
 
   // Do a pass from initial position
-  LibraryCall ImagePass (PanAngle = pan,
-                         PanIncrement = pan_increment,
+  LibraryCall ImagePass (PanIncrement = pan_increment,
                          PanLo = PanLo, PanHi = PanHi,
+                         PanAngle = pan,
                          ReversePan = reverse_pan);
 
 
   // Iterate through tilt
+  pprint ("---- Beginning tilt increment");
   while (tilt + tilt_increment < TiltHi) {
     tilt = tilt + tilt_increment;
     LibraryCall TiltAndImagePass (TiltAngle = tilt,
@@ -68,8 +71,9 @@ TakePanorama:
                                   PanIncrement = pan_increment,
                                   PanLo = PanLo, PanHi = PanHi,
                                   ReversePan = reverse_pan);
-}
+  }
   if (tilt < TiltHi) {
+    pprint ("---- Final tilt increment");
     LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,

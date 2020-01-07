@@ -1,35 +1,42 @@
+Command pprint (...);
+
 Command take_picture();
 LibraryAction PanAndShoot (In Real PanAngle);
 
 ImagePass:
 {
-  In Real PanAngle, PanLo, PanHi, PanIncrement;
+  In Real PanLo, PanHi, PanIncrement;
+  InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  Real pan;
-  
   take_picture();
-  pan = PanAngle;
 
   if (ReversePan) {
-    while (pan - PanIncrement > PanLo) {
-      pan = pan - PanIncrement;
-      LibraryCall PanAndShoot (PanAngle = pan);
+    pprint ("---- Reverse pan. Pan =", PanAngle, "Lo=", PanLo,
+            "Increment=", PanIncrement);
+    while (PanAngle - PanIncrement > PanLo) {
+      PanAngle = PanAngle - PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
     }
-    if (pan > PanLo) {
-      LibraryCall PanAndShoot (PanAngle = PanLo);
+    if (PanAngle > PanLo) {
+      PanAngle = PanLo;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
     }
     endif;
   }
   else {
-    while (pan + PanIncrement < PanHi) {
-      pan = pan + PanIncrement;
-      LibraryCall PanAndShoot (PanAngle = pan);
+    pprint ("---- Forward pan. Pan =", PanAngle, "Hi=", PanHi,
+            "Increment=", PanIncrement);
+    while (PanAngle + PanIncrement < PanHi) {
+      PanAngle = PanAngle + PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
     }
-    if (pan < PanHi) {
-      LibraryCall PanAndShoot (PanAngle = PanHi);
+    if (PanAngle < PanHi) {
+      PanAngle = PanHi;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
     }
     endif;
   }
   endif;
+  ReversePan = !ReversePan;
 }

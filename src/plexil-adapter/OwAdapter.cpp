@@ -236,15 +236,15 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "TiltAntenna") {
+  else if (name == "tilt_antenna") {
     args[0].getValue(double_arg);
     OwInterface::instance()->tiltAntenna (double_arg);
   }
-  else if (name == "PanAntenna") {
+  else if (name == "pan_antenna") {
     args[0].getValue(double_arg);
     OwInterface::instance()->panAntenna (double_arg);
   }
-  else if (name == "TakePicture") {
+  else if (name == "take_picture") {
     OwInterface::instance()->takePicture();
   }
   else ROS_ERROR("Invalid command %s", name.c_str());

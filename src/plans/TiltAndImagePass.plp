@@ -1,23 +1,23 @@
 #include "AntennaDefs.h"
 
-LibraryAction ImagePass (In Real PanAngle,
-                           In Real PanIncrement,
-                           In Real PanLo,
-                           In Real PanHi,
-                           InOut Boolean ReversePan);
+LibraryAction ImagePass (In Real PanLo,
+                         In Real PanHi,
+                         In Real PanIncrement,
+                         InOut Real PanAngle,
+                         InOut Boolean ReversePan);
 
 Command tilt_antenna (Real angle);
 
 TiltAndImagePass:
 {
-  In Real TiltAngle, PanAngle, PanIncrement, PanLo, PanHi;
+  In Real TiltAngle, PanIncrement, PanLo, PanHi;
+  InOut Real PanAngle;
   InOut Boolean ReversePan;
 
   tilt_antenna (TiltAngle * D2R);
   Wait (ShortWait);
-  ReversePan = !ReversePan;
-  LibraryCall ImagePass (PanAngle = PanAngle,
-                         PanIncrement = PanIncrement,
+  LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
+                         PanAngle = PanAngle,
                          ReversePan = ReversePan);
 }
