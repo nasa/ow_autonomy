@@ -13,8 +13,7 @@ PanAndShoot:
 {
   In Real PanAngle;
 
-  log_info ("Commanding pan ", PanAngle, " degrees.");
-  pan_antenna (PanAngle * D2R);
+  pan_antenna (PanAngle);
   Wait (ShortWait);
   take_picture();
 }

@@ -7,9 +7,7 @@
 #include "AntennaDefs.h"
 
 Command log_info (...);
-Command log_warning (...);
 Command log_error (...);
-Command log_debug (...);
 Command tilt_antenna (Real);
 Command pan_antenna (Real);
 
@@ -80,9 +78,8 @@ TakePanorama:
   pan_increment = (HorizFOV / 2) - HorizOverlap;
 
   // Get to initial position
-  log_info ("Commanding tilt ", tilt, " degrees.");
-  tilt_antenna (tilt * D2R);
-  pan_antenna (pan * D2R);
+  tilt_antenna (tilt);
+  pan_antenna (pan);
   Wait (LongWait);
 
   // Do a pass from initial position

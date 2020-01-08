@@ -9,7 +9,6 @@
 // rights reserved.
 // __END_LICENSE__
 
-#define D2R       0.01745 // pi/180
 #define LongWait  5       // seconds
 #define ShortWait 2       // seconds
 #define VertFOV  10       // Easy value for testing.  Should be 15.

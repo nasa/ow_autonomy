@@ -81,7 +81,7 @@ OceanWorldMission: Concurrence
     Real Time;
 
     ImageLandingSite: LibraryCall TakePanorama (TiltLo = 0, TiltHi = 30,
-                                                PanLo = 0, PanHi = 359,
+                                                PanLo = 90, PanHi = 240,
                                                 HorizOverlap = 2,
                                                 VertOverlap = 2);
 

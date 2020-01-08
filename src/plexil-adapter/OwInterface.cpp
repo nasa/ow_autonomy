@@ -4,6 +4,8 @@
 // rights reserved.
 // __END_LICENSE__
 
+const double D2R = 0.01745;  // pi/180
+
 // OW
 #include "OwInterface.h"
 #include <ow_lander/StartPlanning.h>
@@ -167,18 +169,18 @@ void OwInterface::checkSubscribers (const ros::Publisher* pub) const
 void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
-  msg.data = arg;
+  msg.data = arg * D2R;
   checkSubscribers (m_antennaTiltPublisher);
-  ROS_INFO("Tilting antenna to %f radians", arg);
+  ROS_INFO("Tilting to %f degrees (%f radians)", arg, msg.data);
   m_antennaTiltPublisher->publish (msg);
 }
 
 void OwInterface::panAntenna (double arg)
 {
   std_msgs::Float64 msg;
-  msg.data = arg;
+  msg.data = arg * D2R;
   checkSubscribers (m_antennaPanPublisher);
-  ROS_INFO("Panning antenna to %f radians", arg);
+  ROS_INFO("Panning to %f degrees (%f radians)", arg, msg.data);
   m_antennaPanPublisher->publish (msg);
 }
 

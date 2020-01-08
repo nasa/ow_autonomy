@@ -20,8 +20,7 @@ TiltAndImagePass:
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  log_info ("Commanding tilt ", TiltAngle, " degrees.");
-  tilt_antenna (TiltAngle * D2R);
+  tilt_antenna (TiltAngle);
   Wait (ShortWait);
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,

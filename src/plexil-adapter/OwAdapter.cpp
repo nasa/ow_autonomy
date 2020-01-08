@@ -218,6 +218,7 @@ void OwAdapter::executeCommand(Command *cmd)
   if (name == "log_info") log_info (cmd->getArgValues());
   else if (name == "log_warning") log_warning (cmd->getArgValues());
   else if (name == "log_error") log_error (cmd->getArgValues());
+  else if (name == "log_debug") log_debug (cmd->getArgValues());
   // "Demos"
   else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
