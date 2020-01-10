@@ -4,8 +4,6 @@
 // rights reserved.
 // __END_LICENSE__
 
-const double D2R = 0.01745;  // pi/180
-
 // OW
 #include "OwInterface.h"
 #include <ow_lander/StartPlanning.h>
@@ -15,6 +13,12 @@ const double D2R = 0.01745;  // pi/180
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
+
+// C
+#include <math.h>  // for M_PI
+
+// Degree to Radian
+const double D2R = M_PI / 180.0 ;
 
 OwInterface* OwInterface::m_instance = NULL;
 

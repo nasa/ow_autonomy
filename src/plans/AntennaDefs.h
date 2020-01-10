@@ -14,7 +14,7 @@
 #define VertFOV  10       // Easy value for testing.  Should be 15.
 #define HorizFOV 10       // Easy value for testing.  Should be 21
 
-// All values in degrees
+// All values in degrees.  Made up constraints -- will adjust as needed.
 #define PanMin   0
 #define PanMax   359 
 #define TiltMin  -45
