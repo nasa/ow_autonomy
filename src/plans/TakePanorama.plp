@@ -49,25 +49,25 @@ TakePanorama:
 
   // Check constraints
 
-  if (TiltLo > TiltHi || TiltLo < TiltMin || TiltHi > TiltMax) {
+  if (TiltLo > TiltHi || TiltLo < TILT_MIN || TiltHi > TILT_MAX) {
     log_error ("TakePanorama: Tilt spec outside valid range, exiting.");
     exit = true;
   }
   endif;
 
-  if (PanLo > PanHi || PanLo < PanMin || PanHi > PanMax) {
+  if (PanLo > PanHi || PanLo < PAN_MIN || PanHi > PAN_MAX) {
     log_error ("TakePanorama: Pan spec outside valid range, exiting.");
     exit = true;
   }
   endif;
 
-  if (VertFOV/2 <= VertOverlap) {
+  if (VERT_FOV/2 <= VertOverlap) {
     log_error ("TakePanorama: Vertical overlap too high, exiting.");
     exit = true;
   }
   endif;
 
-  if (HorizFOV/2 <= HorizOverlap) {
+  if (HORIZ_FOV/2 <= HorizOverlap) {
     log_error ("TakePanorama: Horizontal overlap too high, exiting.");
     exit = true;
   }
@@ -77,13 +77,13 @@ TakePanorama:
 
   tilt = TiltLo;
   pan = PanLo;
-  tilt_increment = (VertFOV / 2) - VertOverlap;
-  pan_increment = (HorizFOV / 2) - HorizOverlap;
+  tilt_increment = (VERT_FOV / 2) - VertOverlap;
+  pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
 
   // Get to initial position
   tilt_antenna (tilt);
   pan_antenna (pan);
-  Wait (LongWait);
+  Wait (LONG_WAIT);
 
   // Do a pass from initial position
   LibraryCall ImagePass (PanIncrement = pan_increment,

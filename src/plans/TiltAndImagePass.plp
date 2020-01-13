@@ -24,7 +24,7 @@ TiltAndImagePass:
   InOut Boolean ReversePan;
 
   tilt_antenna (TiltAngle);
-  Wait (ShortWait);
+  Wait (SHORT_WAIT);
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = PanAngle,

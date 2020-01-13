@@ -9,16 +9,16 @@
 // rights reserved.
 // __END_LICENSE__
 
-#define LongWait  5       // seconds
-#define ShortWait 2       // seconds
-#define VertFOV  10       // Easy value for testing.  Should be 15.
-#define HorizFOV 10       // Easy value for testing.  Should be 21
+#define LONG_WAIT  5       // seconds
+#define SHORT_WAIT 2       // seconds
+#define VERT_FOV  10       // Easy value for testing.  Should be 15.
+#define HORIZ_FOV 10       // Easy value for testing.  Should be 21
 
 // All values in degrees.  Made up constraints -- will adjust as needed.
-#define PanMin   0
-#define PanMax   359 
-#define TiltMin  -45
-#define TiltMax  45
+#define PAN_MIN   0
+#define PAN_MAX   359 
+#define TILT_MIN  -45
+#define TILT_MAX  45
 
 
 #endif

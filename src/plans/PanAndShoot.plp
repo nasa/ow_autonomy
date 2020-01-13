@@ -16,6 +16,6 @@ PanAndShoot:
   In Real PanAngle;
 
   pan_antenna (PanAngle);
-  Wait (ShortWait);
+  Wait (SHORT_WAIT);
   take_picture();
 }
