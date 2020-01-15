@@ -1,7 +1,7 @@
 // OW autonomy ROS node.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -30,24 +30,22 @@ int main(int argc, char* argv[])
   // Run the specified plan
 
   if (argc == 2) {
-    OwExecutive::instance()->runPlan (argv[1]);
+    OwExecutive::instance()->runPlan (argv[1]); // asynchronous
   }
   else {
     ROS_ERROR("autonomy_node got %i args, expected 2", argc);
     return 1;
   }
 
-  // ROS Loop
+  // ROS Loop (runs concurrently with plan).  Note that once this loop starts,
+  // this function (and node) is terminated with an interrupt.  I believe this
+  // is the ROS convention.
 
-  // NOTE: Why does this run concurrently with plan?
-
-  ros::Rate rate(1);
+  ros::Rate rate(1); // 1 Hz seems appropriate, for now.
   while (ros::ok()) {
     ros::spinOnce();
     rate.sleep();
   }
 
-  // Is this ever reached?
-  ROS_INFO("autonomy_node exiting normally.");
-  return 0;
+  return 0;  // We never actually get here!
 }

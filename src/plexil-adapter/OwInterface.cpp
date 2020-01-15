@@ -13,6 +13,8 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
+#include <sensor_msgs/JointState.h>
+#include <control_msgs/JointControllerState.h>
 
 // C
 #include <math.h>  // for M_PI
@@ -20,20 +22,38 @@
 // Degree to Radian
 const double D2R = M_PI / 180.0 ;
 
-OwInterface* OwInterface::m_instance = NULL;
+OwInterface* OwInterface::m_instance = nullptr;
 
 OwInterface* OwInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == NULL) m_instance = new OwInterface();
+  if (m_instance == nullptr) m_instance = new OwInterface();
   return m_instance;
 }
 
+// Subscription callbacks
+
+static void pan_callback
+(const control_msgs::JointControllerState::ConstPtr& msg)
+{
+  ROS_INFO("---- Pan set_point: [%f]", msg->set_point);
+}
+
+static void tilt_callback
+(const control_msgs::JointControllerState::ConstPtr& msg)
+{
+  //  ROS_INFO("Tilt recieved, command: [%f]", msg->command);
+}
+
+
+
 OwInterface::OwInterface ()
-  : m_genericNodeHandle (NULL),
-    m_antennaTiltPublisher (NULL),
-    m_antennaPanPublisher (NULL),
-    m_leftImageTriggerPublisher (NULL)
+  : m_genericNodeHandle (nullptr),
+    m_antennaTiltPublisher (nullptr),
+    m_antennaPanPublisher (nullptr),
+    m_leftImageTriggerPublisher (nullptr),
+    m_antennaTiltSubscriber (nullptr),
+    m_antennaPanSubscriber (nullptr)
 { }
 
 OwInterface::~OwInterface ()
@@ -41,6 +61,8 @@ OwInterface::~OwInterface ()
   if (m_genericNodeHandle) delete m_genericNodeHandle;
   if (m_antennaTiltPublisher) delete m_antennaTiltPublisher;
   if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
+  if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
+  if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -60,6 +82,14 @@ void OwInterface::initialize()
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", 1));
+    m_antennaTiltSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+      subscribe("/ant_tilt_position_controller/state",
+                1000, tilt_callback));
+    m_antennaPanSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+      subscribe("/ant_pan_position_controller/state",
+                1000, pan_callback));
     initialized = true;
   }
 }

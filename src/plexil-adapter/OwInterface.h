@@ -6,7 +6,7 @@
 // the current overall autonomy scheme.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -19,6 +19,8 @@ class OwInterface
   static OwInterface* instance();
   OwInterface ();
   ~OwInterface ();
+  OwInterface (const OwInterface&) = delete;
+  OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Temporary "demo" functions
@@ -36,14 +38,18 @@ class OwInterface
                      double lat_overlap, double vert_overlap);
 
  private:
-  OwInterface (const OwInterface&);            // undefined (singleton)
-  OwInterface& operator= (const OwInterface&); // undefined (singleton)
   void checkSubscribers (const ros::Publisher*) const;
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
+
+  // Publishers and subscribers
+  
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;
   ros::Publisher*  m_leftImageTriggerPublisher;
+  
+  ros::Subscriber* m_antennaPanSubscriber;
+  ros::Subscriber* m_antennaTiltSubscriber;
 };
 
 
