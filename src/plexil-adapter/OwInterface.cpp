@@ -6,6 +6,7 @@
 
 // OW
 #include "OwInterface.h"
+#include "subscriber.h"
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -14,13 +15,20 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/JointState.h>
-#include <control_msgs/JointControllerState.h>
 
 // C
 #include <math.h>  // for M_PI
 
-// Degree to Radian
+// Degree/Radian
 const double D2R = M_PI / 180.0 ;
+const double R2D = 180.0 / M_PI ;
+
+// Lander state cache, simple start for now -- may need to refactor later.
+// Individual variables for now -- may want to employ a container if this gets
+// big.
+
+double CurrentTilt = 0.0;
+double CurrentPan = 0.0;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -36,13 +44,15 @@ OwInterface* OwInterface::instance ()
 static void pan_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  ROS_INFO("---- Pan set_point: [%f]", msg->set_point);
+  CurrentPan = msg->set_point * R2D;
+  publish ("PanDegrees", CurrentPan);
 }
 
 static void tilt_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  //  ROS_INFO("Tilt recieved, command: [%f]", msg->command);
+  CurrentTilt = msg->set_point * R2D;
+  publish ("TiltDegrees", CurrentTilt);
 }
 
 
@@ -84,12 +94,10 @@ void OwInterface::initialize()
        ("/StereoCamera/left/image_trigger", 1));
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-      subscribe("/ant_tilt_position_controller/state",
-                1000, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", 1000, tilt_callback));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-      subscribe("/ant_pan_position_controller/state",
-                1000, pan_callback));
+       subscribe("/ant_pan_position_controller/state", 1000, pan_callback));
     initialized = true;
   }
 }
@@ -231,4 +239,17 @@ void OwInterface::digTrench (double x, double y, double z,
                              double dumpx, double dumpy, double dumpz)
 {
   ROS_WARN("digTrench is unimplemented!");
+}
+
+
+// State
+
+double OwInterface::getTilt () const
+{
+  return CurrentTilt;
+}
+
+double OwInterface::getPan () const
+{
+  return CurrentPan;
 }
