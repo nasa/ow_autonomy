@@ -1,0 +1,50 @@
+// Auxilliary plan for TakePanorama.  Performs a single pass, panning the camera
+// with specified increment, direction, and range.  Tilt is unchanged.
+
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+Command log_debug (...);
+Command take_picture();
+LibraryAction PanAndShoot (In Real PanAngle);
+
+ImagePass:
+{
+  In Real PanLo, PanHi, PanIncrement;
+  InOut Real PanAngle;
+  InOut Boolean ReversePan;
+
+  take_picture();
+
+  if (ReversePan) {
+    log_debug ("Reverse pan. Pan =", PanAngle, "Lo=", PanLo,
+               "Increment=", PanIncrement);
+    while (PanAngle - PanIncrement > PanLo) {
+      PanAngle = PanAngle - PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
+    }
+    if (PanAngle > PanLo) {
+      PanAngle = PanLo;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
+    }
+    endif;
+  }
+  else {
+    log_debug ("Forward pan. Pan =", PanAngle, "Hi=", PanHi,
+               "Increment=", PanIncrement);
+    while (PanAngle + PanIncrement < PanHi) {
+      PanAngle = PanAngle + PanIncrement;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
+    }
+    if (PanAngle < PanHi) {
+      PanAngle = PanHi;
+      LibraryCall PanAndShoot (PanAngle = PanAngle);
+    }
+    endif;
+  }
+  endif;
+  ReversePan = !ReversePan;
+}

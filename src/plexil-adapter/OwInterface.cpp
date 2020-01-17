@@ -1,5 +1,5 @@
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -13,6 +13,12 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
+
+// C
+#include <math.h>  // for M_PI
+
+// Degree to Radian
+const double D2R = M_PI / 180.0 ;
 
 OwInterface* OwInterface::m_instance = NULL;
 
@@ -167,16 +173,18 @@ void OwInterface::checkSubscribers (const ros::Publisher* pub) const
 void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
-  msg.data = arg;
+  msg.data = arg * D2R;
   checkSubscribers (m_antennaTiltPublisher);
+  ROS_INFO("Tilting to %f degrees (%f radians)", arg, msg.data);
   m_antennaTiltPublisher->publish (msg);
 }
 
 void OwInterface::panAntenna (double arg)
 {
   std_msgs::Float64 msg;
-  msg.data = arg;
+  msg.data = arg * D2R;
   checkSubscribers (m_antennaPanPublisher);
+  ROS_INFO("Panning to %f degrees (%f radians)", arg, msg.data);
   m_antennaPanPublisher->publish (msg);
 }
 
@@ -186,22 +194,6 @@ void OwInterface::takePicture ()
   checkSubscribers (m_leftImageTriggerPublisher);
   m_leftImageTriggerPublisher->publish (msg);
 }
-
-void OwInterface::takePanorama (double elev_lo, double elev_hi,
-                                double lat_overlap, double vert_overlap)
-{
-  // Compute increments
-  // Iterate through tilts
-  //   Tilt
-  //   Wait for complete
-  //   Iterate through pan
-  //     Take picture
-  //     Pan
-  //     Wait for complete
-  // Do something with images!
-  ROS_WARN("takePanorama is unimplemented!");
-}
-
 
 void OwInterface::digTrench (double x, double y, double z,
                              double depth, double length, double width,

@@ -1,45 +1,27 @@
+// Simple test/demo of antenna and camera: a short panoramic image.
+
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
 
-// Test/demo antenna and camera functions.
-
 Command log_info (...);
-Command log_warning (...);
-Command log_error (...);
-Command TiltAntenna (Real);
-Command PanAntenna (Real);
-Command TakePicture();
+
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
 
 TestAntennaCamera:
 {
   // Instead of the Waits, would be good to detect when operation is finished.
-  Integer WaitTime = 5;
 
   log_info ("Starting Antenna/Camera demo...");
 
-  log_info ("Panning antenna to 1...");
-  PanAntenna(1);
-  Wait(WaitTime);
-
-  log_info ("Tilting antenna to 1.2...");
-  TiltAntenna(1.2);
-  Wait(WaitTime);
-
-  // TODO: add left/right camera trigger
-  log_info ("Taking picture...");
-  TakePicture();
-  Wait(WaitTime);
-
-  log_info ("Tilting antenna back to 0...");
-  TiltAntenna(0);
-  Wait(WaitTime);
-
-  log_info ("Panning antenna back to 0...");
-  PanAntenna(0);
-  Wait(WaitTime);
+  LibraryCall TakePanorama (TiltLo = 0, TiltHi = 20,
+                            PanLo = 180, PanHi = 200,
+                            HorizOverlap = 2,
+                            VertOverlap = 2);
 
   log_info ("Antenna/Camera demo finished.");
 }

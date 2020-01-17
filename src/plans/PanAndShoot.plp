@@ -1,0 +1,21 @@
+// Auxiliary plan for TakePanorama.  Pans to specified angle and takes a picture.
+
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+#include "AntennaDefs.h"
+
+Command pan_antenna (Real);
+Command take_picture ();
+
+PanAndShoot:
+{
+  In Real PanAngle;
+
+  pan_antenna (PanAngle);
+  Wait (SHORT_WAIT);
+  take_picture();
+}

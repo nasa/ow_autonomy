@@ -1,0 +1,112 @@
+// Take a panoramic image, with specified tilt and pan range and
+// vertical/horizonal image overlaps.
+
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+#include "AntennaDefs.h"
+
+Command log_info (...);
+Command log_error (...);
+Command tilt_antenna (Real);
+Command pan_antenna (Real);
+
+LibraryAction TiltAndImagePass (In Real TiltAngle,
+                                InOut Real PanAngle,
+                                In Real PanIncrement,
+                                In Real PanLo,
+                                In Real PanHi,
+                                InOut Boolean ReversePan);
+
+LibraryAction ImagePass (In Real PanLo,
+                         In Real PanHi,
+                         In Real PanIncrement,
+                         InOut Real PanAngle,
+                         InOut Boolean ReversePan);
+
+TakePanorama:
+{
+  // All inputs are in degrees
+  In Real TiltLo, TiltHi, PanLo, PanHi;
+  In Real VertOverlap, HorizOverlap;
+
+  // Later:
+  //   - rows, cols
+  //   - image order (top/bottom, right/left - can be enum)
+  //   - image overlap PERCENT
+  //   - azimuth/elevation instead of tilt/pan angles
+  //   - reference frame (lander, level)
+
+  // Declare plan variables
+  Real tilt, pan, tilt_increment, pan_increment;
+  Boolean reverse_pan = false;
+  Boolean exit = false;
+
+  ExitCondition exit;
+
+  // Check constraints
+
+  if (TiltLo > TiltHi || TiltLo < TILT_MIN || TiltHi > TILT_MAX) {
+    log_error ("TakePanorama: Tilt spec outside valid range, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (PanLo > PanHi || PanLo < PAN_MIN || PanHi > PAN_MAX) {
+    log_error ("TakePanorama: Pan spec outside valid range, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (VERT_FOV/2 <= VertOverlap) {
+    log_error ("TakePanorama: Vertical overlap too high, exiting.");
+    exit = true;
+  }
+  endif;
+
+  if (HORIZ_FOV/2 <= HorizOverlap) {
+    log_error ("TakePanorama: Horizontal overlap too high, exiting.");
+    exit = true;
+  }
+  endif;
+
+  // Initialize plan variables
+
+  tilt = TiltLo;
+  pan = PanLo;
+  tilt_increment = (VERT_FOV / 2) - VertOverlap;
+  pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
+
+  // Get to initial position
+  tilt_antenna (tilt);
+  pan_antenna (pan);
+  Wait (LONG_WAIT);
+
+  // Do a pass from initial position
+  LibraryCall ImagePass (PanIncrement = pan_increment,
+                         PanLo = PanLo, PanHi = PanHi,
+                         PanAngle = pan,
+                         ReversePan = reverse_pan);
+
+
+  // Iterate through tilt
+  while (tilt + tilt_increment < TiltHi) {
+    tilt = tilt + tilt_increment;
+    LibraryCall TiltAndImagePass (TiltAngle = tilt,
+                                  PanAngle = pan,
+                                  PanIncrement = pan_increment,
+                                  PanLo = PanLo, PanHi = PanHi,
+                                  ReversePan = reverse_pan);
+  }
+  if (tilt < TiltHi) {
+    LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
+                                  PanAngle = pan,
+                                  PanIncrement = pan_increment,
+                                  PanLo = PanLo, PanHi = PanHi,
+                                  ReversePan = reverse_pan);
+  }
+  endif;
+}
