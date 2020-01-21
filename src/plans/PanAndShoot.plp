@@ -8,14 +8,13 @@
 
 #include "AntennaDefs.h"
 
-Command pan_antenna (Real);
+LibraryAction Pan  (In Real Degrees);
 Command take_picture ();
 
 PanAndShoot:
 {
   In Real PanAngle;
 
-  pan_antenna (PanAngle);
-  Wait (SHORT_WAIT);
+  LibraryCall Pan (Degrees = PanAngle);
   take_picture();
 }

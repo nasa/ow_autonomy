@@ -1,32 +1,31 @@
 Real Lookup time;
 Real Lookup PanDegrees;
 Command pan_antenna (Real);
-Command log_info (...);
 Command log_error (...);
 
 Pan:
 {
   In Real Degrees;
 
-  Real Tolerance  = 0.001;  // degrees, made up, tweak as needed
-  Real PanTimeout = 5.0;    // seconds, made up, tweak as needed
+  Real Tolerance  = 0.5;    // degrees, made up, tweak as needed
+  Real PanTimeout = 5.0;    // units?, made up, tweak as needed
 
-  // Possible todo: add preconditions to check for resource availability, etc.
+  // Possible todos:
+  //  - preconditions to check for resource availability, etc.
+  //  - handle pan failure
 
-  // Send command and assume success for now.  Later, implement command handles
-  // to check for successful processing of the command.
-  //
   pan_antenna (Degrees);
 
-  WaitForCompletion:
+  WaitForPan:
   {
-    EndCondition ((abs(Lookup(PanDegrees) - Degrees) < Tolerance) ||
-                  Lookup(time) - WaitForCompletion.EXECUTING.START > PanTimeout);
+    // This is an empty node that just waits for the pan to get within
+    // tolerance, or time out.
+    EndCondition ((abs(Lookup(PanDegrees) - Degrees) <= Tolerance) ||
+                  Lookup(time, 1) - WaitForPan.EXECUTING.START > PanTimeout);
   }
 
-  if (Lookup(time) - WaitForCompletion.EXECUTING.START > PanTimeout) {
-    log_error ("Pan timed out");
+  if (abs(Lookup(PanDegrees) - Degrees) > Tolerance) {
+    log_error ("Pan failed.");
   }
-  else log_info ("Pan reached ", Lookup(PanDegrees));
   endif;
 }

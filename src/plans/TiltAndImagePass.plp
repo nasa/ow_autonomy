@@ -14,7 +14,7 @@ LibraryAction ImagePass (In Real PanLo,
                          In Real PanIncrement,
                          InOut Real PanAngle,
                          InOut Boolean ReversePan);
-
+LibraryAction Tilt (In Real Degrees);
 Command tilt_antenna (Real angle);
 
 TiltAndImagePass:
@@ -23,8 +23,7 @@ TiltAndImagePass:
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  tilt_antenna (TiltAngle);
-  Wait (SHORT_WAIT);
+  LibraryCall Tilt (Degrees = TiltAngle);
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = PanAngle,

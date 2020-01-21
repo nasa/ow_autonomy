@@ -25,10 +25,13 @@
 
 // C++/C
 #include <list>
+#include <iostream>
 using std::string;
 using std::vector;
 using std::list;
 using std::copy;
+using std::cout;
+using std::endl;
 
 // Domain
 #include "OwSimProxy.h"
@@ -129,7 +132,7 @@ void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
   if (!isStateSubscribed(state)) return;
-
+  
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }

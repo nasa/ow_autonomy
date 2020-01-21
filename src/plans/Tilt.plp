@@ -1,32 +1,31 @@
 Real Lookup time;
 Real Lookup TiltDegrees;
 Command tilt_antenna (Real);
-Command log_info (...);
 Command log_error (...);
 
 Tilt:
 {
   In Real Degrees;
 
-  Real Tolerance   = 0.001;  // degrees, made up, tweak as needed
-  Real TiltTimeout = 5.0;    // seconds, made up, tweak as needed
+  Real Tolerance   = 0.5; // degrees, made up, tweak as needed
+  Real TiltTimeout = 5.0; // seconds, made up, tweak as needed
 
-  // Possible todo: add preconditions to check for resource availability, etc.
+  // Possible todos:
+  //  - preconditions to check for resource availability, etc.
+  //  - handle pan failure
 
-  // Send command and assume success for now.  Later, implement command handles
-  // to check for successful processing of the command.
-  //
   tilt_antenna (Degrees);
 
-  WaitForCompletion:
+  WaitForTilt:
   {
-    EndCondition ((abs(Lookup(TiltDegrees) - Degrees) < Tolerance) ||
-                  Lookup(time) - WaitForCompletion.EXECUTING.START > TiltTimeout);
+    // This is an empty node that just waits for the tilt to get within
+    // tolerance, or time out.
+    EndCondition ((abs(Lookup(TiltDegrees) - Degrees) <= Tolerance) ||
+                  Lookup(time, 1) - WaitForTilt.EXECUTING.START > TiltTimeout);
   }
 
-  if (Lookup(time) - WaitForCompletion.EXECUTING.START > TiltTimeout) {
-    log_error ("Tilt timed out");
+  if (abs(Lookup(TiltDegrees) - Degrees) > Tolerance) {
+    log_error ("Tilt failed.");
   }
-  else log_info ("Tilt reached ", Lookup(TiltDegrees));
   endif;
 }

@@ -94,10 +94,10 @@ void OwInterface::initialize()
        ("/StereoCamera/left/image_trigger", 1));
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", 1000, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", 1, tilt_callback));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", 1000, pan_callback));
+       subscribe("/ant_pan_position_controller/state", 1, pan_callback));
     initialized = true;
   }
 }
