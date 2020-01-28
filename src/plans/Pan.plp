@@ -5,55 +5,16 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Possible todos:
-//  - preconditions to check for resource availability, etc.
-//  - handle pan failure (e.g. retry)
+LibraryAction CommandWithMovement (In Real NewValue,
+                                   In String CurrentValueLookup,
+                                   In String VelocityLookup,
+                                   In String CommandName);
 
-#include "OceanWorldDefs.h"
-
-Real Lookup time;
-Real Lookup PanDegrees;
-Real Lookup PanVelocity;
-Command pan_antenna (Real);
-Command log_error (...);
-
-Pan: CheckedSequence
+Pan:
 {
   In Real Degrees;
-
-  Real Tolerance  = 0.5;    // degrees, made up, tweak as needed
-  Real PanTimeout = 5.0;    // units?, made up, tweak as needed
-  Boolean PanAchieved = false;
-
-  // First, command the pan, if needed.
-  CommandPan:
-  {
-    if (abs(Lookup(PanDegrees) - Degrees) <= Tolerance) PanAchieved = true;
-    else pan_antenna (Degrees);
-    endif;
-  }
-
-  // If pan was commanded, wait for antenna to start moving
-  WaitForPanStart:
-  {
-    SkipCondition PanAchieved;
-    EndCondition ((abs(Lookup(PanVelocity, 0.01)) > ZERO_VEL) ||
-                  Lookup(time, 1) - WaitForPanStart.EXECUTING.START > PanTimeout);
-  }
-
-  // If pan was commanded, wait for antenna to stop.
-  WaitForPanEnd:
-  {
-    SkipCondition PanAchieved;
-    EndCondition ((abs(Lookup(PanVelocity, 0.01)) <= ZERO_VEL) ||
-                  Lookup(time, 1) - WaitForPanEnd.EXECUTING.START > PanTimeout);
-  }
-
-  // Report failure if needed.
-  ReportPanFailure:
-  {
-    SkipCondition PanAchieved || abs(Lookup(PanDegrees) - Degrees) <= Tolerance;
-    PostCondition  false; // This forces root node to fail, a design choice.
-    log_error ("Pan failed.");
-  }
+  LibraryCall CommandWithMovement (NewValue = Degrees,
+                                   CurrentValueLookup = "PanDegrees",
+                                   VelocityLookup = "PanVelocity",
+                                   CommandName = "pan_antenna");
 }

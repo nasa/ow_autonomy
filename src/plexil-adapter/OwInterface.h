@@ -43,6 +43,7 @@ class OwInterface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
+  double getTiltVelocity () const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
 

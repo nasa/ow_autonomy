@@ -33,6 +33,7 @@ const double R2D = 180.0 / M_PI ;
 double CurrentTilt = 0.0;
 double CurrentPanDegrees = 0.0;
 double CurrentPanVelocity = 0.0;
+double CurrentTiltVelocity = 0.0;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -63,7 +64,9 @@ static void joint_states_callback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
   CurrentPanVelocity = msg->velocity[j_ant_pan];
+  CurrentTiltVelocity = msg->velocity[j_ant_tilt];
   publish ("PanVelocity", CurrentPanVelocity);
+  publish ("TiltVelocity", CurrentTiltVelocity);
 }
 
 
@@ -273,4 +276,9 @@ double OwInterface::getPanDegrees () const
 double OwInterface::getPanVelocity () const
 {
   return CurrentPanVelocity;
+}
+
+double OwInterface::getTiltVelocity () const
+{
+  return CurrentTiltVelocity;
 }
