@@ -11,8 +11,6 @@
 
 Command log_info (...);
 Command log_error (...);
-Command tilt_antenna (Real);
-Command pan_antenna (Real);
 
 LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 InOut Real PanAngle,
@@ -26,6 +24,9 @@ LibraryAction ImagePass (In Real PanLo,
                          In Real PanIncrement,
                          InOut Real PanAngle,
                          InOut Boolean ReversePan);
+
+LibraryAction Tilt (In Real Degrees);
+LibraryAction Pan  (In Real Degrees);
 
 TakePanorama:
 {
@@ -81,9 +82,11 @@ TakePanorama:
   pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
 
   // Get to initial position
-  tilt_antenna (tilt);
-  pan_antenna (pan);
-  Wait (LONG_WAIT);
+  InitialPanTilt: Concurrence
+  {
+    LibraryCall Tilt (Degrees = tilt);
+    LibraryCall Pan (Degrees = pan);
+  }
 
   // Do a pass from initial position
   LibraryCall ImagePass (PanIncrement = pan_increment,

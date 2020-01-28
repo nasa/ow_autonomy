@@ -6,6 +6,7 @@
 
 // OW
 #include "OwInterface.h"
+#include "subscriber.h"
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -13,27 +14,56 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
+#include <sensor_msgs/JointState.h>
 
 // C
 #include <math.h>  // for M_PI
 
-// Degree to Radian
+// Degree/Radian
 const double D2R = M_PI / 180.0 ;
+const double R2D = 180.0 / M_PI ;
 
-OwInterface* OwInterface::m_instance = NULL;
+// Lander state cache, simple start for now -- may need to refactor later.
+// Individual variables for now -- may want to employ a container if this gets
+// big.
+
+double CurrentTilt = 0.0;
+double CurrentPan = 0.0;
+
+OwInterface* OwInterface::m_instance = nullptr;
 
 OwInterface* OwInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == NULL) m_instance = new OwInterface();
+  if (m_instance == nullptr) m_instance = new OwInterface();
   return m_instance;
 }
 
+// Subscription callbacks
+
+static void pan_callback
+(const control_msgs::JointControllerState::ConstPtr& msg)
+{
+  CurrentPan = msg->set_point * R2D;
+  publish ("PanDegrees", CurrentPan);
+}
+
+static void tilt_callback
+(const control_msgs::JointControllerState::ConstPtr& msg)
+{
+  CurrentTilt = msg->set_point * R2D;
+  publish ("TiltDegrees", CurrentTilt);
+}
+
+
+
 OwInterface::OwInterface ()
-  : m_genericNodeHandle (NULL),
-    m_antennaTiltPublisher (NULL),
-    m_antennaPanPublisher (NULL),
-    m_leftImageTriggerPublisher (NULL)
+  : m_genericNodeHandle (nullptr),
+    m_antennaTiltPublisher (nullptr),
+    m_antennaPanPublisher (nullptr),
+    m_leftImageTriggerPublisher (nullptr),
+    m_antennaTiltSubscriber (nullptr),
+    m_antennaPanSubscriber (nullptr)
 { }
 
 OwInterface::~OwInterface ()
@@ -41,6 +71,8 @@ OwInterface::~OwInterface ()
   if (m_genericNodeHandle) delete m_genericNodeHandle;
   if (m_antennaTiltPublisher) delete m_antennaTiltPublisher;
   if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
+  if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
+  if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -60,6 +92,12 @@ void OwInterface::initialize()
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", 1));
+    m_antennaTiltSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/ant_tilt_position_controller/state", 1, tilt_callback));
+    m_antennaPanSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/ant_pan_position_controller/state", 1, pan_callback));
     initialized = true;
   }
 }
@@ -201,4 +239,17 @@ void OwInterface::digTrench (double x, double y, double z,
                              double dumpx, double dumpy, double dumpz)
 {
   ROS_WARN("digTrench is unimplemented!");
+}
+
+
+// State
+
+double OwInterface::getTilt () const
+{
+  return CurrentTilt;
+}
+
+double OwInterface::getPan () const
+{
+  return CurrentPan;
 }

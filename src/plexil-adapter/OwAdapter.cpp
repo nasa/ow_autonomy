@@ -25,10 +25,13 @@
 
 // C++/C
 #include <list>
+#include <iostream>
 using std::string;
 using std::vector;
 using std::list;
 using std::copy;
+using std::cout;
+using std::endl;
 
 // Domain
 #include "OwSimProxy.h"
@@ -97,8 +100,15 @@ static void propagate (const State& state, const vector<Value>& value)
   TheAdapter->propagateValueChange (state, value);
 }
 
+// To do: templatize the following few
 
 static void receiveBool (const string& state_name, bool val)
+{
+  propagate (createState(state_name, EmptyArgs),
+             vector<Value> (1, val));
+}
+
+static void receiveDouble (const string& state_name, double val)
 {
   propagate (createState(state_name, EmptyArgs),
              vector<Value> (1, val));
@@ -110,7 +120,9 @@ static void receiveString (const string& state_name, const string& val)
              vector<Value> (1, val));
 }
 
-static void receiveBoolString (const string& state_name, bool val, const string& arg)
+static void receiveBoolString (const string& state_name,
+                               bool val,
+                               const string& arg)
 {
   propagate (createState(state_name, vector<Value> (1, arg)),
              vector<Value> (1, val));
@@ -120,7 +132,7 @@ void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
   if (!isStateSubscribed(state)) return;
-
+  
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }
@@ -160,8 +172,8 @@ bool OwAdapter::initialize()
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
+  setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
-
   debugMsg("OwAdapter", " initialized.");
   return true;
 }

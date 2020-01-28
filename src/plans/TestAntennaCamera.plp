@@ -14,9 +14,10 @@ LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
 
 TestAntennaCamera:
 {
-  // Instead of the Waits, would be good to detect when operation is finished.
-
   log_info ("Starting Antenna/Camera demo...");
+
+  // Wait for all subscribers
+  Wait (2);
 
   LibraryCall TakePanorama (TiltLo = 0, TiltHi = 20,
                             PanLo = 180, PanHi = 200,
