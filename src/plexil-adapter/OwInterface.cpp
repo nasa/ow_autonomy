@@ -4,9 +4,12 @@
 // rights reserved.
 // __END_LICENSE__
 
-// OW
+// ow_autonomy
 #include "OwInterface.h"
 #include "subscriber.h"
+#include "support.h"
+
+// OW - other
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -28,7 +31,8 @@ const double R2D = 180.0 / M_PI ;
 // big.
 
 double CurrentTilt = 0.0;
-double CurrentPan = 0.0;
+double CurrentPanDegrees = 0.0;
+double CurrentPanVelocity = 0.0;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -44,8 +48,8 @@ OwInterface* OwInterface::instance ()
 static void pan_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentPan = msg->set_point * R2D;
-  publish ("PanDegrees", CurrentPan);
+  CurrentPanDegrees = msg->set_point * R2D;
+  publish ("PanDegrees", CurrentPanDegrees);
 }
 
 static void tilt_callback
@@ -53,6 +57,13 @@ static void tilt_callback
 {
   CurrentTilt = msg->set_point * R2D;
   publish ("TiltDegrees", CurrentTilt);
+}
+
+static void joint_states_callback
+(const sensor_msgs::JointState::ConstPtr& msg)
+{
+  CurrentPanVelocity = msg->velocity[j_ant_pan];
+  publish ("PanVelocity", CurrentPanVelocity);
 }
 
 
@@ -63,7 +74,8 @@ OwInterface::OwInterface ()
     m_antennaPanPublisher (nullptr),
     m_leftImageTriggerPublisher (nullptr),
     m_antennaTiltSubscriber (nullptr),
-    m_antennaPanSubscriber (nullptr)
+    m_antennaPanSubscriber (nullptr),
+    m_jointStatesSubscriber (nullptr)
 { }
 
 OwInterface::~OwInterface ()
@@ -73,6 +85,7 @@ OwInterface::~OwInterface ()
   if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
   if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
+  if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -98,6 +111,9 @@ void OwInterface::initialize()
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/ant_pan_position_controller/state", 1, pan_callback));
+    m_jointStatesSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/joint_states", 1, joint_states_callback));
     initialized = true;
   }
 }
@@ -249,7 +265,12 @@ double OwInterface::getTilt () const
   return CurrentTilt;
 }
 
-double OwInterface::getPan () const
+double OwInterface::getPanDegrees () const
 {
-  return CurrentPan;
+  return CurrentPanDegrees;
+}
+
+double OwInterface::getPanVelocity () const
+{
+  return CurrentPanVelocity;
 }

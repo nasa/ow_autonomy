@@ -41,7 +41,8 @@ class OwInterface
 
   // State interface
   double getTilt () const;
-  double getPan () const;
+  double getPanDegrees () const;
+  double getPanVelocity () const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
 
@@ -59,6 +60,7 @@ class OwInterface
 
   ros::Subscriber* m_antennaPanSubscriber;
   ros::Subscriber* m_antennaTiltSubscriber;
+  ros::Subscriber* m_jointStatesSubscriber;
 };
 
 

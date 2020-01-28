@@ -4,7 +4,7 @@
 // Constants used in OceanWorld PLEXIL plans and OwSimProxy.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -23,5 +23,9 @@
 #define STUB_FALSE false
 
 #define INSTRUMENT_ID Integer
+
+// Proposed, arbitrary small unitless value for zero velocity tolerance.
+
+#define ZERO_VEL 0.01
 
 #endif
