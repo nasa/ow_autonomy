@@ -13,6 +13,7 @@ LibraryAction CommandWithMovement (In Real NewValue,
 Pan:
 {
   In Real Degrees;
+  PostCondition CommandWithMovement.outcome == SUCCESS;
   LibraryCall CommandWithMovement (NewValue = Degrees,
                                    CurrentValueLookup = "PanDegrees",
                                    VelocityLookup = "PanVelocity",
