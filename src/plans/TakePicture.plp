@@ -5,9 +5,11 @@
 // rights reserved.
 
 Real Lookup time;
+Boolean Lookup ImageReceived;
+Command take_picture();
 Command log_error (...);
 
-TakePicture:
+TakePicture: Concurrence
 {
   Real TimeOut = 5.0;  // unitless, made up
   Boolean GotImage = false;

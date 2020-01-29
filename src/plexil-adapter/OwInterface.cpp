@@ -16,6 +16,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/JointState.h>
+#include <sensor_msgs/Image.h>
 
 // C
 #include <math.h>  // for M_PI
@@ -68,10 +69,10 @@ static void joint_states_callback
   publish ("TiltVelocity", CurrentTiltVelocity);
 }
 
-static void camera_callback (const sensor_msgs::CameraState::ConstPtr& msg)
+static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 {
-  // Put the correct message type in signature.
-  // Check if the messsage content indicates a picture. Then:
+  // Assuming that receipt of the message is success itself -- not sure how to
+  // check the "validity" of the image, or if this is necessary.
   ImageReceived = true;
 }
 
@@ -82,7 +83,8 @@ OwInterface::OwInterface ()
     m_leftImageTriggerPublisher (nullptr),
     m_antennaTiltSubscriber (nullptr),
     m_antennaPanSubscriber (nullptr),
-    m_jointStatesSubscriber (nullptr)
+    m_jointStatesSubscriber (nullptr),
+    m_cameraSubscriber (nullptr)
 { }
 
 OwInterface::~OwInterface ()
@@ -93,6 +95,7 @@ OwInterface::~OwInterface ()
   if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
+  if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -129,6 +132,9 @@ void OwInterface::initialize()
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/joint_states", 1, joint_states_callback));
+    m_cameraSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/StereoCamera/left/image_raw", 1, camera_callback));
 
     // Holding off on this for now, as latching seems to do the trick.
     //    if (subscribersConfirmed()) initialized = true;
