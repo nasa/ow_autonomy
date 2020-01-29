@@ -1,8 +1,6 @@
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 // ow_autonomy
 #include "OwInterface.h"
@@ -30,10 +28,11 @@ const double R2D = 180.0 / M_PI ;
 // Individual variables for now -- may want to employ a container if this gets
 // big.
 
-double CurrentTilt = 0.0;
-double CurrentPanDegrees = 0.0;
-double CurrentPanVelocity = 0.0;
+double CurrentTilt         = 0.0;
+double CurrentPanDegrees   = 0.0;
+double CurrentPanVelocity  = 0.0;
 double CurrentTiltVelocity = 0.0;
+bool   ImageReceived       = false;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -69,7 +68,12 @@ static void joint_states_callback
   publish ("TiltVelocity", CurrentTiltVelocity);
 }
 
-
+static void camera_callback (const sensor_msgs::CameraState::ConstPtr& msg)
+{
+  // Put the correct message type in signature.
+  // Check if the messsage content indicates a picture. Then:
+  ImageReceived = true;
+}
 
 OwInterface::OwInterface ()
   : m_genericNodeHandle (nullptr),
@@ -309,4 +313,13 @@ double OwInterface::getPanVelocity () const
 double OwInterface::getTiltVelocity () const
 {
   return CurrentTiltVelocity;
+}
+
+bool OwInterface::imageReceived () const
+{
+  // This is a "self-resetting" lookup.  If an image was received, this should
+  // satisfy only one lookup.
+  bool retval = ImageReceived;
+  ImageReceived = false;
+  return retval;
 }

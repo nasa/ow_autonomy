@@ -28,8 +28,8 @@ JointMovement: CheckedSequence
   In String VelocityLookup;
   In String CommandName;
 
-  Real Tolerance = 0.5;    // degrees, made up, tweak as needed
-  Real OpTimeout = 5.0;    // units?, made up, tweak as needed
+  Real Tolerance = 0.5;    // degrees, made up
+  Real TimeOut   = 5.0;    // unitless, made up
   Boolean PreAchieved = false;
 
   // First, command the operation, if needed.
@@ -48,7 +48,7 @@ JointMovement: CheckedSequence
   {
     SkipCondition PreAchieved;
     EndCondition ((abs(Lookup((VelocityLookup), 0.01)) > ZERO_VEL) ||
-                  Lookup(time, 1) - WaitForStart.EXECUTING.START > OpTimeout);
+                  Lookup(time, 1) - WaitForStart.EXECUTING.START > TimeOut);
   }
 
   // If commanded, wait for movement to stop.
@@ -56,7 +56,7 @@ JointMovement: CheckedSequence
   {
     SkipCondition PreAchieved;
     EndCondition ((abs(Lookup((VelocityLookup), 0.01)) <= ZERO_VEL) ||
-                  Lookup(time, 1) - WaitForEnd.EXECUTING.START > OpTimeout);
+                  Lookup(time, 1) - WaitForEnd.EXECUTING.START > TimeOut);
   }
 
   // Report failure if needed.

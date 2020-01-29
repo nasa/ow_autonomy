@@ -4,12 +4,24 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
+Real Lookup time;
+Command log_error (...);
+
 TakePicture:
 {
+  Real TimeOut = 5.0;  // unitless, made up
+  Boolean GotImage = false;
+
+  PostCondition GotImage;
+
   // Command the operation
   take_picture();
 
   // Wait for result
-
-  
+  WaitForPicture: 
+  {
+    SkipCondition Lookup(time, 1) - WaitForPicture.EXECUTING.START > TimeOut;
+    StartCondition Lookup(ImageReceived);
+    GotImage = true;
+  }
 }
