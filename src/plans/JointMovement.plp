@@ -12,13 +12,11 @@
 
 // Possible todos:
 //  - preconditions to check for resource availability, etc.
-//  - handle pan failure (e.g. retry)
+//  - handle failure (e.g. retry)
 
 #include "OceanWorldDefs.h"
 
 Real Lookup time;
-Real Lookup PanDegrees;
-Real Lookup PanVelocity;
 Command log_error (...);
 
 LibraryAction RealValuedCommand (In String CommandName, In Real Value);
@@ -62,11 +60,14 @@ JointMovement: CheckedSequence
   }
 
   // Report failure if needed.
+  // NOTE: very occasionally this node fails spuriously (the pan looks
+  // successful).  Reason unknown: have not yet seen the expanded error message.
   ReportFailure:
   {
     SkipCondition (PreAchieved ||
                    abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance);
     PostCondition  false; // This forces root node to fail, a design choice.
-    log_error (CommandName, " failed.");
+    log_error (CommandName, " failed. (", Lookup((CurrentValueLookup)), ", ",
+               NewValue, ")");
   }
 }

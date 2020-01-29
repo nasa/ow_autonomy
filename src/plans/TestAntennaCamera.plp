@@ -16,9 +16,6 @@ TestAntennaCamera:
 {
   log_info ("Starting Antenna/Camera demo...");
 
-  // Wait for all subscribers
-  Wait (2);
-
   LibraryCall TakePanorama (TiltLo = 0, TiltHi = 20,
                             PanLo = 180, PanHi = 200,
                             HorizOverlap = 2,

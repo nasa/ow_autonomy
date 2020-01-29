@@ -94,20 +94,28 @@ OwInterface::~OwInterface ()
 
 void OwInterface::initialize()
 {
-  // Hack?  Does this function need to be idempotent?
   static bool initialized = false;
 
   if (not initialized) {
     m_genericNodeHandle = new ros::NodeHandle();
+
+    // Initialize publishers.  Queue size is a guess at adequacy.  For now,
+    // latching in liu of waiting for publishers.
+
+    const int qsize = 3;
+    const bool latch = true;
     m_antennaTiltPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", 1));
+       ("/ant_tilt_position_controller/command", qsize, latch));
     m_antennaPanPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", 1));
+       ("/ant_pan_position_controller/command", qsize, latch));
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", 1));
+       ("/StereoCamera/left/image_trigger", qsize, latch));
+
+    // Initialize subscribers
+
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/ant_tilt_position_controller/state", 1, tilt_callback));
@@ -117,7 +125,10 @@ void OwInterface::initialize()
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/joint_states", 1, joint_states_callback));
-    initialized = true;
+
+    // Holding off on this for now, as latching seems to do the trick.
+    //    if (subscribersConfirmed()) initialized = true;
+    //    else ROS_ERROR("Could not initialize OwInterface: subscribers down.");
   }
 }
 
@@ -220,18 +231,35 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-void OwInterface::checkSubscribers (const ros::Publisher* pub) const
+// NOT USED - will remove if latching keeps working
+bool OwInterface::subscribersConfirmed () const
 {
-  if (pub->getNumSubscribers() == 0) {
-    ROS_WARN("No subscribers for topic %s", pub->getTopic().c_str());
-  }
+  ros::Publisher* pubs [] = { m_antennaTiltPublisher,
+                              m_antennaPanPublisher,
+                              m_leftImageTriggerPublisher };
+
+  for (auto p : pubs) if (! checkSubscribers (p)) return false;
+  return true;
 }
+
+
+// NOT USED - will remove if latching keeps working
+bool OwInterface::checkSubscribers (const ros::Publisher* pub) const
+{
+  int timeout = 5;  // seconds, arbitrary
+  for (int secs = 0; secs < timeout; secs++) {
+    if (pub->getNumSubscribers() > 0) return true;
+    else sleep(1);
+  }
+  ROS_ERROR("No subscribers for topic %s", pub->getTopic().c_str());
+  return false;
+}
+
 
 void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg * D2R;
-  checkSubscribers (m_antennaTiltPublisher);
   ROS_INFO("Tilting to %f degrees (%f radians)", arg, msg.data);
   m_antennaTiltPublisher->publish (msg);
 }

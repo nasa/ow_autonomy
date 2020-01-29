@@ -5,11 +5,9 @@
 // This class is a singleton because only once instance will ever be needed, in
 // the current overall autonomy scheme.
 
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 #include <ros/ros.h>
 #include <control_msgs/JointControllerState.h>
@@ -49,7 +47,11 @@ class OwInterface
 
 
  private:
-  void checkSubscribers (const ros::Publisher*) const;
+  // NOT USED - will remove if latching keeps working
+  bool subscribersConfirmed () const;
+  // NOT USED - will remove if latching keeps working
+  bool checkSubscribers (const ros::Publisher*) const;
+
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
 
