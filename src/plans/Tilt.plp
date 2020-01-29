@@ -5,17 +5,17 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-LibraryAction CommandWithMovement (In Real NewValue,
-                                   In String CurrentValueLookup,
-                                   In String VelocityLookup,
-                                   In String CommandName);
+LibraryAction JointMovement (In Real NewValue,
+                             In String CurrentValueLookup,
+                             In String VelocityLookup,
+                             In String CommandName);
 
 Tilt:
 {
   In Real Degrees;
-  PostCondition CommandWithMovement.outcome == SUCCESS;
-  LibraryCall CommandWithMovement (NewValue = Degrees,
-                                   CurrentValueLookup = "TiltDegrees",
-                                   VelocityLookup = "TiltVelocity",
-                                   CommandName = "tilt_antenna");
+  PostCondition JointMovement.outcome == SUCCESS;
+  LibraryCall JointMovement (NewValue = Degrees,
+                             CurrentValueLookup = "TiltDegrees",
+                             VelocityLookup = "TiltVelocity",
+                             CommandName = "tilt_antenna");
 }

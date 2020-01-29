@@ -33,7 +33,7 @@ double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
 double CurrentPanVelocity  = 0.0;
 double CurrentTiltVelocity = 0.0;
-bool   ImageReceived       = false;
+int   ImageReceived        = -1;  // -1 = unknown, 0 = false, 1 = true
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -73,7 +73,7 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // Assuming that receipt of the message is success itself -- not sure how to
   // check the "validity" of the image, or if this is necessary.
-  ImageReceived = true;
+  ImageReceived = 1;
 }
 
 OwInterface::OwInterface ()
@@ -278,7 +278,6 @@ void OwInterface::panAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg * D2R;
-  checkSubscribers (m_antennaPanPublisher);
   ROS_INFO("Panning to %f degrees (%f radians)", arg, msg.data);
   m_antennaPanPublisher->publish (msg);
 }
@@ -286,7 +285,7 @@ void OwInterface::panAntenna (double arg)
 void OwInterface::takePicture ()
 {
   std_msgs::Empty msg;
-  checkSubscribers (m_leftImageTriggerPublisher);
+  ImageReceived = 0;
   m_leftImageTriggerPublisher->publish (msg);
 }
 
@@ -323,9 +322,5 @@ double OwInterface::getTiltVelocity () const
 
 bool OwInterface::imageReceived () const
 {
-  // This is a "self-resetting" lookup.  If an image was received, this should
-  // satisfy only one lookup.
-  bool retval = ImageReceived;
-  ImageReceived = false;
-  return retval;
+  return ImageReceived == 1;
 }
