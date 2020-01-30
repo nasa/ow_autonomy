@@ -125,16 +125,16 @@ void OwInterface::initialize()
 
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", 1, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", qsize, tilt_callback));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", 1, pan_callback));
+       subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/joint_states", 1, joint_states_callback));
+       subscribe("/joint_states", qsize, joint_states_callback));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/StereoCamera/left/image_raw", 1, camera_callback));
+       subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
 
     // Holding off on this for now, as latching seems to do the trick.
     //    if (subscribersConfirmed()) initialized = true;
