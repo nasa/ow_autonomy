@@ -23,20 +23,9 @@ TakePicture:
   // Wait for result
   WaitForPicture:
   {
-    // Give it a second
-    if (! Lookup(ImageReceived)) Wait 5; endif;
-
-    if (Lookup(ImageReceived)) {
-      log_info ("----Image Received");
-      GotImage = true;
-    }
-    endif;
+    SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
+    StartCondition Lookup(ImageReceived);
+    log_info ("----Image Received");
+    GotImage = true;
   }
-  // WaitForPicture:
-  // {
-  //   SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
-  //   StartCondition Lookup(ImageReceived);
-  //   log_info ("----Image Received");
-  //   GotImage = true;
-  // }
 }

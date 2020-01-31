@@ -75,6 +75,7 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
   // check the "validity" of the image, or if this is necessary.
   ROS_INFO ("---- Callback: %d", ImageReceived);
   ImageReceived = 1;
+  publish ("ImageReceived", true);
 }
 
 OwInterface::OwInterface ()
@@ -287,6 +288,7 @@ void OwInterface::takePicture ()
 {
   std_msgs::Empty msg;
   ImageReceived = 0;
+  publish ("ImageReceived", false);
   m_leftImageTriggerPublisher->publish (msg);
 }
 
