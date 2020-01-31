@@ -12,7 +12,6 @@ Command log_info (...);
 TakePicture:
 {
   Real TimeOut = 5.0;  // unitless, made up
-  Real PictureTime;
   Boolean GotImage = false;
 
   // Wait until working!
@@ -21,15 +20,23 @@ TakePicture:
   // Command the operation
   take_picture();
 
-  // Note the time in order to test timeout in next node.
-  PictureTime = Lookup(time);
-
   // Wait for result
   WaitForPicture:
   {
-    SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
-    StartCondition Lookup(ImageReceived);
-    log_info ("----Image Received");
-    GotImage = true;
+    // Give it a second
+    if (! Lookup(ImageReceived)) Wait 5; endif;
+
+    if (Lookup(ImageReceived)) {
+      log_info ("----Image Received");
+      GotImage = true;
+    }
+    endif;
   }
+  // WaitForPicture:
+  // {
+  //   SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
+  //   StartCondition Lookup(ImageReceived);
+  //   log_info ("----Image Received");
+  //   GotImage = true;
+  // }
 }

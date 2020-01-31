@@ -60,8 +60,11 @@ JointMovement: CheckedSequence
   }
 
   // Report failure if needed.
-  // NOTE: very occasionally this node fails spuriously (the pan looks
-  // successful).  Reason unknown: have not yet seen the expanded error message.
+
+  // NOTE: on rare occasions this node fails spuriously and mysteriously: the
+  // pan appears to be successful, as indicated by the current/new values being
+  // equal.
+  
   ReportFailure:
   {
     SkipCondition (PreAchieved ||
