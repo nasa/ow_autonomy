@@ -73,6 +73,7 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // Assuming that receipt of the message is success itself -- not sure how to
   // check the "validity" of the image, or if this is necessary.
+  ROS_INFO ("---- Callback: %d", ImageReceived);
   ImageReceived = 1;
 }
 
@@ -322,5 +323,6 @@ double OwInterface::getTiltVelocity () const
 
 bool OwInterface::imageReceived () const
 {
+  ROS_INFO ("---- Lookup: %d", ImageReceived);
   return ImageReceived == 1;
 }
