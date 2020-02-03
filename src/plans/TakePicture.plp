@@ -8,14 +8,14 @@ Real Lookup time;
 Boolean Lookup ImageReceived;
 Command take_picture();
 Command log_info (...);
+Command log_error (...);
 
 TakePicture:
 {
   Real TimeOut = 5.0;  // unitless, made up
   Boolean GotImage = false;
 
-  // Wait until working!
-  //  PostCondition GotImage;
+  PostCondition GotImage;
 
   // Command the operation
   take_picture();
@@ -25,7 +25,14 @@ TakePicture:
   {
     SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
     StartCondition Lookup(ImageReceived);
-    log_info ("----Image Received");
+    log_info ("Raw image data received.");
     GotImage = true;
+  }
+
+  // Report image failure if needed
+  ReportImageFailure:
+  {
+    SkipCondition GotImage;
+    log_error ("Did not receive raw image data.");
   }
 }

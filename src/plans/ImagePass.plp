@@ -11,13 +11,13 @@ Command log_debug (...);
 LibraryAction TakePicture ();
 LibraryAction PanAndShoot (In Real PanAngle);
 
-ImagePass:
+ImagePass: UncheckedSequence
 {
   In Real PanLo, PanHi, PanIncrement;
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  LibraryCall TakePicture();
+  LibraryCall TakePicture(); // can fail, failure ignored for now
 
   if (ReversePan) {
     log_debug ("Reverse pan. Pan =", PanAngle, "Lo=", PanLo,

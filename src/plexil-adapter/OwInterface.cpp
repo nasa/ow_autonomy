@@ -33,7 +33,7 @@ double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
 double CurrentPanVelocity  = 0.0;
 double CurrentTiltVelocity = 0.0;
-int   ImageReceived        = -1;  // -1 = unknown, 0 = false, 1 = true
+bool   ImageReceived       = false;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -71,11 +71,9 @@ static void joint_states_callback
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 {
-  // Assuming that receipt of the message is success itself -- not sure how to
-  // check the "validity" of the image, or if this is necessary.
-  ROS_INFO ("---- Callback: %d", ImageReceived);
-  ImageReceived = 1;
-  publish ("ImageReceived", true);
+  // Assuming that receipt of this message is success itself.
+  ImageReceived = true;
+  publish ("ImageReceived", ImageReceived);
 }
 
 OwInterface::OwInterface ()
@@ -287,8 +285,8 @@ void OwInterface::panAntenna (double arg)
 void OwInterface::takePicture ()
 {
   std_msgs::Empty msg;
-  ImageReceived = 0;
-  publish ("ImageReceived", false);
+  ImageReceived = false;
+  publish ("ImageReceived", ImageReceived);
   m_leftImageTriggerPublisher->publish (msg);
 }
 
@@ -325,6 +323,5 @@ double OwInterface::getTiltVelocity () const
 
 bool OwInterface::imageReceived () const
 {
-  ROS_INFO ("---- Lookup: %d", ImageReceived);
-  return ImageReceived == 1;
+  return ImageReceived;
 }

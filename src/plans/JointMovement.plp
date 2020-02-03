@@ -28,7 +28,7 @@ JointMovement: CheckedSequence
   In String VelocityLookup;
   In String CommandName;
 
-  Real Tolerance = 0.5;    // degrees, made up
+  Real Tolerance = 0.6;    // degrees, made up
   Real TimeOut   = 5.0;    // unitless, made up
   Boolean PreAchieved = false;
 
