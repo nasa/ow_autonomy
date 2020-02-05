@@ -1,9 +1,9 @@
-// Antenna pan procedure.
-// Input: degrees
-
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
+
+// Antenna pan procedure.
+// Input: degrees
 
 LibraryAction JointMovement (In Real NewValue,
                              In String CurrentValueLookup,
