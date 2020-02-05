@@ -107,7 +107,7 @@ void OwInterface::initialize()
     m_genericNodeHandle = new ros::NodeHandle();
 
     // Initialize publishers.  Queue size is a guess at adequacy.  For now,
-    // latching in liu of waiting for publishers.
+    // latching in lieu of waiting for publishers.
 
     const int qsize = 3;
     const bool latch = true;
