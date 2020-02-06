@@ -1,12 +1,13 @@
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
-// OW
+// ow_autonomy
 #include "OwInterface.h"
 #include "subscriber.h"
+#include "support.h"
+
+// OW - other
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -15,6 +16,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/JointState.h>
+#include <sensor_msgs/Image.h>
 
 // C
 #include <math.h>  // for M_PI
@@ -27,8 +29,11 @@ const double R2D = 180.0 / M_PI ;
 // Individual variables for now -- may want to employ a container if this gets
 // big.
 
-double CurrentTilt = 0.0;
-double CurrentPan = 0.0;
+double CurrentTilt         = 0.0;
+double CurrentPanDegrees   = 0.0;
+double CurrentPanVelocity  = 0.0;
+double CurrentTiltVelocity = 0.0;
+bool   ImageReceived       = false;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -44,8 +49,8 @@ OwInterface* OwInterface::instance ()
 static void pan_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentPan = msg->set_point * R2D;
-  publish ("PanDegrees", CurrentPan);
+  CurrentPanDegrees = msg->set_point * R2D;
+  publish ("PanDegrees", CurrentPanDegrees);
 }
 
 static void tilt_callback
@@ -55,7 +60,21 @@ static void tilt_callback
   publish ("TiltDegrees", CurrentTilt);
 }
 
+static void joint_states_callback
+(const sensor_msgs::JointState::ConstPtr& msg)
+{
+  CurrentPanVelocity = msg->velocity[j_ant_pan];
+  CurrentTiltVelocity = msg->velocity[j_ant_tilt];
+  publish ("PanVelocity", CurrentPanVelocity);
+  publish ("TiltVelocity", CurrentTiltVelocity);
+}
 
+static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
+{
+  // Assuming that receipt of this message is success itself.
+  ImageReceived = true;
+  publish ("ImageReceived", ImageReceived);
+}
 
 OwInterface::OwInterface ()
   : m_genericNodeHandle (nullptr),
@@ -63,7 +82,9 @@ OwInterface::OwInterface ()
     m_antennaPanPublisher (nullptr),
     m_leftImageTriggerPublisher (nullptr),
     m_antennaTiltSubscriber (nullptr),
-    m_antennaPanSubscriber (nullptr)
+    m_antennaPanSubscriber (nullptr),
+    m_jointStatesSubscriber (nullptr),
+    m_cameraSubscriber (nullptr)
 { }
 
 OwInterface::~OwInterface ()
@@ -73,32 +94,51 @@ OwInterface::~OwInterface ()
   if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
   if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
+  if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
+  if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_instance) delete m_instance;
 }
 
 void OwInterface::initialize()
 {
-  // Hack?  Does this function need to be idempotent?
   static bool initialized = false;
 
   if (not initialized) {
     m_genericNodeHandle = new ros::NodeHandle();
+
+    // Initialize publishers.  Queue size is a guess at adequacy.  For now,
+    // latching in lieu of waiting for publishers.
+
+    const int qsize = 3;
+    const bool latch = true;
     m_antennaTiltPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", 1));
+       ("/ant_tilt_position_controller/command", qsize, latch));
     m_antennaPanPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", 1));
+       ("/ant_pan_position_controller/command", qsize, latch));
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", 1));
+       ("/StereoCamera/left/image_trigger", qsize, latch));
+
+    // Initialize subscribers
+
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", 1, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", qsize, tilt_callback));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", 1, pan_callback));
-    initialized = true;
+       subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
+    m_jointStatesSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/joint_states", qsize, joint_states_callback));
+    m_cameraSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+
+    // Holding off on this for now, as latching seems to do the trick.
+    //    if (subscribersConfirmed()) initialized = true;
+    //    else ROS_ERROR("Could not initialize OwInterface: subscribers down.");
   }
 }
 
@@ -201,18 +241,35 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-void OwInterface::checkSubscribers (const ros::Publisher* pub) const
+// NOT USED - will remove if latching keeps working
+bool OwInterface::subscribersConfirmed () const
 {
-  if (pub->getNumSubscribers() == 0) {
-    ROS_WARN("No subscribers for topic %s", pub->getTopic().c_str());
-  }
+  ros::Publisher* pubs [] = { m_antennaTiltPublisher,
+                              m_antennaPanPublisher,
+                              m_leftImageTriggerPublisher };
+
+  for (auto p : pubs) if (! checkSubscribers (p)) return false;
+  return true;
 }
+
+
+// NOT USED - will remove if latching keeps working
+bool OwInterface::checkSubscribers (const ros::Publisher* pub) const
+{
+  int timeout = 5;  // seconds, arbitrary
+  for (int secs = 0; secs < timeout; secs++) {
+    if (pub->getNumSubscribers() > 0) return true;
+    else sleep(1);
+  }
+  ROS_ERROR("No subscribers for topic %s", pub->getTopic().c_str());
+  return false;
+}
+
 
 void OwInterface::tiltAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg * D2R;
-  checkSubscribers (m_antennaTiltPublisher);
   ROS_INFO("Tilting to %f degrees (%f radians)", arg, msg.data);
   m_antennaTiltPublisher->publish (msg);
 }
@@ -221,7 +278,6 @@ void OwInterface::panAntenna (double arg)
 {
   std_msgs::Float64 msg;
   msg.data = arg * D2R;
-  checkSubscribers (m_antennaPanPublisher);
   ROS_INFO("Panning to %f degrees (%f radians)", arg, msg.data);
   m_antennaPanPublisher->publish (msg);
 }
@@ -229,7 +285,8 @@ void OwInterface::panAntenna (double arg)
 void OwInterface::takePicture ()
 {
   std_msgs::Empty msg;
-  checkSubscribers (m_leftImageTriggerPublisher);
+  ImageReceived = false;
+  publish ("ImageReceived", ImageReceived);
   m_leftImageTriggerPublisher->publish (msg);
 }
 
@@ -249,7 +306,22 @@ double OwInterface::getTilt () const
   return CurrentTilt;
 }
 
-double OwInterface::getPan () const
+double OwInterface::getPanDegrees () const
 {
-  return CurrentPan;
+  return CurrentPanDegrees;
+}
+
+double OwInterface::getPanVelocity () const
+{
+  return CurrentPanVelocity;
+}
+
+double OwInterface::getTiltVelocity () const
+{
+  return CurrentTiltVelocity;
+}
+
+bool OwInterface::imageReceived () const
+{
+  return ImageReceived;
 }

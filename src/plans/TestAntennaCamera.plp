@@ -1,10 +1,8 @@
-// Simple test/demo of antenna and camera: a short panoramic image.
-
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
+
+// Simple test/demo of antenna and camera: a short panoramic image.
 
 Command log_info (...);
 
@@ -16,11 +14,8 @@ TestAntennaCamera:
 {
   log_info ("Starting Antenna/Camera demo...");
 
-  // Wait for all subscribers
-  Wait (2);
-
   LibraryCall TakePanorama (TiltLo = 0, TiltHi = 20,
-                            PanLo = 180, PanHi = 200,
+                            PanLo = 90, PanHi = 110,
                             HorizOverlap = 2,
                             VertOverlap = 2);
 

@@ -1,31 +1,21 @@
-Real Lookup time;
-Real Lookup TiltDegrees;
-Command tilt_antenna (Real);
-Command log_error (...);
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Antenna tilt procedure.
+// Input: degrees
+
+LibraryAction JointMovement (In Real NewValue,
+                             In String CurrentValueLookup,
+                             In String VelocityLookup,
+                             In String CommandName);
 
 Tilt:
 {
   In Real Degrees;
-
-  Real Tolerance   = 0.5; // degrees, made up, tweak as needed
-  Real TiltTimeout = 5.0; // seconds, made up, tweak as needed
-
-  // Possible todos:
-  //  - preconditions to check for resource availability, etc.
-  //  - handle pan failure
-
-  tilt_antenna (Degrees);
-
-  WaitForTilt:
-  {
-    // This is an empty node that just waits for the tilt to get within
-    // tolerance, or time out.
-    EndCondition ((abs(Lookup(TiltDegrees) - Degrees) <= Tolerance) ||
-                  Lookup(time, 1) - WaitForTilt.EXECUTING.START > TiltTimeout);
-  }
-
-  if (abs(Lookup(TiltDegrees) - Degrees) > Tolerance) {
-    log_error ("Tilt failed.");
-  }
-  endif;
+  PostCondition JointMovement.outcome == SUCCESS;
+  LibraryCall JointMovement (NewValue = Degrees,
+                             CurrentValueLookup = "TiltDegrees",
+                             VelocityLookup = "TiltVelocity",
+                             CommandName = "tilt_antenna");
 }
