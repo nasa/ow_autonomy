@@ -6,7 +6,7 @@
 // parameters.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -16,6 +16,7 @@ using std::string;
 
 // Subscriber types
 typedef void (* SubscribeBool) (const string& state_name, bool val);
+typedef void (* SubscribeDouble) (const string& state_name, double val);
 typedef void (* SubscribeString) (const string& state_name,
                                   const string& val);
 typedef void (* SubscribeBoolString) (const string& state_name,
@@ -23,11 +24,13 @@ typedef void (* SubscribeBoolString) (const string& state_name,
 
 // Setters for subscribers of each supported type signature
 void setSubscriber (SubscribeBool);
+void setSubscriber (SubscribeDouble);
 void setSubscriber (SubscribeString);
 void setSubscriber (SubscribeBoolString);
 
 // Publish a state name, which notifies the subscriber.
 void publish (const string& state_name, bool val);
+void publish (const string& state_name, double val);
 void publish (const string& state_name, const string& val);
 void publish (const string& state_name, bool val, const string& arg);
 

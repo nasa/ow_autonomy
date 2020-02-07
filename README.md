@@ -15,8 +15,6 @@ See the README files in each subdirectory for more information.
 Build
 -----
 
-     % catkin build
-
 A prerequisite for building and running this application is a working PLEXIL
 installation, which has its own prerequisites.  For instructions see the
 "Development Environment" Confluence page. The environment variable PLEXIL_HOME
@@ -26,31 +24,84 @@ Your ROS environment should also first be set up:
 
      % source <catkin-workspace>/devel/setup.sh
 
+Assumed is this directory filed properly within an OceanWATERS ROS workspace
+(see Conftluence for instructions).  Build the entire workspace with:
+
+     % catkin build
+
+Build just the ow_autonomy package with:
+
+     % catkin build ow_autonomy
+
 
 Run
 ---
 
-First launch ow_lander as follows.
+1. Start the simulator:
 
-     % roslaunch ow arm_sim.launch
+   % roslaunch ow europa_test_dem.launch
 
-Then launch the autonomy node.  The default launch looks like this:
+   There are other options, e.g. this one doesn't include the terrian model:
 
-     % roslaunch ow_autonomy autonomy.launch
+   % roslaunch ow arm_sim.launch
 
-This invocation loads the default PLEXIL plan, Demo.plx, which
-demonstrates a variety of lander functions: arm planning, guarded move,
-publishing trajectory (for Gazebo), antenna and camera functions.
+2. (optional) Start rqt for visualization and monitoring.
 
-Alternatively, you may specify a plan to load.  The default launch is
-equivalent to:
+   % rqt
 
-     % roslaunch ow_autonomy autonomy.launch plan:="Demo.plx"
+   If you wish to view camera images:
 
-Use the 'plan' argument to specify a .plx file found in
+   a) Select Plugins/Visualization/Image View
+	 b) In the topic pulldown menu, select /StereoCamera/left/image_raw
 
-     <ow_workspace>/devel/etc/plexil
+   Note that /StereoCamera/left/image_raw_mouse_left appears in the box below.
 
-An interesting choice is the Europa reference mission prototype:
+3. Start the autonomy node.  To use the default plan:
 
-     % roslaunch ow_autonomy autonomy.launch plan:="OceanWorldMission.plx"
+   % roslaunch ow_autonomy autonomy_node.launch
+
+   This invocation loads the default PLEXIL plan, Demo.plx, which demonstrates a
+   variety of lander functions: arm planning, guarded move, publishing
+   trajectory (for Gazebo), and panoramic imaging.  It is equivalent to:
+
+   % roslaunch ow_autonomy autonomy_node.launch plan:=Demo.plx
+
+   Alternatively, you may specify a plan to load, by setting the 'plan' argument
+   to a .plx file found in:
+
+   <ow_workspace>/devel/etc/plexil
+
+
+Plans
+-----
+
+Here are the meaningful plans currently available.
+
+1. The Europa reference mission Sol 0 prototype:
+
+   % roslaunch ow_autonomy autonomy_node.launch plan:=OceanWorldMission.plx
+
+   At present, this plan is stubbed except for the 360 degree landing site
+   imaging that happens near the beginning -- this takes many minutes.
+
+2. A short panoramic imaging demo:
+
+   % roslaunch ow_autonomy autonomy_node.launch plan:=TestAntennaCamera.plx
+
+   A small area is imaged, with an iteration of tilts and pans.  To try other
+   regions, edit ow_autonomy/src/plans/TestAntennaCamera.plp and enter 'catkin
+   build ow_autonomy' before restarting the autonomy node.  You don't need to
+   restart the simulator.
+
+
+Clean
+-----
+
+To clean (remove all build products from) the entire ROS workspace:
+
+  % catkin clean
+
+To clean just the ow_autonomy package:
+
+  % cd <ow_workspace>/build
+	% rm -rf ow_autonomy

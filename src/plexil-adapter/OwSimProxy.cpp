@@ -5,6 +5,7 @@
 // __END_LICENSE__
 
 #include "OwSimProxy.h"
+#include "OwInterface.h"
 #include <ros/ros.h>
 #include <iostream>
 
@@ -30,7 +31,7 @@ bool OwSimProxy::lookup (const std::string& state_name,
 {
   bool retval = true;
 
-  // TODO: streamline this, and make it late-bindable.
+  // Eventually, these stubs will go away.
 
   STATE_STUB(TrenchLength, 10)
   else STATE_STUB(TrenchWidth, 10)
@@ -50,6 +51,24 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(ExcavationTimeout, 60)
   else STATE_STUB(SampleGood, true)
   else STATE_STUB(CollectAndTransferTimeout, 10)
+  else STATE_STUB(VertFOV, 10) // should be 15
+  else STATE_STUB(HorizFOV, 10) // should be 21
+
+  else if (state_name == "TiltDegrees") {
+    value_out = OwInterface::instance()->getTilt();
+  }
+  else if (state_name == "PanDegrees") {
+    value_out = OwInterface::instance()->getPanDegrees();
+  }
+  else if (state_name == "PanVelocity") {
+    value_out = OwInterface::instance()->getPanVelocity();
+  }
+  else if (state_name == "TiltVelocity") {
+    value_out = OwInterface::instance()->getTiltVelocity();
+  }
+  else if (state_name == "ImageReceived") {
+    value_out = OwInterface::instance()->imageReceived();
+  }
   else retval = false;
 
   return retval;

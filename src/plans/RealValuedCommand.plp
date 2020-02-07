@@ -1,0 +1,26 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Invoke a real-valued command, from a prespecified selection.
+
+// PLEXIL does not support commands as first-class values, and all commands must
+// be statically declared; thus this plan is limited to a pre-specified
+// selection.
+
+Command pan_antenna (Real);
+Command tilt_antenna (Real);
+Command log_error (...);
+
+// May generalize this later, depending on needs.
+
+RealValuedCommand:
+{
+  In String CommandName;
+  In Real Value;
+
+  if (CommandName == "pan_antenna") pan_antenna (Value);
+  elseif (CommandName == "tilt_antenna") tilt_antenna (Value);
+  else log_error ("RealValuedCommand does not support command ", CommandName);
+  endif;
+}

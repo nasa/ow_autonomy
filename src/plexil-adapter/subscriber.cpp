@@ -1,7 +1,7 @@
 #include "subscriber.h"
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -9,11 +9,15 @@
 // The subscribers.  Their naming convention is:
 //   Subscribe<value-type><param-type>...
 
-static SubscribeBool SubscriberBool = NULL;
-static SubscribeString SubscriberString = NULL;
-static SubscribeBoolString SubscriberBoolString = NULL;
+// To do: templatize!
+
+static SubscribeBool SubscriberBool = nullptr;
+static SubscribeDouble SubscriberDouble = nullptr;
+static SubscribeString SubscriberString = nullptr;
+static SubscribeBoolString SubscriberBoolString = nullptr;
 
 void setSubscriber (SubscribeBool s) { SubscriberBool = s; }
+void setSubscriber (SubscribeDouble s) { SubscriberDouble = s; }
 void setSubscriber (SubscribeString s) { SubscriberString = s; }
 void setSubscriber (SubscribeBoolString s) { SubscriberBoolString = s; }
 
@@ -23,6 +27,11 @@ void setSubscriber (SubscribeBoolString s) { SubscriberBoolString = s; }
 void publish (const string& state_name, bool val)
 {
   SubscriberBool (state_name, val);
+}
+
+void publish (const string& state_name, double val)
+{
+  SubscriberDouble (state_name, val);
 }
 
 void publish (const string& state_name, const string& val)

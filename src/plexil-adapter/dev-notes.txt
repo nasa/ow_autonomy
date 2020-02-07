@@ -1,7 +1,6 @@
 Mike Dalal's personal development notes
 
 Sol 0 refinement
-  Get running again!
   De-Stub
     rostopic list for potential candidates
     Query group for functioniity, and learn contacts:
@@ -9,7 +8,6 @@ Sol 0 refinement
       Thermal monitor (Chetan?)
       Comms: uplinks (?)
     Decompose
-      Stereo panorama of landing site
       Interogate surface
       Get trench target from ground
       Get trench target onboard
@@ -35,9 +33,4 @@ Sol 0 refinement
   Rationalize Lookups
     Trench parameters
 
-  Integrate *something* with ROS
-    Tilt, pan, and take picture?
-
-Misc
-  Get a 3-button mouse!  First, try one.
 

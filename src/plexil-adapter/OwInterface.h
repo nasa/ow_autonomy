@@ -5,13 +5,12 @@
 // This class is a singleton because only once instance will ever be needed, in
 // the current overall autonomy scheme.
 
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 #include <ros/ros.h>
+#include <control_msgs/JointControllerState.h>
 
 class OwInterface
 {
@@ -19,6 +18,8 @@ class OwInterface
   static OwInterface* instance();
   OwInterface ();
   ~OwInterface ();
+  OwInterface (const OwInterface&) = delete;
+  OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Temporary "demo" functions
@@ -26,6 +27,7 @@ class OwInterface
   void moveGuardedDemo();
   void publishTrajectoryDemo();
 
+  // Operational interface
   void tiltAntenna (double);
   void panAntenna (double);
   void takePicture ();
@@ -35,15 +37,35 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
+  // State interface
+  double getTilt () const;
+  double getPanDegrees () const;
+  double getPanVelocity () const;
+  double getTiltVelocity () const;
+  bool imageReceived () const;
+  void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+  void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+
+
  private:
-  OwInterface (const OwInterface&);            // undefined (singleton)
-  OwInterface& operator= (const OwInterface&); // undefined (singleton)
-  void checkSubscribers (const ros::Publisher*) const;
+  // NOT USED - will remove if latching keeps working
+  bool subscribersConfirmed () const;
+  // NOT USED - will remove if latching keeps working
+  bool checkSubscribers (const ros::Publisher*) const;
+
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
+
+  // Publishers and subscribers
+
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;
   ros::Publisher*  m_leftImageTriggerPublisher;
+
+  ros::Subscriber* m_antennaPanSubscriber;
+  ros::Subscriber* m_antennaTiltSubscriber;
+  ros::Subscriber* m_jointStatesSubscriber;
+  ros::Subscriber* m_cameraSubscriber;
 };
 
 

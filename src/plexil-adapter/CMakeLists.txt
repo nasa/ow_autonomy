@@ -7,6 +7,7 @@ set (HEADERS
   OwSimInterface.h
   OwSimProxy.h
   subscriber.h
+  support.h
 )
 
 set (SOURCES
@@ -35,14 +36,14 @@ add_library(${LIB_NAME} SHARED
 target_link_libraries(${LIB_NAME}
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
-	)
+  )
 
 add_executable(autonomy_node autonomy_node.cpp)
 
 target_link_libraries(autonomy_node
-	${catkin_LIBRARIES}
-	${PLEXIL_LIBRARIES}
-	${LIB_NAME})
+  ${catkin_LIBRARIES}
+  ${PLEXIL_LIBRARIES}
+  ${LIB_NAME})
 
 install(TARGETS autonomy_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

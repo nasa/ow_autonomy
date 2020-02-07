@@ -1,0 +1,31 @@
+// Auxiliary plan for TakePanorama.  Tilts to specified angle and then performs
+// a single image pass.
+
+// __BEGIN_LICENSE__
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+// __END_LICENSE__
+
+#include "AntennaDefs.h"
+
+LibraryAction ImagePass (In Real PanLo,
+                         In Real PanHi,
+                         In Real PanIncrement,
+                         InOut Real PanAngle,
+                         InOut Boolean ReversePan);
+LibraryAction Tilt (In Real Degrees);
+Command tilt_antenna (Real angle);
+
+TiltAndImagePass:
+{
+  In Real TiltAngle, PanIncrement, PanLo, PanHi;
+  InOut Real PanAngle;
+  InOut Boolean ReversePan;
+
+  LibraryCall Tilt (Degrees = TiltAngle);
+  LibraryCall ImagePass (PanIncrement = PanIncrement,
+                         PanLo = PanLo, PanHi = PanHi,
+                         PanAngle = PanAngle,
+                         ReversePan = ReversePan);
+}

@@ -1,7 +1,7 @@
 // High-level notional plan for lander autonomy.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -43,7 +43,9 @@ LibraryAction Downlink();
 LibraryAction Image(In String desc);
 LibraryAction DownlinkImage();
 LibraryAction ImageSampleSite();
-LibraryAction ImageLandingSite();
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
 
 Command log_info (...);
 Command log_warning (...);
@@ -78,7 +80,11 @@ OceanWorldMission: Concurrence
 
     Real Time;
 
-    ImageLandingSite: LibraryCall ImageLandingSite();
+    ImageLandingSite: LibraryCall TakePanorama (TiltLo = 0, TiltHi = 30,
+                                                PanLo = 90, PanHi = 240,
+                                                HorizOverlap = 2,
+                                                VertOverlap = 2);
+
     InterogateSurface: LibraryCall Stub(desc="Interrogating surface");
 
     GetTrenchTarget:

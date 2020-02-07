@@ -1,0 +1,76 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Generic invocation of a real-valued joint movement command.
+
+// Inputs:
+//   New value to be commanded (unitless here, could e.g. be degrees)
+//   Name of lookup for current value of commanded value
+//   Name of lookup for joint velocity
+//   Name of command, which must take a single real-number argument
+
+// Possible todos:
+//  - preconditions to check for resource availability, etc.
+//  - handle failure (e.g. retry)
+
+#include "OceanWorldDefs.h"
+
+Real Lookup time;
+Command log_error (...);
+
+LibraryAction RealValuedCommand (In String CommandName, In Real Value);
+
+JointMovement: CheckedSequence
+{
+  In Real NewValue;
+  In String CurrentValueLookup;
+  In String VelocityLookup;
+  In String CommandName;
+
+  Real Tolerance = 0.6;    // degrees, made up
+  Real TimeOut   = 5.0;    // unitless, made up
+  Boolean PreAchieved = false;
+
+  // First, command the operation, if needed.
+  MaybeCommand:
+  {
+    if (abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance) {
+      PreAchieved = true;
+    }
+    else LibraryCall RealValuedCommand (CommandName = CommandName,
+                                        Value = NewValue);
+    endif;
+  }
+
+  // If commanded, wait for movement to start
+  WaitForStart:
+  {
+    SkipCondition PreAchieved;
+    EndCondition ((abs(Lookup((VelocityLookup), 0.01)) > ZERO_VEL) ||
+                  Lookup(time, 1) - WaitForStart.EXECUTING.START > TimeOut);
+  }
+
+  // If commanded, wait for movement to stop.
+  WaitForEnd:
+  {
+    SkipCondition PreAchieved;
+    EndCondition ((abs(Lookup((VelocityLookup), 0.01)) <= ZERO_VEL) ||
+                  Lookup(time, 1) - WaitForEnd.EXECUTING.START > TimeOut);
+  }
+
+  // Report failure if needed.
+
+  // NOTE: on rare occasions this node fails spuriously and mysteriously: the
+  // pan appears to be successful, as indicated by the current/new values being
+  // equal.
+
+  ReportFailure:
+  {
+    SkipCondition (PreAchieved ||
+                   abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance);
+    PostCondition  false; // This forces root node to fail, a design choice.
+    log_error (CommandName, " failed. (", Lookup((CurrentValueLookup)), ", ",
+               NewValue, ")");
+  }
+}

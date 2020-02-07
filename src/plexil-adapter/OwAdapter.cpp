@@ -1,7 +1,7 @@
 // Implementation of PLEXIL interface adapter.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
@@ -25,10 +25,13 @@
 
 // C++/C
 #include <list>
+#include <iostream>
 using std::string;
 using std::vector;
 using std::list;
 using std::copy;
+using std::cout;
+using std::endl;
 
 // Domain
 #include "OwSimProxy.h"
@@ -57,14 +60,19 @@ static void log_info (const vector<Value>& args)
   ROS_INFO("%s", log_string(args).c_str());
 }
 
+static void log_warning (const vector<Value>& args)
+{
+  ROS_WARN("%s", log_string(args).c_str());
+}
+
 static void log_error (const vector<Value>& args)
 {
   ROS_ERROR("%s", log_string(args).c_str());
 }
 
-static void log_warning (const vector<Value>& args)
+static void log_debug (const vector<Value>& args)
 {
-  ROS_WARN("%s", log_string(args).c_str());
+  ROS_DEBUG("%s", log_string(args).c_str());
 }
 
 
@@ -92,8 +100,15 @@ static void propagate (const State& state, const vector<Value>& value)
   TheAdapter->propagateValueChange (state, value);
 }
 
+// To do: templatize the following few
 
 static void receiveBool (const string& state_name, bool val)
+{
+  propagate (createState(state_name, EmptyArgs),
+             vector<Value> (1, val));
+}
+
+static void receiveDouble (const string& state_name, double val)
 {
   propagate (createState(state_name, EmptyArgs),
              vector<Value> (1, val));
@@ -105,7 +120,9 @@ static void receiveString (const string& state_name, const string& val)
              vector<Value> (1, val));
 }
 
-static void receiveBoolString (const string& state_name, bool val, const string& arg)
+static void receiveBoolString (const string& state_name,
+                               bool val,
+                               const string& arg)
 {
   propagate (createState(state_name, vector<Value> (1, arg)),
              vector<Value> (1, val));
@@ -115,7 +132,7 @@ void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
   if (!isStateSubscribed(state)) return;
-
+  
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }
@@ -155,8 +172,8 @@ bool OwAdapter::initialize()
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
+  setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
-
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
@@ -205,7 +222,6 @@ void OwAdapter::executeCommand(Command *cmd)
 
   // Argument value holders
   double double_arg;
-  string string_arg;
 
   // Return values
   Value retval = Unknown;
@@ -214,6 +230,7 @@ void OwAdapter::executeCommand(Command *cmd)
   if (name == "log_info") log_info (cmd->getArgValues());
   else if (name == "log_warning") log_warning (cmd->getArgValues());
   else if (name == "log_error") log_error (cmd->getArgValues());
+  else if (name == "log_debug") log_debug (cmd->getArgValues());
   // "Demos"
   else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
   else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
@@ -237,24 +254,15 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "TakePanorama") {
-    double elev_lo, elev_hi, lat_overlap, vert_overlap;
-    args[0].getValue(elev_lo);
-    args[0].getValue(elev_hi);
-    args[0].getValue(lat_overlap);
-    args[0].getValue(vert_overlap);
-    OwInterface::instance()->takePanorama (elev_lo, elev_hi,
-                                           lat_overlap, vert_overlap);
-  }
-  else if (name == "TiltAntenna") {
+  else if (name == "tilt_antenna") {
     args[0].getValue(double_arg);
     OwInterface::instance()->tiltAntenna (double_arg);
   }
-  else if (name == "PanAntenna") {
+  else if (name == "pan_antenna") {
     args[0].getValue(double_arg);
     OwInterface::instance()->panAntenna (double_arg);
   }
-  else if (name == "TakePicture") {
+  else if (name == "take_picture") {
     OwInterface::instance()->takePicture();
   }
   else ROS_ERROR("Invalid command %s", name.c_str());

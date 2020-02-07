@@ -1,12 +1,13 @@
 #ifndef OwSimProxy_H
 #define OwSimProxy_H
 
-// A proxy for the OceanWorlds simulator.  Implements stubs for commands and
-// telemetry.  Used for testing PLEXIL plans and helping to understand and
-// define the required interface and functionality of the actual simulator.
+// Originally, a *proxy* for the OceanWATERS (OW) simulator, providing stubs for
+// commands and telemetry.  Now, in addition, a *wrapper* for state queries to
+// the OW simulator.  Eventually it will be just the wrapper, and at this point,
+// this class may be refactored or go away.
 
 // __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 // __END_LICENSE__
