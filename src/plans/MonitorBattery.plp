@@ -1,0 +1,7 @@
+MonitorBattery:
+{
+  InOut Boolean status;
+
+  // Stub
+  status = true;
+}

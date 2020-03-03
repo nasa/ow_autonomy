@@ -1,10 +1,8 @@
-// High-level notional plan for lander autonomy.
-
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
+
+// High-level notional plan for lander autonomy.
 
 /* To Do:
    - deal with potential random resets, i.e. due to radiation
@@ -14,7 +12,6 @@
 */
 
 #include "OceanWorldDefs.h"
-
 
 Real Lookup TrenchLength;
 Real Lookup TrenchWidth;
@@ -46,6 +43,7 @@ LibraryAction ImageSampleSite();
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
                             In Real HorizOverlap, In Real VertOverlap);
+LibraryAction MonitorBattery (InOut Boolean status);
 
 Command log_info (...);
 Command log_warning (...);
@@ -66,9 +64,12 @@ OceanWorldMission: Concurrence
 {
   // Assumption: checkout is complete before this node starts.
 
+  // Health variables - expand/refine as needed
+  Boolean BatteryOK, TemperatureOK;
+
   ContingencyMonitors: Concurrence
   {
-    BatteryMonitor: LibraryCall Stub(desc="Monitoring battery");
+    BatteryMonitor: LibraryCall MonitorBattery (status = BatteryOK);
     ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
