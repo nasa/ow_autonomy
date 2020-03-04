@@ -1,0 +1,61 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+#include "OceanWorldDefs.h"
+
+Real Lookup time;
+Real Lookup CollectAndTransferTimeout;
+Boolean Lookup SampleGood;
+LibraryAction ImageSampleSite();
+LibraryAction Stub(In String desc);
+LibraryAction Image(In String desc);
+LibraryAction Downlink();
+
+CollectAndTransfer:
+{
+  Real SampleAmount;
+  Real Time;
+  Boolean CollectMore = true;
+
+  CollectAndTransfer1:
+  {
+    InvariantCondition
+      Time < (CollectAndTransfer.EXECUTING.START +
+              Lookup(CollectAndTransferTimeout));
+    RepeatCondition CollectMore;
+
+    Time = Lookup(time);
+
+    Collect:
+    {
+      EndCondition Lookup(SampleGood); // Material Property Sensing
+      LibraryCall Stub(desc="Collecting Sample");
+    }
+
+    ImageSample:
+    {
+      LibraryCall Stub(desc="Aligning camera and sample");
+      LibraryCall Image(desc="sample");
+    }
+
+    DownlinkSampleImage: LibraryCall Downlink();
+
+    Transfer:
+    {
+      Dock: LibraryCall Stub(desc="Docking");
+      Unload: LibraryCall Stub(desc="Unloading");
+      MeasureSample:
+      {
+        PostCondition !CollectMore;
+        LibraryCall Stub(desc="Measuring Sample");
+        CollectMore = STUB_FALSE;
+        Wait 1;
+      }
+      CapSample: LibraryCall Stub(desc="Capping Sample");
+      DeliverSample: LibraryCall Stub(desc="Delivering Sample");
+      ImageSampleSite: LibraryCall ImageSampleSite();
+    }
+
+  }
+}
