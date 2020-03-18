@@ -5,7 +5,6 @@
 // ow_autonomy
 #include "OwInterface.h"
 #include "subscriber.h"
-#include "support.h"
 
 // OW - other
 #include <ow_lander/StartPlanning.h>
@@ -15,7 +14,6 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
-#include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 
 // C
@@ -36,6 +34,8 @@ double CurrentTiltVelocity = 0.0;
 bool   ImageReceived       = false;
 
 OwInterface* OwInterface::m_instance = nullptr;
+
+JointMap OwInterface::m_jointMap;
 
 OwInterface* OwInterface::instance ()
 {
@@ -60,13 +60,21 @@ static void tilt_callback
   publish ("TiltDegrees", CurrentTilt);
 }
 
-static void joint_states_callback
+void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
+  // Legacy; leave in until absorbed into New approach below
   CurrentPanVelocity = msg->velocity[j_ant_pan];
   CurrentTiltVelocity = msg->velocity[j_ant_tilt];
   publish ("PanVelocity", CurrentPanVelocity);
   publish ("TiltVelocity", CurrentTiltVelocity);
+
+  // New
+  for (int i = j_ant_pan; i <= j_shou_yaw; ++i) {
+    m_jointMap[i] = JointInfo (msg->position[i],
+                               msg->velocity[i],
+                               msg->effort[i]);
+  }
 }
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
@@ -131,7 +139,7 @@ void OwInterface::initialize()
        subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/joint_states", qsize, joint_states_callback));
+       subscribe("/joint_states", qsize, OwInterface::jointStatesCallback));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));

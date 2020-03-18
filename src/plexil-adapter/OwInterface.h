@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
@@ -5,12 +9,10 @@
 // This class is a singleton because only once instance will ever be needed, in
 // the current overall autonomy scheme.
 
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
-
 #include <ros/ros.h>
 #include <control_msgs/JointControllerState.h>
+#include <sensor_msgs/JointState.h>
+#include "JointInfo.h"
 
 class OwInterface
 {
@@ -48,6 +50,9 @@ class OwInterface
 
 
  private:
+  static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  static JointMap m_jointMap;
+  
   // NOT USED - will remove if latching keeps working
   bool subscribersConfirmed () const;
   // NOT USED - will remove if latching keeps working
