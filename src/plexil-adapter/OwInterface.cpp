@@ -29,13 +29,20 @@ const double R2D = 180.0 / M_PI ;
 
 double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
-double CurrentPanVelocity  = 0.0;
-double CurrentTiltVelocity = 0.0;
 bool   ImageReceived       = false;
 
 OwInterface* OwInterface::m_instance = nullptr;
 
-JointMap OwInterface::m_jointMap;
+//JointMap OwInterface::m_jointMap { {j_ant_pan, JointInfo(0,0,0)} };
+
+static JointMap init_joint_map ()
+{
+  JointMap m;
+  for (int i = j_ant_pan; i <= j_shou_yaw; i++) m[i] = JointInfo (0,0,0);
+  return m;
+}
+
+JointMap OwInterface::m_jointMap = init_joint_map();
 
 OwInterface* OwInterface::instance ()
 {
@@ -63,17 +70,13 @@ static void tilt_callback
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
-  // Legacy; leave in until absorbed into New approach below
-  CurrentPanVelocity = msg->velocity[j_ant_pan];
-  CurrentTiltVelocity = msg->velocity[j_ant_tilt];
-  publish ("PanVelocity", CurrentPanVelocity);
-  publish ("TiltVelocity", CurrentTiltVelocity);
-
-  // New
   for (int i = j_ant_pan; i <= j_shou_yaw; ++i) {
     m_jointMap[i] = JointInfo (msg->position[i],
                                msg->velocity[i],
                                msg->effort[i]);
+    publish (JointNames[i] + "Velocity", msg->velocity[i]);
+    publish (JointNames[i] + "Effort", msg->effort[i]);
+    // Don't need to publish position as yet.
   }
 }
 
@@ -321,12 +324,12 @@ double OwInterface::getPanDegrees () const
 
 double OwInterface::getPanVelocity () const
 {
-  return CurrentPanVelocity;
+  return m_jointMap[j_ant_pan].velocity;
 }
 
 double OwInterface::getTiltVelocity () const
 {
-  return CurrentTiltVelocity;
+  return m_jointMap[j_ant_tilt].velocity;
 }
 
 bool OwInterface::imageReceived () const

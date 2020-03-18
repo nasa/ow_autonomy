@@ -1,5 +1,13 @@
+/* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+
 #ifndef OW_AUTONOMY_JOINTINFO_H
 #define OW_AUTONOMY_JOINTINFO_H
+
+// Support for lander joint information, based on /joint_states message.
+
+#include <string>
+#include <vector>
+#include <map>
 
 // Enumerate OW's JointState 'name' array, as integer indices into this and its
 // other arrays.  Can't use enum classes very well for this, so going old-school.
@@ -18,13 +26,19 @@ struct JointInfo
     effort(e) { }
 
   // Use compiler's copy constructor, destructor, assignment
-  
+
   double position;
   double velocity;
   double effort;
 };
 
 typedef std::map<int, JointInfo> JointMap;
+
+const std::vector<std::string> JointNames {
+  "Pan", "Tilt", "DistalPitch", "HandYaw", "ProximalPitch",
+  "ScoopYaw", "ShoulderPitch", "ShoulderYaw"
+};
+    
 
 
 #endif
