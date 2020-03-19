@@ -1,13 +1,11 @@
 #ifndef OceanWorldsDefs_H
 #define OceanWorldsDefs_H
 
-// Constants used in OceanWorld PLEXIL plans and OwSimProxy.
-
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
+
+// Constants used in OceanWorld PLEXIL plans and OwSimProxy.
 
 // NOTE: Guessed/bogus values, some intervals very short for now to reduce
 // testing time.
@@ -27,5 +25,11 @@
 // Proposed, arbitrary small unitless value for zero velocity tolerance.
 
 #define ZERO_VEL 0.01
+
+#define HIGH_EFFORT 600
+#define CRITICAL_EFFORT 800;
+#define PEAK_EFFORT 1000;
+
+
 
 #endif

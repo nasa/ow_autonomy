@@ -1,10 +1,8 @@
-// Implementation of PLEXIL interface adapter.
-
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
+
+// Implementation of PLEXIL interface adapter.
 
 // OW
 #include "OwAdapter.h"
@@ -132,7 +130,7 @@ void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
   if (!isStateSubscribed(state)) return;
-  
+
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }

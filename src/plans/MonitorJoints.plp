@@ -1,0 +1,19 @@
+#include "OceanWorldDefs.h"
+
+LibraryAction WarnEffort (In String joint, In Real effort);
+
+MonitorJoints: Concurrence
+{
+  // Add: repetition, termination
+  
+  MonitorPan:
+  {
+    Start Lookup(PanEffort) >= HIGH_EFFORT;
+    LibraryCall WarnEffort (joint = "Pan", effort = Lookup(PanEffort));
+  }
+  MonitorTilt:
+  {
+    Start Lookup(TiltEffort) >= HIGH_EFFORT;
+    LibraryCall WarnEffort (Joint = "Tilt", effort = Lookup(TiltEffort));
+  }
+}

@@ -66,6 +66,9 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "TiltVelocity") {
     value_out = OwInterface::instance()->getTiltVelocity();
   }
+  else if (state_name == "PanEffort") {
+    value_out = OwInterface::instance()->getPanVelocity();
+  }
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();
   }
