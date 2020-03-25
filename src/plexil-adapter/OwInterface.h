@@ -44,6 +44,8 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
+  double getPanTorque () const;
+  double getTiltTorque () const;
   bool imageReceived () const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
@@ -52,7 +54,7 @@ class OwInterface
  private:
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   static JointMap m_jointMap;
-  
+
   // NOT USED - will remove if latching keeps working
   bool subscribersConfirmed () const;
   // NOT USED - will remove if latching keeps working

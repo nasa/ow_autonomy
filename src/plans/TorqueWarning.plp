@@ -1,0 +1,16 @@
+Real Lookup TorqueHighLimit;
+Command log_warning (...);
+
+TorqueWarning:
+{
+  In String joint;
+  In Real torque;
+
+  if (abs(torque) >= Lookup(TorqueHighLimit)) {
+    log_warning ("Joint ", joint, " torque magnitude exceeds HIGH limit: ",
+                 torque);
+  }
+  else log_warning ("Joint ", joint, " torque magnitude exceeds low limit: ",
+                    torque);
+  endif;
+}

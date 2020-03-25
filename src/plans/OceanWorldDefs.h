@@ -23,13 +23,9 @@
 #define INSTRUMENT_ID Integer
 
 // Proposed, arbitrary small unitless value for zero velocity tolerance.
-
 #define ZERO_VEL 0.01
 
-#define HIGH_EFFORT 600
-#define CRITICAL_EFFORT 800;
-#define PEAK_EFFORT 1000;
-
-
+// Newton-meters
+#define TORQUE_LOW_LIMIT 0.5
 
 #endif

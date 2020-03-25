@@ -13,8 +13,9 @@ using std::string;
 
 static void stubbed_lookup (const string& name, const string& value)
 {
-  ROS_WARN("PLEXIL Adapter: Stubbed lookup of %s returning %s",
-           name.c_str(), value.c_str());
+  // This warning is too annoying.  Could parameterize it.
+  //  ROS_WARN("PLEXIL Adapter: Stubbed lookup of %s returning %s",
+  //           name.c_str(), value.c_str());
 }
 
 
@@ -53,6 +54,7 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(CollectAndTransferTimeout, 10)
   else STATE_STUB(VertFOV, 10) // should be 15
   else STATE_STUB(HorizFOV, 10) // should be 21
+  else STATE_STUB(TorqueHighLimit, 800)
 
   else if (state_name == "TiltDegrees") {
     value_out = OwInterface::instance()->getTilt();
@@ -66,8 +68,11 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "TiltVelocity") {
     value_out = OwInterface::instance()->getTiltVelocity();
   }
-  else if (state_name == "PanEffort") {
-    value_out = OwInterface::instance()->getPanVelocity();
+  else if (state_name == "PanTorque") {
+    value_out = OwInterface::instance()->getPanTorque();
+  }
+  else if (state_name == "TiltTorque") {
+    value_out = OwInterface::instance()->getTiltTorque();
   }
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();

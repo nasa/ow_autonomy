@@ -23,13 +23,39 @@
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-// Lander state cache, simple start for now -- may need to refactor later.
-// Individual variables for now -- may want to employ a container if this gets
-// big.
+
+//// Lander state cache, simple start for now.  We may want to refactor, move
+//// everything into structures, and make part of object.
 
 double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
 bool   ImageReceived       = false;
+
+
+// Torque limits: made up for now, and there may be a better place to code or
+// extract these.
+
+const double TorqueLowLimits[] = {
+  5,   // j_ant_pan
+  5,   // j_ant_tilt
+  500, // j_dist_pitch
+  500, // j_hand_yaw
+  500, // j_prox_pitch
+  500, // j_scoop_yaw
+  500, // j_shou_pitch
+  500  // j_shou_pitch
+};
+
+const double TorqueHighLimits[] = {
+  20,  // j_ant_pan
+  20,  // j_ant_tilt
+  800, // j_dist_pitch
+  800, // j_hand_yaw
+  800, // j_prox_pitch
+  800, // j_scoop_yaw
+  800, // j_shou_pitch
+  800  // j_shou_pitch
+};
 
 OwInterface* OwInterface::m_instance = nullptr;
 
@@ -67,16 +93,50 @@ static void tilt_callback
   publish ("TiltDegrees", CurrentTilt);
 }
 
+static double torque_low_limit (int joint_index)
+{
+  return TorqueLowLimits[joint_index];
+}
+
+static double torque_high_limit (int joint_index)
+{
+  return TorqueHighLimits[joint_index];
+}
+
+static void handle_overtorque (int joint_index, double effort)
+{
+  // For now, torque is just effort (Newton-meter), and overtorque is specific
+  // to the joint.  If there's overtorque, notify PLEXIL.
+
+  if (effort >= torque_high_limit (joint_index)) {
+    publish (JointNames[joint_index] + "HighTorqueLimit", true);
+  }
+  else if (effort >= torque_low_limit (joint_index)) {
+    publish (JointNames[joint_index] + "LowTorqueLimit", true);
+  }
+}
+
+static void handle_joint_fault (int joint_index,
+                                const sensor_msgs::JointState::ConstPtr& msg)
+{
+  // NOTE: For now, the only fault is overtorque.
+  handle_overtorque (joint_index, msg->effort[joint_index]);
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
-  for (int i = j_ant_pan; i <= j_shou_yaw; ++i) {
+  // Publish all joint information for visibility to PLEXIL and handle any
+  // joint-related faults.
+
+  for (int i = j_ant_pan; i <= j_shou_yaw; ++i) { // NOTE: archaic enum iteration
     m_jointMap[i] = JointInfo (msg->position[i],
                                msg->velocity[i],
                                msg->effort[i]);
     publish (JointNames[i] + "Velocity", msg->velocity[i]);
     publish (JointNames[i] + "Effort", msg->effort[i]);
-    // Don't need to publish position as yet.
+    publish (JointNames[i] + "Position", msg->position[i]);
+    handle_joint_fault (i, msg);
   }
 }
 
@@ -330,6 +390,16 @@ double OwInterface::getPanVelocity () const
 double OwInterface::getTiltVelocity () const
 {
   return m_jointMap[j_ant_tilt].velocity;
+}
+
+double OwInterface::getPanTorque () const
+{
+  return m_jointMap[j_ant_pan].effort;
+}
+
+double OwInterface::getTiltTorque () const
+{
+  return m_jointMap[j_ant_tilt].effort;
 }
 
 bool OwInterface::imageReceived () const

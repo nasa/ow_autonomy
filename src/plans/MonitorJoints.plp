@@ -1,19 +1,45 @@
 #include "OceanWorldDefs.h"
 
-LibraryAction WarnEffort (In String joint, In Real effort);
+// A test plan only, for joint torque/effort.
+// From this, derive a library plan that helps handle overtorque.
+
+LibraryAction TorqueWarning (In String joint, In Real torque);
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
+Real Lookup PanTorque;
+Real Lookup TiltTorque;
+Command pprint (...);
 
 MonitorJoints: Concurrence
 {
   // Add: repetition, termination
-  
+
+  LibraryCall TakePanorama (TiltLo = 0, TiltHi = 20,
+                            PanLo = 90, PanHi = 110,
+                            HorizOverlap = 2,
+                            VertOverlap = 2);
+
   MonitorPan:
   {
-    Start Lookup(PanEffort) >= HIGH_EFFORT;
-    LibraryCall WarnEffort (joint = "Pan", effort = Lookup(PanEffort));
+    Start abs(Lookup(PanTorque)) >= TORQUE_LOW_LIMIT;
+    Repeat true;
+    LibraryCall TorqueWarning (joint = "Pan", torque = Lookup(PanTorque));
+    Wait 1;
   }
   MonitorTilt:
   {
-    Start Lookup(TiltEffort) >= HIGH_EFFORT;
-    LibraryCall WarnEffort (Joint = "Tilt", effort = Lookup(TiltEffort));
+    Start abs(Lookup(TiltTorque)) >= TORQUE_LOW_LIMIT;
+    Repeat true;
+    LibraryCall TorqueWarning (joint = "Tilt", torque = Lookup(TiltTorque));
+    Wait 1;
+  }
+  PingTorques:
+  {
+    Real x;
+    Repeat true;
+    x = Lookup(TiltTorque);
+    // x = Lookup(PanTorque);
+    Wait 1;
   }
 }
