@@ -8,8 +8,8 @@ LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real HorizOverlap, In Real VertOverlap);
 LibraryAction MoveGuarded ();
 
-Boolean Lookup HardTorqueLimit (String joint_name);
-Boolean Lookup SoftTorqueLimit (String joint_name);
+Boolean Lookup HardTorqueLimitReached (String joint_name);
+Boolean Lookup SoftTorqueLimitReached (String joint_name);
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
@@ -27,14 +27,14 @@ TorqueTest: Concurrence
                             VertOverlap = 2);
   LibraryCall MoveGuarded();
 
-  MonitorTorqueLimits:
+  MonitorTorqueLimitReacheds:
   {
     Repeat true;
     for (Integer i = 0; i < NUM_JOINTS; i+1) {
-      if (Lookup(HardTorqueLimit(JointNames[i]))) {
+      if (Lookup(HardTorqueLimitReached(JointNames[i]))) {
         log_error ("Joint ", JointNames[i], " exceeding its hard limit.");
       }
-      elseif (Lookup(SoftTorqueLimit(JointNames[i]))) {
+      elseif (Lookup(SoftTorqueLimitReached(JointNames[i]))) {
         log_warning ("Joint ", JointNames[i], " exceeding its soft limit.");
       }
       endif;

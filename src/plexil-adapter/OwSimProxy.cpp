@@ -1,8 +1,6 @@
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 #include "OwSimProxy.h"
 #include "OwInterface.h"
@@ -68,11 +66,15 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "TiltVelocity") {
     value_out = OwInterface::instance()->getTiltVelocity();
   }
-  else if (state_name == "PanTorque") {
-    value_out = OwInterface::instance()->getPanTorque();
+  else if (state_name == "HardTorqueLimitReached") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->hardTorqueLimitReached(s);
   }
-  else if (state_name == "TiltTorque") {
-    value_out = OwInterface::instance()->getTiltTorque();
+  else if (state_name == "SoftTorqueLimitReached") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->softTorqueLimitReached(s);
   }
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();

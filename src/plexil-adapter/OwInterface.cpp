@@ -16,6 +16,10 @@
 #include <std_msgs/Empty.h>
 #include <sensor_msgs/Image.h>
 
+// C++
+#include <set>
+using std::set;
+
 // C
 #include <math.h>  // for M_PI and abs
 
@@ -31,6 +35,8 @@ double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
 bool   ImageReceived       = false;
 
+static set<string> JointsAtHardTorqueLimit { };
+static set<string> JointsAtSoftTorqueLimit { };
 
 // Torque limits: made up for now, and there may be a better place to code or
 // extract these.  Assuming that only magnitude matters.
@@ -106,13 +112,17 @@ static double torque_hard_limit (int joint_index)
 static void handle_overtorque (int joint_index, double effort)
 {
   // For now, torque is just effort (Newton-meter), and overtorque is specific
-  // to the joint.  If there's overtorque, notify PLEXIL.
+  // to the joint.
 
   if (abs(effort) >= torque_hard_limit (joint_index)) {
-    publish (JointNames[joint_index] + "HardTorqueLimit", true);
+    JointsAtHardTorqueLimit.insert(JointNames[joint_index]);
   }
   else if (abs(effort) >= torque_soft_limit (joint_index)) {
-    publish (JointNames[joint_index] + "SoftTorqueLimit", true);
+    JointsAtSoftTorqueLimit.insert(JointNames[joint_index]);
+  }
+  else {
+    JointsAtHardTorqueLimit.erase (JointNames[joint_index]);
+    JointsAtSoftTorqueLimit.erase (JointNames[joint_index]);
   }
 }
 
@@ -392,17 +402,19 @@ double OwInterface::getTiltVelocity () const
   return m_jointMap[j_ant_tilt].velocity;
 }
 
-double OwInterface::getPanTorque () const
-{
-  return m_jointMap[j_ant_pan].effort;
-}
-
-double OwInterface::getTiltTorque () const
-{
-  return m_jointMap[j_ant_tilt].effort;
-}
-
 bool OwInterface::imageReceived () const
 {
   return ImageReceived;
+}
+
+bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+{
+  return (JointsAtHardTorqueLimit.find (joint_name) !=
+          JointsAtHardTorqueLimit.end());
+}
+
+bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
+{
+  return (JointsAtSoftTorqueLimit.find (joint_name) !=
+          JointsAtSoftTorqueLimit.end());
 }

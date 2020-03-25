@@ -1,9 +1,9 @@
+#ifndef Ow_Interface_H
+#define Ow_Interface_H
+
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-
-#ifndef Ow_Interface_H
-#define Ow_Interface_H
 
 // Interface to lander simulator, and hopefully in time, the physical testbed.
 // This class is a singleton because only once instance will ever be needed, in
@@ -13,6 +13,7 @@
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include "JointInfo.h"
+#include <string>
 
 class OwInterface
 {
@@ -44,9 +45,9 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getPanTorque () const;
-  double getTiltTorque () const;
   bool imageReceived () const;
+  bool hardTorqueLimitReached (const std::string& joint_name) const;
+  bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
 
