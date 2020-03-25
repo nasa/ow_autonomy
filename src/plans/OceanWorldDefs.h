@@ -25,7 +25,6 @@
 // Proposed, arbitrary small unitless value for zero velocity tolerance.
 #define ZERO_VEL 0.01
 
-// Newton-meters
-#define TORQUE_LOW_LIMIT 0.5
+#define NUM_JOINTS 8
 
 #endif

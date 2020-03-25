@@ -17,7 +17,7 @@
 #include <sensor_msgs/Image.h>
 
 // C
-#include <math.h>  // for M_PI
+#include <math.h>  // for M_PI and abs
 
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
@@ -33,9 +33,9 @@ bool   ImageReceived       = false;
 
 
 // Torque limits: made up for now, and there may be a better place to code or
-// extract these.
+// extract these.  Assuming that only magnitude matters.
 
-const double TorqueLowLimits[] = {
+const double TorqueSoftLimits[] = {
   5,   // j_ant_pan
   5,   // j_ant_tilt
   500, // j_dist_pitch
@@ -46,7 +46,7 @@ const double TorqueLowLimits[] = {
   500  // j_shou_pitch
 };
 
-const double TorqueHighLimits[] = {
+const double TorqueHardLimits[] = {
   20,  // j_ant_pan
   20,  // j_ant_tilt
   800, // j_dist_pitch
@@ -93,14 +93,14 @@ static void tilt_callback
   publish ("TiltDegrees", CurrentTilt);
 }
 
-static double torque_low_limit (int joint_index)
+static double torque_soft_limit (int joint_index)
 {
-  return TorqueLowLimits[joint_index];
+  return TorqueSoftLimits[joint_index];
 }
 
-static double torque_high_limit (int joint_index)
+static double torque_hard_limit (int joint_index)
 {
-  return TorqueHighLimits[joint_index];
+  return TorqueHardLimits[joint_index];
 }
 
 static void handle_overtorque (int joint_index, double effort)
@@ -108,11 +108,11 @@ static void handle_overtorque (int joint_index, double effort)
   // For now, torque is just effort (Newton-meter), and overtorque is specific
   // to the joint.  If there's overtorque, notify PLEXIL.
 
-  if (effort >= torque_high_limit (joint_index)) {
-    publish (JointNames[joint_index] + "HighTorqueLimit", true);
+  if (abs(effort) >= torque_hard_limit (joint_index)) {
+    publish (JointNames[joint_index] + "HardTorqueLimit", true);
   }
-  else if (effort >= torque_low_limit (joint_index)) {
-    publish (JointNames[joint_index] + "LowTorqueLimit", true);
+  else if (abs(effort) >= torque_soft_limit (joint_index)) {
+    publish (JointNames[joint_index] + "SoftTorqueLimit", true);
   }
 }
 
