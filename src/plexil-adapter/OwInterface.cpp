@@ -42,25 +42,25 @@ static set<string> JointsAtSoftTorqueLimit { };
 // extract these.  Assuming that only magnitude matters.
 
 const double TorqueSoftLimits[] = {
-  5,   // j_ant_pan
-  5,   // j_ant_tilt
-  500, // j_dist_pitch
-  500, // j_hand_yaw
-  500, // j_prox_pitch
-  500, // j_scoop_yaw
-  500, // j_shou_pitch
-  500  // j_shou_pitch
+  3,   // j_ant_pan
+  3,   // j_ant_tilt
+  60, // j_dist_pitch
+  60, // j_hand_yaw
+  60, // j_prox_pitch
+  60, // j_scoop_yaw
+  60, // j_shou_pitch
+  60  // j_shou_pitch
 };
 
 const double TorqueHardLimits[] = {
-  20,  // j_ant_pan
-  20,  // j_ant_tilt
-  800, // j_dist_pitch
-  800, // j_hand_yaw
-  800, // j_prox_pitch
-  800, // j_scoop_yaw
-  800, // j_shou_pitch
-  800  // j_shou_pitch
+  10,  // j_ant_pan
+  10,  // j_ant_tilt
+  80, // j_dist_pitch
+  80, // j_hand_yaw
+  80, // j_prox_pitch
+  80, // j_scoop_yaw
+  80, // j_shou_pitch
+  80  // j_shou_pitch
 };
 
 OwInterface* OwInterface::m_instance = nullptr;

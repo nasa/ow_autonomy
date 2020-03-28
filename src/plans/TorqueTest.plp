@@ -26,7 +26,7 @@ TorqueTest: Concurrence
                             VertOverlap = 2);
   MoveGuarded();
 
-  MonitorTorqueLimitReacheds:
+  MonitorTorque:
   {
     Repeat true;
     for (Integer i = 0; i < NUM_JOINTS; i+1) {
