@@ -8,7 +8,10 @@ LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real HorizOverlap, In Real VertOverlap);
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
-Command MoveGuarded ();
+Command MoveGuarded (Real target_x, Real target_y, Real target_z,
+                     Real surf_norm_x, Real surf_norm_y, Real surf_norm_z,
+                     Real offset_dist, Real overdrive_dist,
+                     Boolean delete_prev_traj, Boolean retract);
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
@@ -24,7 +27,7 @@ TorqueTest: Concurrence
                             PanLo = 90, PanHi = 110,
                             HorizOverlap = 2,
                             VertOverlap = 2);
-  MoveGuarded();
+  MoveGuarded (2, 0, 1, 0, 0, 1, 0.2, 0.2, true, true);
 
   MonitorTorque:
   {

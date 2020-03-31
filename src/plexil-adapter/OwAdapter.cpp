@@ -214,24 +214,25 @@ void OwAdapter::executeCommand(Command *cmd)
   debugMsg("OwAdapter:executeCommand", " for " << name);
 
   // Arguments
-  vector<Value> argv(12);
+  //  vector<Value> argv(12);
   const vector<Value>& args = cmd->getArgValues();
-  copy (args.begin(), args.end(), argv.begin());
+  //  copy (args.begin(), args.end(), argv.begin());
 
-  // Argument value holders
-  double double_arg;
-
-  // Return values
+  // Command return value
   Value retval = Unknown;
 
   // Utility commands
   if (name == "log_info") log_info (cmd->getArgValues());
-  else if (name == "log_warning") log_warning (cmd->getArgValues());
-  else if (name == "log_error") log_error (cmd->getArgValues());
-  else if (name == "log_debug") log_debug (cmd->getArgValues());
+  else if (name == "log_warning") log_warning (args);
+  else if (name == "log_error") log_error (args);
+  else if (name == "log_debug") log_debug (args);
+  // else if (name == "log_warning") log_warning (args);
+  // else if (name == "log_error") log_error (cmd->getArgValues());
+  // else if (name == "log_debug") log_debug (cmd->getArgValues());
+
   // "Demos"
   else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
-  else if (name == "MoveGuarded") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "MoveGuardedDemo") OwInterface::instance()->moveGuardedDemo();
   else if (name == "PublishTrajectory") {
     OwInterface::instance()->publishTrajectoryDemo();
   }
@@ -252,13 +253,34 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
+  else if (name == "MoveGuarded") {
+    double target_x, target_y, target_z, surf_norm_x, surf_norm_y, surf_norm_z;
+    double offset_dist, overdrive_dist;
+    bool delete_prev_traj, retract;
+    args[0].getValue(target_x);
+    args[1].getValue(target_y);
+    args[2].getValue(target_z);
+    args[3].getValue(surf_norm_x);
+    args[4].getValue(surf_norm_y);
+    args[5].getValue(surf_norm_z);
+    args[6].getValue(offset_dist);
+    args[7].getValue(overdrive_dist);
+    args[8].getValue(delete_prev_traj);
+    args[9].getValue(retract);
+    OwInterface::instance()->moveGuarded (target_x, target_y, target_z,
+                                          surf_norm_x, surf_norm_y, surf_norm_z,
+                                          offset_dist, overdrive_dist,
+                                          delete_prev_traj, retract);
+  }
   else if (name == "tilt_antenna") {
-    args[0].getValue(double_arg);
-    OwInterface::instance()->tiltAntenna (double_arg);
+    double tilt;
+    args[0].getValue (tilt);
+    OwInterface::instance()->tiltAntenna (tilt);
   }
   else if (name == "pan_antenna") {
-    args[0].getValue(double_arg);
-    OwInterface::instance()->panAntenna (double_arg);
+    double pan;
+    args[0].getValue (pan);
+    OwInterface::instance()->panAntenna (pan);
   }
   else if (name == "take_picture") {
     OwInterface::instance()->takePicture();

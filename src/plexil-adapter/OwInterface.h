@@ -25,12 +25,26 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // Temporary "demo" functions
+  // "Demo" functions, perhaps temporary.
   void startPlanningDemo();
   void moveGuardedDemo();
   void publishTrajectoryDemo();
 
   // Operational interface
+
+  // The defaults currently match those of the activity.  When all are used,
+  // this function matches moveGuardedDemo above.
+  void moveGuarded (double target_x = 2,
+                    double target_y = 0,
+                    double target_z = 0.02,
+                    double surf_norm_x = 0,
+                    double surf_norm_y = 0,
+                    double surf_norm_z = 1,
+                    double offset_dist = 0.2,
+                    double overdrive_dist = 0.2,
+                    bool delete_prev_traj = false,
+                    bool retract = false);
+
   void tiltAntenna (double);
   void panAntenna (double);
   void takePicture ();

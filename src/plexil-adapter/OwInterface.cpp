@@ -42,8 +42,8 @@ static set<string> JointsAtSoftTorqueLimit { };
 // extract these.  Assuming that only magnitude matters.
 
 const double TorqueSoftLimits[] = {
-  3,   // j_ant_pan
-  3,   // j_ant_tilt
+  30,   // j_ant_pan
+  30,   // j_ant_tilt
   60, // j_dist_pitch
   60, // j_hand_yaw
   60, // j_prox_pitch
@@ -53,8 +53,8 @@ const double TorqueSoftLimits[] = {
 };
 
 const double TorqueHardLimits[] = {
-  10,  // j_ant_pan
-  10,  // j_ant_tilt
+  30,  // j_ant_pan
+  30,  // j_ant_tilt
   80, // j_dist_pitch
   80, // j_hand_yaw
   80, // j_prox_pitch
@@ -259,6 +259,18 @@ void OwInterface::startPlanningDemo()
 
 void OwInterface::moveGuardedDemo()
 {
+  moveGuarded();
+}
+
+
+void OwInterface::moveGuarded (double target_x, double target_y, double target_z,
+                               double surf_norm_x,
+                               double surf_norm_y,
+                               double surf_norm_z,
+                               double offset_dist, double overdrive_dist,
+                               bool delete_prev_traj,
+                               bool retract)
+{
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
@@ -272,16 +284,16 @@ void OwInterface::moveGuardedDemo()
   }
   else {
     ow_lander::MoveGuarded srv;
-    srv.request.use_defaults = true;
-    srv.request.target_x = 0.0;
-    srv.request.target_y = 0.0;
-    srv.request.target_z = 0.0;
-    srv.request.surface_normal_x = 0.0;
-    srv.request.surface_normal_y = 0.0;
-    srv.request.surface_normal_z = 0.0;
-    srv.request.offset_distance = 0.0;
-    srv.request.overdrive_distance = 0.0;
-    srv.request.retract = false;
+    srv.request.use_defaults = false;
+    srv.request.target_x = target_x;
+    srv.request.target_y = target_y;
+    srv.request.target_z = target_z;
+    srv.request.surface_normal_x = surf_norm_x;
+    srv.request.surface_normal_y = surf_norm_y;
+    srv.request.surface_normal_z = surf_norm_z;
+    srv.request.offset_distance = offset_dist;
+    srv.request.overdrive_distance = overdrive_dist;
+    srv.request.retract = retract;
 
     if (client.call(srv)) {
       ROS_INFO("MoveGuarded returned: %d, %s",
