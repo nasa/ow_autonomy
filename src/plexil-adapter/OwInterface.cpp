@@ -49,7 +49,7 @@ const double TorqueSoftLimits[] = {
   60, // j_prox_pitch
   60, // j_scoop_yaw
   60, // j_shou_pitch
-  60  // j_shou_pitch
+  60  // j_shou_yaw
 };
 
 const double TorqueHardLimits[] = {
@@ -60,12 +60,10 @@ const double TorqueHardLimits[] = {
   80, // j_prox_pitch
   80, // j_scoop_yaw
   80, // j_shou_pitch
-  80  // j_shou_pitch
+  80  // j_shou_yaw
 };
 
 OwInterface* OwInterface::m_instance = nullptr;
-
-//JointMap OwInterface::m_jointMap { {j_ant_pan, JointInfo(0,0,0)} };
 
 static JointMap init_joint_map ()
 {

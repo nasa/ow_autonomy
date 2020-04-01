@@ -5,13 +5,10 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Constants used in OceanWorld PLEXIL plans and OwSimProxy.
+// Constants used in OceanWATERS PLEXIL plans and OwSimProxy.
 
-// NOTE: Guessed/bogus values, some intervals very short for now to reduce
-// testing time.
-
-// QUESTION: which values should be constants, and which should be dynamically
-// looked up from Sim?
+// NOTE: Some of these are guessed/bogus values, and some intervals are very
+// short for now to reduce testing time.
 
 #define FILM_INTERVAL 3
 #define SENSE_DIG_INTERVAL 6
