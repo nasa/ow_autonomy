@@ -37,15 +37,20 @@ Build just the ow_autonomy package with:
 Run
 ---
 
-1. Start the simulator:
-
-   % roslaunch ow europa_test_dem.launch
-
-   There are other options, e.g. this one doesn't include the terrian model:
+1. Start the simulator, using a launch file that supports arm planning.  The
+   simplest one is:
 
    % roslaunch ow arm_sim.launch
 
-2. (optional) Start rqt for visualization and monitoring.
+   This one adds the 'faults' node and rqt:
+
+   % roslaunch ow_autonomy autonomy_test.launch
+
+   This one further adds a terrain model (requires good graphics performance):
+
+   % roslaunch ow europa_test_dem.launch arm_sim_enable:=true
+
+2. (optional, as needed) Start rqt for visualization and monitoring.
 
    % rqt
 
@@ -81,8 +86,8 @@ Here are the meaningful plans currently available.
 
    % roslaunch ow_autonomy autonomy_node.launch plan:=OceanWorldMission.plx
 
-   At present, this plan is stubbed except for the 360 degree landing site
-   imaging that happens near the beginning -- this takes many minutes.
+   At present, this plan is stubbed except for the (shortened) panoramic landing
+   site imaging that happens near the beginning.
 
 2. A short panoramic imaging demo:
 
@@ -92,6 +97,13 @@ Here are the meaningful plans currently available.
    regions, edit ow_autonomy/src/plans/TestAntennaCamera.plp and enter 'catkin
    build ow_autonomy' before restarting the autonomy node.  You don't need to
    restart the simulator.
+
+3. Overtorque detection:
+
+   % roslaunch ow_autonomy autonomy_node.launch plan:=TorqueTest.plx
+
+   This plan attempts to push the scoop into the ground, which creates joint
+   over-torquing warnings and errors.
 
 
 Clean

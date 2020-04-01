@@ -7,6 +7,7 @@
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
+#include "OwSimProxy.h"
 #include "subscriber.h"
 
 // ROS
@@ -30,9 +31,6 @@ using std::list;
 using std::copy;
 using std::cout;
 using std::endl;
-
-// Domain
-#include "OwSimProxy.h"
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -204,19 +202,17 @@ void OwAdapter::invokeAbort(Command *cmd)
 {
 }
 
-
-// Sends a command (as invoked in a Plexil command node) to the system and sends
-// the status, and return value if applicable, back to the executive.
-//
 void OwAdapter::executeCommand(Command *cmd)
 {
+
+  // Sends a command (as invoked in a Plexil command node) to the system and
+  // sends the status, and return value if applicable, back to the executive.
+
   string name = cmd->getName();
   debugMsg("OwAdapter:executeCommand", " for " << name);
 
-  // Arguments
-  //  vector<Value> argv(12);
+  // Command arguments
   const vector<Value>& args = cmd->getArgValues();
-  //  copy (args.begin(), args.end(), argv.begin());
 
   // Command return value
   Value retval = Unknown;
@@ -226,9 +222,6 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "log_warning") log_warning (args);
   else if (name == "log_error") log_error (args);
   else if (name == "log_debug") log_debug (args);
-  // else if (name == "log_warning") log_warning (args);
-  // else if (name == "log_error") log_error (cmd->getArgValues());
-  // else if (name == "log_debug") log_debug (cmd->getArgValues());
 
   // "Demos"
   else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
