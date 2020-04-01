@@ -5,7 +5,6 @@ project(ow_autonomy)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  actionlib_msgs
   roscpp
 	roslib
 	ow_lander
@@ -23,23 +22,12 @@ find_package(PLEXIL REQUIRED)
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface actionlib_msgs
+  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
 catkin_add_env_hooks(60.ow_autonomy
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
-
-
-#############
-## Actions ##
-#############
-
-add_action_files(
-  DIRECTORY action
-  FILES Fib.action
-	)
-
 
 
 ###########

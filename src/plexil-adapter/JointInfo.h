@@ -1,5 +1,9 @@
 /* -*- Mode: C++; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
 #ifndef OW_AUTONOMY_JOINTINFO_H
 #define OW_AUTONOMY_JOINTINFO_H
 
@@ -38,7 +42,7 @@ const std::vector<std::string> JointNames {
   "Pan", "Tilt", "DistalPitch", "HandYaw", "ProximalPitch",
   "ScoopYaw", "ShoulderPitch", "ShoulderYaw"
 };
-    
+
 
 
 #endif

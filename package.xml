@@ -13,8 +13,6 @@
   <depend>roslib</depend>
   <depend>ow_lander</depend>
   <depend>owatb_interface</depend>
-  <depend>actionlib_msgs</depend>
-  <depend>message_generation</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->
