@@ -21,7 +21,7 @@
 using std::set;
 
 // C
-#include <math.h>  // for M_PI and abs
+#include <cmath>  // for M_PI and abs
 
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;

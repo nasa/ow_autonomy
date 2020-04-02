@@ -17,6 +17,7 @@ LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
 LibraryAction CollectAndTransfer;
+LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
 
@@ -44,6 +45,7 @@ OceanWorldMission: Concurrence
     LibraryCall Excavation;
     LibraryCall Downlink;
     LibraryCall CollectAndTransfer;
+    LibraryCall StartSampleAnalysis;
     log_info ("Ocean World Mission finished.");
   }
 }
