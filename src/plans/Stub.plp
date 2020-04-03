@@ -2,6 +2,8 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
+// This plan is simply a no-op stand-in for something that needs implementation.
+
 Command log_info (...);
 
 Stub:
