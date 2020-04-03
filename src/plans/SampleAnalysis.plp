@@ -1,21 +1,17 @@
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 #include "OceanWorldDefs.h"
 
 LibraryAction Downlink();
 Command log_info (...);
-Command log_warning (...);
-Command log_error (...);
 
 SampleAnalysis:
 {
-  In INSTRUMENT_ID instrument;
+  In INSTRUMENT_ID inst_id;
 
-  log_info ("Analyzing sample using instrument ", instrument, "...");
+  log_info ("PLEXIL Stub: Analyzing sample using instrument ", inst_id, "...");
 
   LibraryCall Downlink();
 }

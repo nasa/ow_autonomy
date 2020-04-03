@@ -1,10 +1,8 @@
-// High-level notional plan for lander autonomy.
-
-// __BEGIN_LICENSE__
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
+
+// High-level notional plan for lander autonomy.
 
 /* To Do:
    - deal with potential random resets, i.e. due to radiation
@@ -13,215 +11,41 @@
    - for each timeout: retry/failure semantics
 */
 
-#include "OceanWorldDefs.h"
-
-
-Real Lookup TrenchLength;
-Real Lookup TrenchWidth;
-Real Lookup TrenchDepth;
-Real Lookup TrenchYaw;
-Real Lookup TrenchPitch;
-Real Lookup TrenchSlopeAngle;
-Real Lookup TrenchStartX;
-Real Lookup TrenchStartY;
-Real Lookup TrenchStartZ;
-Real Lookup TrenchDumpX;
-Real Lookup TrenchDumpY;
-Real Lookup TrenchDumpZ;
-Boolean Lookup TrenchIdentified;
-
-Boolean Lookup SampleGood;
-
-Real Lookup time;
-Real Lookup ExcavationTimeout;
-Real Lookup TrenchTargetTimeout;
-Real Lookup CollectAndTransferTimeout;
-
-
+LibraryAction ImageLandingSite;
+LibraryAction InterogateSurface;
+LibraryAction GetTrenchTarget;
+LibraryAction Excavation;
+LibraryAction Downlink;
+LibraryAction CollectAndTransfer;
+LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
-LibraryAction Downlink();
-LibraryAction Image(In String desc);
-LibraryAction DownlinkImage();
-LibraryAction ImageSampleSite();
-LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
-                            In Real PanLo, In Real PanHi,
-                            In Real HorizOverlap, In Real VertOverlap);
+LibraryAction MonitorBattery (InOut Boolean status);
 
 Command log_info (...);
-Command log_warning (...);
-Command log_error (...);
-
-// This declaration should work, but does not.
-// String Command StartPlan(String plan_name, ...);
-
-String Command StartPlan(...);
-
-// Directly from draft Ames/JPL interface.
-Boolean Command DigTrenchOp (Real startX, Real startY, Real startZ,
-                             Real depth, Real length, Real width,
-                             Real pitch, Real yaw,
-                             Real dumpX, Real dumpY, Real dumpZ);
 
 OceanWorldMission: Concurrence
 {
-  // Assumption: checkout is complete before this node starts.
+  // Assumption: checkout is complete.
+
+  // Health variables - expand/refine as needed
+  Boolean BatteryOK, TemperatureOK;
 
   ContingencyMonitors: Concurrence
   {
-    BatteryMonitor: LibraryCall Stub(desc="Monitoring battery");
+    BatteryMonitor: LibraryCall MonitorBattery (status = BatteryOK);
     ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
 
   Mission:
   {
-    Boolean DeepEnough = false;
-    Boolean CollectMore = true;
-
-    Real Time;
-
-    ImageLandingSite: LibraryCall TakePanorama (TiltLo = 0, TiltHi = 30,
-                                                PanLo = 90, PanHi = 240,
-                                                HorizOverlap = 2,
-                                                VertOverlap = 2);
-
-    InterogateSurface: LibraryCall Stub(desc="Interrogating surface");
-
-    GetTrenchTarget:
-    {
-      // TODO: invoke comms, reset on failure.
-      LibraryCall DownlinkImage();
-      Try {
-        GetInfoFromGround:
-        {
-          Integer numAttempts = 0;
-          RepeatCondition AttemptGround.outcome == FAILURE;
-          InvariantCondition numAttempts <= 1;
-          Time = Lookup(time);
-          AttemptGround:
-          {
-            InvariantCondition
-              Time < (AttemptGround.EXECUTING.START +
-                      Lookup(TrenchTargetTimeout));
-            EndCondition Lookup(TrenchIdentified);
-            LibraryCall Stub(desc="Getting trench target from ground");
-            numAttempts = numAttempts + 1;
-          }
-        }
-        GetTrenchTargetOnboard:
-        {
-          LibraryCall Stub(desc="Getting trench target onboard");
-        }
-        log_error ("Failed to get trench target!");
-      }
-    }
-
-    Time = Lookup(time);
-
-    Excavation:
-    {
-      RepeatCondition !DeepEnough;
-      InvariantCondition
-        Time < (Excavation.EXECUTING.START + Lookup(ExcavationTimeout));
-
-      DigAndFilm: Concurrence
-      {
-        Boolean DiggingSafe = true;
-
-        DigTheTrench:
-        {
-          InvariantCondition DiggingSafe;
-          EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
-                        Time >= (DigTheTrench.EXECUTING.START
-                                 + DIG_TRENCH_TIMEOUT));
-          Dig: DigTrenchOp (Lookup(TrenchStartX),
-                            Lookup(TrenchStartY),
-                            Lookup(TrenchStartZ),
-                            Lookup(TrenchDepth),
-                            Lookup(TrenchLength),
-                            Lookup(TrenchWidth),
-                            Lookup(TrenchPitch),
-                            Lookup(TrenchYaw),
-                            Lookup(TrenchDumpX),
-                            Lookup(TrenchDumpY),
-                            Lookup(TrenchDumpZ));
-          FilmDig:
-          {
-            Repeat DigTheTrench.state == EXECUTING;
-            LibraryCall Image(desc="trench");
-            Wait FILM_INTERVAL;
-          }
-          SenseDig:
-          {
-            Repeat DigTheTrench.state == EXECUTING;
-            log_info ("Sensing dig...");
-            DiggingSafe = STUB_TRUE;
-            Wait SENSE_DIG_INTERVAL;
-          }
-        }
-      }
-
-      RemoveTailings:
-      {
-        LibraryCall Stub(desc="Removing tailings");
-      }
-
-      ImageDig: LibraryCall Image(desc="dig");
-
-      AssessDepth:
-      {
-        DeepEnough = STUB_TRUE;
-      }
-    }
-
-    LibraryCall Downlink();
-    Time = Lookup(time);
-
-    CollectionAndTransfer:
-    {
-      Real SampleAmount;
-      InvariantCondition
-        Time < (CollectionAndTransfer.EXECUTING.START +
-                Lookup(CollectAndTransferTimeout));
-      RepeatCondition CollectMore;
-
-      Collect:
-      {
-        EndCondition Lookup(SampleGood); // Material Property Sensing
-        LibraryCall Stub(desc="Collecting Sample");
-      }
-      ImageSample:
-      {
-        LibraryCall Stub(desc="Aligning camera and sample");
-        LibraryCall Image(desc="sample");
-      }
-      DownlinkSampleImage: LibraryCall Downlink();
-
-      Transfer:
-      {
-        Dock: LibraryCall Stub(desc="Docking");
-        Unload: LibraryCall Stub(desc="Unloading");
-        MeasureSample:
-        {
-          PostCondition !CollectMore;
-          LibraryCall Stub(desc="Measuring Sample");
-          CollectMore = STUB_FALSE;
-          Wait 1;
-        }
-        CapSample: LibraryCall Stub(desc="Capping Sample");
-        DeliverSample: LibraryCall Stub(desc="Delivering Sample");
-        ImageSampleSite: LibraryCall ImageSampleSite();
-      }
-
-      DoSampleAnalysis:
-      {
-        // Spawn a plan that does analysis.
-        // Persists through sleep/wake cycle.
-        // Details outside scope of our simulation.
-        // Model time, energy, and possibly temperature.
-        String id;
-        id = StartPlan("SampleAnalysis", "instrument", 1);
-      }
-    }
+    LibraryCall ImageLandingSite;
+    LibraryCall InterogateSurface;
+    LibraryCall GetTrenchTarget;
+    LibraryCall Excavation;
+    LibraryCall Downlink;
+    LibraryCall CollectAndTransfer;
+    LibraryCall StartSampleAnalysis;
+    log_info ("Ocean World Mission finished.");
   }
 }

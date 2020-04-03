@@ -5,7 +5,6 @@
 // ow_autonomy
 #include "OwInterface.h"
 #include "subscriber.h"
-#include "support.h"
 
 // OW - other
 #include <ow_lander/StartPlanning.h>
@@ -15,27 +14,65 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
-#include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 
+// C++
+#include <set>
+using std::set;
+
 // C
-#include <math.h>  // for M_PI
+#include <cmath>  // for M_PI and abs
 
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-// Lander state cache, simple start for now -- may need to refactor later.
-// Individual variables for now -- may want to employ a container if this gets
-// big.
+
+//// Lander state cache, simple start for now.  We may want to refactor, move
+//// everything into structures, and make part of object.
 
 double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
-double CurrentPanVelocity  = 0.0;
-double CurrentTiltVelocity = 0.0;
 bool   ImageReceived       = false;
 
+static set<string> JointsAtHardTorqueLimit { };
+static set<string> JointsAtSoftTorqueLimit { };
+
+// Torque limits: made up for now, and there may be a better place to code or
+// extract these.  Assuming that only magnitude matters.
+
+const double TorqueSoftLimits[] = {
+  30,   // j_ant_pan
+  30,   // j_ant_tilt
+  60, // j_dist_pitch
+  60, // j_hand_yaw
+  60, // j_prox_pitch
+  60, // j_scoop_yaw
+  60, // j_shou_pitch
+  60  // j_shou_yaw
+};
+
+const double TorqueHardLimits[] = {
+  30,  // j_ant_pan
+  30,  // j_ant_tilt
+  80, // j_dist_pitch
+  80, // j_hand_yaw
+  80, // j_prox_pitch
+  80, // j_scoop_yaw
+  80, // j_shou_pitch
+  80  // j_shou_yaw
+};
+
 OwInterface* OwInterface::m_instance = nullptr;
+
+static JointMap init_joint_map ()
+{
+  JointMap m;
+  for (int i = j_ant_pan; i <= j_shou_yaw; i++) m[i] = JointInfo (0,0,0);
+  return m;
+}
+
+JointMap OwInterface::m_jointMap = init_joint_map();
 
 OwInterface* OwInterface::instance ()
 {
@@ -60,13 +97,55 @@ static void tilt_callback
   publish ("TiltDegrees", CurrentTilt);
 }
 
-static void joint_states_callback
+static double torque_soft_limit (int joint_index)
+{
+  return TorqueSoftLimits[joint_index];
+}
+
+static double torque_hard_limit (int joint_index)
+{
+  return TorqueHardLimits[joint_index];
+}
+
+static void handle_overtorque (int joint_index, double effort)
+{
+  // For now, torque is just effort (Newton-meter), and overtorque is specific
+  // to the joint.
+
+  if (abs(effort) >= torque_hard_limit (joint_index)) {
+    JointsAtHardTorqueLimit.insert(JointNames[joint_index]);
+  }
+  else if (abs(effort) >= torque_soft_limit (joint_index)) {
+    JointsAtSoftTorqueLimit.insert(JointNames[joint_index]);
+  }
+  else {
+    JointsAtHardTorqueLimit.erase (JointNames[joint_index]);
+    JointsAtSoftTorqueLimit.erase (JointNames[joint_index]);
+  }
+}
+
+static void handle_joint_fault (int joint_index,
+                                const sensor_msgs::JointState::ConstPtr& msg)
+{
+  // NOTE: For now, the only fault is overtorque.
+  handle_overtorque (joint_index, msg->effort[joint_index]);
+}
+
+void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
-  CurrentPanVelocity = msg->velocity[j_ant_pan];
-  CurrentTiltVelocity = msg->velocity[j_ant_tilt];
-  publish ("PanVelocity", CurrentPanVelocity);
-  publish ("TiltVelocity", CurrentTiltVelocity);
+  // Publish all joint information for visibility to PLEXIL and handle any
+  // joint-related faults.
+
+  for (int i = j_ant_pan; i <= j_shou_yaw; ++i) { // NOTE: archaic enum iteration
+    m_jointMap[i] = JointInfo (msg->position[i],
+                               msg->velocity[i],
+                               msg->effort[i]);
+    publish (JointNames[i] + "Velocity", msg->velocity[i]);
+    publish (JointNames[i] + "Effort", msg->effort[i]);
+    publish (JointNames[i] + "Position", msg->position[i]);
+    handle_joint_fault (i, msg);
+  }
 }
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
@@ -131,7 +210,7 @@ void OwInterface::initialize()
        subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/joint_states", qsize, joint_states_callback));
+       subscribe("/joint_states", qsize, OwInterface::jointStatesCallback));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
@@ -178,6 +257,18 @@ void OwInterface::startPlanningDemo()
 
 void OwInterface::moveGuardedDemo()
 {
+  moveGuarded();
+}
+
+
+void OwInterface::moveGuarded (double target_x, double target_y, double target_z,
+                               double surf_norm_x,
+                               double surf_norm_y,
+                               double surf_norm_z,
+                               double offset_dist, double overdrive_dist,
+                               bool delete_prev_traj,
+                               bool retract)
+{
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
@@ -191,16 +282,16 @@ void OwInterface::moveGuardedDemo()
   }
   else {
     ow_lander::MoveGuarded srv;
-    srv.request.use_defaults = true;
-    srv.request.target_x = 0.0;
-    srv.request.target_y = 0.0;
-    srv.request.target_z = 0.0;
-    srv.request.surface_normal_x = 0.0;
-    srv.request.surface_normal_y = 0.0;
-    srv.request.surface_normal_z = 0.0;
-    srv.request.offset_distance = 0.0;
-    srv.request.overdrive_distance = 0.0;
-    srv.request.retract = false;
+    srv.request.use_defaults = false;
+    srv.request.target_x = target_x;
+    srv.request.target_y = target_y;
+    srv.request.target_z = target_z;
+    srv.request.surface_normal_x = surf_norm_x;
+    srv.request.surface_normal_y = surf_norm_y;
+    srv.request.surface_normal_z = surf_norm_z;
+    srv.request.offset_distance = offset_dist;
+    srv.request.overdrive_distance = overdrive_dist;
+    srv.request.retract = retract;
 
     if (client.call(srv)) {
       ROS_INFO("MoveGuarded returned: %d, %s",
@@ -313,15 +404,27 @@ double OwInterface::getPanDegrees () const
 
 double OwInterface::getPanVelocity () const
 {
-  return CurrentPanVelocity;
+  return m_jointMap[j_ant_pan].velocity;
 }
 
 double OwInterface::getTiltVelocity () const
 {
-  return CurrentTiltVelocity;
+  return m_jointMap[j_ant_tilt].velocity;
 }
 
 bool OwInterface::imageReceived () const
 {
   return ImageReceived;
+}
+
+bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+{
+  return (JointsAtHardTorqueLimit.find (joint_name) !=
+          JointsAtHardTorqueLimit.end());
+}
+
+bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
+{
+  return (JointsAtSoftTorqueLimit.find (joint_name) !=
+          JointsAtSoftTorqueLimit.end());
 }

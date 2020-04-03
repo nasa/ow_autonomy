@@ -2,12 +2,9 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// This plan is simply a no-op stand-in for something that needs implementation.
+LibraryAction Stub (In String desc);
 
-Command log_info (...);
-
-Stub:
+InterogateSurface:
 {
-  In String desc;
-  log_info ("PLEXIL Stub: ", desc, "...");
+  LibraryCall Stub(desc="Interrogating surface");
 }

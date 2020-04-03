@@ -1,16 +1,19 @@
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
-// Interface to lander simulator, and hopefully in time, the physical testbed.
-// This class is a singleton because only once instance will ever be needed, in
-// the current overall autonomy scheme.
-
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
+// Interface to lander simulator, and hopefully in time, the physical testbed.
+// This class is a singleton because only once instance will ever be needed, in
+// the current overall autonomy scheme.
+
 #include <ros/ros.h>
 #include <control_msgs/JointControllerState.h>
+#include <sensor_msgs/JointState.h>
+#include "JointInfo.h"
+#include <string>
 
 class OwInterface
 {
@@ -22,12 +25,26 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // Temporary "demo" functions
+  // "Demo" functions, perhaps temporary.
   void startPlanningDemo();
   void moveGuardedDemo();
   void publishTrajectoryDemo();
 
   // Operational interface
+
+  // The defaults currently match those of the activity.  When all are used,
+  // this function matches moveGuardedDemo above.
+  void moveGuarded (double target_x = 2,
+                    double target_y = 0,
+                    double target_z = 0.02,
+                    double surf_norm_x = 0,
+                    double surf_norm_y = 0,
+                    double surf_norm_z = 1,
+                    double offset_dist = 0.2,
+                    double overdrive_dist = 0.2,
+                    bool delete_prev_traj = false,
+                    bool retract = false);
+
   void tiltAntenna (double);
   void panAntenna (double);
   void takePicture ();
@@ -43,11 +60,16 @@ class OwInterface
   double getPanVelocity () const;
   double getTiltVelocity () const;
   bool imageReceived () const;
+  bool hardTorqueLimitReached (const std::string& joint_name) const;
+  bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
 
 
  private:
+  static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  static JointMap m_jointMap;
+
   // NOT USED - will remove if latching keeps working
   bool subscribersConfirmed () const;
   // NOT USED - will remove if latching keeps working

@@ -1,0 +1,43 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+Real Lookup time;
+Real Lookup TrenchTargetTimeout;
+Boolean Lookup TrenchIdentified;
+LibraryAction DownlinkImage();
+LibraryAction Stub(In String desc);
+Command log_error (...);
+
+GetTrenchTarget:
+{
+  Real Time;
+  Time = Lookup(time);
+
+  // TODO: invoke comms, reset on failure.
+  LibraryCall DownlinkImage();
+
+  Try {
+    GetInfoFromGround:
+    {
+      Integer numAttempts = 0;
+      RepeatCondition AttemptGround.outcome == FAILURE;
+      InvariantCondition numAttempts <= 1;
+      Time = Lookup(time);
+      AttemptGround:
+      {
+        InvariantCondition
+          Time < (AttemptGround.EXECUTING.START +
+                  Lookup(TrenchTargetTimeout));
+        EndCondition Lookup(TrenchIdentified);
+        LibraryCall Stub(desc="Getting trench target from ground");
+        numAttempts = numAttempts + 1;
+      }
+    }
+    GetTrenchTargetOnboard:
+    {
+      LibraryCall Stub(desc="Getting trench target onboard");
+    }
+    log_error ("Failed to get trench target!");
+  }
+}

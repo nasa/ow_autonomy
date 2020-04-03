@@ -6,8 +6,8 @@ set (HEADERS
   OwAdapter.h
   OwSimInterface.h
   OwSimProxy.h
+	JointInfo.h
   subscriber.h
-  support.h
 )
 
 set (SOURCES

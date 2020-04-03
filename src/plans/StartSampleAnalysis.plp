@@ -1,0 +1,19 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// This plan "spawns" another plan that does the analysis, just for a single
+// instrument for now.  The spawned plan's execution persists after this one
+// finishes.  We could do more here, such as monitor its execution (e.g. time,
+// energy, temperature) and abort it if needed.  But stopping here for now.
+
+// This declaration should work, but does not.
+// String Command StartPlan(String plan_name, ...);
+
+String Command StartPlan(...);
+
+StartSampleAnalysis:
+{
+  String id;
+  id = StartPlan("SampleAnalysis", "inst_id", 1);
+}

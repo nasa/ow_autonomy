@@ -16,9 +16,11 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
+
 ###################################
 ## catkin specific configuration ##
 ###################################
+
 catkin_package(
   CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
   CFG_EXTRAS ow_autonomy-extras.cmake
@@ -26,6 +28,7 @@ catkin_package(
 
 catkin_add_env_hooks(60.ow_autonomy
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+
 
 ###########
 ## Build ##

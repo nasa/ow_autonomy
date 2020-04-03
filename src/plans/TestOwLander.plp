@@ -8,7 +8,7 @@ Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
 Command StartPlanning();
-Command MoveGuarded();
+Command MoveGuardedDemo();
 Command PublishTrajectory();
 
 TestOwLander:
@@ -16,7 +16,7 @@ TestOwLander:
   log_info ("Starting ow_lander service demo...");
 
   log_info ("Guarded move...");
-  MoveGuarded();
+  MoveGuardedDemo();
 
   log_info ("Planning...");
   StartPlanning();
