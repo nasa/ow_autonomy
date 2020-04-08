@@ -1,18 +1,35 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="gazebo" default="true"/>
-  <arg name="gui" default="true"/>
+
+  <!-- Stowed arm joint positions -->
+  <!-- Copied from ow_launch/launch/spawn.launch -->
+  <arg name="stowed_shou_yaw" default="-1.5" />
+  <arg name="stowed_shou_pitch" default="1.5708" />
+  <arg name="stowed_prox_pitch" default="-2.75" />
+  <arg name="stowed_dist_pitch" default="3.1416" />
+  <arg name="stowed_hand_yaw" default="0.0" />
+  <arg name="stowed_scoop_yaw" default="0.0" />
+
+  <!-- Make params from stowed arm joint positions so executables can grab them -->
+  <!-- Copied from ow_launch/launch/spawn.launch -->
+  <param name="stowed_shou_yaw" value="$(arg stowed_shou_yaw)" />
+  <param name="stowed_shou_pitch" value="$(arg stowed_shou_pitch)" />
+  <param name="stowed_prox_pitch" value="$(arg stowed_prox_pitch)" />
+  <param name="stowed_dist_pitch" value="$(arg stowed_dist_pitch)" />
+  <param name="stowed_hand_yaw" value="$(arg stowed_hand_yaw)" />
+  <param name="stowed_scoop_yaw" value="$(arg stowed_scoop_yaw)" />
 
   <!-- Start faults node -->
-  <node name="faults" pkg="ow_faults" type="faults" output="screen"
-    unless="$(arg gazebo)">
-  </node>
+  <node name="faults" pkg="ow_faults" type="faults" output="screen"/>
 
-  <!-- == if specified, launch gazebo with the chosen world without specific rviz = -->
-  <include file="$(find ow)/launch/europa_terminator_workspace.launch"
-	   if="$(arg gazebo)">
-    <arg name="arm_sim_enable" value="true" />
-    <arg name="gui" value="$(arg gui)"/>
+  <!-- Start arm trajectory planning ======== -->
+  <include file="$(find ow_lander)/launch/planning.launch">
+    <arg name="stowed_shou_yaw" value="$(arg stowed_shou_yaw)" />
+    <arg name="stowed_shou_pitch" value="$(arg stowed_shou_pitch)" />
+    <arg name="stowed_prox_pitch" value="$(arg stowed_prox_pitch)" />
+    <arg name="stowed_dist_pitch" value="$(arg stowed_dist_pitch)" />
+    <arg name="stowed_hand_yaw" value="$(arg stowed_hand_yaw)" />
+    <arg name="stowed_scoop_yaw" value="$(arg stowed_scoop_yaw)" />
   </include>
 
 </launch>
