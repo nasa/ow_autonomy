@@ -37,18 +37,14 @@ Build just the ow_autonomy package with:
 Run
 ---
 
-1. Start the simulator, using a launch file that supports arm planning.  The
-   simplest one is:
-
-   % roslaunch ow arm_sim.launch
-
-   This one adds the 'faults' node and rqt:
-
-   % roslaunch ow_autonomy autonomy_test.launch
-
-   This one further adds a terrain model (requires good graphics performance):
+1. Start the simulator:
 
    % roslaunch ow europa_test_dem.launch arm_sim_enable:=true
+
+   NOTES:
+    - for faster performance, add gzclient:=false
+    - for even faster performance, gazebo:=false
+    - for better terrain, use europa_terminator.launch
 
 2. (optional, as needed) Start rqt for visualization and monitoring.
 
