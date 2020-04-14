@@ -17,6 +17,7 @@
 #include <sensor_msgs/Image.h>
 
 // C++
+#include <thread>
 #include <set>
 using std::set;
 
@@ -221,6 +222,24 @@ void OwInterface::initialize()
   }
 }
 
+template<class Service>
+static void service_call (ros::ServiceClient client, Service srv)
+{
+  // NOTE: arguments are deliberately copies, for simplicity.
+  
+  if (client.call (srv)) {
+    ROS_INFO("%s returned: %d, %s",
+             ros::service_traits::DataType<Service>::value(),
+             srv.response.success,
+             srv.response.message.c_str());
+  }
+  else {
+    ROS_ERROR ("Failed to call service %s",
+               ros::service_traits::DataType<Service>::value());
+  }
+}
+
+
 void OwInterface::startPlanningDemo()
 {
   ros::NodeHandle nhandle ("planning");
@@ -242,15 +261,8 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_y = 0.0;
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
+    std::thread t (service_call<ow_lander::StartPlanning>, client, srv);
+    t.detach();
   }
 }
 
