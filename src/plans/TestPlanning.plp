@@ -2,7 +2,9 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Arm planning test
+// Arm planning concurrency test.  Verifies that a ROS service can now be run
+// concurrently with other PLEXIL nodes.  Before, the service call would block
+// the plan and executive.
 
 Command log_info (...);
 Command StartPlanning();

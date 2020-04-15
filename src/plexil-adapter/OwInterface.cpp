@@ -241,6 +241,20 @@ static void service_call (ros::ServiceClient client, Service srv)
 }
 
 
+static bool service_client_ok (ros::ServiceClient& client)
+{
+  bool retval = true;
+  if (! client.exists()) {
+    ROS_ERROR("Service client does not exist!");
+    retval = false;
+  }
+  else if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
+    retval = false;
+  }
+  return retval;
+}
+
 void OwInterface::startPlanningDemo()
 {
   ros::NodeHandle nhandle ("planning");
@@ -249,13 +263,7 @@ void OwInterface::startPlanningDemo()
     // NOTE: typo is deliberate
     nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::StartPlanning srv;
     srv.request.use_defaults = true;
     srv.request.trench_x = 0.0;
@@ -287,13 +295,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::MoveGuarded srv;
     srv.request.use_defaults = false;
     srv.request.target_x = target_x;
@@ -305,15 +307,8 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
-
-    if (client.call(srv)) {
-      ROS_INFO("MoveGuarded returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service MoveGuarded");
-    }
+    std::thread t (service_call<ow_lander::MoveGuarded>, client, srv);
+    t.detach();
   }
 }
 
@@ -324,51 +319,14 @@ void OwInterface::publishTrajectoryDemo()
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    if (client.call(srv)) {
-      ROS_INFO("PublishTrajectory returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service PublishTrajectory");
-    }
+    std::thread t (service_call<ow_lander::PublishTrajectory>, client, srv);
+    t.detach();
   }
 }
-
-// NOT USED - will remove if latching keeps working
-bool OwInterface::subscribersConfirmed () const
-{
-  ros::Publisher* pubs [] = { m_antennaTiltPublisher,
-                              m_antennaPanPublisher,
-                              m_leftImageTriggerPublisher };
-
-  for (auto p : pubs) if (! checkSubscribers (p)) return false;
-  return true;
-}
-
-
-// NOT USED - will remove if latching keeps working
-bool OwInterface::checkSubscribers (const ros::Publisher* pub) const
-{
-  int timeout = 5;  // seconds, arbitrary
-  for (int secs = 0; secs < timeout; secs++) {
-    if (pub->getNumSubscribers() > 0) return true;
-    else sleep(1);
-  }
-  ROS_ERROR("No subscribers for topic %s", pub->getTopic().c_str());
-  return false;
-}
-
 
 void OwInterface::tiltAntenna (double arg)
 {

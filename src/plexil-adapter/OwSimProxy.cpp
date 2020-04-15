@@ -80,6 +80,7 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();
   }
+  // Temporary, for service test plan:
   else if (state_name == "PlanningFinished") {
     value_out =
       ! OwInterface::instance() ->
