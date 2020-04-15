@@ -7,19 +7,19 @@
 // the plan and executive.
 
 Command log_info (...);
-Command StartPlanning();
-Boolean Lookup PlanningFinished;
+Command arm_planning_demo();
+Boolean Lookup Finished (String operation_name);
 
 TestPlanning:
 {
   Plan:
   {
     log_info ("Initiating Planning Service...");
-    StartPlanning();
+    arm_planning_demo();
   }
   Report:
   {
-    RepeatCondition !Lookup (PlanningFinished);
+    RepeatCondition !Lookup (Finished ("StartPlanning"));
     log_info ("Planning in progress...");
     Wait 1;
   }

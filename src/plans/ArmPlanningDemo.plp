@@ -10,8 +10,11 @@ Boolean Lookup Finished (String operation_name);
 
 ArmPlanningDemo:
 {
-  EndCondition Lookup (Finished ("StartPlanning"));
-  log_info ("Beginning arm planning demo...");
-  arm_planning_demo();
+  Main:
+  {
+    EndCondition Lookup (Finished ("StartPlanning"));
+    log_info ("Beginning arm planning demo...");
+    arm_planning_demo();
+  }
   log_info ("Arm planning demo finished");
 }

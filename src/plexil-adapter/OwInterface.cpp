@@ -219,10 +219,6 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
-
-    // Holding off on this for now, as latching seems to do the trick.
-    //    if (subscribersConfirmed()) initialized = true;
-    //    else ROS_ERROR("Could not initialize OwInterface: subscribers down.");
   }
 }
 

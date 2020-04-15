@@ -10,8 +10,11 @@ Boolean Lookup Finished (String operation_name);
 
 PublishTrajectoryDemo:
 {
-  EndCondition Lookup (Finished ("PublishTrajectory"));
-  log_info ("Publishing arm trajectory...");
-  publish_trajectory_demo();
+  Main:
+  {
+    EndCondition Lookup (Finished ("PublishTrajectory"));
+    log_info ("Publishing arm trajectory...");
+    publish_trajectory_demo();
+  }
   log_info ("Arm trajectory published.");
 }

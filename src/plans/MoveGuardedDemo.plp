@@ -10,8 +10,11 @@ Boolean Lookup Finished (String operation_name);
 
 MoveGuardedDemo:
 {
-  EndCondition Lookup (Finished ("MoveGuarded"));
-  log_info ("Beginning MoveGuarded Demo...");
-  move_guarded_demo();
+  Main:
+  {
+    EndCondition Lookup (Finished ("MoveGuarded"));
+    log_info ("Beginning MoveGuarded Demo...");
+    move_guarded_demo();
+  }
   log_info ("MoveGuarded Demo finished");
 }
