@@ -60,6 +60,7 @@ class OwInterface
   double getPanVelocity () const;
   double getTiltVelocity () const;
   bool imageReceived () const;
+  bool serviceRunning (const std::string& name) const;
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);

@@ -30,7 +30,7 @@ const double R2D = 180.0 / M_PI ;
 
 
 //// Lander state cache, simple start for now.  We may want to refactor, move
-//// everything into structures, and make part of object.
+//// everything into structures, and make class member.
 
 double CurrentTilt         = 0.0;
 double CurrentPanDegrees   = 0.0;
@@ -38,6 +38,7 @@ bool   ImageReceived       = false;
 
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
+static set<string> ServicesRunning { } ;
 
 // Torque limits: made up for now, and there may be a better place to code or
 // extract these.  Assuming that only magnitude matters.
@@ -225,18 +226,18 @@ void OwInterface::initialize()
 template<class Service>
 static void service_call (ros::ServiceClient client, Service srv)
 {
-  // NOTE: arguments are deliberately copies, for simplicity.
-  
-  if (client.call (srv)) {
-    ROS_INFO("%s returned: %d, %s",
-             ros::service_traits::DataType<Service>::value(),
-             srv.response.success,
+  // NOTE: arguments are copies because this function is called in a thread that
+  // outlives its caller.
+
+  const char* service_name = ros::service_traits::DataType<Service>::value();
+
+  ServicesRunning.insert (service_name);
+  if (client.call (srv)) { // blocks
+    ROS_INFO("%s returned: %d, %s", service_name, srv.response.success,
              srv.response.message.c_str());
   }
-  else {
-    ROS_ERROR ("Failed to call service %s",
-               ros::service_traits::DataType<Service>::value());
-  }
+  else ROS_ERROR ("Failed to call service %s", service_name);
+  ServicesRunning.erase (service_name);
 }
 
 
@@ -427,6 +428,11 @@ double OwInterface::getTiltVelocity () const
 bool OwInterface::imageReceived () const
 {
   return ImageReceived;
+}
+
+bool OwInterface::serviceRunning (const string& name) const
+{
+  return ServicesRunning.find (name) != ServicesRunning.end();
 }
 
 bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const

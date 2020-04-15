@@ -100,6 +100,8 @@ static void propagate (const State& state, const vector<Value>& value)
 
 static void receiveBool (const string& state_name, bool val)
 {
+  debugMsg("OwAdapter:receiveBool", " propagating " << state_name
+           << " with value " << (val ? "true" : "false"));
   propagate (createState(state_name, EmptyArgs),
              vector<Value> (1, val));
 }
@@ -127,8 +129,12 @@ static void receiveBoolString (const string& state_name,
 void OwAdapter::propagateValueChange (const State& state,
                                        const vector<Value>& vals) const
 {
-  if (!isStateSubscribed(state)) return;
+  if (! isStateSubscribed (state)) {
+    debugMsg("OwAdapter:propagateValueChange", " ignoring " << state);
+    return;
+  }
 
+  debugMsg("OwAdapter:propagateValueChange", " sending " << state);
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }

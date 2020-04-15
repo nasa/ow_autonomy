@@ -4,6 +4,7 @@
 
 #include "OwSimProxy.h"
 #include "OwInterface.h"
+#include <ow_lander/StartPlanning.h>
 #include <ros/ros.h>
 #include <iostream>
 
@@ -78,6 +79,12 @@ bool OwSimProxy::lookup (const std::string& state_name,
   }
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();
+  }
+  else if (state_name == "PlanningFinished") {
+    value_out =
+      ! OwInterface::instance() ->
+      serviceRunning
+      (ros::service_traits::DataType<ow_lander::StartPlanning>::value());
   }
   else retval = false;
 

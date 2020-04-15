@@ -2,10 +2,13 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
+// Arm planning test
+
 Command log_info (...);
 Command StartPlanning();
+Boolean Lookup PlanningFinished;
 
-TestPlanning: Concurrence
+TestPlanning:
 {
   Plan:
   {
@@ -14,13 +17,9 @@ TestPlanning: Concurrence
   }
   Report:
   {
-    Repeat Plan.state != FINISHED;
+    Repeat !Lookup (PlanningFinished);
     log_info ("Planning in progress...");
     Wait 1;
   }
-  Wrap:
-  {
-    Start Report.state == FINISHED;
-    log_info ("Planning service finished.");
-  }
+  log_info ("Planning service finished.");
 }
