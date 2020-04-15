@@ -1,6 +1,10 @@
 This directory contains a candidate onboard autonomy component for the Ocean
 Worlds lander, namely a ROS node embedding a PLEXIL application.
 
+It's called the autonomy node, and only one instance of this node in an
+OceanWATERS application/mission is envisioned at this time.
+
+
 Contents
 --------
 
@@ -76,30 +80,32 @@ Run
 Plans
 -----
 
-Here are the meaningful plans currently available.
+Here are some interesting autonomy plans.  Run them like this, substituting for
+Foo.plx:
 
-1. The Europa reference mission Sol 0 prototype:
+  % roslaunch ow_autonomy autonomy_node.launch plan:=Foo.plx
 
-   % roslaunch ow_autonomy autonomy_node.launch plan:=OceanWorldMission.plx
+1. The Europa reference mission Sol 0 prototype: OceanWorldMission.plx
 
    At present, this plan is stubbed except for the (shortened) panoramic landing
    site imaging that happens near the beginning.
 
-2. A short panoramic imaging demo:
-
-   % roslaunch ow_autonomy autonomy_node.launch plan:=TestAntennaCamera.plx
+2. A short panoramic imaging demo: TestAntennaCamera.plx
 
    A small area is imaged, with an iteration of tilts and pans.  To try other
    regions, edit ow_autonomy/src/plans/TestAntennaCamera.plp and enter 'catkin
    build ow_autonomy' before restarting the autonomy node.  You don't need to
    restart the simulator.
 
-3. Overtorque detection:
-
-   % roslaunch ow_autonomy autonomy_node.launch plan:=TorqueTest.plx
+3. Overtorque detection: TorqueTest.plx
 
    This plan attempts to push the scoop into the ground, which creates joint
    over-torquing warnings and errors.
+
+4. Concurrency demo: TestPlanning.plx
+
+   This runs the arm planning ROS service, while concurrently printing an "in
+   progress" message.  This was not possible before service calls were threaded.
 
 
 Clean
