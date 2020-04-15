@@ -19,7 +19,7 @@ TestPlanning:
   }
   Report:
   {
-    Repeat !Lookup (PlanningFinished);
+    RepeatCondition !Lookup (PlanningFinished);
     log_info ("Planning in progress...");
     Wait 1;
   }

@@ -39,6 +39,9 @@ bool   ImageReceived       = false;
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
 static set<string> ServicesRunning { } ;
+static set<string> ServicesFinished { } ;
+static set<string> ValidServices {
+  "MoveGuarded", "StartPlanning", "PublishTrajectory" };
 
 // Torque limits: made up for now, and there may be a better place to code or
 // extract these.  Assuming that only magnitude matters.
@@ -224,20 +227,21 @@ void OwInterface::initialize()
 }
 
 template<class Service>
-static void service_call (ros::ServiceClient client, Service srv)
+static void service_call (ros::ServiceClient client, Service srv, string name)
 {
   // NOTE: arguments are copies because this function is called in a thread that
   // outlives its caller.
 
-  const char* service_name = ros::service_traits::DataType<Service>::value();
-
-  ServicesRunning.insert (service_name);
+  ServicesFinished.erase (name);
+  ServicesRunning.insert (name);
   if (client.call (srv)) { // blocks
-    ROS_INFO("%s returned: %d, %s", service_name, srv.response.success,
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());
   }
-  else ROS_ERROR ("Failed to call service %s", service_name);
-  ServicesRunning.erase (service_name);
+  else ROS_ERROR ("Failed to call service %s", name.c_str());
+  ServicesRunning.erase (name);
+  ServicesFinished.insert (name);
+  publish ("Finished", true, name);
 }
 
 
@@ -270,7 +274,8 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_y = 0.0;
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
-    std::thread t (service_call<ow_lander::StartPlanning>, client, srv);
+    std::thread t (service_call<ow_lander::StartPlanning>,
+                   client, srv, "StartPlanning");
     t.detach();
   }
 }
@@ -307,7 +312,8 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
-    std::thread t (service_call<ow_lander::MoveGuarded>, client, srv);
+    std::thread t (service_call<ow_lander::MoveGuarded>,
+                   client, srv, "MoveGuarded");
     t.detach();
   }
 }
@@ -323,7 +329,8 @@ void OwInterface::publishTrajectoryDemo()
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    std::thread t (service_call<ow_lander::PublishTrajectory>, client, srv);
+    std::thread t (service_call<ow_lander::PublishTrajectory>,
+                   client, srv, "PublishTrajectory");
     t.detach();
   }
 }
@@ -392,6 +399,39 @@ bool OwInterface::serviceRunning (const string& name) const
 {
   return ServicesRunning.find (name) != ServicesRunning.end();
 }
+
+bool OwInterface::serviceFinished (const string& name) const
+{
+  return ServicesFinished.find (name) != ServicesFinished.end();
+}
+
+static bool is_service (const string name)
+{
+  return ValidServices.find (name) != ValidServices.end();
+}
+
+bool OwInterface::running (const string& name) const
+{
+  if (is_service (name)) {
+    return ServicesRunning.find (name) != ServicesRunning.end();
+  }
+  else {
+    ROS_ERROR("Invalid running query: %s", name.c_str());
+    return false;
+  }
+}
+
+bool OwInterface::finished (const string& name) const
+{
+  if (is_service (name)) {
+    return ServicesFinished.find (name) != ServicesFinished.end();
+  }
+  else {
+    ROS_ERROR("Invalid finished query: %s", name.c_str());
+    return false;
+  }
+}
+
 
 bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
 {

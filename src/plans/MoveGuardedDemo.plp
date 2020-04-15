@@ -1,0 +1,17 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Demonstrate a guarded move.
+
+Command log_info (...);
+Command move_guarded_demo();
+Boolean Lookup Finished (String operation_name);
+
+MoveGuardedDemo:
+{
+  EndCondition Lookup (Finished ("MoveGuarded"));
+  log_info ("Beginning MoveGuarded Demo...");
+  move_guarded_demo();
+  log_info ("MoveGuarded Demo finished");
+}

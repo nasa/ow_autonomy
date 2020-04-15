@@ -1,0 +1,17 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Publish arm planning trajectory.
+
+Command log_info (...);
+Command publish_trajectory_demo();
+Boolean Lookup Finished (String operation_name);
+
+PublishTrajectoryDemo:
+{
+  EndCondition Lookup (Finished ("PublishTrajectory"));
+  log_info ("Publishing arm trajectory...");
+  publish_trajectory_demo();
+  log_info ("Arm trajectory published.");
+}

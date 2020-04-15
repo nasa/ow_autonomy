@@ -5,6 +5,8 @@
 #include "OwSimProxy.h"
 #include "OwInterface.h"
 #include <ow_lander/StartPlanning.h>
+#include <ow_lander/MoveGuarded.h>
+#include <ow_lander/PublishTrajectory.h>
 #include <ros/ros.h>
 #include <iostream>
 
@@ -80,12 +82,25 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();
   }
-  // Temporary, for service test plan:
+  else if (state_name == "Running") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->running (s);
+  }
+  else if (state_name == "Finished") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->finished (s);
+  }
+
   else if (state_name == "PlanningFinished") {
-    value_out =
-      ! OwInterface::instance() ->
-      serviceRunning
-      (ros::service_traits::DataType<ow_lander::StartPlanning>::value());
+    value_out = false;
+  }
+  else if (state_name == "GuardedMoveFinished") {
+    value_out = false;
+  }
+  else if (state_name == "PublishTrajectoryFinished") {
+    value_out = false;
   }
   else retval = false;
 

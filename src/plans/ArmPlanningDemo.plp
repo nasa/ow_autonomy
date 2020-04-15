@@ -1,0 +1,17 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Demonstrate arm planning.
+
+Command log_info (...);
+Command arm_planning_demo();
+Boolean Lookup Finished (String operation_name);
+
+ArmPlanningDemo:
+{
+  EndCondition Lookup (Finished ("StartPlanning"));
+  log_info ("Beginning arm planning demo...");
+  arm_planning_demo();
+  log_info ("Arm planning demo finished");
+}

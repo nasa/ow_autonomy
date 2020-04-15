@@ -230,9 +230,9 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "log_debug") log_debug (args);
 
   // "Demos"
-  else if (name == "StartPlanning") OwInterface::instance()->startPlanningDemo();
-  else if (name == "MoveGuardedDemo") OwInterface::instance()->moveGuardedDemo();
-  else if (name == "PublishTrajectory") {
+  else if (name == "arm_planning_demo") OwInterface::instance()->startPlanningDemo();
+  else if (name == "move_guarded_demo") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "publish_trajectory_demo") {
     OwInterface::instance()->publishTrajectoryDemo();
   }
   // Operations
