@@ -92,16 +92,6 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(s);
     value_out = OwInterface::instance()->finished (s);
   }
-
-  else if (state_name == "PlanningFinished") {
-    value_out = false;
-  }
-  else if (state_name == "GuardedMoveFinished") {
-    value_out = false;
-  }
-  else if (state_name == "PublishTrajectoryFinished") {
-    value_out = false;
-  }
   else retval = false;
 
   return retval;
