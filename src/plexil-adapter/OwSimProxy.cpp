@@ -4,9 +4,6 @@
 
 #include "OwSimProxy.h"
 #include "OwInterface.h"
-#include <ow_lander/StartPlanning.h>
-#include <ow_lander/MoveGuarded.h>
-#include <ow_lander/PublishTrajectory.h>
 #include <ros/ros.h>
 #include <iostream>
 
