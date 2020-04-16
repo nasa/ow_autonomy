@@ -1,7 +1,7 @@
 This directory contains a candidate onboard autonomy component for the Ocean
 Worlds lander, namely a ROS node embedding a PLEXIL application.
 
-It's called the autonomy node, and only one instance of this node in an
+It's called the `autonomy node`, and only one instance of this node in an
 OceanWATERS application/mission is envisioned at this time.
 
 
@@ -36,6 +36,10 @@ Assumed is this directory filed properly within an OceanWATERS ROS workspace
 Build just the ow_autonomy package with:
 
      % catkin build ow_autonomy
+
+NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
+last build, a clean rebuild of ow_autonomy is needed.  See bottom of this file
+for instructions.
 
 
 Run
@@ -111,11 +115,12 @@ Foo.plx:
 Clean
 -----
 
-To clean (remove all build products from) the entire ROS workspace:
-
-  % catkin clean
-
-To clean just the ow_autonomy package:
+To clean (remove all build products from) just the ow_autonomy package:
 
   % cd <ow_workspace>/build
 	% rm -rf ow_autonomy
+
+To clean the entire ROS workspace (not needed if you're just rebuilding
+ow_autonomy):
+
+  % catkin clean
