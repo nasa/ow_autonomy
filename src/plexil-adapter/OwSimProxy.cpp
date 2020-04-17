@@ -80,14 +80,19 @@ bool OwSimProxy::lookup (const std::string& state_name,
     value_out = OwInterface::instance()->imageReceived();
   }
   else if (state_name == "Running") {
-    string s;
-    args[0].getValue(s);
-    value_out = OwInterface::instance()->running (s);
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->running (operation);
   }
   else if (state_name == "Finished") {
-    string s;
-    args[0].getValue(s);
-    value_out = OwInterface::instance()->finished (s);
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->finished (operation);
+  }
+  else if (state_name == "FaultDetected") {
+    string component;
+    args[0].getValue(component);
+    value_out = OwInterface::instance()->faultDetected (component);
   }
   else retval = false;
 

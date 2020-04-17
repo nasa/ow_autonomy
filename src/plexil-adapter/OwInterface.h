@@ -62,6 +62,7 @@ class OwInterface
   bool imageReceived () const;
   bool running (const std::string& name) const;
   bool finished (const std::string& name) const;
+  bool faultDetected (const std::string& component) const;
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);

@@ -440,3 +440,8 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
 }
+
+bool OwInterface::faultDetected (const std::string& component) const
+{
+  return true;
+}
