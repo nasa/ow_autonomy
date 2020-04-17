@@ -19,7 +19,9 @@
 // C++
 #include <thread>
 #include <set>
+#include <map>
 using std::set;
+using std::map;
 
 // C
 #include <cmath>  // for M_PI and abs
@@ -28,6 +30,41 @@ using std::set;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
+// ROS Service support.  A service is either running or available, and only one
+// instance of a service may run at a time.  This simple model may suffice.
+
+const string MoveGuardedService = "MoveGuarded";
+const string ArmPlanningService = "StartPlanning";
+const string ArmTrajectoryService = "PublishTrajectory";
+
+
+template<class Service>
+class ServiceInfo
+{
+ public:
+  static bool is_running () { return m_running; }
+  static void start () { m_running = true; }
+  static void stop () { m_running = false; }
+
+ private:
+  static bool m_running;
+};
+
+template<class Service>
+bool ServiceInfo<Service>::m_running = false;
+
+typedef bool (*boolfn)();
+
+const map<string, boolfn> ServiceRunning {
+  {MoveGuardedService, ServiceInfo<ow_lander::MoveGuarded>::is_running},
+  {ArmPlanningService, ServiceInfo<ow_lander::StartPlanning>::is_running},
+  {ArmTrajectoryService, ServiceInfo<ow_lander::StartPlanning>::is_running}
+};
+
+static bool is_service (const string name)
+{
+  return ServiceRunning.find (name) != ServiceRunning.end();
+}
 
 //// Lander state cache, simple start for now.  We may want to refactor, move
 //// everything into structures, and make class member.
@@ -38,10 +75,6 @@ bool   ImageReceived       = false;
 
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
-static set<string> ServicesRunning { } ;
-static set<string> ServicesFinished { } ;
-static set<string> ValidServices {
-  "MoveGuarded", "StartPlanning", "PublishTrajectory" };
 
 // Torque limits: made up for now, and there may be a better place to code or
 // extract these.  Assuming that only magnitude matters.
@@ -226,17 +259,16 @@ template<class Service>
 static void service_call (ros::ServiceClient client, Service srv, string name)
 {
   // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.
+  // outlives its caller.  Service is assumed to be available (checked upstream).
 
-  ServicesFinished.erase (name);
-  ServicesRunning.insert (name);
+  ServiceInfo<Service>::start();
   if (client.call (srv)) { // blocks
+    // TODO: make this a debug message later.
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());
   }
   else ROS_ERROR ("Failed to call service %s", name.c_str());
-  ServicesRunning.erase (name);
-  ServicesFinished.insert (name);
+  ServiceInfo<Service>::stop();
   publish ("Finished", true, name);
 }
 
@@ -255,8 +287,20 @@ static bool service_client_ok (ros::ServiceClient& client)
   return retval;
 }
 
+template<class Service>
+static bool service_available (const string& name)
+{
+  if (ServiceInfo<Service>::is_running()) {
+    ROS_WARN("Service %s already running, ignoring request.", name.c_str());
+    return false;
+  }
+  else return true;
+}
+
 void OwInterface::startPlanningDemo()
 {
+  if (! service_available<ow_lander::StartPlanning>(ArmPlanningService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
@@ -271,7 +315,7 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
     std::thread t (service_call<ow_lander::StartPlanning>,
-                   client, srv, "StartPlanning");
+                   client, srv, ArmPlanningService);
     t.detach();
   }
 }
@@ -291,6 +335,8 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
                                bool delete_prev_traj,
                                bool retract)
 {
+  if (! service_available<ow_lander::StartPlanning>(MoveGuardedService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
@@ -309,13 +355,15 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
     std::thread t (service_call<ow_lander::MoveGuarded>,
-                   client, srv, "MoveGuarded");
+                   client, srv, MoveGuardedService);
     t.detach();
   }
 }
 
 void OwInterface::publishTrajectoryDemo()
 {
+  if (! service_available<ow_lander::StartPlanning>(ArmTrajectoryService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
@@ -326,7 +374,7 @@ void OwInterface::publishTrajectoryDemo()
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
     std::thread t (service_call<ow_lander::PublishTrajectory>,
-                   client, srv, "PublishTrajectory");
+                   client, srv, ArmTrajectoryService);
     t.detach();
   }
 }
@@ -393,37 +441,31 @@ bool OwInterface::imageReceived () const
 
 bool OwInterface::serviceRunning (const string& name) const
 {
-  return ServicesRunning.find (name) != ServicesRunning.end();
+  // Upstream code guarantees this to succeed.
+  return ServiceRunning.at(name);
 }
 
 bool OwInterface::serviceFinished (const string& name) const
 {
-  return ServicesFinished.find (name) != ServicesFinished.end();
-}
-
-static bool is_service (const string name)
-{
-  return ValidServices.find (name) != ValidServices.end();
+  return !serviceRunning(name);
 }
 
 bool OwInterface::running (const string& name) const
 {
-  if (is_service (name)) {
-    return ServicesRunning.find (name) != ServicesRunning.end();
-  }
+  if (is_service (name)) return serviceRunning(name);
   else {
-    ROS_ERROR("Invalid running query: %s", name.c_str());
+    ROS_ERROR("OwInterface::running: unsupported operation: %s",
+              name.c_str());
     return false;
   }
 }
 
 bool OwInterface::finished (const string& name) const
 {
-  if (is_service (name)) {
-    return ServicesFinished.find (name) != ServicesFinished.end();
-  }
+  if (is_service (name)) return serviceFinished(name);
   else {
-    ROS_ERROR("Invalid finished query: %s", name.c_str());
+    ROS_ERROR("OwInterface::finished: unsupported operation: %s",
+              name.c_str());
     return false;
   }
 }
