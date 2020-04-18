@@ -6,15 +6,17 @@
 
 Command log_info (...);
 Command publish_trajectory_demo();
+Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
 PublishTrajectoryDemo:
 {
-  Main:
+  log_info ("Publishing arm trajectory...");
+  publish_trajectory_demo();
+  Block:
   {
+    StartCondition Lookup (Running ("PublishTrajectory"));
     EndCondition Lookup (Finished ("PublishTrajectory"));
-    log_info ("Publishing arm trajectory...");
-    publish_trajectory_demo();
   }
   log_info ("Arm trajectory published.");
 }

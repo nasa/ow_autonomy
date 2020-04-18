@@ -30,17 +30,21 @@ using std::map;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-// ROS Service support.  A service is either running or available, and only one
-// instance of a service may run at a time.  This simple model may suffice.
+// Static initialization
+OwInterface* OwInterface::m_instance = nullptr;
 
+
+//// ROS Service support
+
+// Service names/types as used in both PLEXIL and ow_lander
 const string MoveGuardedService = "MoveGuarded";
 const string ArmPlanningService = "StartPlanning";
 const string ArmTrajectoryService = "PublishTrajectory";
 
-
 template<class Service>
 class ServiceInfo
 {
+  // Static class that manages, for each service type, its running state.
  public:
   static bool is_running () { return m_running; }
   static void start () { m_running = true; }
@@ -50,15 +54,16 @@ class ServiceInfo
   static bool m_running;
 };
 
+// Static initialization for class above.
 template<class Service>
 bool ServiceInfo<Service>::m_running = false;
 
+// Map from each service name to its running check function.
 typedef bool (*boolfn)();
-
 const map<string, boolfn> ServiceRunning {
   {MoveGuardedService, ServiceInfo<ow_lander::MoveGuarded>::is_running},
   {ArmPlanningService, ServiceInfo<ow_lander::StartPlanning>::is_running},
-  {ArmTrajectoryService, ServiceInfo<ow_lander::StartPlanning>::is_running}
+  {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
 };
 
 static bool is_service (const string name)
@@ -66,13 +71,13 @@ static bool is_service (const string name)
   return ServiceRunning.find (name) != ServiceRunning.end();
 }
 
+
 //// Lander state cache, simple start for now.  We may want to refactor, move
 //// everything into structures, and make class member.
 
-double CurrentTilt         = 0.0;
-double CurrentPanDegrees   = 0.0;
-bool   ImageReceived       = false;
-
+static double CurrentTilt         = 0.0;
+static double CurrentPanDegrees   = 0.0;
+static bool   ImageReceived       = false;
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
 
@@ -80,8 +85,8 @@ static set<string> JointsAtSoftTorqueLimit { };
 // extract these.  Assuming that only magnitude matters.
 
 const double TorqueSoftLimits[] = {
-  30,   // j_ant_pan
-  30,   // j_ant_tilt
+  30, // j_ant_pan
+  30, // j_ant_tilt
   60, // j_dist_pitch
   60, // j_hand_yaw
   60, // j_prox_pitch
@@ -91,8 +96,8 @@ const double TorqueSoftLimits[] = {
 };
 
 const double TorqueHardLimits[] = {
-  30,  // j_ant_pan
-  30,  // j_ant_tilt
+  30, // j_ant_pan
+  30, // j_ant_tilt
   80, // j_dist_pitch
   80, // j_hand_yaw
   80, // j_prox_pitch
@@ -100,8 +105,6 @@ const double TorqueHardLimits[] = {
   80, // j_shou_pitch
   80  // j_shou_yaw
 };
-
-OwInterface* OwInterface::m_instance = nullptr;
 
 static JointMap init_joint_map ()
 {
@@ -259,32 +262,42 @@ template<class Service>
 static void service_call (ros::ServiceClient client, Service srv, string name)
 {
   // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.  Service is assumed to be available (checked upstream).
+  // outlives its caller.  Assumption checked upstream: service is available
+  // (not already running).
 
-  ServiceInfo<Service>::start();
+  if (ServiceInfo<Service>::is_running()) {
+    ROS_ERROR("service_call: %s in running state. This shouldn't happen.",
+              name.c_str());
+  }
+  else ServiceInfo<Service>::start();
+  publish ("Running", true, name);
+
   if (client.call (srv)) { // blocks
-    // TODO: make this a debug message later.
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
-             srv.response.message.c_str());
+             srv.response.message.c_str());  // make DEBUG later
   }
   else ROS_ERROR ("Failed to call service %s", name.c_str());
-  ServiceInfo<Service>::stop();
+
+  if (! ServiceInfo<Service>::is_running()) {
+    ROS_ERROR("service_call: %s in stopped state. This shouldn't happen.",
+              name.c_str());
+  }
+  else ServiceInfo<Service>::stop();
   publish ("Finished", true, name);
 }
 
 
 static bool service_client_ok (ros::ServiceClient& client)
 {
-  bool retval = true;
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");
-    retval = false;
+    return false;
   }
   else if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
-    retval = false;
+    return false;
   }
-  return retval;
+  else return true;
 }
 
 template<class Service>
@@ -441,8 +454,8 @@ bool OwInterface::imageReceived () const
 
 bool OwInterface::serviceRunning (const string& name) const
 {
-  // Upstream code guarantees this to succeed.
-  return ServiceRunning.at(name);
+  // Note: check in caller guarantees 'at' to return a valid value.
+  return ServiceRunning.at(name)();
 }
 
 bool OwInterface::serviceFinished (const string& name) const

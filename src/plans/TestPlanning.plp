@@ -8,7 +8,7 @@
 
 Command log_info (...);
 Command arm_planning_demo();
-Boolean Lookup Finished (String operation_name);
+Boolean Lookup Running (String operation_name);
 
 TestPlanning:
 {
@@ -19,7 +19,7 @@ TestPlanning:
   }
   Report:
   {
-    RepeatCondition !Lookup (Finished ("StartPlanning"));
+    RepeatCondition Lookup (Running ("StartPlanning"));
     log_info ("Planning in progress...");
     Wait 1;
   }

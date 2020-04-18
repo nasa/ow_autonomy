@@ -6,15 +6,17 @@
 
 Command log_info (...);
 Command arm_planning_demo();
+Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
 ArmPlanningDemo:
 {
-  Main:
+  log_info ("Beginning arm planning demo...");
+  arm_planning_demo();
+  Block:
   {
+    StartCondition Lookup (Running ("StartPlanning"));
     EndCondition Lookup (Finished ("StartPlanning"));
-    log_info ("Beginning arm planning demo...");
-    arm_planning_demo();
   }
   log_info ("Arm planning demo finished");
 }
