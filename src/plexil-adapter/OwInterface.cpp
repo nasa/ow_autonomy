@@ -293,11 +293,13 @@ static bool service_client_ok (ros::ServiceClient& client)
     ROS_ERROR("Service client does not exist!");
     return false;
   }
-  else if (! client.isValid()) {
+
+  if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
     return false;
   }
-  else return true;
+
+  return true;
 }
 
 template<class Service>
@@ -307,7 +309,8 @@ static bool service_available (const string& name)
     ROS_WARN("Service %s already running, ignoring request.", name.c_str());
     return false;
   }
-  else return true;
+
+  return true;
 }
 
 void OwInterface::startPlanningDemo()
@@ -466,21 +469,17 @@ bool OwInterface::serviceFinished (const string& name) const
 bool OwInterface::running (const string& name) const
 {
   if (is_service (name)) return serviceRunning(name);
-  else {
-    ROS_ERROR("OwInterface::running: unsupported operation: %s",
-              name.c_str());
-    return false;
-  }
+
+  ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
+  return false;
 }
 
 bool OwInterface::finished (const string& name) const
 {
   if (is_service (name)) return serviceFinished(name);
-  else {
-    ROS_ERROR("OwInterface::finished: unsupported operation: %s",
-              name.c_str());
-    return false;
-  }
+
+  ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
+  return false;
 }
 
 
