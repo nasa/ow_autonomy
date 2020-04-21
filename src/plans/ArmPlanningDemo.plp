@@ -7,6 +7,7 @@
 Command log_info (...);
 Command log_warning (...);
 Command arm_planning_demo();
+Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 Boolean Lookup FaultDetected (String component);
 

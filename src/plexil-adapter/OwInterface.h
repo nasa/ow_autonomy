@@ -60,6 +60,9 @@ class OwInterface
   double getPanVelocity () const;
   double getTiltVelocity () const;
   bool imageReceived () const;
+
+  // These methods apply to all "lander operations", and hide their ROS
+  // implementation, which could be services, actions, or ad hoc messaging.
   bool running (const std::string& name) const;
   bool finished (const std::string& name) const;
   bool faultDetected (const std::string& component) const;
@@ -70,15 +73,12 @@ class OwInterface
 
 
  private:
+  // Predicates for ROS services
   bool serviceRunning (const std::string& name) const;
   bool serviceFinished (const std::string& name) const;
+  
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   static JointMap m_jointMap;
-
-  // NOT USED - will remove if latching keeps working
-  bool subscribersConfirmed () const;
-  // NOT USED - will remove if latching keeps working
-  bool checkSubscribers (const ros::Publisher*) const;
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
