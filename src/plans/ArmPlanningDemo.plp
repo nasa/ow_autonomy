@@ -8,29 +8,25 @@ Command log_info (...);
 Command log_warning (...);
 Command arm_planning_demo();
 Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
 Boolean Lookup FaultDetected (String component);
 
 ArmPlanningDemo:
 {
-  PlanAndMonitor: Concurrence
+  log_info ("Beginning arm planning demo...");
+  arm_planning_demo();
+  ConfirmRunning:
   {
-    Plan:
-    {
-      EndCondition Lookup (Finished ("StartPlanning"));
-      log_info ("Beginning arm planning demo...");
-      arm_planning_demo();
-    }
-
-    Monitor:
-    {
-      // Check for faults once per second
-      SkipCondition Lookup (Finished ("StartPlanning"));
-      StartCondition Lookup (FaultDetected ("Arm"));
-      RepeatCondition true;
+    StartCondition Lookup (Running ("StartPlanning"));
+    log_info ("Confirmed running.");
+  }
+  Monitor:
+  {
+    // Check for faults once per second
+    RepeatCondition Lookup (Running ("StartPlanning"));
+    if (Lookup (FaultDetected ("Arm"))) {
       log_warning ("Arm fault during planning!");
-      Wait 1;
-    }
+    } endif;
+    Wait 1;
   }
   log_info ("Arm planning demo finished");
 }
