@@ -13,14 +13,6 @@
 #include <vector>
 #include <map>
 
-// Enumerate OW's JointState 'name' array, as integer indices into this and its
-// other arrays.  Can't use enum classes very well for this, so going old-school.
-
-enum JointName { j_ant_pan = 0, j_ant_tilt,
-                 j_dist_pitch, j_hand_yaw,
-                 j_prox_pitch, j_scoop_yaw,
-                 j_shou_pitch, j_shou_yaw
-};
 
 struct JointInfo
 {
@@ -37,12 +29,6 @@ struct JointInfo
 };
 
 typedef std::map<int, JointInfo> JointMap;
-
-const std::vector<std::string> JointNames {
-  "Pan", "Tilt", "DistalPitch", "HandYaw", "ProximalPitch",
-  "ScoopYaw", "ShoulderPitch", "ShoulderYaw"
-};
-
 
 
 #endif

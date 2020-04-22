@@ -7,6 +7,7 @@
 #include "subscriber.h"
 
 // OW - other
+#include <ow_lander/lander_joints.h>
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -68,7 +69,7 @@ OwInterface* OwInterface::m_instance = nullptr;
 static JointMap init_joint_map ()
 {
   JointMap m;
-  for (int i = j_ant_pan; i <= j_shou_yaw; i++) m[i] = JointInfo (0,0,0);
+  for (int i = 0; i < ow_lander::NUM_JOINTS; i++) m[i] = JointInfo (0,0,0);
   return m;
 }
 
@@ -113,14 +114,14 @@ static void handle_overtorque (int joint_index, double effort)
   // to the joint.
 
   if (abs(effort) >= torque_hard_limit (joint_index)) {
-    JointsAtHardTorqueLimit.insert(JointNames[joint_index]);
+    JointsAtHardTorqueLimit.insert(ow_lander::joint_display_names[joint_index]);
   }
   else if (abs(effort) >= torque_soft_limit (joint_index)) {
-    JointsAtSoftTorqueLimit.insert(JointNames[joint_index]);
+    JointsAtSoftTorqueLimit.insert(ow_lander::joint_display_names[joint_index]);
   }
   else {
-    JointsAtHardTorqueLimit.erase (JointNames[joint_index]);
-    JointsAtSoftTorqueLimit.erase (JointNames[joint_index]);
+    JointsAtHardTorqueLimit.erase (ow_lander::joint_display_names[joint_index]);
+    JointsAtSoftTorqueLimit.erase (ow_lander::joint_display_names[joint_index]);
   }
 }
 
@@ -137,13 +138,13 @@ void OwInterface::jointStatesCallback
   // Publish all joint information for visibility to PLEXIL and handle any
   // joint-related faults.
 
-  for (int i = j_ant_pan; i <= j_shou_yaw; ++i) { // NOTE: archaic enum iteration
+  for (int i = 0; i < ow_lander::NUM_JOINTS; ++i) { // NOTE: archaic enum iteration
     m_jointMap[i] = JointInfo (msg->position[i],
                                msg->velocity[i],
                                msg->effort[i]);
-    publish (JointNames[i] + "Velocity", msg->velocity[i]);
-    publish (JointNames[i] + "Effort", msg->effort[i]);
-    publish (JointNames[i] + "Position", msg->position[i]);
+    publish (ow_lander::joint_display_names[i] + " velocity", msg->velocity[i]);
+    publish (ow_lander::joint_display_names[i] + " effort", msg->effort[i]);
+    publish (ow_lander::joint_display_names[i] + " position", msg->position[i]);
     handle_joint_fault (i, msg);
   }
 }
@@ -404,12 +405,12 @@ double OwInterface::getPanDegrees () const
 
 double OwInterface::getPanVelocity () const
 {
-  return m_jointMap[j_ant_pan].velocity;
+  return m_jointMap[ow_lander::J_ANT_PAN].velocity;
 }
 
 double OwInterface::getTiltVelocity () const
 {
-  return m_jointMap[j_ant_tilt].velocity;
+  return m_jointMap[ow_lander::J_ANT_TILT].velocity;
 }
 
 bool OwInterface::imageReceived () const
