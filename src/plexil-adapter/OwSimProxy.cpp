@@ -79,6 +79,16 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "ImageReceived") {
     value_out = OwInterface::instance()->imageReceived();
   }
+  else if (state_name == "Running") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->running (s);
+  }
+  else if (state_name == "Finished") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->finished (s);
+  }
   else retval = false;
 
   return retval;

@@ -18,8 +18,11 @@
 #include <sensor_msgs/Image.h>
 
 // C++
+#include <thread>
 #include <set>
+#include <map>
 using std::set;
+using std::map;
 
 // C
 #include <cmath>  // for M_PI and abs
@@ -28,14 +31,54 @@ using std::set;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
+// Static initialization
+OwInterface* OwInterface::m_instance = nullptr;
+
+
+//// ROS Service support
+
+// Service names/types as used in both PLEXIL and ow_lander
+const string MoveGuardedService = "MoveGuarded";
+const string ArmPlanningService = "StartPlanning";
+const string ArmTrajectoryService = "PublishTrajectory";
+
+template<class Service>
+class ServiceInfo
+{
+  // Static class that manages, for each service type, its running state.
+ public:
+  static bool is_running () { return m_running; }
+  static void start () { m_running = true; }
+  static void stop () { m_running = false; }
+
+ private:
+  static bool m_running;
+};
+
+// Static initialization for class above.
+template<class Service>
+bool ServiceInfo<Service>::m_running = false;
+
+// Map from each service name to its running check function.
+typedef bool (*boolfn)();
+const map<string, boolfn> ServiceRunning {
+  {MoveGuardedService, ServiceInfo<ow_lander::MoveGuarded>::is_running},
+  {ArmPlanningService, ServiceInfo<ow_lander::StartPlanning>::is_running},
+  {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
+};
+
+static bool is_service (const string name)
+{
+  return ServiceRunning.find (name) != ServiceRunning.end();
+}
+
 
 //// Lander state cache, simple start for now.  We may want to refactor, move
-//// everything into structures, and make part of object.
+//// everything into structures, and make class member.
 
-double CurrentTilt         = 0.0;
-double CurrentPanDegrees   = 0.0;
-bool   ImageReceived       = false;
-
+static double CurrentTilt         = 0.0;
+static double CurrentPanDegrees   = 0.0;
+static bool   ImageReceived       = false;
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
 
@@ -43,8 +86,8 @@ static set<string> JointsAtSoftTorqueLimit { };
 // extract these.  Assuming that only magnitude matters.
 
 const double TorqueSoftLimits[] = {
-  30,   // j_ant_pan
-  30,   // j_ant_tilt
+  30, // j_ant_pan
+  30, // j_ant_tilt
   60, // j_dist_pitch
   60, // j_hand_yaw
   60, // j_prox_pitch
@@ -54,8 +97,8 @@ const double TorqueSoftLimits[] = {
 };
 
 const double TorqueHardLimits[] = {
-  30,  // j_ant_pan
-  30,  // j_ant_tilt
+  30, // j_ant_pan
+  30, // j_ant_tilt
   80, // j_dist_pitch
   80, // j_hand_yaw
   80, // j_prox_pitch
@@ -63,8 +106,6 @@ const double TorqueHardLimits[] = {
   80, // j_shou_pitch
   80  // j_shou_yaw
 };
-
-OwInterface* OwInterface::m_instance = nullptr;
 
 static JointMap init_joint_map ()
 {
@@ -215,43 +256,84 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
-
-    // Holding off on this for now, as latching seems to do the trick.
-    //    if (subscribersConfirmed()) initialized = true;
-    //    else ROS_ERROR("Could not initialize OwInterface: subscribers down.");
   }
+}
+
+template<class Service>
+static void service_call (ros::ServiceClient client, Service srv, string name)
+{
+  // NOTE: arguments are copies because this function is called in a thread that
+  // outlives its caller.  Assumption checked upstream: service is available
+  // (not already running).
+
+  if (ServiceInfo<Service>::is_running()) {
+    ROS_ERROR("service_call: %s in running state. This shouldn't happen.",
+              name.c_str());
+  }
+  else ServiceInfo<Service>::start();
+  publish ("Running", true, name);
+
+  if (client.call (srv)) { // blocks
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
+             srv.response.message.c_str());  // make DEBUG later
+  }
+  else ROS_ERROR ("Failed to call service %s", name.c_str());
+
+  if (! ServiceInfo<Service>::is_running()) {
+    ROS_ERROR("service_call: %s in stopped state. This shouldn't happen.",
+              name.c_str());
+  }
+  else ServiceInfo<Service>::stop();
+  publish ("Finished", true, name);
+}
+
+
+static bool service_client_ok (ros::ServiceClient& client)
+{
+  if (! client.exists()) {
+    ROS_ERROR("Service client does not exist!");
+    return false;
+  }
+
+  if (! client.isValid()) {
+    ROS_ERROR("Service client is invalid!");
+    return false;
+  }
+
+  return true;
+}
+
+template<class Service>
+static bool service_available (const string& name)
+{
+  if (ServiceInfo<Service>::is_running()) {
+    ROS_WARN("Service %s already running, ignoring request.", name.c_str());
+    return false;
+  }
+
+  return true;
 }
 
 void OwInterface::startPlanningDemo()
 {
+  if (! service_available<ow_lander::StartPlanning>(ArmPlanningService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     // NOTE: typo is deliberate
     nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::StartPlanning srv;
     srv.request.use_defaults = true;
     srv.request.trench_x = 0.0;
     srv.request.trench_y = 0.0;
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
-
-    if (client.call(srv)) {
-      ROS_INFO("StartPlanning returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service StartPlanning");
-    }
+    std::thread t (service_call<ow_lander::StartPlanning>,
+                   client, srv, ArmPlanningService);
+    t.detach();
   }
 }
 
@@ -270,18 +352,14 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
                                bool delete_prev_traj,
                                bool retract)
 {
+  if (! service_available<ow_lander::StartPlanning>(MoveGuardedService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::MoveGuarded srv;
     srv.request.use_defaults = false;
     srv.request.target_x = target_x;
@@ -293,70 +371,30 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
-
-    if (client.call(srv)) {
-      ROS_INFO("MoveGuarded returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service MoveGuarded");
-    }
+    std::thread t (service_call<ow_lander::MoveGuarded>,
+                   client, srv, MoveGuardedService);
+    t.detach();
   }
 }
 
 void OwInterface::publishTrajectoryDemo()
 {
+  if (! service_available<ow_lander::StartPlanning>(ArmTrajectoryService)) return;
+
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
 
-  if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
-  }
-  else if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
-  }
-  else {
+  if (service_client_ok (client)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    if (client.call(srv)) {
-      ROS_INFO("PublishTrajectory returned: %d, %s",
-               srv.response.success,
-               srv.response.message.c_str());
-    }
-    else {
-      ROS_ERROR("Failed to call service PublishTrajectory");
-    }
+    std::thread t (service_call<ow_lander::PublishTrajectory>,
+                   client, srv, ArmTrajectoryService);
+    t.detach();
   }
 }
-
-// NOT USED - will remove if latching keeps working
-bool OwInterface::subscribersConfirmed () const
-{
-  ros::Publisher* pubs [] = { m_antennaTiltPublisher,
-                              m_antennaPanPublisher,
-                              m_leftImageTriggerPublisher };
-
-  for (auto p : pubs) if (! checkSubscribers (p)) return false;
-  return true;
-}
-
-
-// NOT USED - will remove if latching keeps working
-bool OwInterface::checkSubscribers (const ros::Publisher* pub) const
-{
-  int timeout = 5;  // seconds, arbitrary
-  for (int secs = 0; secs < timeout; secs++) {
-    if (pub->getNumSubscribers() > 0) return true;
-    else sleep(1);
-  }
-  ROS_ERROR("No subscribers for topic %s", pub->getTopic().c_str());
-  return false;
-}
-
 
 void OwInterface::tiltAntenna (double arg)
 {
@@ -417,6 +455,34 @@ bool OwInterface::imageReceived () const
 {
   return ImageReceived;
 }
+
+bool OwInterface::serviceRunning (const string& name) const
+{
+  // Note: check in caller guarantees 'at' to return a valid value.
+  return ServiceRunning.at(name)();
+}
+
+bool OwInterface::serviceFinished (const string& name) const
+{
+  return !serviceRunning(name);
+}
+
+bool OwInterface::running (const string& name) const
+{
+  if (is_service (name)) return serviceRunning(name);
+
+  ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
+  return false;
+}
+
+bool OwInterface::finished (const string& name) const
+{
+  if (is_service (name)) return serviceFinished(name);
+
+  ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
+  return false;
+}
+
 
 bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
 {
