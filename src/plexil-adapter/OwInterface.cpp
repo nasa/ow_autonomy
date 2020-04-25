@@ -166,15 +166,17 @@ static void handle_overtorque (Joint joint, double effort)
   // For now, torque is just effort (Newton-meter), and overtorque is specific
   // to the joint.
 
+  string joint_name = JointPropMap[joint].plexilName;
+  
   if (abs(effort) >= JointPropMap[joint].hardTorqueLimit) {
-    JointsAtHardTorqueLimit.insert (JointPropMap[joint].plexilName);
+    JointsAtHardTorqueLimit.insert (joint_name);
   }
   else if (abs(effort) >= JointPropMap[joint].softTorqueLimit) {
-    JointsAtSoftTorqueLimit.insert(JointPropMap[joint].plexilName);
+    JointsAtSoftTorqueLimit.insert(joint_name);
   }
   else {
-    JointsAtHardTorqueLimit.erase (JointPropMap[joint].plexilName);
-    JointsAtSoftTorqueLimit.erase (JointPropMap[joint].plexilName);
+    JointsAtHardTorqueLimit.erase (joint_name);
+    JointsAtSoftTorqueLimit.erase (joint_name);
   }
 }
 
