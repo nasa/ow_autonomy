@@ -16,9 +16,9 @@ Command log_error (...);
 
 TorqueTest: Concurrence
 {
-  String JointNames[NUM_JOINTS] = #("Pan" "Tilt" "DistalPitch" "HandYaw"
-                                    "ProximalPitch" "ScoopYaw" "ShoulderPitch"
-                                    "ShoulderYaw");
+  String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
+                                    "HandYaw" "ProximalPitch" "ScoopYaw"
+                                    "ShoulderPitch" "ShoulderYaw");
 
   Dig:
   {
