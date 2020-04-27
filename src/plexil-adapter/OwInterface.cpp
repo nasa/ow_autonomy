@@ -68,12 +68,54 @@ const map<string, boolfn> ServiceRunning {
   {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
 };
 
+const map<string, string> AntennaFaults {
+  // Param name -> human-readable
+  { "ant_pan_encoder_failure", "Antenna Pan Encoder" },
+  { "ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
+  { "ant_torque_sensor_failure", "Antenna Torque Sensor" }
+};
+
+const map<string, string> ArmFaults {
+  // Param name -> human-readable
+  { "shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
+  { "shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
+  { "shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
+  { "prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
+  { "prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
+  { "dist_pitch_encoder_failure", " Distal Pitch Encoder" },
+  { "dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
+  { "hand_yaw_encoder_failure", "Hand Yaw Encoder" },
+  { "hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
+  { "scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
+  { "scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
+};
+
+const map<string, map<string, string> >  ServiceFaults {
+  { MoveGuardedService, ArmFaults },
+  { ArmPlanningService, ArmFaults },
+  { ArmTrajectoryService, ArmFaults }
+};
+
+static bool fault_exists (const string& fault)
+{
+  bool val;
+  ros::param::get (fault, val);
+  return val;
+}
+
+
 template<class Service>
-static void monitor_for_faults ()
+static void monitor_for_faults (const string& service_name)
 {
   using namespace std::chrono_literals;
   while (ServiceInfo<Service>::is_running()) {
-    std::this_thread::sleep_for(1s);
+    ROS_DEBUG("Monitoring for faults in %s", service_name.c_str());
+    for (auto fault : ServiceFaults.at (service_name)) {
+      if (fault_exists (fault.first)) {
+        ROS_WARN("Detected fault: %s failure.", fault.second.c_str());
+      }
+    }
+    std::this_thread::sleep_for (1s);
   }
 }
 
@@ -97,7 +139,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   publish ("Running", true, name);
 
   // Start thread that monitors for faults.
-  thread t (monitor_for_faults<ow_lander::StartPlanning>);
+  thread fault_monitor (monitor_for_faults<Service>, name);
 
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -111,7 +153,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   }
   else ServiceInfo<Service>::stop();
 
-  t.join();
+  fault_monitor.join();
   publish ("Finished", true, name);
 }
 
