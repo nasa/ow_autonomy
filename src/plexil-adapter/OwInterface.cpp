@@ -18,11 +18,12 @@
 #include <sensor_msgs/Image.h>
 
 // C++
-#include <thread>
 #include <set>
 #include <map>
+#include <thread>
 using std::set;
 using std::map;
+using std::thread;
 
 // C
 #include <cmath>  // for M_PI and abs
@@ -35,7 +36,7 @@ const double R2D = 180.0 / M_PI ;
 OwInterface* OwInterface::m_instance = nullptr;
 
 
-////////////////////////////// Service Support ///////////////////////////////////
+/////////////////////////// Service/Fault Support ///////////////////////////////
 
 // Service names/types as used in both PLEXIL and ow_lander
 const string MoveGuardedService = "MoveGuarded";
@@ -67,6 +68,15 @@ const map<string, boolfn> ServiceRunning {
   {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
 };
 
+template<class Service>
+static void monitor_for_faults ()
+{
+  using namespace std::chrono_literals;
+  while (ServiceInfo<Service>::is_running()) {
+    std::this_thread::sleep_for(1s);
+  }
+}
+
 static bool is_service (const string name)
 {
   return ServiceRunning.find (name) != ServiceRunning.end();
@@ -86,6 +96,9 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else ServiceInfo<Service>::start();
   publish ("Running", true, name);
 
+  // Start thread that monitors for faults.
+  thread t (monitor_for_faults<ow_lander::StartPlanning>);
+
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
@@ -97,6 +110,8 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
               name.c_str());
   }
   else ServiceInfo<Service>::stop();
+
+  t.join();
   publish ("Finished", true, name);
 }
 
@@ -167,7 +182,7 @@ static void handle_overtorque (Joint joint, double effort)
   // to the joint.
 
   string joint_name = JointPropMap[joint].plexilName;
-  
+
   if (abs(effort) >= JointPropMap[joint].hardTorqueLimit) {
     JointsAtHardTorqueLimit.insert (joint_name);
   }
@@ -328,8 +343,8 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_y = 0.0;
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
-    std::thread t (service_call<ow_lander::StartPlanning>,
-                   client, srv, ArmPlanningService);
+    thread t (service_call<ow_lander::StartPlanning>,
+              client, srv, ArmPlanningService);
     t.detach();
   }
 }
@@ -366,8 +381,8 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
-    std::thread t (service_call<ow_lander::MoveGuarded>,
-                   client, srv, MoveGuardedService);
+    thread t (service_call<ow_lander::MoveGuarded>,
+              client, srv, MoveGuardedService);
     t.detach();
   }
 }
@@ -385,8 +400,8 @@ void OwInterface::publishTrajectoryDemo()
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    std::thread t (service_call<ow_lander::PublishTrajectory>,
-                   client, srv, ArmTrajectoryService);
+    thread t (service_call<ow_lander::PublishTrajectory>,
+              client, srv, ArmTrajectoryService);
     t.detach();
   }
 }
@@ -491,7 +506,7 @@ bool OwInterface::faultDetected (const std::string& component) const
 {
   string param = "/faults/dist_pitch_encoder_failure";
   bool val;
-  
+
   if (ros::param::get(param, val)) return val;
   else ROS_ERROR("Could not read parameter %s", param.c_str());
 
