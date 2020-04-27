@@ -5,7 +5,7 @@
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
-Command PublishTrajectory();
+Command publish_trajectory_demo();
 Command MoveGuarded (Real target_x, Real target_y, Real target_z,
                      Real surf_norm_x, Real surf_norm_y, Real surf_norm_z,
                      Real offset_dist, Real overdrive_dist,
@@ -16,16 +16,16 @@ Command log_error (...);
 
 TorqueTest: Concurrence
 {
-  String JointNames[NUM_JOINTS] = #("Pan" "Tilt" "DistalPitch" "HandYaw"
-                                    "ProximalPitch" "ScoopYaw" "ShoulderPitch"
-                                    "ShoulderYaw");
+  String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
+                                    "HandYaw" "ProximalPitch" "ScoopYaw"
+                                    "ShoulderPitch" "ShoulderYaw");
 
   Dig:
   {
     // This node attempts to dig too deep (note -1 Z target), in an effort to
     // overtorque one or more arm joints.
     MoveGuarded (2, 0, -1, 0, 0, 1, 0.2, 0.2, true, true);
-    PublishTrajectory();
+    publish_trajectory_demo();
   }
 
   MonitorTorque:

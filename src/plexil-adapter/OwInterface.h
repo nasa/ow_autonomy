@@ -12,7 +12,6 @@
 #include <ros/ros.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
-#include "JointInfo.h"
 #include <string>
 
 class OwInterface
@@ -78,7 +77,6 @@ class OwInterface
   bool serviceFinished (const std::string& name) const;
   
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  static JointMap m_jointMap;
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
