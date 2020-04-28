@@ -65,6 +65,12 @@ const map<string, boolfn> ServiceRunning {
   {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
 };
 
+// NOTE: the design goal is to map each lander operation to the set of faults
+// that should be monitored while it is running.  At present only ROS services
+// are supported.  This direct inspection of ROS parameters is just a simple
+// first cut (stub really) for actual fault detection which would look at
+// telemetry.
+
 const map<string, string> AntennaFaults {
   // Param name -> human-readable
   { "ant_pan_encoder_failure", "Antenna Pan Encoder" },
@@ -138,7 +144,9 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
   }
-  else ROS_ERROR ("Failed to call service %s", name.c_str());
+  else {
+    ROS_ERROR("Failed to call service %s", name.c_str());
+  }
 
   ServiceInfo<Service>::stop();
   fault_thread.join();
