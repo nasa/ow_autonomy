@@ -93,6 +93,10 @@ const map<string, string> ArmFaults {
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
+// Map each service to its relevant faults.  NOTE: this is being extended for
+// additional services, publish/subscribe lander operations, and eventually ROS
+// Actions.  It will be renamed more generally in a future iteration.
+//
 const map<string, map<string, string> >  ServiceFaults {
   { MoveGuardedService, ArmFaults },
   { ArmPlanningService, ArmFaults },
