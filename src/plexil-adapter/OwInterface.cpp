@@ -77,17 +77,17 @@ const map<string, string> AntennaFaults {
 
 const map<string, string> ArmFaults {
   // Param name -> human-readable
-  { "shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
-  { "shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
-  { "prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
-  { "dist_pitch_encoder_failure", " Distal Pitch Encoder" },
-  { "dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
-  { "hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
-  { "scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
+  { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
+  { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
+  { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
+  { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
+  { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
+  { "/faults/dist_pitch_encoder_failure", " Distal Pitch Encoder" },
+  { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
+  { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
+  { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
+  { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
+  { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
 const map<string, map<string, string> >  ServiceFaults {
@@ -131,11 +131,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   // outlives its caller.  Assumption checked upstream: service is available
   // (not already running).
 
-  if (ServiceInfo<Service>::is_running()) {
-    ROS_ERROR("service_call: %s in running state. This shouldn't happen.",
-              name.c_str());
-  }
-  else ServiceInfo<Service>::start();
+  ServiceInfo<Service>::start();
   publish ("Running", true, name);
 
   // Start thread that monitors for faults.
@@ -147,12 +143,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   }
   else ROS_ERROR ("Failed to call service %s", name.c_str());
 
-  if (! ServiceInfo<Service>::is_running()) {
-    ROS_ERROR("service_call: %s in stopped state. This shouldn't happen.",
-              name.c_str());
-  }
-  else ServiceInfo<Service>::stop();
-
+  ServiceInfo<Service>::stop();
   fault_monitor.join();
   publish ("Finished", true, name);
 }

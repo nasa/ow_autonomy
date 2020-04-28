@@ -23,9 +23,9 @@ ArmPlanningDemo:
   {
     // Check for faults once per second
     RepeatCondition Lookup (Running ("StartPlanning"));
-    if (Lookup (FaultDetected ("Arm"))) {
-      log_warning ("Arm fault during planning!");
-    } endif;
+    //    if (Lookup (FaultDetected ("Arm"))) {
+    //      log_warning ("Arm fault during planning!");
+    //    } endif;
     Wait 1;
   }
   log_info ("Arm planning demo finished");
