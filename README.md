@@ -121,6 +121,17 @@ Here are some interesting autonomy plans.  Run them like this, substituting for
    progress" message.  This was not possible before service calls were threaded.
 
 
+Fault Detection
+---------------
+
+A rudimentary version is working, which does nothing more than check relevant
+fault parameters for each lander operation.  Run any plan you like, while
+setting fault parameters as desired (see `ow_faults/README.md` for
+instructions).  Faults are reported as ROS warnings -- that's all for now.
+
+CAVEAT: no fault detection for antenna yet, only arm.
+
+
 Clean
 -----
 

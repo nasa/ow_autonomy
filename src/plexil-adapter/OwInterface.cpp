@@ -32,9 +32,6 @@ using std::thread;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-// Static initialization
-OwInterface* OwInterface::m_instance = nullptr;
-
 
 /////////////////////////// Service/Fault Support ///////////////////////////////
 
@@ -82,7 +79,7 @@ const map<string, string> ArmFaults {
   { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
   { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
   { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
-  { "/faults/dist_pitch_encoder_failure", " Distal Pitch Encoder" },
+  { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
   { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
   { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
   { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
@@ -96,13 +93,12 @@ const map<string, map<string, string> >  ServiceFaults {
   { ArmTrajectoryService, ArmFaults }
 };
 
-static bool fault_exists (const string& fault)
+static bool faulty (const string& fault)
 {
   bool val;
   ros::param::get (fault, val);
   return val;
 }
-
 
 template<class Service>
 static void monitor_for_faults (const string& service_name)
@@ -111,8 +107,9 @@ static void monitor_for_faults (const string& service_name)
   while (ServiceInfo<Service>::is_running()) {
     ROS_DEBUG("Monitoring for faults in %s", service_name.c_str());
     for (auto fault : ServiceFaults.at (service_name)) {
-      if (fault_exists (fault.first)) {
-        ROS_WARN("Detected fault: %s failure.", fault.second.c_str());
+      if (faulty (fault.first)) {
+        ROS_WARN("Fault in %s: %s failure.",
+                 service_name.c_str(), fault.second.c_str());
       }
     }
     std::this_thread::sleep_for (1s);
@@ -135,7 +132,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   publish ("Running", true, name);
 
   // Start thread that monitors for faults.
-  thread fault_monitor (monitor_for_faults<Service>, name);
+  thread fault_thread (monitor_for_faults<Service>, name);
 
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -144,7 +141,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else ROS_ERROR ("Failed to call service %s", name.c_str());
 
   ServiceInfo<Service>::stop();
-  fault_monitor.join();
+  fault_thread.join();
   publish ("Finished", true, name);
 }
 
@@ -290,6 +287,8 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
+OwInterface* OwInterface::m_instance = nullptr;
+
 OwInterface* OwInterface::instance ()
 {
   // Very simple singleton
@@ -376,9 +375,9 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_y = 0.0;
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
-    thread t (service_call<ow_lander::StartPlanning>,
-              client, srv, ArmPlanningService);
-    t.detach();
+    thread service_thread (service_call<ow_lander::StartPlanning>,
+                           client, srv, ArmPlanningService);
+    service_thread.detach();
   }
 }
 
@@ -414,9 +413,9 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
-    thread t (service_call<ow_lander::MoveGuarded>,
-              client, srv, MoveGuardedService);
-    t.detach();
+    thread service_thread (service_call<ow_lander::MoveGuarded>,
+                           client, srv, MoveGuardedService);
+    service_thread.detach();
   }
 }
 
@@ -433,9 +432,9 @@ void OwInterface::publishTrajectoryDemo()
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
-    thread t (service_call<ow_lander::PublishTrajectory>,
-              client, srv, ArmTrajectoryService);
-    t.detach();
+    thread service_thread (service_call<ow_lander::PublishTrajectory>,
+                           client, srv, ArmTrajectoryService);
+    service_thread.detach();
   }
 }
 
