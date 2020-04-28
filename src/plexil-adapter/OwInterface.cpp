@@ -533,14 +533,3 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
 }
-
-bool OwInterface::faultDetected (const std::string& component) const
-{
-  string param = "/faults/dist_pitch_encoder_failure";
-  bool val;
-
-  if (ros::param::get(param, val)) return val;
-  else ROS_ERROR("Could not read parameter %s", param.c_str());
-
-  return false;
-}

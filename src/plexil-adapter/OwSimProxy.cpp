@@ -89,11 +89,6 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->finished (operation);
   }
-  else if (state_name == "FaultDetected") {
-    string component;
-    args[0].getValue(component);
-    value_out = OwInterface::instance()->faultDetected (component);
-  }
   else retval = false;
 
   return retval;
