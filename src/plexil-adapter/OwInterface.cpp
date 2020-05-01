@@ -40,29 +40,10 @@ const string MoveGuardedService = "MoveGuarded";
 const string ArmPlanningService = "StartPlanning";
 const string ArmTrajectoryService = "PublishTrajectory";
 
-template<class Service>
-class ServiceInfo
-{
-  // Static class that manages, for each service type, its running state.
- public:
-  static bool is_running () { return m_running; }
-  static void start () { m_running = true; }
-  static void stop () { m_running = false; }
-
- private:
-  static bool m_running;
-};
-
-// Static initialization for class above.
-template<class Service>
-bool ServiceInfo<Service>::m_running = false;
-
-// Map from each service name to its running check function.
-typedef bool (*boolfn)();
-const map<string, boolfn> ServiceRunning {
-  {MoveGuardedService, ServiceInfo<ow_lander::MoveGuarded>::is_running},
-  {ArmPlanningService, ServiceInfo<ow_lander::StartPlanning>::is_running},
-  {ArmTrajectoryService, ServiceInfo<ow_lander::PublishTrajectory>::is_running}
+static map<string, bool> Running {
+  { MoveGuardedService, false },
+  { ArmPlanningService, false },
+  { ArmTrajectoryService, false }
 };
 
 // NOTE: the design goal is to map each lander operation to the set of faults
@@ -114,7 +95,7 @@ template<class Service>
 static void monitor_for_faults (const string& service_name)
 {
   using namespace std::chrono_literals;
-  while (ServiceInfo<Service>::is_running()) {
+  while (Running.at (service_name)) {
     ROS_DEBUG("Monitoring for faults in %s", service_name.c_str());
     for (auto fault : ServiceFaults.at (service_name)) {
       if (faulty (fault.first)) {
@@ -128,7 +109,7 @@ static void monitor_for_faults (const string& service_name)
 
 static bool is_service (const string name)
 {
-  return ServiceRunning.find (name) != ServiceRunning.end();
+  return Running.find (name) != Running.end();
 }
 
 template<class Service>
@@ -138,7 +119,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   // outlives its caller.  Assumption checked upstream: service is available
   // (not already running).
 
-  ServiceInfo<Service>::start();
+  Running.at (name) = true;
   publish ("Running", true, name);
 
   // Start thread that monitors for faults.
@@ -152,7 +133,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
     ROS_ERROR("Failed to call service %s", name.c_str());
   }
 
-  ServiceInfo<Service>::stop();
+  Running.at (name) = false;
   fault_thread.join();
   publish ("Finished", true, name);
 }
@@ -176,7 +157,7 @@ static bool service_client_ok (ros::ServiceClient& client)
 template<class Service>
 static bool service_available (const string& name)
 {
-  if (ServiceInfo<Service>::is_running()) {
+  if (Running.at (name)) {
     ROS_WARN("Service %s already running, ignoring request.", name.c_str());
     return false;
   }
@@ -510,7 +491,7 @@ bool OwInterface::imageReceived () const
 bool OwInterface::serviceRunning (const string& name) const
 {
   // Note: check in caller guarantees 'at' to return a valid value.
-  return ServiceRunning.at(name)();
+  return Running.at (name);
 }
 
 bool OwInterface::serviceFinished (const string& name) const
