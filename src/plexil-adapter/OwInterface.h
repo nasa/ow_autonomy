@@ -12,7 +12,6 @@
 #include <ros/ros.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
-#include "JointInfo.h"
 #include <string>
 
 class OwInterface
@@ -65,7 +64,6 @@ class OwInterface
   // implementation, which could be services, actions, or ad hoc messaging.
   bool running (const std::string& name) const;
   bool finished (const std::string& name) const;
-  
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
@@ -78,7 +76,6 @@ class OwInterface
   bool serviceFinished (const std::string& name) const;
   
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  static JointMap m_jointMap;
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;

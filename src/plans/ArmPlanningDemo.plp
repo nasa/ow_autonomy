@@ -2,9 +2,11 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Demonstrate arm planning.
+// Demonstrate arm planning.  Note that this is blocking/syncnronous
+// wrapper of the asynchonous arm_planning_demo command.
 
 Command log_info (...);
+Command log_warning (...);
 Command arm_planning_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
@@ -15,8 +17,8 @@ ArmPlanningDemo:
   arm_planning_demo();
   Block:
   {
-    StartCondition Lookup (Running ("StartPlanning"));
-    EndCondition Lookup (Finished ("StartPlanning"));
+    StartCondition Lookup (Running ("MoveGuarded"));
+    EndCondition Lookup (Finished ("MoveGuarded"));
   }
   log_info ("Arm planning demo finished");
 }
