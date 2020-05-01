@@ -33,24 +33,31 @@ const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
 
-/////////////////////////// Service/Fault Support ///////////////////////////////
+//////////////////// Lander Operation Support ////////////////////////
 
-// Service names/types as used in both PLEXIL and ow_lander
-const string MoveGuardedService = "MoveGuarded";
-const string ArmPlanningService = "StartPlanning";
-const string ArmTrajectoryService = "PublishTrajectory";
+// Lander operation names as used in PLEXIL.
+const string Op_MoveGuarded = "MoveGuarded";             // also ow_lander
+const string Op_ArmPlanning = "StartPlanning";           // also ow_lander
+const string Op_PublishTrajectory = "PublishTrajectory"; // also ow_lander
 
 static map<string, bool> Running {
-  { MoveGuardedService, false },
-  { ArmPlanningService, false },
-  { ArmTrajectoryService, false }
+  { Op_MoveGuarded, false },
+  { Op_ArmPlanning, false },
+  { Op_PublishTrajectory, false }
 };
 
+static bool is_lander_operation (const string name)
+{
+  return Running.find (name) != Running.end();
+}
+
+
+//////////////////// Fault Support ////////////////////////
+
 // NOTE: the design goal is to map each lander operation to the set of faults
-// that should be monitored while it is running.  At present only ROS services
-// are supported.  This direct inspection of ROS parameters is just a simple
-// first cut (stub really) for actual fault detection which would look at
-// telemetry.
+// that should be monitored while it is running.  This direct inspection of ROS
+// parameters is just a simple first cut (stub really) for actual fault
+// detection which would look at telemetry.
 
 const map<string, string> AntennaFaults {
   // Param name -> human-readable
@@ -74,14 +81,14 @@ const map<string, string> ArmFaults {
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
-// Map each service to its relevant faults.  NOTE: this is being extended for
+// Map each service to its relevant faults.  NOTE: this will be extended for
 // additional services, publish/subscribe lander operations, and eventually ROS
-// Actions.  It will be renamed more generally in a future iteration.
-//
-const map<string, map<string, string> >  ServiceFaults {
-  { MoveGuardedService, ArmFaults },
-  { ArmPlanningService, ArmFaults },
-  { ArmTrajectoryService, ArmFaults }
+// Actions.
+
+const map<string, map<string, string> > Faults {
+  { Op_MoveGuarded, ArmFaults },
+  { Op_ArmPlanning, ArmFaults },
+  { Op_PublishTrajectory, ArmFaults }
 };
 
 static bool faulty (const string& fault)
@@ -91,26 +98,23 @@ static bool faulty (const string& fault)
   return val;
 }
 
-template<class Service>
-static void monitor_for_faults (const string& service_name)
+static void monitor_for_faults (const string& opname)
 {
   using namespace std::chrono_literals;
-  while (Running.at (service_name)) {
-    ROS_DEBUG("Monitoring for faults in %s", service_name.c_str());
-    for (auto fault : ServiceFaults.at (service_name)) {
+  while (Running.at (opname)) {
+    ROS_DEBUG("Monitoring for faults in %s", opname.c_str());
+    for (auto fault : Faults.at (opname)) {
       if (faulty (fault.first)) {
         ROS_WARN("Fault in %s: %s failure.",
-                 service_name.c_str(), fault.second.c_str());
+                 opname.c_str(), fault.second.c_str());
       }
     }
     std::this_thread::sleep_for (1s);
   }
 }
 
-static bool is_service (const string name)
-{
-  return Running.find (name) != Running.end();
-}
+
+/////////////////// ROS Service support //////////////////////
 
 template<class Service>
 static void service_call (ros::ServiceClient client, Service srv, string name)
@@ -123,7 +127,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   publish ("Running", true, name);
 
   // Start thread that monitors for faults.
-  thread fault_thread (monitor_for_faults<Service>, name);
+  thread fault_thread (monitor_for_faults, name);
 
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -137,7 +141,6 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   fault_thread.join();
   publish ("Finished", true, name);
 }
-
 
 static bool service_client_ok (ros::ServiceClient& client)
 {
@@ -353,7 +356,7 @@ void OwInterface::initialize()
 
 void OwInterface::startPlanningDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(ArmPlanningService)) return;
+  if (! service_available<ow_lander::StartPlanning>(Op_ArmPlanning)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -369,7 +372,7 @@ void OwInterface::startPlanningDemo()
     srv.request.trench_d = 0.0;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::StartPlanning>,
-                           client, srv, ArmPlanningService);
+                           client, srv, Op_ArmPlanning);
     service_thread.detach();
   }
 }
@@ -387,7 +390,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
                                bool delete_prev_traj,
                                bool retract)
 {
-  if (! service_available<ow_lander::StartPlanning>(MoveGuardedService)) return;
+  if (! service_available<ow_lander::StartPlanning>(Op_MoveGuarded)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -407,14 +410,14 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.retract = retract;
     thread service_thread (service_call<ow_lander::MoveGuarded>,
-                           client, srv, MoveGuardedService);
+                           client, srv, Op_MoveGuarded);
     service_thread.detach();
   }
 }
 
 void OwInterface::publishTrajectoryDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(ArmTrajectoryService)) return;
+  if (! service_available<ow_lander::StartPlanning>(Op_PublishTrajectory)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -426,7 +429,7 @@ void OwInterface::publishTrajectoryDemo()
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
     thread service_thread (service_call<ow_lander::PublishTrajectory>,
-                           client, srv, ArmTrajectoryService);
+                           client, srv, Op_PublishTrajectory);
     service_thread.detach();
   }
 }
@@ -488,20 +491,20 @@ bool OwInterface::imageReceived () const
   return ImageReceived;
 }
 
-bool OwInterface::serviceRunning (const string& name) const
+bool OwInterface::operationRunning (const string& name) const
 {
   // Note: check in caller guarantees 'at' to return a valid value.
   return Running.at (name);
 }
 
-bool OwInterface::serviceFinished (const string& name) const
+bool OwInterface::operationFinished (const string& name) const
 {
-  return !serviceRunning(name);
+  return !operationRunning (name);
 }
 
 bool OwInterface::running (const string& name) const
 {
-  if (is_service (name)) return serviceRunning(name);
+  if (is_lander_operation (name)) return operationRunning (name);
 
   ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
   return false;
@@ -509,7 +512,7 @@ bool OwInterface::running (const string& name) const
 
 bool OwInterface::finished (const string& name) const
 {
-  if (is_service (name)) return serviceFinished(name);
+  if (is_lander_operation (name)) return operationFinished (name);
 
   ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
   return false;

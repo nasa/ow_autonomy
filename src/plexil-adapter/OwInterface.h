@@ -71,9 +71,8 @@ class OwInterface
 
 
  private:
-  // Predicates for ROS services
-  bool serviceRunning (const std::string& name) const;
-  bool serviceFinished (const std::string& name) const;
+  bool operationRunning (const std::string& name) const;
+  bool operationFinished (const std::string& name) const;
   
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
 
