@@ -17,16 +17,18 @@
 #include "OceanWorldDefs.h"
 
 Real Lookup time;
+Command stop_operation (String name);
 Command log_error (...);
 
-LibraryAction RealValuedCommand (In String CommandName, In Real Value);
+LibraryAction RealValuedCommand (In String OpName, In Real Value,
+                                 InOut Boolean Result);
 
 JointMovement: CheckedSequence
 {
   In Real NewValue;
   In String CurrentValueLookup;
   In String VelocityLookup;
-  In String CommandName;
+  In String OpName;
 
   Real Tolerance = 0.6;    // degrees, made up
   Real TimeOut   = 5.0;    // unitless, made up
@@ -35,11 +37,15 @@ JointMovement: CheckedSequence
   // First, command the operation, if needed.
   MaybeCommand:
   {
+    Boolean CommandSuccess = true;
+    PostCondition CommandSuccess;
+    
     if (abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance) {
       PreAchieved = true;
     }
-    else LibraryCall RealValuedCommand (CommandName = CommandName,
-                                        Value = NewValue);
+    else LibraryCall RealValuedCommand (OpName = OpName,
+                                        Value = NewValue,
+                                        Result = CommandSuccess);
     endif;
   }
 
@@ -59,6 +65,16 @@ JointMovement: CheckedSequence
                   Lookup(time, 1) - WaitForEnd.EXECUTING.START > TimeOut);
   }
 
+  // If commanded, stop the command.  This step is needed because the underlying
+  // C++ does not know that the movement has stopped, and needs to terminate the
+  // the fault monitoring thread which is detached.  In the future we might want
+  // to push all the joint movement logic into C++.
+  Stop:
+  {
+    SkipCondition PreAchieved;
+    stop_operation (OpName);
+  }
+
   // Report failure if needed.
 
   // NOTE: on rare occasions this node fails spuriously and mysteriously: the
@@ -70,7 +86,7 @@ JointMovement: CheckedSequence
     SkipCondition (PreAchieved ||
                    abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance);
     PostCondition  false; // This forces root node to fail, a design choice.
-    log_error (CommandName, " failed. (", Lookup((CurrentValueLookup)), ", ",
+    log_error (OpName, " failed. (", Lookup((CurrentValueLookup)), ", ",
                NewValue, ")");
   }
 }

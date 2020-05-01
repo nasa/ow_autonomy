@@ -44,8 +44,8 @@ class OwInterface
                     bool delete_prev_traj = false,
                     bool retract = false);
 
-  void tiltAntenna (double);
-  void panAntenna (double);
+  bool tiltAntenna (double degrees);
+  bool panAntenna (double degrees);
   void takePicture ();
   void digTrench (double x, double y, double z, double depth,
                   double length, double width, double pitch, double yaw,
@@ -68,12 +68,12 @@ class OwInterface
   bool softTorqueLimitReached (const std::string& joint_name) const;
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
-
+  void stopOperation (const std::string& name) const;
 
  private:
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
-  
+
   static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
 
   static OwInterface* m_instance;

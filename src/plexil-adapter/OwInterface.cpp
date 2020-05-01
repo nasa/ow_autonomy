@@ -35,15 +35,21 @@ const double R2D = 180.0 / M_PI ;
 
 //////////////////// Lander Operation Support ////////////////////////
 
-// Lander operation names as used in PLEXIL.
-const string Op_MoveGuarded = "MoveGuarded";             // also ow_lander
-const string Op_ArmPlanning = "StartPlanning";           // also ow_lander
-const string Op_PublishTrajectory = "PublishTrajectory"; // also ow_lander
+// Lander operation names.
+// In some cases, these must match those used in PLEXIL and/or ow_lander
+const string Op_MoveGuarded       = "MoveGuarded";
+const string Op_ArmPlanning       = "StartPlanning";
+const string Op_PublishTrajectory = "PublishTrajectory";
+const string Op_PanAntenna        = "PanAntenna";
+const string Op_TiltAntenna       = "TiltAntenna";
 
-static map<string, bool> Running {
+static map<string, bool> Running
+{
   { Op_MoveGuarded, false },
   { Op_ArmPlanning, false },
-  { Op_PublishTrajectory, false }
+  { Op_PublishTrajectory, false },
+  { Op_PanAntenna, false },
+  { Op_TiltAntenna, false }
 };
 
 static bool is_lander_operation (const string name)
@@ -59,14 +65,16 @@ static bool is_lander_operation (const string name)
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
 
-const map<string, string> AntennaFaults {
+const map<string, string> AntennaFaults
+{
   // Param name -> human-readable
   { "ant_pan_encoder_failure", "Antenna Pan Encoder" },
   { "ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
   { "ant_torque_sensor_failure", "Antenna Torque Sensor" }
 };
 
-const map<string, string> ArmFaults {
+const map<string, string> ArmFaults
+{
   // Param name -> human-readable
   { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
   { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
@@ -81,14 +89,14 @@ const map<string, string> ArmFaults {
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
-// Map each service to its relevant faults.  NOTE: this will be extended for
-// additional services, publish/subscribe lander operations, and eventually ROS
-// Actions.
-
-const map<string, map<string, string> > Faults {
+const map<string, map<string, string> > Faults
+{
+  // Map each lander operation to its relevant fault set.
   { Op_MoveGuarded, ArmFaults },
   { Op_ArmPlanning, ArmFaults },
-  { Op_PublishTrajectory, ArmFaults }
+  { Op_PublishTrajectory, ArmFaults },
+  { Op_PanAntenna, AntennaFaults },
+  { Op_TiltAntenna, AntennaFaults }
 };
 
 static bool faulty (const string& fault)
@@ -120,15 +128,12 @@ template<class Service>
 static void service_call (ros::ServiceClient client, Service srv, string name)
 {
   // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.  Assumption checked upstream: service is available
-  // (not already running).
+  // outlives its caller.  Assumes that service is not already running; this is
+  // checked upstream.
 
   Running.at (name) = true;
   publish ("Running", true, name);
-
-  // Start thread that monitors for faults.
   thread fault_thread (monitor_for_faults, name);
-
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
@@ -136,7 +141,6 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else {
     ROS_ERROR("Failed to call service %s", name.c_str());
   }
-
   Running.at (name) = false;
   fault_thread.join();
   publish ("Finished", true, name);
@@ -434,20 +438,32 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-void OwInterface::tiltAntenna (double arg)
+static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
 {
-  std_msgs::Float64 msg;
-  msg.data = arg * D2R;
-  ROS_INFO("Tilting to %f degrees (%f radians)", arg, msg.data);
-  m_antennaTiltPublisher->publish (msg);
+  if (Running.at (name)) {
+    ROS_WARN ("%s already running, ignoring command.", name.c_str());
+    return false;
+  }
+
+  Running.at (name) = true;
+  std_msgs::Float64 radians;
+  radians.data = degrees * D2R;
+  ROS_INFO ("Starting %s: %f degrees (%f radians)", name.c_str(),
+            degrees, radians.data);
+  thread t (monitor_for_faults, name);
+  t.detach();
+  pub->publish (radians);
+  return true;
 }
 
-void OwInterface::panAntenna (double arg)
+bool OwInterface::tiltAntenna (double degrees)
 {
-  std_msgs::Float64 msg;
-  msg.data = arg * D2R;
-  ROS_INFO("Panning to %f degrees (%f radians)", arg, msg.data);
-  m_antennaPanPublisher->publish (msg);
+  return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
+}
+
+bool OwInterface::panAntenna (double degrees)
+{
+  return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
 
 void OwInterface::takePicture ()
@@ -528,4 +544,9 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
+}
+
+void OwInterface::stopOperation (const string& name) const
+{
+  Running.at (name) = false;
 }

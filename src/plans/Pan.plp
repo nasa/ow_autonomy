@@ -8,7 +8,7 @@
 LibraryAction JointMovement (In Real NewValue,
                              In String CurrentValueLookup,
                              In String VelocityLookup,
-                             In String CommandName);
+                             In String OpName);
 
 Pan:
 {
@@ -17,5 +17,5 @@ Pan:
   LibraryCall JointMovement (NewValue = Degrees,
                              CurrentValueLookup = "PanDegrees",
                              VelocityLookup = "PanVelocity",
-                             CommandName = "pan_antenna");
+                             OpName = "PanAntenna");
 }

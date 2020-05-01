@@ -8,7 +8,7 @@
 LibraryAction JointMovement (In Real NewValue,
                              In String CurrentValueLookup,
                              In String VelocityLookup,
-                             In String CommandName);
+                             In String OpName);
 
 Tilt:
 {
@@ -17,5 +17,5 @@ Tilt:
   LibraryCall JointMovement (NewValue = Degrees,
                              CurrentValueLookup = "TiltDegrees",
                              VelocityLookup = "TiltVelocity",
-                             CommandName = "tilt_antenna");
+                             OpName = "TiltAntenna");
 }
