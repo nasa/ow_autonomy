@@ -449,6 +449,8 @@ static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
     return false;
   }
 
+  ROS_INFO ("Commanding %s with %f degrees.", name.c_str(), degrees);
+    
   Running.at (name) = true;
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
