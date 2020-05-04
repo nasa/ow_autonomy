@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
 	roslib
 	ow_lander
+	ow_faults
 	owatb_interface
 )
 
@@ -22,7 +23,7 @@ find_package(PLEXIL REQUIRED)
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
+  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface ow_faults
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 

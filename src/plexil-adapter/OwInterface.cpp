@@ -11,6 +11,7 @@
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
 #include <ow_lander/PublishTrajectory.h>
+#include <ow_faults/FaultsConfig.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -65,32 +66,34 @@ static bool is_lander_operation (const string name)
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
 
-const map<string, string> AntennaFaults
+using namespace ow_faults;
+
+static map<bool, string> AntennaFaults
 {
-  // Param name -> human-readable
-  { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
-  { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "/faults/ant_pan_torque_sensor_failure", "Antenna Pan Torque Sensor" },
-  { "/faults/ant_tilt_torque_sensor_failure", "Antenna Tilt Torque Sensor" }
+  // Fault parameter value -> human-readable
+  { groups.ant_pan_encoder_failure, "Antenna Pan Encoder" },
+  { groups.ant_tilt_encoder_failure, "Antenna Tilt Encoder" },
+  { groups.ant_pan_torque_sensor_failure, "Antenna Pan Torque Sensor" },
+  { groups.ant_tilt_torque_sensor_failure, "Antenna Tilt Torque Sensor" }
 };
 
-const map<string, string> ArmFaults
+static map<bool, string> ArmFaults
 {
-  // Param name -> human-readable
-  { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
-  { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
-  { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
-  { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
-  { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
-  { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
-  { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
+  // Fault parameter value -> human-readable
+  { groups.shou_yaw_encoder_failure, "Shoulder Yaw Encoder" },
+  { groups.shou_pitch_encoder_failure, "Shoulder Pitch Encoder" },
+  { groups.shou_pitch_torque_sensor_failure, "Shoulder Pitch Torque Sensor" },
+  { groups.prox_pitch_encoder_failure, "Proximal Pitch Encoder" },
+  { groups.prox_pitch_torque_sensor_failure, "Proximal Pitch Torque Sensor" },
+  { groups.dist_pitch_encoder_failure, "Distal Pitch Encoder" },
+  { groups.dist_pitch_torque_sensor_failure, "Distal Pitch Torque Sensor" },
+  { groups.hand_yaw_encoder_failure, "Hand Yaw Encoder" },
+  { groups.hand_yaw_torque_sensor_failure, "Hand Yaw Torque Sensor" },
+  { groups.scoop_yaw_encoder_failure, "Scoop Yaw Encoder" },
+  { groups.scoop_yaw_torque_sensor_failure, "Scoop Yaw Torque Sensor" }
 };
 
-const map<string, map<string, string> > Faults
+const map<string, map<bool, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
   { Op_MoveGuarded, ArmFaults },
@@ -113,7 +116,7 @@ static void monitor_for_faults (const string& opname)
   while (Running.at (opname)) {
     ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
     for (auto fault : Faults.at (opname)) {
-      if (faulty (fault.first)) {
+      if (fault.first) {
         ROS_WARN("Fault in %s: %s failure.",
                  opname.c_str(), fault.second.c_str());
       }
