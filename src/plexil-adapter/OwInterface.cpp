@@ -65,6 +65,9 @@ static bool is_lander_operation (const string name)
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
 
+// NOTE: The following three maps *should* be thread-safe, because C++11 docs
+// says they are.  By definition, they are only read.
+
 const map<string, string> AntennaFaults
 {
   // Param name -> human-readable
