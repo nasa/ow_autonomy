@@ -68,9 +68,10 @@ static bool is_lander_operation (const string name)
 const map<string, string> AntennaFaults
 {
   // Param name -> human-readable
-  { "ant_pan_encoder_failure", "Antenna Pan Encoder" },
-  { "ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "ant_torque_sensor_failure", "Antenna Torque Sensor" }
+  { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
+  { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
+  { "/faults/ant_pan_torque_sensor_failure", "Antenna Pan Torque Sensor" },
+  { "/faults/ant_tilt_torque_sensor_failure", "Antenna Tilt Torque Sensor" }
 };
 
 const map<string, string> ArmFaults
@@ -110,7 +111,7 @@ static void monitor_for_faults (const string& opname)
 {
   using namespace std::chrono_literals;
   while (Running.at (opname)) {
-    ROS_INFO ("Monitoring for faults in %s", opname.c_str());
+    ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
     for (auto fault : Faults.at (opname)) {
       if (faulty (fault.first)) {
         ROS_WARN("Fault in %s: %s failure.",
