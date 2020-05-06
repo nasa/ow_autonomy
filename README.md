@@ -129,8 +129,6 @@ fault parameters for each lander operation.  Run any plan you like, while
 setting fault parameters as desired (see `ow_faults/README.md` for
 instructions).  Faults are reported as ROS warnings -- that's all for now.
 
-CAVEAT: no fault detection for antenna yet, only arm.
-
 
 Clean
 -----

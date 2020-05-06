@@ -17,8 +17,8 @@ ArmPlanningDemo:
   arm_planning_demo();
   Block:
   {
-    StartCondition Lookup (Running ("MoveGuarded"));
-    EndCondition Lookup (Finished ("MoveGuarded"));
+    StartCondition Lookup (Running ("StartPlanning"));
+    EndCondition Lookup (Finished ("StartPlanning"));
   }
   log_info ("Arm planning demo finished");
 }

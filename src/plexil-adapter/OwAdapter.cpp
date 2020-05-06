@@ -272,17 +272,22 @@ void OwAdapter::executeCommand(Command *cmd)
                                           delete_prev_traj, retract);
   }
   else if (name == "tilt_antenna") {
-    double tilt;
-    args[0].getValue (tilt);
-    OwInterface::instance()->tiltAntenna (tilt);
+    double degrees;
+    args[0].getValue (degrees);
+    retval = OwInterface::instance()->tiltAntenna (degrees);
   }
   else if (name == "pan_antenna") {
-    double pan;
-    args[0].getValue (pan);
-    OwInterface::instance()->panAntenna (pan);
+    double degrees;
+    args[0].getValue (degrees);
+    retval = OwInterface::instance()->panAntenna (degrees);
   }
   else if (name == "take_picture") {
     OwInterface::instance()->takePicture();
+  }
+  else if (name == "stop_operation") {
+    string name;
+    args[0].getValue (name);
+    OwInterface::instance()->stopOperation (name);
   }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
