@@ -68,7 +68,10 @@ static bool is_lander_operation (const string name)
 
 using namespace ow_faults;
 
-static map<bool, string> AntennaFaults
+// NOTE: The following three maps *should* be thread-safe, because C++11 docs
+// says they are.  By definition, they are only read.
+
+const map<string, string> AntennaFaults
 {
   // Fault parameter value -> human-readable
   { groups.ant_pan_encoder_failure, "Antenna Pan Encoder" },
