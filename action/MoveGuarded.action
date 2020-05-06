@@ -1,0 +1,28 @@
+#goal definition
+bool use_defaults
+bool delete_prev_traj
+float32 target_x
+float32 target_y
+float32 target_z
+float32 surface_normal_x
+float32 surface_normal_y
+float32 surface_normal_z
+float32 offset_distance
+float32 overdrive_distance
+float32 retract
+
+---
+
+#result definition
+bool success
+string message
+float32 final_x
+float32 final_y
+float32 final_z
+
+---
+
+#feedback
+float32 current_x
+float32 current_y
+float32 current_z

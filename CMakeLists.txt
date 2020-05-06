@@ -7,6 +7,7 @@ project(ow_autonomy)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
 	roslib
+  actionlib_msgs
 	ow_lander
 	owatb_interface
 )
@@ -16,13 +17,22 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
+add_action_files(
+  DIRECTORY action
+  FILES MoveGuarded.action
+	)
+
+generate_messages(
+  DEPENDENCIES actionlib_msgs std_msgs
+)
+
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface
+  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface actionlib_msgs
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
