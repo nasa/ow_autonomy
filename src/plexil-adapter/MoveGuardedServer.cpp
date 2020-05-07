@@ -1,4 +1,4 @@
-// Temporary file.  An experimental substitute action server for MoveGuarded,
+// Temporary file.  An experimental dummy action server for MoveGuarded,
 // which really belongs in the simulator.
 
 #include <ros/ros.h>
@@ -40,7 +40,7 @@ class MoveGuardedAction
     ROS_INFO ("%s: Executing", m_actionName.c_str());
 
     // start executing the action
-    for (int i = 1; i <= 100; i++) {
+    for (int i = 1; i <= 10; i++) {
       if (m_actionServer.isPreemptRequested() || !ros::ok()) {
         ROS_INFO ("%s: Preempted", m_actionName.c_str());
         // set the action state to preempted
@@ -55,6 +55,7 @@ class MoveGuardedAction
 
     if (success) {
       m_result.message = "Move Guarded Action succeeded!";
+      m_result.final_x = m_result.final_y = m_result.final_z = 10;
       ROS_INFO ("%s: Succeeded", m_actionName.c_str());
       m_actionServer.setSucceeded (m_result);
     }
@@ -64,7 +65,7 @@ class MoveGuardedAction
 
 int main (int argc, char** argv)
 {
-  ros::init(argc, argv, "MoveGuarded");
+  ros::init(argc, argv, "MoveGuardedServer");
 
   MoveGuardedAction MoveGuarded("MoveGuarded");
   ros::spin();
