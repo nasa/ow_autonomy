@@ -7,6 +7,7 @@ project(ow_autonomy)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
 	roslib
+	actionlib
   actionlib_msgs
 	ow_lander
 	owatb_interface

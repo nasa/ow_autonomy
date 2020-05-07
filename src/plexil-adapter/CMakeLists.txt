@@ -17,6 +17,7 @@ set (SOURCES
   OwSimInterfaceROS.cpp
   OwSimProxy.cpp
   subscriber.cpp
+	MoveGuardedServer.cpp
 )
 
 add_definitions(-DUSING_ROS)
@@ -39,11 +40,16 @@ target_link_libraries(${LIB_NAME}
   )
 
 add_executable(autonomy_node autonomy_node.cpp)
+add_executable(MoveGuardedServer MoveGuardedServer.cpp)
 
 target_link_libraries(autonomy_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-install(TARGETS autonomy_node
+target_link_libraries(MoveGuardedServer
+  ${catkin_LIBRARIES}
+  ${LIB_NAME})
+
+install(TARGETS autonomy_node MoveGuardedServer
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
