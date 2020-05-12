@@ -14,13 +14,13 @@ Boolean Lookup Finished (String operation_name);
 DigTrenchDemo:
 {
   // This is the JPL interface.  Most parameters are ignored by the current OW
-  // implementation.
+  // implementation.  The non-ignored values match the service defaults.
 
-  Real X      = 2;
+  Real X      = 1.5;
   Real Y      = 0;
   Real Z      = 0;   // ignored
-  Real Depth  = 0.21;
-  Real Length = 0.51;
+  Real Depth  = 0.02;
+  Real Length = 0.3;
   Real Width  = 0;   // ignored
   Real Pitch  = 0;   // ignored
   Real Yaw    = 0;   // ignored
