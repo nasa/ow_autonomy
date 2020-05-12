@@ -38,6 +38,7 @@ const double R2D = 180.0 / M_PI ;
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
 const string Op_MoveGuarded       = "MoveGuarded";
+const string Op_MoveGuardedAction = "MoveGuardedAction";
 const string Op_ArmPlanning       = "StartPlanning";
 const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
@@ -46,15 +47,35 @@ const string Op_TiltAntenna       = "TiltAntenna";
 static map<string, bool> Running
 {
   { Op_MoveGuarded, false },
+  { Op_MoveGuardedAction, false },
   { Op_ArmPlanning, false },
   { Op_PublishTrajectory, false },
   { Op_PanAntenna, false },
   { Op_TiltAntenna, false }
 };
 
-static bool is_lander_operation (const string name)
+static bool is_lander_operation (const string& name)
 {
   return Running.find (name) != Running.end();
+}
+
+static bool mark_operation_running (const string& name)
+{
+  if (Running.at (name)) {
+    ROS_WARN ("%s already running, ignoring duplicate request.", name.c_str());
+    return false;
+  }
+
+  Running.at (name) = true;
+  publish ("Running", true, name);
+  return true;
+}
+
+static bool mark_operation_finished (const string& name)
+{
+  Running.at (name) = false;
+  publish ("Running", false, name);
+  publish ("Finished", true, name);
 }
 
 
@@ -97,6 +118,7 @@ const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
   { Op_MoveGuarded, ArmFaults },
+  { Op_MoveGuardedAction, ArmFaults },
   { Op_ArmPlanning, ArmFaults },
   { Op_PublishTrajectory, ArmFaults },
   { Op_PanAntenna, AntennaFaults },
@@ -150,7 +172,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   publish ("Finished", true, name);
 }
 
-static bool service_client_ok (ros::ServiceClient& client)
+static bool check_service_client (ros::ServiceClient& client)
 {
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");
@@ -165,6 +187,7 @@ static bool service_client_ok (ros::ServiceClient& client)
   return true;
 }
 
+// TODO: replace this with calls to mark_operation_running
 template<class Service>
 static bool service_available (const string& name)
 {
@@ -308,8 +331,13 @@ OwInterface::OwInterface ()
     m_antennaTiltSubscriber (nullptr),
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
-    m_cameraSubscriber (nullptr)
-{ }
+    m_cameraSubscriber (nullptr),
+    m_moveGuardedClient ("MoveGuarded", true)
+{
+  ROS_INFO ("Waiting for action servers...");
+  m_moveGuardedClient.waitForServer();
+  ROS_INFO ("Action servers available.");
+}
 
 OwInterface::~OwInterface ()
 {
@@ -372,7 +400,7 @@ void OwInterface::startPlanningDemo()
     // NOTE: typo is deliberate
     nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::StartPlanning srv;
     srv.request.use_defaults = true;
     srv.request.trench_x = 0.0;
@@ -390,6 +418,44 @@ void OwInterface::moveGuardedDemo()
   moveGuarded();
 }
 
+void OwInterface::moveGuardedAction() // temporary, proof of concept
+{
+  if (! mark_operation_running (Op_MoveGuardedAction)) return;
+
+  ow_autonomy::MoveGuardedGoal goal;
+  goal.use_defaults = true;
+  /*
+    goal.delete_prev_traj = true;
+    goal.target_x = 0;
+    goal.target_y = 0;
+    goal.target_z = 0;
+    goal.surface_normal_x = 0;
+    goal.surface_normal_y = 0;
+    goal.surface_normal_z = 0;
+    goal.offset_distance = 0;
+    goal.overdrive_distance = 0;
+    goal.retract = 0;
+  */
+  m_moveGuardedClient.sendGoal (goal);
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_moveGuardedClient.waitForResult (ros::Duration(30.0));
+
+  if (finished_before_timeout) {
+    actionlib::SimpleClientGoalState state = m_moveGuardedClient.getState();
+    ROS_INFO("MoveGuarded action finished: %s", state.toString().c_str());
+    ow_autonomy::MoveGuardedResultConstPtr result =
+      m_moveGuardedClient.getResult();
+    ROS_INFO("Action result message: %s", result->message.c_str());
+  }
+  else {
+    ROS_INFO("MoveGuarded action did not finish before the time out.");
+  }
+  
+  mark_operation_finished (Op_MoveGuardedAction);
+}
+
 void OwInterface::moveGuarded (double target_x, double target_y, double target_z,
                                double surf_norm_x,
                                double surf_norm_y,
@@ -405,7 +471,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::MoveGuarded srv;
     srv.request.use_defaults = false;
     srv.request.target_x = target_x;
@@ -425,14 +491,16 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
 
 void OwInterface::publishTrajectoryDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_PublishTrajectory)) return;
+  if (! service_available<ow_lander::StartPlanning>(Op_PublishTrajectory)) {
+    return;
+  }
 
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
@@ -444,12 +512,10 @@ void OwInterface::publishTrajectoryDemo()
 
 static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
 {
-  if (Running.at (name)) {
-    ROS_WARN ("%s already running, ignoring command.", name.c_str());
+  if (! mark_operation_running (name)) {
     return false;
   }
 
-  Running.at (name) = true;
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
   ROS_INFO ("Starting %s: %f degrees (%f radians)", name.c_str(),
@@ -552,5 +618,6 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 
 void OwInterface::stopOperation (const string& name) const
 {
+  // TODO: try replacing with mark_operation_finished
   Running.at (name) = false;
 }

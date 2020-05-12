@@ -232,6 +232,9 @@ void OwAdapter::executeCommand(Command *cmd)
   // "Demos"
   else if (name == "arm_planning_demo") OwInterface::instance()->startPlanningDemo();
   else if (name == "move_guarded_demo") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "move_guarded_action") { // proof of concept for now
+    OwInterface::instance()->moveGuardedAction();
+  }
   else if (name == "publish_trajectory_demo") {
     OwInterface::instance()->publishTrajectoryDemo();
   }

@@ -2,7 +2,6 @@
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <actionlib/client/terminal_state.h>
 #include <ow_autonomy/MoveGuardedAction.h>
 
 int main (int argc, char **argv)
@@ -16,8 +15,7 @@ int main (int argc, char **argv)
   ROS_INFO("Waiting for MoveGuarded action server to start...");
   client.waitForServer(); // will wait indefinitely
 
-  ROS_INFO("Action server started, sending goal.");
-  // send a goal to the action
+  ROS_INFO("MoveGuarded action server available, sending goal.");
   ow_autonomy::MoveGuardedGoal goal;
   goal.use_defaults = true;
   /*
@@ -39,7 +37,7 @@ int main (int argc, char **argv)
 
   if (finished_before_timeout) {
     actionlib::SimpleClientGoalState state = client.getState();
-    ROS_INFO("Action finished: %s", state.toString().c_str());
+    ROS_INFO("MoveGuarded action finished: %s", state.toString().c_str());
     ow_autonomy::MoveGuardedResultConstPtr result = client.getResult();
     ROS_INFO("Action result message: %s", result->message.c_str());
   }

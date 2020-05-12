@@ -5,11 +5,13 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Interface to lander simulator, and hopefully in time, the physical testbed.
-// This class is a singleton because only once instance will ever be needed, in
-// the current overall autonomy scheme.
+// Interface to lander simulator.  Singleton, because only once instance will
+// ever be needed in the current autonomy scheme, which has one autonomy
+// executive per lander.
 
 #include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <ow_autonomy/MoveGuardedAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <string>
@@ -27,6 +29,7 @@ class OwInterface
   // "Demo" functions, perhaps temporary.
   void startPlanningDemo();
   void moveGuardedDemo();
+  void moveGuardedAction(); // temporary, proof of concept
   void publishTrajectoryDemo();
 
   // Operational interface
@@ -89,6 +92,11 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+
+  // Action clients
+  actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>
+    m_moveGuardedClient;
+
 };
 
 
