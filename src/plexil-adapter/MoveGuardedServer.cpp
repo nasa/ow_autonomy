@@ -10,25 +10,24 @@ using std::string;
 
 class MoveGuardedAction
 {
- protected:
-
-  ros::NodeHandle m_nodeHandle;
-  actionlib::SimpleActionServer<ow_autonomy::MoveGuardedAction> m_actionServer;
-  string m_actionName;
-  ow_autonomy::MoveGuardedFeedback m_feedback;
-  ow_autonomy::MoveGuardedResult m_result;
-
  public:
 
-  MoveGuardedAction (string name)
-    : m_actionServer(m_nodeHandle, name,
-                     boost::bind(&MoveGuardedAction::executeCB, this, _1), false),
-      m_actionName(name)
+  MoveGuardedAction (const string& name)
+    : m_actionServer (m_nodeHandle, name,
+                      boost::bind (&MoveGuardedAction::executeCB, this, _1),
+                      false),
+      m_actionName (name)
   {
+    m_actionServer.registerGoalCallback
+      (boost::bind (&MoveGuardedAction::goalCB, this));
+    m_actionServer.registerPreemptCallback
+      (boost::bind (&MoveGuardedAction::preemptCB, this));
     m_actionServer.start();
   }
 
-  ~MoveGuardedAction () { }
+  ~MoveGuardedAction () = default;
+  MoveGuardedAction (const MoveGuardedAction&) = delete;
+  MoveGuardedAction& operator= (const MoveGuardedAction&) = delete;
 
   void executeCB (const ow_autonomy::MoveGuardedGoalConstPtr& goal)
   {
@@ -60,6 +59,16 @@ class MoveGuardedAction
       m_actionServer.setSucceeded (m_result);
     }
   }
+
+  void goalCB () { }
+  void preemptCB () { }
+
+ private:
+  ros::NodeHandle m_nodeHandle;
+  actionlib::SimpleActionServer<ow_autonomy::MoveGuardedAction> m_actionServer;
+  string m_actionName;
+  ow_autonomy::MoveGuardedFeedback m_feedback;
+  ow_autonomy::MoveGuardedResult m_result;
 };
 
 
