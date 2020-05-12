@@ -239,7 +239,7 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->publishTrajectoryDemo();
   }
   // Operations
-  else if (name == "DigTrenchOp") {
+  else if (name == "dig_trench") {
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
     args[0].getValue(x);
     args[1].getValue(y);
