@@ -1,0 +1,39 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Demonstrate a trench dig.
+
+Command log_info (...);
+Command log_warning (...);
+Command dig_trench (Real X, Real Y, Real Z, Real Depth, Real Length, Real Width,
+                    Real Pitch, Real Yaw, Real DumpX, Real DumpY, Real DumpZ);
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
+
+DigTrenchDemo:
+{
+  // This is the JPL interface.  Most parameters are ignored by the current OW
+  // implementation.  The non-ignored values match the service defaults.
+
+  Real X      = 1.5;
+  Real Y      = 0;
+  Real Z      = 0;   // ignored
+  Real Depth  = 0.02;
+  Real Length = 0.3;
+  Real Width  = 0;   // ignored
+  Real Pitch  = 0;   // ignored
+  Real Yaw    = 0;   // ignored
+  Real DumpX  = 0;   // ignored
+  Real DumpY  = 0;   // ignored
+  Real DumpZ  = 0;   // ignored
+
+  log_info ("Beginning dig trench demo...");
+  dig_trench (X, Y, Z, Depth, Length, Width, Pitch, Yaw, DumpX, DumpY, DumpZ);
+  Block:
+  {
+    StartCondition Lookup (Running ("DigTrench"));
+    EndCondition Lookup (Finished ("DigTrench"));
+  }
+  log_info ("Dig trench demo finished");
+}

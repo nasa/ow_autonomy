@@ -10,6 +10,7 @@
 // OW - other
 #include <ow_lander/StartPlanning.h>
 #include <ow_lander/MoveGuarded.h>
+#include <ow_lander/DigTrench.h>
 #include <ow_lander/PublishTrajectory.h>
 
 // ROS
@@ -38,6 +39,7 @@ const double R2D = 180.0 / M_PI ;
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
 const string Op_MoveGuarded       = "MoveGuarded";
+const string Op_DigTrench         = "DigTrench";
 const string Op_ArmPlanning       = "StartPlanning";
 const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
@@ -46,6 +48,7 @@ const string Op_TiltAntenna       = "TiltAntenna";
 static map<string, bool> Running
 {
   { Op_MoveGuarded, false },
+  { Op_DigTrench, false },
   { Op_ArmPlanning, false },
   { Op_PublishTrajectory, false },
   { Op_PanAntenna, false },
@@ -97,6 +100,7 @@ const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
   { Op_MoveGuarded, ArmFaults },
+  { Op_DigTrench, ArmFaults },
   { Op_ArmPlanning, ArmFaults },
   { Op_PublishTrajectory, ArmFaults },
   { Op_PanAntenna, AntennaFaults },
@@ -483,7 +487,25 @@ void OwInterface::digTrench (double x, double y, double z,
                              double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
-  ROS_WARN("digTrench is unimplemented!");
+  if (! service_available<ow_lander::DigTrench>(Op_DigTrench)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::DigTrench>("start_dig_trench_session");
+
+  if (service_client_ok (client)) {
+    ow_lander::DigTrench srv;
+    srv.request.use_defaults = false;
+    srv.request.trench_x = x;
+    srv.request.trench_y = y;
+    srv.request.trench_d = depth;
+    srv.request.length = length;
+    srv.request.delete_prev_traj = false;
+    thread service_thread (service_call<ow_lander::DigTrench>,
+                           client, srv, Op_DigTrench);
+    service_thread.detach();
+  }
 }
 
 double OwInterface::getTilt () const
