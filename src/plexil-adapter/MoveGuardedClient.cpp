@@ -1,16 +1,43 @@
-// Temporary file.  An experimental dummy action client for MoveGuarded. 
+// Temporary file.  An experimental dummy action client for MoveGuarded.
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <ow_autonomy/MoveGuardedAction.h>
+#include <thread>
+using std::thread;
+
+static void spinThread()
+{
+  ros::spin();
+}
+
+static void doneCB (const actionlib::SimpleClientGoalState& state,
+                    const ow_autonomy::MoveGuardedResultConstPtr& result)
+{
+  ROS_INFO ("Finished in state [%s]", state.toString().c_str());
+  ROS_INFO ("Answer: %s", result->message.c_str());
+}
+
+static void activeCB()
+{
+  ROS_INFO ("Goal just went active");
+}
+
+static void feedbackCB (const ow_autonomy::MoveGuardedFeedbackConstPtr& feedback)
+{
+  ROS_INFO ("Feedback: (%f, %f, %f)",
+            feedback->current_x, feedback->current_y, feedback->current_z);
+}
 
 int main (int argc, char **argv)
 {
   ros::init(argc, argv, "MoveGuardedClient");
 
-  // true causes the client to spin its own thread
+  // second argument tells client whether or not to spin its own thread
   actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>
-    client ("MoveGuarded", true);
+    client ("MoveGuarded", false);
+
+  thread node_thread (spinThread);
 
   ROS_INFO("Waiting for MoveGuarded action server to start...");
   client.waitForServer(); // will wait indefinitely
@@ -30,7 +57,7 @@ int main (int argc, char **argv)
   goal.overdrive_distance = 0;
   goal.retract = 0;
   */
-  client.sendGoal (goal);
+  client.sendGoal (goal, &doneCB, &activeCB, &feedbackCB);
 
   // Wait for the action to return
   bool finished_before_timeout = client.waitForResult (ros::Duration(30.0));
@@ -44,5 +71,8 @@ int main (int argc, char **argv)
   else {
     ROS_INFO("MoveGuarded action did not finish before the time out.");
   }
+
+  ros::shutdown();
+  node_thread.join();
   return 0;
 }

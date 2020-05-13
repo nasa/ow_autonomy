@@ -13,10 +13,12 @@ class MoveGuardedAction
  public:
 
   MoveGuardedAction (const string& name)
-    : m_actionServer (m_nodeHandle, name,
-                      boost::bind (&MoveGuardedAction::executeCB, this, _1),
-                      false),
-      m_actionName (name)
+    :
+    //    m_actionServer (m_nodeHandle, name,
+    //                    boost::bind (&MoveGuardedAction::executeCB, this, _1),
+    //                    false),
+    m_actionServer (m_nodeHandle, name, false),
+    m_actionName (name)
   {
     m_actionServer.registerGoalCallback
       (boost::bind (&MoveGuardedAction::goalCB, this));
@@ -60,8 +62,18 @@ class MoveGuardedAction
     }
   }
 
-  void goalCB () { }
-  void preemptCB () { }
+  void goalCB ()
+  {
+    ROS_INFO ("%s: New goal available.", m_actionName.c_str());
+    auto goal = m_actionServer.acceptNewGoal();
+    executeCB (goal);
+  }
+
+  void preemptCB ()
+  {
+    ROS_INFO ("%s: Preempted.", m_actionName.c_str());
+    m_actionServer.setPreempted();
+  }
 
  private:
   ros::NodeHandle m_nodeHandle;
