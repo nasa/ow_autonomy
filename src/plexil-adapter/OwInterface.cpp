@@ -560,7 +560,7 @@ void OwInterface::digTrench (double x, double y, double z,
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::DigTrench>("start_dig_trench_session");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::DigTrench srv;
     srv.request.use_defaults = false;
     srv.request.trench_x = x;
