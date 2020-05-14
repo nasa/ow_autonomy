@@ -7,4 +7,8 @@
         type="autonomy_node"
         args="$(arg plan)"
         output="screen" />
+  <node pkg="ow_autonomy"
+        name="MoveGuardedServer"
+        type="MoveGuardedServer"
+        output="screen" />
 </launch>
