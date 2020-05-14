@@ -1,5 +1,5 @@
-// Temporary file.  An experimental dummy action server for MoveGuarded,
-// which really belongs in the simulator.
+// Temporary file for experimentation and learning.  A dummy action server for
+// MoveGuarded.
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -14,6 +14,7 @@ class MoveGuardedAction
 
   MoveGuardedAction (const string& name)
     :
+    // Originally used the simpler execute callback.
     //    m_actionServer (m_nodeHandle, name,
     //                    boost::bind (&MoveGuardedAction::executeCB, this, _1),
     //                    false),
@@ -66,6 +67,9 @@ class MoveGuardedAction
   {
     ROS_INFO ("%s: New goal available.", m_actionName.c_str());
     auto goal = m_actionServer.acceptNewGoal();
+
+    // NOTE: this was originally registered as a callback. Now calling it
+    // directly for convenience, and decided not to change its name.
     executeCB (goal);
   }
 
@@ -87,9 +91,7 @@ class MoveGuardedAction
 int main (int argc, char** argv)
 {
   ros::init(argc, argv, "MoveGuardedServer");
-
-  MoveGuardedAction MoveGuarded("MoveGuarded");
+  MoveGuardedAction MoveGuarded ("MoveGuarded");
   ros::spin();
-
   return 0;
 }

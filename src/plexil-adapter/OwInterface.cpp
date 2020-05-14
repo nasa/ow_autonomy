@@ -316,6 +316,32 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 }
 
 
+//////////////////// MoveGuarded Action support ////////////////////////////////
+
+// At present, this is a prototypical action using a dummy server in this
+// directory, MoveGuardedServer.
+
+static void move_guarded_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_autonomy::MoveGuardedResultConstPtr& result)
+{
+  ROS_INFO ("Finished in state [%s]", state.toString().c_str());
+  ROS_INFO ("Answer: %s", result->message.c_str());
+}
+
+static void move_guarded_active_cb ()
+{
+  ROS_INFO ("Goal just went active");
+}
+
+static void move_guarded_feedback_cb
+(const ow_autonomy::MoveGuardedFeedbackConstPtr& feedback)
+{
+  ROS_INFO ("Feedback: (%f, %f, %f)",
+            feedback->current_x, feedback->current_y, feedback->current_z);
+}
+
+
 /////////////////////////// OwInterface members ////////////////////////////////
 
 OwInterface* OwInterface::m_instance = nullptr;
@@ -417,11 +443,6 @@ void OwInterface::startPlanningDemo()
   }
 }
 
-void OwInterface::moveGuardedDemo()
-{
-  moveGuarded();
-}
-
 void OwInterface::moveGuardedAction() // temporary, proof of concept
 {
   if (! mark_operation_running (Op_MoveGuardedAction)) return;
@@ -440,7 +461,9 @@ void OwInterface::moveGuardedAction() // temporary, proof of concept
     goal.overdrive_distance = 0;
     goal.retract = 0;
   */
-  m_moveGuardedClient.sendGoal (goal);
+  m_moveGuardedClient.sendGoal (goal, move_guarded_done_cb,
+                                move_guarded_active_cb,
+                                move_guarded_feedback_cb);
 
   // Wait for the action to return
   bool finished_before_timeout =
@@ -456,8 +479,13 @@ void OwInterface::moveGuardedAction() // temporary, proof of concept
   else {
     ROS_INFO("MoveGuarded action did not finish before the time out.");
   }
-  
+
   mark_operation_finished (Op_MoveGuardedAction);
+}
+
+void OwInterface::moveGuardedDemo()
+{
+  moveGuarded();
 }
 
 void OwInterface::moveGuarded (double target_x, double target_y, double target_z,

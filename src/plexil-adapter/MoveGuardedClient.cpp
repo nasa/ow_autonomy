@@ -35,9 +35,10 @@ int main (int argc, char **argv)
 
   // second argument tells client whether or not to spin its own thread
   actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>
-    client ("MoveGuarded", false);
+    client ("MoveGuarded", true);
 
-  thread node_thread (spinThread);
+  // We don't need this thread, because above we have client spin its own.
+  //  thread node_thread (spinThread);
 
   ROS_INFO("Waiting for MoveGuarded action server to start...");
   client.waitForServer(); // will wait indefinitely
@@ -73,6 +74,9 @@ int main (int argc, char **argv)
   }
 
   ros::shutdown();
-  node_thread.join();
+
+  // The following is needed only if we spin our own thread above.
+  //  node_thread.join();
+  
   return 0;
 }
