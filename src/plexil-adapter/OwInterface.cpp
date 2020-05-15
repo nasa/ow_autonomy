@@ -445,23 +445,18 @@ void OwInterface::startPlanningDemo()
 
 void OwInterface::moveGuardedAction() // temporary, proof of concept
 {
+  thread t (&OwInterface::moveGuardedActionThread, this);
+  t.detach();
+}
+
+void OwInterface::moveGuardedActionThread() // temporary, proof of concept
+{
   if (! mark_operation_running (Op_MoveGuardedAction)) return;
 
   ow_autonomy::MoveGuardedGoal goal;
   goal.use_defaults = true;
-  /*
-    goal.delete_prev_traj = true;
-    goal.target_x = 0;
-    goal.target_y = 0;
-    goal.target_z = 0;
-    goal.surface_normal_x = 0;
-    goal.surface_normal_y = 0;
-    goal.surface_normal_z = 0;
-    goal.offset_distance = 0;
-    goal.overdrive_distance = 0;
-    goal.retract = 0;
-  */
-  m_moveGuardedClient.sendGoal (goal, move_guarded_done_cb,
+  m_moveGuardedClient.sendGoal (goal,
+                                move_guarded_done_cb,
                                 move_guarded_active_cb,
                                 move_guarded_feedback_cb);
 

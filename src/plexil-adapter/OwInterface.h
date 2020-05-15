@@ -30,6 +30,7 @@ class OwInterface
   void startPlanningDemo();
   void moveGuardedDemo();
   void moveGuardedAction(); // temporary, proof of concept
+  void moveGuardedActionThread(); // temporary, proof of concept
   void publishTrajectoryDemo();
 
   // Operational interface

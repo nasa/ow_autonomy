@@ -6,21 +6,27 @@
 
 Command log_info (...);
 Command move_guarded_action();
+Command move_guarded_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
 TestActions:
 {
   log_info ("Beginning MoveGuarded Action Demo...");
-  move_guarded_action(); // blocks
-  
-  /* Not needed, and won't work unless previous calls becomes non-blocking
+
+  Operations: Concurrence
+  {
+    move_guarded_action(); // dummy action
+    move_guarded_demo();   // ROS service
+  }
+
   Block:
   {
-    StartCondition Lookup (Running ("MoveGuardedAction"));
-    EndCondition Lookup (Finished ("MoveGuardedAction"));
+    StartCondition (Lookup (Running ("MoveGuarded")) &&
+                    Lookup (Running ("MoveGuardedAction")));
+    EndCondition (Lookup (Finished ("MoveGuarded")) &&
+                  Lookup (Finished ("MoveGuardedAction")));
   }
-  */
-  
+
   log_info ("MoveGuarded Action Demo finished");
 }
