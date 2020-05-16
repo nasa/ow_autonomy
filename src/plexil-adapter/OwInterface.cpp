@@ -69,13 +69,19 @@ static bool mark_operation_running (const string& name)
     return false;
   }
 
+  ROS_INFO ("Marking %s RUNNING", name.c_str());
   Running.at (name) = true;
+  publish ("Finished", false, name);
   publish ("Running", true, name);
   return true;
 }
 
-static bool mark_operation_finished (const string& name)
+static void mark_operation_finished (const string& name)
 {
+  if (! Running.at (name)) {
+    ROS_WARN ("%s was not running. Should never happen.", name.c_str());
+  }
+  ROS_INFO ("Marking %s FINISHED", name.c_str());
   Running.at (name) = false;
   publish ("Running", false, name);
   publish ("Finished", true, name);
@@ -161,8 +167,6 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
-  Running.at (name) = true;
-  publish ("Running", true, name);
   thread fault_thread (monitor_for_faults, name);
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -171,9 +175,8 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else {
     ROS_ERROR("Failed to call service %s", name.c_str());
   }
-  Running.at (name) = false;
+  mark_operation_finished (name);
   fault_thread.join();
-  publish ("Finished", true, name);
 }
 
 static bool check_service_client (ros::ServiceClient& client)
@@ -185,18 +188,6 @@ static bool check_service_client (ros::ServiceClient& client)
 
   if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
-    return false;
-  }
-
-  return true;
-}
-
-// TODO: replace this with calls to mark_operation_running
-template<class Service>
-static bool service_available (const string& name)
-{
-  if (Running.at (name)) {
-    ROS_WARN("Service %s already running, ignoring request.", name.c_str());
     return false;
   }
 
@@ -422,7 +413,7 @@ void OwInterface::initialize()
 
 void OwInterface::startPlanningDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_ArmPlanning)) return;
+  if (! mark_operation_running (Op_ArmPlanning)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -445,14 +436,14 @@ void OwInterface::startPlanningDemo()
 
 void OwInterface::moveGuardedAction() // temporary, proof of concept
 {
+  if (! mark_operation_running (Op_MoveGuardedAction)) return;
+
   thread t (&OwInterface::moveGuardedActionThread, this);
   t.detach();
 }
 
 void OwInterface::moveGuardedActionThread() // temporary, proof of concept
 {
-  if (! mark_operation_running (Op_MoveGuardedAction)) return;
-
   ow_autonomy::MoveGuardedGoal goal;
   goal.use_defaults = true;
   m_moveGuardedClient.sendGoal (goal,
@@ -462,7 +453,7 @@ void OwInterface::moveGuardedActionThread() // temporary, proof of concept
 
   // Wait for the action to return
   bool finished_before_timeout =
-    m_moveGuardedClient.waitForResult (ros::Duration(30.0));
+    m_moveGuardedClient.waitForResult (ros::Duration (30.0));
 
   if (finished_before_timeout) {
     actionlib::SimpleClientGoalState state = m_moveGuardedClient.getState();
@@ -491,7 +482,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
                                bool delete_prev_traj,
                                bool retract)
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_MoveGuarded)) return;
+  if (! mark_operation_running (Op_MoveGuarded)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -518,9 +509,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
 
 void OwInterface::publishTrajectoryDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_PublishTrajectory)) {
-    return;
-  }
+  if (! mark_operation_running (Op_PublishTrajectory)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -576,7 +565,7 @@ void OwInterface::digTrench (double x, double y, double z,
                              double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
-  if (! service_available<ow_lander::DigTrench>(Op_DigTrench)) return;
+  if (! mark_operation_running (Op_DigTrench)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -663,6 +652,5 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 
 void OwInterface::stopOperation (const string& name) const
 {
-  // TODO: try replacing with mark_operation_finished
-  Running.at (name) = false;
+  mark_operation_finished (name);
 }

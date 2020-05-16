@@ -9,24 +9,40 @@ Command move_guarded_action();
 Command move_guarded_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
+Real Lookup PanDegrees;
+LibraryAction Pan (In Real Degrees);
 
 TestActions:
 {
-  log_info ("Beginning MoveGuarded Action Demo...");
+  log_info ("Beginning MoveGuarded concurrence demo...");
 
-  Operations: Concurrence
+  StartOperations: Concurrence
   {
-    move_guarded_action(); // dummy action
-    move_guarded_demo();   // ROS service
+    Real pan;
+    pan = Lookup (PanDegrees);
+
+    // Start an action (dummy for now)
+    move_guarded_action();
+
+    // Start a service
+    move_guarded_demo();
+
+    // Start a topic-driven operation
+    if (pan < 90) LibraryCall Pan (Degrees = pan + 90);
+    else LibraryCall Pan (Degrees = pan - 90);
+    endif;
   }
 
-  Block:
+  WaitForFinish:
   {
     StartCondition (Lookup (Running ("MoveGuarded")) &&
-                    Lookup (Running ("MoveGuardedAction")));
+                    Lookup (Running ("MoveGuardedAction")) &&
+                    Lookup (Running ("PanAntenna")));
     EndCondition (Lookup (Finished ("MoveGuarded")) &&
-                  Lookup (Finished ("MoveGuardedAction")));
+                  Lookup (Finished ("MoveGuardedAction")) &&
+                  Lookup (Finished ("PanAntenna")));
+    log_info ("Waiting for operations to finish...");
   }
 
-  log_info ("MoveGuarded Action Demo finished");
+  log_info ("MoveGuarded concurrence demo finished");
 }
