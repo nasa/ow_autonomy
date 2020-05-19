@@ -71,7 +71,6 @@ static bool mark_operation_running (const string& name)
 
   ROS_INFO ("Marking %s RUNNING", name.c_str());
   Running.at (name) = true;
-  publish ("Finished", false, name);
   publish ("Running", true, name);
   return true;
 }

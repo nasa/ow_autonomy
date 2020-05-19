@@ -9,8 +9,6 @@ Command move_guarded_action();
 Command move_guarded_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
-Real Lookup PanDegrees;
-LibraryAction Pan (In Real Degrees);
 
 TestActions:
 {
@@ -18,29 +16,19 @@ TestActions:
 
   StartOperations: Concurrence
   {
-    Real pan;
-    pan = Lookup (PanDegrees);
-
     // Start an action (dummy for now)
     move_guarded_action();
 
     // Start a service
     move_guarded_demo();
-
-    // Start a topic-driven operation
-    if (pan < 90) LibraryCall Pan (Degrees = pan + 90);
-    else LibraryCall Pan (Degrees = pan - 90);
-    endif;
   }
 
   WaitForFinish:
   {
     StartCondition (Lookup (Running ("MoveGuarded")) &&
-                    Lookup (Running ("MoveGuardedAction")) &&
-                    Lookup (Running ("PanAntenna")));
+                    Lookup (Running ("MoveGuardedAction")));
     EndCondition (Lookup (Finished ("MoveGuarded")) &&
-                  Lookup (Finished ("MoveGuardedAction")) &&
-                  Lookup (Finished ("PanAntenna")));
+                  Lookup (Finished ("MoveGuardedAction")));
     log_info ("Waiting for operations to finish...");
   }
 
