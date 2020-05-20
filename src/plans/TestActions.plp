@@ -5,8 +5,8 @@
 // Test plan for ROS actions.  Content will evolve as new actions are added.
 
 Command log_info (...);
-Command move_guarded_action();
 Command move_guarded_demo();
+Command move_guarded_action_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
@@ -17,7 +17,7 @@ TestActions:
   StartOperations: Concurrence
   {
     // Start an action (dummy for now)
-    move_guarded_action();
+    move_guarded_action_demo();
 
     // Start a service
     move_guarded_demo();

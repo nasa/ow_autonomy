@@ -15,7 +15,6 @@ static void doneCB (const actionlib::SimpleClientGoalState& state,
                     const ow_autonomy::MoveGuardedResultConstPtr& result)
 {
   ROS_INFO ("Finished in state [%s]", state.toString().c_str());
-  ROS_INFO ("Answer: %s", result->message.c_str());
 }
 
 static void activeCB()
@@ -45,19 +44,17 @@ int main (int argc, char **argv)
 
   ROS_INFO("MoveGuarded action server available, sending goal.");
   ow_autonomy::MoveGuardedGoal goal;
-  goal.use_defaults = true;
-  /*
-  goal.delete_prev_traj = true;
-  goal.target_x = 0;
-  goal.target_y = 0;
-  goal.target_z = 0;
+  goal.use_defaults = false;
+  goal.delete_prev_traj = false;
+  goal.target_x = 1.2;
+  goal.target_y = 0.8;
+  goal.target_z = 0.1;
   goal.surface_normal_x = 0;
   goal.surface_normal_y = 0;
   goal.surface_normal_z = 0;
   goal.offset_distance = 0;
   goal.overdrive_distance = 0;
   goal.retract = 0;
-  */
   client.sendGoal (goal, &doneCB, &activeCB, &feedbackCB);
 
   // Wait for the action to return
@@ -67,7 +64,8 @@ int main (int argc, char **argv)
     actionlib::SimpleClientGoalState state = client.getState();
     ROS_INFO("MoveGuarded action finished: %s", state.toString().c_str());
     ow_autonomy::MoveGuardedResultConstPtr result = client.getResult();
-    ROS_INFO("Action result message: %s", result->message.c_str());
+    ROS_INFO("MoveGuarded action result: (%f, %f, %f)",
+             result->final_x, result->final_y, result->final_z);
   }
   else {
     ROS_INFO("MoveGuarded action did not finish before the time out.");
@@ -77,6 +75,6 @@ int main (int argc, char **argv)
 
   // The following is needed only if we spin our own thread above.
   //  node_thread.join();
-  
+
   return 0;
 }

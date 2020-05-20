@@ -27,10 +27,9 @@ class OwInterface
   void initialize ();
 
   // "Demo" functions, perhaps temporary.
-  void startPlanningDemo();
+  void armPlanningDemo();
   void moveGuardedDemo();
-  void moveGuardedAction(); // temporary, proof of concept
-  void moveGuardedActionThread(); // temporary, proof of concept
+  void moveGuardedActionDemo(); // temporary, proof of concept
   void publishTrajectoryDemo();
 
   // Operational interface
@@ -47,6 +46,18 @@ class OwInterface
                     double overdrive_dist = 0.2,
                     bool delete_prev_traj = false,
                     bool retract = false);
+
+  // Temporary, until moveGuarded is just a ROS action.
+  void moveGuardedAction (double target_x = 2,
+                          double target_y = 0,
+                          double target_z = 0.02,
+                          double surf_norm_x = 0,
+                          double surf_norm_y = 0,
+                          double surf_norm_z = 1,
+                          double offset_dist = 0.2,
+                          double overdrive_dist = 0.2,
+                          bool delete_prev_traj = false,
+                          bool retract = false);
 
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
@@ -75,6 +86,17 @@ class OwInterface
   void stopOperation (const std::string& name) const;
 
  private:
+  // temporary, proof of concept
+  void moveGuardedActionAux (double target_x,
+                             double target_y,
+                             double target_z,
+                             double surf_norm_x,
+                             double surf_norm_y,
+                             double surf_norm_z,
+                             double offset_dist,
+                             double overdrive_dist,
+                             bool delete_prev_traj,
+                             bool retract);
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 

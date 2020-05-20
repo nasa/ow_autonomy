@@ -315,19 +315,21 @@ static void move_guarded_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const ow_autonomy::MoveGuardedResultConstPtr& result)
 {
-  ROS_INFO ("Finished in state [%s]", state.toString().c_str());
-  ROS_INFO ("Answer: %s", result->message.c_str());
+  ROS_INFO ("MoveGuarded done callback: finished in state [%s]",
+            state.toString().c_str());
+  ROS_INFO("MoveGuarded done callback: result (%f, %f, %f)",
+           result->final_x, result->final_y, result->final_z);
 }
 
 static void move_guarded_active_cb ()
 {
-  ROS_INFO ("Goal just went active");
+  ROS_INFO ("MoveGuarded active callback - goal active!");
 }
 
 static void move_guarded_feedback_cb
 (const ow_autonomy::MoveGuardedFeedbackConstPtr& feedback)
 {
-  ROS_INFO ("Feedback: (%f, %f, %f)",
+  ROS_INFO ("MoveGuarded feedback callback: (%f, %f, %f)",
             feedback->current_x, feedback->current_y, feedback->current_z);
 }
 
@@ -410,7 +412,7 @@ void OwInterface::initialize()
   }
 }
 
-void OwInterface::startPlanningDemo()
+void OwInterface::armPlanningDemo()
 {
   if (! mark_operation_running (Op_ArmPlanning)) return;
 
@@ -433,18 +435,56 @@ void OwInterface::startPlanningDemo()
   }
 }
 
-void OwInterface::moveGuardedAction() // temporary, proof of concept
+void OwInterface::moveGuardedActionDemo()
+{
+  moveGuardedAction();
+}
+
+void OwInterface::moveGuardedAction (double target_x,
+                                     double target_y,
+                                     double target_z,
+                                     double surf_norm_x,
+                                     double surf_norm_y,
+                                     double surf_norm_z,
+                                     double offset_dist,
+                                     double overdrive_dist,
+                                     bool delete_prev_traj,
+                                     bool retract)
 {
   if (! mark_operation_running (Op_MoveGuardedAction)) return;
 
-  thread t (&OwInterface::moveGuardedActionThread, this);
-  t.detach();
+  thread action_thread (&OwInterface::moveGuardedActionAux, this,
+                        target_x, target_y, target_z,
+                        surf_norm_x, surf_norm_y, surf_norm_z,
+                        offset_dist, overdrive_dist, delete_prev_traj, retract);
+  action_thread.detach();
 }
 
-void OwInterface::moveGuardedActionThread() // temporary, proof of concept
+void OwInterface::moveGuardedActionAux (double target_x,
+                                        double target_y,
+                                        double target_z,
+                                        double surf_norm_x,
+                                        double surf_norm_y,
+                                        double surf_norm_z,
+                                        double offset_dist,
+                                        double overdrive_dist,
+                                        bool delete_prev_traj,
+                                        bool retract)
 {
   ow_autonomy::MoveGuardedGoal goal;
-  goal.use_defaults = true;
+  goal.use_defaults = false;
+  goal.delete_prev_traj = delete_prev_traj;
+  goal.target_x = target_x;
+  goal.target_y = target_y;
+  goal.target_z = target_z;
+  goal.surface_normal_x = surf_norm_x;
+  goal.surface_normal_y = surf_norm_y;
+  goal.surface_normal_z = surf_norm_z;
+  goal.offset_distance = offset_dist;
+  goal.overdrive_distance = overdrive_dist;
+  goal.retract = retract;
+
+  thread fault_thread (monitor_for_faults, Op_MoveGuardedAction);
   m_moveGuardedClient.sendGoal (goal,
                                 move_guarded_done_cb,
                                 move_guarded_active_cb,
@@ -459,13 +499,15 @@ void OwInterface::moveGuardedActionThread() // temporary, proof of concept
     ROS_INFO("MoveGuarded action finished: %s", state.toString().c_str());
     ow_autonomy::MoveGuardedResultConstPtr result =
       m_moveGuardedClient.getResult();
-    ROS_INFO("Action result message: %s", result->message.c_str());
+    ROS_INFO("MoveGuarded action result: (%f, %f, %f)",
+             result->final_x, result->final_y, result->final_z);
   }
   else {
     ROS_INFO("MoveGuarded action did not finish before the time out.");
   }
 
   mark_operation_finished (Op_MoveGuardedAction);
+  fault_thread.join();
 }
 
 void OwInterface::moveGuardedDemo()

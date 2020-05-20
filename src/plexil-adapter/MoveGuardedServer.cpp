@@ -1,5 +1,4 @@
-// Temporary file for experimentation and learning.  A dummy action server for
-// MoveGuarded.
+// Temporary file.  A dummy action server for MoveGuarded.
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
@@ -32,32 +31,38 @@ class MoveGuardedAction
   MoveGuardedAction (const MoveGuardedAction&) = delete;
   MoveGuardedAction& operator= (const MoveGuardedAction&) = delete;
 
+  // Used to perform action, but not as a callback.
   void executeCB (const ow_autonomy::MoveGuardedGoalConstPtr& goal)
   {
-    // helper variables
     ros::Rate r(1);
     bool success = true;
+    int iterations = 10; // one per second
+    double x_incr = goal->target_x / iterations;
+    double y_incr = goal->target_y / iterations;
+    double z_incr = goal->target_z / iterations;
 
     m_feedback.current_x = m_feedback.current_y = m_feedback.current_z = 0;
     ROS_INFO ("%s: Executing", m_actionName.c_str());
 
     // start executing the action
-    for (int i = 1; i <= 10; i++) {
+    for (int i = 0; i <= iterations; i++) {
       if (m_actionServer.isPreemptRequested() || !ros::ok()) {
         ROS_INFO ("%s: Preempted", m_actionName.c_str());
-        // set the action state to preempted
         m_actionServer.setPreempted();
         success = false;
         break;
       }
-      m_feedback.current_x = i;
+      m_feedback.current_x += x_incr;
+      m_feedback.current_y += y_incr;
+      m_feedback.current_z += z_incr;
       m_actionServer.publishFeedback (m_feedback);
       r.sleep();
     }
 
     if (success) {
-      m_result.message = "Move Guarded Action succeeded!";
-      m_result.final_x = m_result.final_y = m_result.final_z = 10;
+      m_result.final_x = goal->target_x;
+      m_result.final_y = goal->target_y;
+      m_result.final_z = goal->target_z;
       ROS_INFO ("%s: Succeeded", m_actionName.c_str());
       m_actionServer.setSucceeded (m_result);
     }
