@@ -46,6 +46,11 @@ const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 
+// NOTE: The following map *should* be thread-safe, according to C++11 docs and
+// in particular because map entries are never added or deleted, and the code
+// insures that each entry can be read/written by only one thread.  (The map
+// itself can be read/written by multiple threads concurrently).
+
 static map<string, bool> Running
 {
   { Op_MoveGuarded, false },
@@ -93,9 +98,6 @@ static void mark_operation_finished (const string& name)
 // that should be monitored while it is running.  This direct inspection of ROS
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
-
-// NOTE: The following three maps *should* be thread-safe, because C++11 docs
-// says they are.  By definition, they are only read.
 
 const map<string, string> AntennaFaults
 {
