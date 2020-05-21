@@ -37,9 +37,9 @@ class MoveGuardedAction
     ros::Rate r(1);
     bool success = true;
     int iterations = 10; // one per second
-    double x_incr = goal->target_x / iterations;
-    double y_incr = goal->target_y / iterations;
-    double z_incr = goal->target_z / iterations;
+    float x_incr = goal->target_x / iterations;
+    float y_incr = goal->target_y / iterations;
+    float z_incr = goal->target_z / iterations;
 
     m_feedback.current_x = m_feedback.current_y = m_feedback.current_z = 0;
     ROS_INFO ("%s: Executing", m_actionName.c_str());
