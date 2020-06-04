@@ -543,6 +543,7 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
     srv.request.surface_normal_z = surf_norm_z;
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
+    srv.request.delete_prev_traj = delete_prev_traj;
     srv.request.retract = retract;
     thread service_thread (service_call<ow_lander::MoveGuarded>,
                            client, srv, Op_MoveGuarded);
