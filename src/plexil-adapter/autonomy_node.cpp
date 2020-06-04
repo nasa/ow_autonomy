@@ -30,6 +30,7 @@ int main(int argc, char* argv[])
   // Run the specified plan
 
   if (argc == 2) {
+    ROS_INFO ("Running plan %s", argv[1]);
     OwExecutive::instance()->runPlan (argv[1]); // asynchronous
   }
   else {

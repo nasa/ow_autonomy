@@ -38,12 +38,32 @@ target_link_libraries(${LIB_NAME}
   ${PLEXIL_LIBRARIES}
   )
 
+add_dependencies(${LIB_NAME}
+  ${${LIB_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
 add_executable(autonomy_node autonomy_node.cpp)
+add_executable(MoveGuardedServer MoveGuardedServer.cpp)
+add_executable(MoveGuardedClient MoveGuardedClient.cpp)
 
 target_link_libraries(autonomy_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-install(TARGETS autonomy_node
+target_link_libraries(MoveGuardedServer
+  ${catkin_LIBRARIES})
+
+add_dependencies(MoveGuardedServer
+  ${MoveGuardedServer_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(MoveGuardedClient
+  ${catkin_LIBRARIES})
+
+add_dependencies(MoveGuardedClient
+  ${MoveGuardedClient_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS autonomy_node MoveGuardedServer MoveGuardedClient
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

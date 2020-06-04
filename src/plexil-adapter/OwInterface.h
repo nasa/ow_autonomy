@@ -5,11 +5,13 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Interface to lander simulator, and hopefully in time, the physical testbed.
-// This class is a singleton because only once instance will ever be needed, in
-// the current overall autonomy scheme.
+// Interface to lander simulator.  Singleton, because only once instance will
+// ever be needed in the current autonomy scheme, which has one autonomy
+// executive per lander.
 
 #include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <ow_autonomy/MoveGuardedAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <string>
@@ -25,8 +27,9 @@ class OwInterface
   void initialize ();
 
   // "Demo" functions, perhaps temporary.
-  void startPlanningDemo();
+  void armPlanningDemo();
   void moveGuardedDemo();
+  void moveGuardedActionDemo(); // temporary, proof of concept
   void publishTrajectoryDemo();
 
   // Operational interface
@@ -43,6 +46,18 @@ class OwInterface
                     double overdrive_dist = 0.2,
                     bool delete_prev_traj = false,
                     bool retract = false);
+
+  // Temporary, until moveGuarded is just a ROS action.
+  void moveGuardedAction (double target_x = 2,
+                          double target_y = 0,
+                          double target_z = 0.02,
+                          double surf_norm_x = 0,
+                          double surf_norm_y = 0,
+                          double surf_norm_z = 1,
+                          double offset_dist = 0.2,
+                          double overdrive_dist = 0.2,
+                          bool delete_prev_traj = false,
+                          bool retract = false);
 
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
@@ -71,6 +86,17 @@ class OwInterface
   void stopOperation (const std::string& name) const;
 
  private:
+  // temporary, proof of concept
+  void moveGuardedActionAux (double target_x,
+                             double target_y,
+                             double target_z,
+                             double surf_norm_x,
+                             double surf_norm_y,
+                             double surf_norm_z,
+                             double offset_dist,
+                             double overdrive_dist,
+                             bool delete_prev_traj,
+                             bool retract);
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
@@ -89,6 +115,11 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+
+  // Action clients
+  actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>
+    m_moveGuardedClient;
+
 };
 
 

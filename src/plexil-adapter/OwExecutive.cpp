@@ -1,8 +1,6 @@
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 // ROS
 #include <ros/ros.h>
@@ -36,8 +34,6 @@ using PLEXIL::Value;
 #include <iostream>
 using std::string;
 using std::ostringstream;
-using std::cout;
-using std::endl;
 
 // DEVEL location of PLEXIL files, initialized in initialize().
 // TODO: make this the INSTALLED location, once we have one for OW.
@@ -202,4 +198,3 @@ bool OwExecutive::initialize ()
   return true;
 }
 
-// End of PLEXIL application setup functions.

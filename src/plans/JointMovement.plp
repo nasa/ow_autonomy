@@ -19,6 +19,7 @@
 Real Lookup time;
 Command stop_operation (String name);
 Command log_error (...);
+Command log_info (...);
 
 LibraryAction RealValuedCommand (In String OpName, In Real Value,
                                  InOut Boolean Result);
@@ -39,13 +40,17 @@ JointMovement: CheckedSequence
   {
     Boolean CommandSuccess = true;
     PostCondition CommandSuccess;
-    
+
     if (abs(Lookup((CurrentValueLookup)) - NewValue) <= Tolerance) {
+      log_info (OpName, " already at ", NewValue);
       PreAchieved = true;
     }
-    else LibraryCall RealValuedCommand (OpName = OpName,
-                                        Value = NewValue,
-                                        Result = CommandSuccess);
+    else {
+      log_info ("Commanding ", OpName, " with ", NewValue);
+      LibraryCall RealValuedCommand (OpName = OpName,
+                                     Value = NewValue,
+                                     Result = CommandSuccess);
+    }
     endif;
   }
 

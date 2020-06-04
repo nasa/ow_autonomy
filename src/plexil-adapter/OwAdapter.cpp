@@ -230,8 +230,11 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "log_debug") log_debug (args);
 
   // "Demos"
-  else if (name == "arm_planning_demo") OwInterface::instance()->startPlanningDemo();
+  else if (name == "arm_planning_demo") OwInterface::instance()->armPlanningDemo();
   else if (name == "move_guarded_demo") OwInterface::instance()->moveGuardedDemo();
+  else if (name == "move_guarded_action_demo") { // proof of concept for now
+    OwInterface::instance()->moveGuardedActionDemo();
+  }
   else if (name == "publish_trajectory_demo") {
     OwInterface::instance()->publishTrajectoryDemo();
   }
@@ -252,7 +255,7 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digTrench(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "MoveGuarded") {
+  else if (name == "move_guarded") {
     double target_x, target_y, target_z, surf_norm_x, surf_norm_y, surf_norm_z;
     double offset_dist, overdrive_dist;
     bool delete_prev_traj, retract;

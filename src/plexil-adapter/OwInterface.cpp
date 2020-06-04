@@ -39,15 +39,22 @@ const double R2D = 180.0 / M_PI ;
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
 const string Op_MoveGuarded       = "MoveGuarded";
+const string Op_MoveGuardedAction = "MoveGuardedAction";
 const string Op_DigTrench         = "DigTrench";
 const string Op_ArmPlanning       = "StartPlanning";
 const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 
+// NOTE: The following map *should* be thread-safe, according to C++11 docs and
+// in particular because map entries are never added or deleted, and the code
+// insures that each entry can be read/written by only one thread.  (The map
+// itself can be read/written by multiple threads concurrently).
+
 static map<string, bool> Running
 {
   { Op_MoveGuarded, false },
+  { Op_MoveGuardedAction, false },
   { Op_DigTrench, false },
   { Op_ArmPlanning, false },
   { Op_PublishTrajectory, false },
@@ -55,9 +62,33 @@ static map<string, bool> Running
   { Op_TiltAntenna, false }
 };
 
-static bool is_lander_operation (const string name)
+static bool is_lander_operation (const string& name)
 {
   return Running.find (name) != Running.end();
+}
+
+static bool mark_operation_running (const string& name)
+{
+  if (Running.at (name)) {
+    ROS_WARN ("%s already running, ignoring duplicate request.", name.c_str());
+    return false;
+  }
+
+  ROS_INFO ("Marking %s RUNNING", name.c_str());
+  Running.at (name) = true;
+  publish ("Running", true, name);
+  return true;
+}
+
+static void mark_operation_finished (const string& name)
+{
+  if (! Running.at (name)) {
+    ROS_WARN ("%s was not running. Should never happen.", name.c_str());
+  }
+  ROS_INFO ("Marking %s FINISHED", name.c_str());
+  Running.at (name) = false;
+  publish ("Running", false, name);
+  publish ("Finished", true, name);
 }
 
 
@@ -67,9 +98,6 @@ static bool is_lander_operation (const string name)
 // that should be monitored while it is running.  This direct inspection of ROS
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
-
-// NOTE: The following three maps *should* be thread-safe, because C++11 docs
-// says they are.  By definition, they are only read.
 
 const map<string, string> AntennaFaults
 {
@@ -100,6 +128,7 @@ const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
   { Op_MoveGuarded, ArmFaults },
+  { Op_MoveGuardedAction, ArmFaults },
   { Op_DigTrench, ArmFaults },
   { Op_ArmPlanning, ArmFaults },
   { Op_PublishTrajectory, ArmFaults },
@@ -139,8 +168,6 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
-  Running.at (name) = true;
-  publish ("Running", true, name);
   thread fault_thread (monitor_for_faults, name);
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -149,12 +176,11 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else {
     ROS_ERROR("Failed to call service %s", name.c_str());
   }
-  Running.at (name) = false;
+  mark_operation_finished (name);
   fault_thread.join();
-  publish ("Finished", true, name);
 }
 
-static bool service_client_ok (ros::ServiceClient& client)
+static bool check_service_client (ros::ServiceClient& client)
 {
   if (! client.exists()) {
     ROS_ERROR("Service client does not exist!");
@@ -163,17 +189,6 @@ static bool service_client_ok (ros::ServiceClient& client)
 
   if (! client.isValid()) {
     ROS_ERROR("Service client is invalid!");
-    return false;
-  }
-
-  return true;
-}
-
-template<class Service>
-static bool service_available (const string& name)
-{
-  if (Running.at (name)) {
-    ROS_WARN("Service %s already running, ignoring request.", name.c_str());
     return false;
   }
 
@@ -293,6 +308,34 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 }
 
 
+//////////////////// MoveGuarded Action support ////////////////////////////////
+
+// At present, this is a prototypical action using a dummy server in this
+// directory, MoveGuardedServer.
+
+static void move_guarded_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_autonomy::MoveGuardedResultConstPtr& result)
+{
+  ROS_INFO ("MoveGuarded done callback: finished in state [%s]",
+            state.toString().c_str());
+  ROS_INFO("MoveGuarded done callback: result (%f, %f, %f)",
+           result->final_x, result->final_y, result->final_z);
+}
+
+static void move_guarded_active_cb ()
+{
+  ROS_INFO ("MoveGuarded active callback - goal active!");
+}
+
+static void move_guarded_feedback_cb
+(const ow_autonomy::MoveGuardedFeedbackConstPtr& feedback)
+{
+  ROS_INFO ("MoveGuarded feedback callback: (%f, %f, %f)",
+            feedback->current_x, feedback->current_y, feedback->current_z);
+}
+
+
 /////////////////////////// OwInterface members ////////////////////////////////
 
 OwInterface* OwInterface::m_instance = nullptr;
@@ -312,8 +355,13 @@ OwInterface::OwInterface ()
     m_antennaTiltSubscriber (nullptr),
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
-    m_cameraSubscriber (nullptr)
-{ }
+    m_cameraSubscriber (nullptr),
+    m_moveGuardedClient ("MoveGuarded", true)
+{
+  ROS_INFO ("Waiting for action servers...");
+  m_moveGuardedClient.waitForServer();
+  ROS_INFO ("Action servers available.");
+}
 
 OwInterface::~OwInterface ()
 {
@@ -366,9 +414,9 @@ void OwInterface::initialize()
   }
 }
 
-void OwInterface::startPlanningDemo()
+void OwInterface::armPlanningDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_ArmPlanning)) return;
+  if (! mark_operation_running (Op_ArmPlanning)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -376,7 +424,7 @@ void OwInterface::startPlanningDemo()
     // NOTE: typo is deliberate
     nhandle.serviceClient<ow_lander::StartPlanning>("start_plannning_session");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::StartPlanning srv;
     srv.request.use_defaults = true;
     srv.request.trench_x = 0.0;
@@ -387,6 +435,81 @@ void OwInterface::startPlanningDemo()
                            client, srv, Op_ArmPlanning);
     service_thread.detach();
   }
+}
+
+void OwInterface::moveGuardedActionDemo()
+{
+  moveGuardedAction();
+}
+
+void OwInterface::moveGuardedAction (double target_x,
+                                     double target_y,
+                                     double target_z,
+                                     double surf_norm_x,
+                                     double surf_norm_y,
+                                     double surf_norm_z,
+                                     double offset_dist,
+                                     double overdrive_dist,
+                                     bool delete_prev_traj,
+                                     bool retract)
+{
+  if (! mark_operation_running (Op_MoveGuardedAction)) return;
+
+  thread action_thread (&OwInterface::moveGuardedActionAux, this,
+                        target_x, target_y, target_z,
+                        surf_norm_x, surf_norm_y, surf_norm_z,
+                        offset_dist, overdrive_dist, delete_prev_traj, retract);
+  action_thread.detach();
+}
+
+void OwInterface::moveGuardedActionAux (double target_x,
+                                        double target_y,
+                                        double target_z,
+                                        double surf_norm_x,
+                                        double surf_norm_y,
+                                        double surf_norm_z,
+                                        double offset_dist,
+                                        double overdrive_dist,
+                                        bool delete_prev_traj,
+                                        bool retract)
+{
+  ow_autonomy::MoveGuardedGoal goal;
+  goal.use_defaults = false;
+  goal.delete_prev_traj = delete_prev_traj;
+  goal.target_x = target_x;
+  goal.target_y = target_y;
+  goal.target_z = target_z;
+  goal.surface_normal_x = surf_norm_x;
+  goal.surface_normal_y = surf_norm_y;
+  goal.surface_normal_z = surf_norm_z;
+  goal.offset_distance = offset_dist;
+  goal.overdrive_distance = overdrive_dist;
+  goal.retract = retract;
+
+  thread fault_thread (monitor_for_faults, Op_MoveGuardedAction);
+  m_moveGuardedClient.sendGoal (goal,
+                                move_guarded_done_cb,
+                                move_guarded_active_cb,
+                                move_guarded_feedback_cb);
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_moveGuardedClient.waitForResult (ros::Duration (30.0));
+
+  if (finished_before_timeout) {
+    actionlib::SimpleClientGoalState state = m_moveGuardedClient.getState();
+    ROS_INFO("MoveGuarded action finished: %s", state.toString().c_str());
+    ow_autonomy::MoveGuardedResultConstPtr result =
+      m_moveGuardedClient.getResult();
+    ROS_INFO("MoveGuarded action result: (%f, %f, %f)",
+             result->final_x, result->final_y, result->final_z);
+  }
+  else {
+    ROS_INFO("MoveGuarded action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_MoveGuardedAction);
+  fault_thread.join();
 }
 
 void OwInterface::moveGuardedDemo()
@@ -402,14 +525,14 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
                                bool delete_prev_traj,
                                bool retract)
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_MoveGuarded)) return;
+  if (! mark_operation_running (Op_MoveGuarded)) return;
 
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::MoveGuarded>("start_move_guarded");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::MoveGuarded srv;
     srv.request.use_defaults = false;
     srv.request.target_x = target_x;
@@ -429,14 +552,14 @@ void OwInterface::moveGuarded (double target_x, double target_y, double target_z
 
 void OwInterface::publishTrajectoryDemo()
 {
-  if (! service_available<ow_lander::StartPlanning>(Op_PublishTrajectory)) return;
+  if (! mark_operation_running (Op_PublishTrajectory)) return;
 
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "ow_lander_trajectory.txt";
@@ -448,12 +571,10 @@ void OwInterface::publishTrajectoryDemo()
 
 static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
 {
-  if (Running.at (name)) {
-    ROS_WARN ("%s already running, ignoring command.", name.c_str());
+  if (! mark_operation_running (name)) {
     return false;
   }
 
-  Running.at (name) = true;
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
   ROS_INFO ("Starting %s: %f degrees (%f radians)", name.c_str(),
@@ -487,14 +608,14 @@ void OwInterface::digTrench (double x, double y, double z,
                              double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
-  if (! service_available<ow_lander::DigTrench>(Op_DigTrench)) return;
+  if (! mark_operation_running (Op_DigTrench)) return;
 
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::DigTrench>("start_dig_trench_session");
 
-  if (service_client_ok (client)) {
+  if (check_service_client (client)) {
     ow_lander::DigTrench srv;
     srv.request.use_defaults = false;
     srv.request.trench_x = x;
@@ -574,5 +695,5 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 
 void OwInterface::stopOperation (const string& name) const
 {
-  Running.at (name) = false;
+  mark_operation_finished (name);
 }

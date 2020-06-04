@@ -120,14 +120,19 @@ Here are some interesting autonomy plans.  Run them like this, substituting for
    This runs the arm planning ROS service, while concurrently printing an "in
    progress" message.  This was not possible before service calls were threaded.
 
+5. ROS Action demo: `TestActions.plx`
+
+   This runs a dummy MoveGuarded action (not connected to simulator)
+   concurrently with the real MoveGuarded service.
+
 
 Fault Detection
 ---------------
 
-A rudimentary version is working, which does nothing more than check relevant
-fault parameters for each lander operation.  Run any plan you like, while
-setting fault parameters as desired (see `ow_faults/README.md` for
-instructions).  Faults are reported as ROS warnings -- that's all for now.
+A rudimentary version does nothing more than check relevant fault parameters for
+each lander operation.  Run any plan you like, while setting fault parameters as
+desired (see `ow_faults/README.md` for instructions).  Faults are reported as
+ROS warnings -- that's all for now.
 
 
 Clean

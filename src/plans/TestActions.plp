@@ -1,0 +1,36 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Test plan for ROS actions.  Content will evolve as new actions are added.
+
+Command log_info (...);
+Command move_guarded_demo();
+Command move_guarded_action_demo();
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
+
+TestActions:
+{
+  log_info ("Beginning MoveGuarded concurrence demo...");
+
+  StartOperations: Concurrence
+  {
+    // Start an action (dummy for now)
+    move_guarded_action_demo();
+
+    // Start a service
+    move_guarded_demo();
+  }
+
+  WaitForFinish:
+  {
+    StartCondition (Lookup (Running ("MoveGuarded")) &&
+                    Lookup (Running ("MoveGuardedAction")));
+    EndCondition (Lookup (Finished ("MoveGuarded")) &&
+                  Lookup (Finished ("MoveGuardedAction")));
+    log_info ("Waiting for operations to finish...");
+  }
+
+  log_info ("MoveGuarded concurrence demo finished");
+}
