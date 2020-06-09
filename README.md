@@ -1,4 +1,4 @@
-This directory contains a candidate onboard autonomy component for the Ocean
+This directory contains a candidate onboard autonomy component for an Ocean
 Worlds lander, namely a ROS node embedding a PLEXIL application.
 
 It's called the `autonomy node`, and only one instance of this node in an
@@ -91,12 +91,12 @@ Run
 Plans
 -----
 
-Here are some interesting autonomy plans.  Run them like this, substituting for
+Here are some interesting autonomy plans.  Run them as shown, substituting for
 `Foo.plx`:
 
   `roslaunch ow_autonomy autonomy_node.launch plan:=Foo.plx`
 
-1. The Europa reference mission Sol 0 prototype: `OceanWorldMission.plx`
+1. The Europa reference mission Sol 0 prototype: `EuropaMission.plx`
 
    At present, this plan is stubbed except for the (shortened) panoramic landing
    site imaging that happens near the beginning.

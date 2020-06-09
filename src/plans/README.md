@@ -1,7 +1,7 @@
-This directory contains PLEXIL plans that implement the onboard
-autonomy for the Ocean World lander.
+This directory contains PLEXIL plans that implement onboard autonomy for Ocean
+World landers, as supported by the OceanWATERS software testbed.
 
-The top level plan is OceanWorldMission.plp, which implements the Sol 0
-activities as described in project documentation.
+In particular, EuropaMission.plp implements the Europa Reference Mission as
+described in project documentation.
 
 See ow_autonomy/README.md for build instructions.

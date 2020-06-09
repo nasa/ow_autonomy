@@ -2,7 +2,7 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-#include "OceanWorldDefs.h"
+#include "plexil_defs.h"
 
 Real Lookup time;
 Real Lookup CollectAndTransferTimeout;

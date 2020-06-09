@@ -14,7 +14,7 @@
 //  - preconditions to check for resource availability, etc.
 //  - handle failure (e.g. retry)
 
-#include "OceanWorldDefs.h"
+#include "plexil_defs.h"
 
 Real Lookup time;
 Command stop_operation (String name);
