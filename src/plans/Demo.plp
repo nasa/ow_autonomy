@@ -1,22 +1,22 @@
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2019, United States Government as represented by the
+// Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
-// __END_LICENSE__
 
 // Demo plan that showcases a variety of lander functions.
 
 LibraryAction TestOwLander();
 LibraryAction TestAntennaCamera();
+LibraryAction TestPlanning();
+LibraryAction TestActions();
 
 Command log_info (...);
-Command log_warning (...);
-Command log_error (...);
 
 Demo:
 {
   log_info ("Starting autonomy demo...");
   LibraryCall TestOwLander();
   LibraryCall TestAntennaCamera();
+  LibraryCall TestPlanning();
+  LibraryCall TestActions();
   log_info ("Autonomy demo finished.");
 }
