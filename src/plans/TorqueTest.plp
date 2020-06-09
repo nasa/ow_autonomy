@@ -1,7 +1,11 @@
-#include "OceanWorldDefs.h"
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
 
 // A test plan that detects joint overtorque.
-// TODO: make self-terminating
+// NOTE: runs indefinitely.  Autonomy node must be killed to terminate plan.
+
+#include "plexil_defs.h"
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);

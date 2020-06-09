@@ -2,14 +2,8 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// High-level notional plan for lander autonomy.
-
-/* To Do:
-   - deal with potential random resets, i.e. due to radiation
-   - save/resume state across sleep/wake cycle
-   - fail operational
-   - for each timeout: retry/failure semantics
-*/
+// Europa reference mission plan.  At present, only Sol 0 of the mission is
+// modeled.
 
 LibraryAction ImageLandingSite;
 LibraryAction InterogateSurface;
@@ -23,7 +17,7 @@ LibraryAction MonitorBattery (InOut Boolean status);
 
 Command log_info (...);
 
-OceanWorldMission: Concurrence
+EuropaMission: Concurrence
 {
   // Assumption: checkout is complete.
 
@@ -39,6 +33,7 @@ OceanWorldMission: Concurrence
 
   Mission:
   {
+    log_info ("Starting Europa Mission ...");
     LibraryCall ImageLandingSite;
     LibraryCall InterogateSurface;
     LibraryCall GetTrenchTarget;
@@ -46,6 +41,6 @@ OceanWorldMission: Concurrence
     LibraryCall Downlink;
     LibraryCall CollectAndTransfer;
     LibraryCall StartSampleAnalysis;
-    log_info ("Ocean World Mission finished.");
+    log_info ("Europa Mission finished.");
   }
 }

@@ -4,7 +4,7 @@
 
 // Auxiliary plan for TakePanorama.  Pans to specified angle and takes a picture.
 
-#include "AntennaDefs.h"
+#include "plexil_defs.h"
 
 LibraryAction Pan  (In Real Degrees);
 LibraryAction TakePicture ();

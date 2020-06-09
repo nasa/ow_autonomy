@@ -5,7 +5,7 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Constants used in OceanWATERS PLEXIL plans and OwSimProxy.
+// Constants used in OceanWATERS PLEXIL plans
 
 // NOTE: Some of these are guessed/bogus values, and some intervals are very
 // short for now to reduce testing time.
@@ -23,5 +23,18 @@
 #define ZERO_VEL 0.01
 
 #define NUM_JOINTS 8
+
+// The following are related to antenna and camera.
+
+#define LONG_WAIT  5       // seconds
+#define SHORT_WAIT 2       // seconds
+#define VERT_FOV  10       // Easy value for testing.  Should be 15.
+#define HORIZ_FOV 10       // Easy value for testing.  Should be 21
+
+// All values in degrees.  Made up constraints -- will adjust as needed.
+#define PAN_MIN   0
+#define PAN_MAX   359
+#define TILT_MIN  -45
+#define TILT_MAX  45
 
 #endif
