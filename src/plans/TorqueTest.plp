@@ -9,41 +9,60 @@
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
 Command publish_trajectory_demo();
 Command move_guarded (Real target_x, Real target_y, Real target_z,
-                     Real surf_norm_x, Real surf_norm_y, Real surf_norm_z,
-                     Real offset_dist, Real overdrive_dist,
-                     Boolean delete_prev_traj, Boolean retract);
+                      Real surf_norm_x, Real surf_norm_y, Real surf_norm_z,
+                      Real offset_dist, Real overdrive_dist,
+                      Boolean delete_prev_traj, Boolean retract);
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
 
-TorqueTest: Concurrence
+TorqueTest:
 {
+  Boolean Digging = true;
   String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
                                     "HandYaw" "ProximalPitch" "ScoopYaw"
                                     "ShoulderPitch" "ShoulderYaw");
 
-  Dig:
+  log_info ("Beginning over-torque test...");
+  DigAndMonitor: Concurrence
   {
-    // This node attempts to dig too deep (note -1 Z target), in an effort to
-    // overtorque one or more arm joints.
-    move_guarded (2, 0, -1, 0, 0, 1, 0.2, 0.2, true, true);
-    publish_trajectory_demo();
-  }
-
-  MonitorTorque:
-  {
-    Repeat true;
-    for (Integer i = 0; i < NUM_JOINTS; i+1) {
-      if (Lookup(HardTorqueLimitReached(JointNames[i]))) {
-        log_error ("Joint ", JointNames[i], " exceeding its hard limit.");
+    Dig:
+    {
+      // This node attempts to dig too deep (note -1 Z target), in an effort to
+      // overtorque one or more arm joints.
+      move_guarded (2, 0, -1, 0, 0, 1, 0.2, 0.2, false, true);
+      WaitForMoveGuarded:
+      {
+        StartCondition Lookup (Running ("MoveGuarded"));
+        EndCondition Lookup (Finished ("MoveGuarded"));
       }
-      elseif (Lookup(SoftTorqueLimitReached(JointNames[i]))) {
-        log_warning ("Joint ", JointNames[i], " exceeding its soft limit.");
+      publish_trajectory_demo();
+      WaitForPublish:
+      {
+        StartCondition Lookup (Running ("PublishTrajectory"));
+        EndCondition Lookup (Finished ("PublishTrajectory"));
       }
-      endif;
+      Digging = false;
     }
-    Wait 1;
+
+    MonitorTorque:
+    {
+      RepeatCondition Digging;
+      for (Integer i = 0; i < NUM_JOINTS; i+1) {
+        if (Lookup(HardTorqueLimitReached(JointNames[i]))) {
+          log_error ("Joint ", JointNames[i], " exceeding its hard limit.");
+        }
+        elseif (Lookup(SoftTorqueLimitReached(JointNames[i]))) {
+          log_warning ("Joint ", JointNames[i], " exceeding its soft limit.");
+        }
+        endif;
+      }
+      Wait 1;
+    }
   }
+  log_info ("Over-torque test finished.");
 }

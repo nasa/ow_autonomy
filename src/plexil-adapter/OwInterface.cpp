@@ -563,7 +563,7 @@ void OwInterface::publishTrajectoryDemo()
   if (check_service_client (client)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
-    srv.request.trajectory_filename = "ow_lander_trajectory.txt";
+    srv.request.trajectory_filename = "";
     thread service_thread (service_call<ow_lander::PublishTrajectory>,
                            client, srv, Op_PublishTrajectory);
     service_thread.detach();
