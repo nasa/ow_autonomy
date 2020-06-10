@@ -583,6 +583,12 @@ static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
   thread t (monitor_for_faults, name);
   t.detach();
   pub->publish (radians);
+  // Move Plexil logic here:
+  //   Wait for movement to start
+  //     joint velocity > 0
+  //   Wait for movement to end
+  //     joint velocity = 0
+  //   Mark as finished, which will terminate fault thread (can be joined)
   return true;
 }
 
