@@ -36,6 +36,14 @@ const double R2D = 180.0 / M_PI ;
 
 //////////////////// Lander Operation Support ////////////////////////
 
+// Tolerance
+
+static bool within_degree_tolerance (double val1, double val2)
+{
+  return abs (val1 - val2) <= 0.6;  // made up constant
+}
+
+
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
 const string Op_MoveGuarded       = "MoveGuarded";
@@ -282,7 +290,7 @@ void OwInterface::jointStatesCallback
 
 ////////////////////////////// Image Support ///////////////////////////////////
 
-static double CurrentTilt         = 0.0;
+static double CurrentTiltDegrees  = 0.0;
 static double CurrentPanDegrees   = 0.0;
 static bool   ImageReceived       = false;
 
@@ -296,8 +304,8 @@ static void pan_callback
 static void tilt_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentTilt = msg->set_point * R2D;
-  publish ("TiltDegrees", CurrentTilt);
+  CurrentTiltDegrees = msg->set_point * R2D;
+  publish ("TiltDegrees", CurrentTiltDegrees);
 }
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
@@ -570,17 +578,19 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
+static bool antenna_op (const string& opname,
+                        double degrees,
+                        ros::Publisher* pub)
 {
-  if (! mark_operation_running (name)) {
+  if (! mark_operation_running (opname)) {
     return false;
   }
 
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
-  ROS_INFO ("Starting %s: %f degrees (%f radians)", name.c_str(),
+  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
-  thread t (monitor_for_faults, name);
+  thread t (monitor_for_faults, opname);
   t.detach();
   pub->publish (radians);
   // Move Plexil logic here:
@@ -588,17 +598,26 @@ static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
   //     joint velocity > 0
   //   Wait for movement to end
   //     joint velocity = 0
+  //   See if it was successful, report if not.
   //   Mark as finished, which will terminate fault thread (can be joined)
   return true;
 }
 
 bool OwInterface::tiltAntenna (double degrees)
 {
+  if (within_degree_tolerance (degrees, CurrentTiltDegrees)) {
+    ROS_INFO ("Tilt already at %f degrees, ignoring tilt command.", degrees);
+    return true;
+  }
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
 bool OwInterface::panAntenna (double degrees)
 {
+  if (within_degree_tolerance (degrees, CurrentPanDegrees)) {
+    ROS_INFO ("Pan already at %f degrees, ignoring pan command.", degrees);
+    return true;
+  }
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
 
@@ -638,7 +657,7 @@ void OwInterface::digTrench (double x, double y, double z,
 
 double OwInterface::getTilt () const
 {
-  return CurrentTilt;
+  return CurrentTiltDegrees;
 }
 
 double OwInterface::getPanDegrees () const
