@@ -31,6 +31,7 @@ class OwInterface
   void moveGuardedDemo();
   void moveGuardedActionDemo(); // temporary, proof of concept
   void publishTrajectoryDemo();
+  void downlinkDemo(); 
 
   // Operational interface
 
@@ -67,6 +68,8 @@ class OwInterface
                   double dumpx, double dumpy, double dumpz);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
+
+  void downlinkMessage(std::string messageData);
 
   // State interface
   double getTilt () const;
@@ -110,6 +113,7 @@ class OwInterface
   ros::Publisher*  m_antennaTiltPublisher;
   ros::Publisher*  m_antennaPanPublisher;
   ros::Publisher*  m_leftImageTriggerPublisher;
+  ros::Publisher*  m_groundControlPublisher;
 
   ros::Subscriber* m_antennaPanSubscriber;
   ros::Subscriber* m_antennaTiltSubscriber;

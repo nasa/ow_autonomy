@@ -292,6 +292,11 @@ void OwAdapter::executeCommand(Command *cmd)
     args[0].getValue (name);
     OwInterface::instance()->stopOperation (name);
   }
+  else if (name == "downlink_message") {
+    string messageData;
+    args[0].getValue (messageData);
+    OwInterface::instance()->downlinkMessage(messageData);
+  }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

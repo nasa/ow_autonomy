@@ -7,8 +7,11 @@
 Command log_info (String);
 Command log_warning (String);
 Command log_error (String);
+Command downlink_message (String);
 
 Downlink:
 {
   log_info ("Downlinking...");
+  downlink_message ("Hello World");
+  log_info ("Message sent.");
 }

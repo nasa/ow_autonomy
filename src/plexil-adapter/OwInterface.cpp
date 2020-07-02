@@ -16,6 +16,7 @@
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
 
 // C++
@@ -28,6 +29,7 @@ using std::thread;
 
 // C
 #include <cmath>  // for M_PI and abs
+#include <unistd.h>
 
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
@@ -59,7 +61,7 @@ static map<string, bool> Running
   { Op_ArmPlanning, false },
   { Op_PublishTrajectory, false },
   { Op_PanAntenna, false },
-  { Op_TiltAntenna, false }
+  { Op_TiltAntenna, false },
 };
 
 static bool is_lander_operation (const string& name)
@@ -356,7 +358,8 @@ OwInterface::OwInterface ()
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
-    m_moveGuardedClient ("MoveGuarded", true)
+    m_moveGuardedClient ("MoveGuarded", true),
+    m_groundControlPublisher (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_moveGuardedClient.waitForServer();
@@ -373,6 +376,7 @@ OwInterface::~OwInterface ()
   if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_instance) delete m_instance;
+  if (m_groundControlPublisher) delete m_groundControlPublisher;
 }
 
 void OwInterface::initialize()
@@ -396,6 +400,9 @@ void OwInterface::initialize()
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
+    m_groundControlPublisher = new ros::Publisher
+    (m_genericNodeHandle->advertise<std_msgs::String>
+    ("/GroundControl/message", qsize));
 
     // Initialize subscribers
 
@@ -602,6 +609,14 @@ void OwInterface::takePicture ()
   ImageReceived = false;
   publish ("ImageReceived", ImageReceived);
   m_leftImageTriggerPublisher->publish (msg);
+}
+
+void OwInterface::downlinkMessage (string messageData)
+{
+  std_msgs::String message;
+  message.data = messageData;
+  sleep(1);
+  m_groundControlPublisher->publish (message);
 }
 
 void OwInterface::digTrench (double x, double y, double z,

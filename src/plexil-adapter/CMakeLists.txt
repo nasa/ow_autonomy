@@ -45,6 +45,7 @@ add_dependencies(${LIB_NAME}
 add_executable(autonomy_node autonomy_node.cpp)
 add_executable(MoveGuardedServer MoveGuardedServer.cpp)
 add_executable(MoveGuardedClient MoveGuardedClient.cpp)
+add_executable(GroundControl GroundControl.cpp)
 
 target_link_libraries(autonomy_node
   ${catkin_LIBRARIES}
@@ -65,5 +66,12 @@ add_dependencies(MoveGuardedClient
   ${MoveGuardedClient_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS})
 
-install(TARGETS autonomy_node MoveGuardedServer MoveGuardedClient
+target_link_libraries(GroundControl
+  ${catkin_LIBRARIES})
+
+add_dependencies(GroundControl
+  ${GroundControl_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS})
+
+install(TARGETS autonomy_node MoveGuardedServer MoveGuardedClient GroundControl
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
