@@ -25,7 +25,7 @@ LibraryAction Image(In String desc);
 Command log_info (...);
 
 // Directly from draft Ames/JPL interface.
-Boolean Command DigTrenchOp (Real startX, Real startY, Real startZ,
+Boolean Command dig_trench_op (Real startX, Real startY, Real startZ,
                              Real depth, Real length, Real width,
                              Real pitch, Real yaw,
                              Real dumpX, Real dumpY, Real dumpZ);
@@ -53,8 +53,7 @@ Excavation:
         EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                       Time >= (DigTheTrench.EXECUTING.START
                                + DIG_TRENCH_TIMEOUT));
-
-        Dig: DigTrenchOp (Lookup(TrenchStartX),
+        Dig: dig_trench_op (Lookup(TrenchStartX),
                           Lookup(TrenchStartY),
                           Lookup(TrenchStartZ),
                           Lookup(TrenchDepth),
