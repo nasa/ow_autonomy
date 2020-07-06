@@ -6,11 +6,11 @@ project(ow_autonomy)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-	roslib
-	actionlib
+  roslib
+  actionlib
   actionlib_msgs
-	ow_lander
-	owatb_interface
+  ow_lander
+  owatb_interface
 )
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -20,7 +20,7 @@ find_package(PLEXIL REQUIRED)
 
 add_action_files(
   DIRECTORY action
-  FILES MoveGuarded.action
+  FILES GuardedMove.action
 	)
 
 generate_messages(

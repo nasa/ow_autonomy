@@ -230,16 +230,16 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "log_debug") log_debug (args);
 
   // "Demos"
-  else if (name == "arm_planning_demo") OwInterface::instance()->armPlanningDemo();
-  else if (name == "move_guarded_demo") OwInterface::instance()->moveGuardedDemo();
-  else if (name == "move_guarded_action_demo") { // proof of concept for now
-    OwInterface::instance()->moveGuardedActionDemo();
+  else if (name == "dig_circular_demo") OwInterface::instance()->digCircularDemo();
+  else if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
+  else if (name == "guarded_move_action_demo") { // proof of concept for now
+    OwInterface::instance()->guardedMoveActionDemo();
   }
   else if (name == "publish_trajectory_demo") {
     OwInterface::instance()->publishTrajectoryDemo();
   }
   // Operations
-  else if (name == "dig_trench") {
+  else if (name == "dig_linear") {
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
     args[0].getValue(x);
     args[1].getValue(y);
@@ -252,10 +252,10 @@ void OwAdapter::executeCommand(Command *cmd)
     args[8].getValue(dumpx);
     args[9].getValue(dumpy);
     args[10].getValue(dumpz);
-    OwInterface::instance()->digTrench(x, y, z, depth, length, width,
+    OwInterface::instance()->digLinear(x, y, z, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
-  else if (name == "move_guarded") {
+  else if (name == "guarded_move") {
     double target_x, target_y, target_z, surf_norm_x, surf_norm_y, surf_norm_z;
     double offset_dist, overdrive_dist;
     bool delete_prev_traj, retract;
@@ -269,7 +269,7 @@ void OwAdapter::executeCommand(Command *cmd)
     args[7].getValue(overdrive_dist);
     args[8].getValue(delete_prev_traj);
     args[9].getValue(retract);
-    OwInterface::instance()->moveGuarded (target_x, target_y, target_z,
+    OwInterface::instance()->guardedMove (target_x, target_y, target_z,
                                           surf_norm_x, surf_norm_y, surf_norm_z,
                                           offset_dist, overdrive_dist,
                                           delete_prev_traj, retract);

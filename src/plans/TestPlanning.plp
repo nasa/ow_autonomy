@@ -7,7 +7,7 @@
 // the plan and executive.
 
 Command log_info (...);
-Command arm_planning_demo();
+Command dig_circular_demo();
 Boolean Lookup Running (String operation_name);
 
 TestPlanning:
@@ -15,11 +15,11 @@ TestPlanning:
   Plan:
   {
     log_info ("Initiating Planning Service...");
-    arm_planning_demo();
+    dig_circular_demo();
   }
   Report:
   {
-    RepeatCondition Lookup (Running ("StartPlanning"));
+    RepeatCondition Lookup (Running ("DigCircular"));
     log_info ("Planning in progress...");
     Wait 1;
   }

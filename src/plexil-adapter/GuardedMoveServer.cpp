@@ -1,38 +1,38 @@
-// Temporary file.  A dummy action server for MoveGuarded.
+// Temporary file.  A dummy action server for GuardedMove.
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include <ow_autonomy/MoveGuardedAction.h>
+#include <ow_autonomy/GuardedMoveAction.h>
 #include <string>
 
 using std::string;
 
-class MoveGuardedAction
+class GuardedMoveAction
 {
  public:
 
-  MoveGuardedAction (const string& name)
+  GuardedMoveAction (const string& name)
     :
     // Originally used the simpler execute callback.
     //    m_actionServer (m_nodeHandle, name,
-    //                    boost::bind (&MoveGuardedAction::executeCB, this, _1),
+    //                    boost::bind (&GuardedMoveAction::executeCB, this, _1),
     //                    false),
     m_actionServer (m_nodeHandle, name, false),
     m_actionName (name)
   {
     m_actionServer.registerGoalCallback
-      (boost::bind (&MoveGuardedAction::goalCB, this));
+      (boost::bind (&GuardedMoveAction::goalCB, this));
     m_actionServer.registerPreemptCallback
-      (boost::bind (&MoveGuardedAction::preemptCB, this));
+      (boost::bind (&GuardedMoveAction::preemptCB, this));
     m_actionServer.start();
   }
 
-  ~MoveGuardedAction () = default;
-  MoveGuardedAction (const MoveGuardedAction&) = delete;
-  MoveGuardedAction& operator= (const MoveGuardedAction&) = delete;
+  ~GuardedMoveAction () = default;
+  GuardedMoveAction (const GuardedMoveAction&) = delete;
+  GuardedMoveAction& operator= (const GuardedMoveAction&) = delete;
 
   // Used to perform action, but not as a callback.
-  void executeCB (const ow_autonomy::MoveGuardedGoalConstPtr& goal)
+  void executeCB (const ow_autonomy::GuardedMoveGoalConstPtr& goal)
   {
     ros::Rate r(1);
     bool success = true;
@@ -86,17 +86,17 @@ class MoveGuardedAction
 
  private:
   ros::NodeHandle m_nodeHandle;
-  actionlib::SimpleActionServer<ow_autonomy::MoveGuardedAction> m_actionServer;
+  actionlib::SimpleActionServer<ow_autonomy::GuardedMoveAction> m_actionServer;
   string m_actionName;
-  ow_autonomy::MoveGuardedFeedback m_feedback;
-  ow_autonomy::MoveGuardedResult m_result;
+  ow_autonomy::GuardedMoveFeedback m_feedback;
+  ow_autonomy::GuardedMoveResult m_result;
 };
 
 
 int main (int argc, char** argv)
 {
-  ros::init(argc, argv, "MoveGuardedServer");
-  MoveGuardedAction MoveGuarded ("MoveGuarded");
+  ros::init(argc, argv, "GuardedMoveServer");
+  GuardedMoveAction GuardedMove ("GuardedMove");
   ros::spin();
   return 0;
 }
