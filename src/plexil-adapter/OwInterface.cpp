@@ -558,7 +558,7 @@ void OwInterface::publishTrajectoryDemo()
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::PublishTrajectory>("publish_trajectory");
+    nhandle.serviceClient<ow_lander::PublishTrajectory>("arm/publish_trajectory");
 
   if (check_service_client (client)) {
     ow_lander::PublishTrajectory srv;
