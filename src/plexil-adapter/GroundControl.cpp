@@ -21,6 +21,19 @@ int main(int argc, char **argv)
 
   // subscribe to /GroundControl/message topic
   ros::Subscriber sub = nHandle.subscribe("/GroundControl/message", 3, commandsCallback);
+  
+  ros::Publisher pub = nHandle.advertise<std_msgs::Float64MultiArray>
+    ("/GroundControl/fwd_link", 3, true);
+
+  std_msgs::Float64MultiArray xyz;
+
+  xyz.data.clear();
+  xyz.data.push_back(6);
+  xyz.data.push_back(7);
+  xyz.data.push_back(0);
+
+  pub.publish(xyz);
+
 
   //ros::spin();
 

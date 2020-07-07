@@ -402,7 +402,7 @@ void OwInterface::initialize()
        ("/StereoCamera/left/image_trigger", qsize, latch));
     m_groundControlPublisher = new ros::Publisher
     (m_genericNodeHandle->advertise<std_msgs::String>
-    ("/GroundControl/message", qsize));
+    ("/GroundControl/message", qsize, latch));
 
     // Initialize subscribers
 
@@ -615,7 +615,6 @@ void OwInterface::downlinkMessage (string messageData)
 {
   std_msgs::String message;
   message.data = messageData;
-  sleep(1);
   m_groundControlPublisher->publish (message);
 }
 
