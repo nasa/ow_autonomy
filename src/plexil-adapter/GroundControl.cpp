@@ -1,20 +1,20 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+
 // ow_autonomy
 #include "subscriber.h"
 
 // ROS
 #include "ros/ros.h"
 #include "std_msgs/String.h"
-// #include "std_msgs/MultiArrayDimension.h"
-// #include "std_msgs/MultiArrayLayout.h"
-// #include "std_msgs/Float64MultiArray.h"
 #include "geometry_msgs/Point.h"
 
 
 void commandsCallback(const std_msgs::String::ConstPtr& cmd)
 {
   ROS_INFO("GroundControl: Received message, [%s].", cmd->data.c_str());
-  //publish ("MessageReceived", "I heard: [%s]", cmd->data.c_str());
-  //publish ("MessageReceived", cmd->data.c_str());
 }
 
 int main(int argc, char **argv)
@@ -37,9 +37,6 @@ int main(int argc, char **argv)
   xyz.z = 0;
 
   pub.publish(xyz);
-
-
-  //ros::spin();
 
   ros::Rate rate(1); // 1 Hz seems appropriate, for now.
   while (ros::ok()) {

@@ -9,6 +9,7 @@ Command log_warning (String);
 Command log_error (String);
 Command downlink_message (String);
 Command update_target();
+//Boolean Command checkTargetStatus;
 Boolean Lookup Waiting;
 
 WaitForGround:
