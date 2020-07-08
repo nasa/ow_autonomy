@@ -297,6 +297,9 @@ void OwAdapter::executeCommand(Command *cmd)
     args[0].getValue (messageData);
     OwInterface::instance()->downlinkMessage(messageData);
   }
+  else if (name == "update_target") {
+    OwInterface::instance()->updateTarget();
+  }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

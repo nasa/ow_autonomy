@@ -18,6 +18,10 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
+// #include "std_msgs/MultiArrayDimension.h"
+// #include "std_msgs/MultiArrayLayout.h"
+// #include "std_msgs/Float64MultiArray.h"
+#include "geometry_msgs/Point.h"
 
 // C++
 #include <set>
@@ -34,6 +38,17 @@ using std::thread;
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
+
+// Wait condition
+static bool WaitForGroundControl  = true;
+
+// Starting XYZ targets for trench.
+static double CurrentXTarget      = 5;
+static double CurrentYTarget      = 10;
+static double CurrentZTarget      = 0;
+static double GroundControlX      = 0;
+static double GroundControlY      = 0;
+static double GroundControlZ      = 0;
 
 
 //////////////////// Lander Operation Support ////////////////////////
@@ -309,6 +324,16 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
   publish ("ImageReceived", ImageReceived);
 }
 
+////////////////////////// Trench Target Support ///////////////////////////////
+
+static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
+{
+  sleep(120);
+  GroundControlX = msg->x;
+  GroundControlY = msg->y;
+  GroundControlZ = msg->z;
+  WaitForGroundControl = false;
+}
 
 //////////////////// MoveGuarded Action support ////////////////////////////////
 
@@ -359,7 +384,8 @@ OwInterface::OwInterface ()
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
     m_moveGuardedClient ("MoveGuarded", true),
-    m_groundControlPublisher (nullptr)
+    m_groundControlPublisher (nullptr),
+    m_groundControlSubscriber (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_moveGuardedClient.waitForServer();
@@ -418,6 +444,9 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+    m_groundControlSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+      subscribe("/GroundControl/fwd_link", qsize, target_callback));
   }
 }
 
@@ -643,6 +672,53 @@ void OwInterface::digTrench (double x, double y, double z,
     service_thread.detach();
   }
 }
+
+double OwInterface::getXTarget () const
+{
+  return CurrentXTarget;
+}
+
+double OwInterface::getYTarget () const
+{
+  return CurrentYTarget;
+}
+
+double OwInterface::getZTarget () const
+{
+  return CurrentZTarget;
+}
+
+// void OwInterface::setXTarget (double x) const
+// {
+//   CurrentXTarget = x;
+// }
+
+// void OwInterface::setYTarget (double y) const
+// {
+//   CurrentYTarget = y;
+// }
+
+// void OwInterface::setZTarget (double z) const
+// {
+//   CurrentZTarget = z;
+// }
+
+void OwInterface::updateTarget () const
+{
+  CurrentXTarget = GroundControlX;
+  CurrentYTarget = GroundControlY;
+  CurrentZTarget = GroundControlZ;
+}
+
+bool OwInterface::getWait () const
+{
+  return WaitForGroundControl;
+}
+
+// void OwInterface::setWait (bool wait) const
+// {
+//   WaitForGroundControl = wait;
+// }
 
 double OwInterface::getTilt () const
 {

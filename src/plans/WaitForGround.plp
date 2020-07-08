@@ -8,17 +8,36 @@ Command log_info (String);
 Command log_warning (String);
 Command log_error (String);
 Command downlink_message (String);
+Command update_target();
 Boolean Lookup Waiting;
 
-WaitDecision:
+WaitForGround:
 {
   log_info ("Deciding whether to wait for FWD Link or not.");
-  if ( Lookup(Waiting) )
-    log_info ("Waiting for FWD link from Ground Control.")
-    WaitOnLink:
-    {
+  if (Lookup(Waiting) == true ) {
+    log_info ("Wait = True.");
+  }
+  else {
+    log_info ("Wait = False.");
+  }
 
+  if ( Lookup(Waiting) == true )
+    {
+      log_info ("Waiting for FWD link from Ground Control.");
+      WaitOnLink:
+      {
+        while Lookup(Waiting) {
+          log_info ("Still Waiting on FWD link.");
+          Wait 10.0;
+        }
+        update_target();
+        log_info ("FWD link received, target updated.");
+      }
+      log_info ("Resuming plan.");
+    }
+  else 
+    {
+      log_info ("Proceeding without waiting for FWD link.");
     }
   endif
-  log_info ("Message sent.");
 }

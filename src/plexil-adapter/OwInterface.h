@@ -76,6 +76,15 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
+  double getXTarget () const;
+  double getYTarget () const;
+  double getZTarget () const;
+  void setXTarget (double x) const;
+  void setYTarget (double y) const;
+  void setZTarget (double z) const;
+  void updateTarget () const;
+  bool getWait () const;
+  void setWait () const;
   bool imageReceived () const;
 
   // These methods apply to all "lander operations", and hide their ROS
@@ -119,6 +128,7 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+  ros::Subscriber* m_groundControlSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>

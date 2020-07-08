@@ -38,9 +38,9 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(TrenchPitch, 0)
   else STATE_STUB(TrenchYaw, 0)
   else STATE_STUB(TrenchSlopeAngle, 30)
-  else STATE_STUB(TrenchStartX, 5)
-  else STATE_STUB(TrenchStartY, 10)
-  else STATE_STUB(TrenchStartZ, 0)
+  //else STATE_STUB(TrenchStartX, 5)
+  //else STATE_STUB(TrenchStartY, 10)
+  //else STATE_STUB(TrenchStartZ, 0)
   else STATE_STUB(TrenchDumpX, 0)
   else STATE_STUB(TrenchDumpY, 0)
   else STATE_STUB(TrenchDumpZ, 5)
@@ -54,6 +54,15 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(HorizFOV, 10) // should be 21
   else STATE_STUB(TorqueHighLimit, 800)
 
+  else if (state_name == "TrenchStartX") {
+    value_out = OwInterface::instance()->getXTarget();
+  }
+  else if (state_name == "TrenchStartY") {
+    value_out = OwInterface::instance()->getYTarget();
+  }
+  else if (state_name == "TrenchStartZ") {
+    value_out = OwInterface::instance()->getZTarget();
+  }
   else if (state_name == "TiltDegrees") {
     value_out = OwInterface::instance()->getTilt();
   }
@@ -88,6 +97,9 @@ bool OwSimProxy::lookup (const std::string& state_name,
     string operation;
     args[0].getValue(operation);
     value_out = OwInterface::instance()->finished (operation);
+  }
+  else if (state_name == "Waiting") {
+    value_out = OwInterface::instance()->getWait();
   }
   else retval = false;
 

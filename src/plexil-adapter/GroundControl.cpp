@@ -4,6 +4,11 @@
 // ROS
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+// #include "std_msgs/MultiArrayDimension.h"
+// #include "std_msgs/MultiArrayLayout.h"
+// #include "std_msgs/Float64MultiArray.h"
+#include "geometry_msgs/Point.h"
+
 
 void commandsCallback(const std_msgs::String::ConstPtr& cmd)
 {
@@ -22,15 +27,14 @@ int main(int argc, char **argv)
   // subscribe to /GroundControl/message topic
   ros::Subscriber sub = nHandle.subscribe("/GroundControl/message", 3, commandsCallback);
   
-  ros::Publisher pub = nHandle.advertise<std_msgs::Float64MultiArray>
+  ros::Publisher pub = nHandle.advertise<geometry_msgs::Point>
     ("/GroundControl/fwd_link", 3, true);
 
-  std_msgs::Float64MultiArray xyz;
+  geometry_msgs::Point xyz;
 
-  xyz.data.clear();
-  xyz.data.push_back(6);
-  xyz.data.push_back(7);
-  xyz.data.push_back(0);
+  xyz.x = 6;
+  xyz.y = 7;
+  xyz.z = 0;
 
   pub.publish(xyz);
 

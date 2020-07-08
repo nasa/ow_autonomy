@@ -42,10 +42,7 @@ EuropaMission: Concurrence
     LibraryCall Downlink;
     LibraryCall CollectAndTransfer;
     LibraryCall StartSampleAnalysis;
-    
-    WaitFwdLink: {
-      LibraryCall WaitForGround;
-    }
+    LibraryCall WaitForGround;
     
     log_info ("Europa Mission finished.");
   }
