@@ -79,12 +79,13 @@ class OwInterface
   double getXTarget () const;
   double getYTarget () const;
   double getZTarget () const;
-  void setXTarget (double x) const;
-  void setYTarget (double y) const;
-  void setZTarget (double z) const;
+  // void setXTarget (double x) const;
+  // void setYTarget (double y) const;
+  // void setZTarget (double z) const;
   void updateTarget () const;
+  bool checkTargetStatus () const;
   bool getWait () const;
-  void setWait () const;
+  // void setWait (bool wait) const;
   bool imageReceived () const;
 
   // These methods apply to all "lander operations", and hide their ROS

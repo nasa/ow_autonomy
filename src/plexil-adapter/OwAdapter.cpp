@@ -300,6 +300,9 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "update_target") {
     OwInterface::instance()->updateTarget();
   }
+  else if (name == "check_target_status") {
+    retval = OwInterface::instance()->checkTargetStatus();
+  }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

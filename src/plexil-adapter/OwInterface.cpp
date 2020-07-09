@@ -40,7 +40,8 @@ const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
 // Wait condition
-static bool WaitForGroundControl  = true;
+static bool WaitForGroundControl  = false;
+static bool FwdLinkReceived = false;
 
 // Starting XYZ targets for trench.
 static double CurrentXTarget      = 5;
@@ -328,11 +329,14 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 
 static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
 {
-  sleep(120);
+  // simulate communication delay from earth
+  //sleep(10);
+  std::this_thread::sleep_for(std::chrono::seconds(120));
   GroundControlX = msg->x;
   GroundControlY = msg->y;
   GroundControlZ = msg->z;
   WaitForGroundControl = false;
+  FwdLinkReceived = true;
 }
 
 //////////////////// MoveGuarded Action support ////////////////////////////////
@@ -688,26 +692,25 @@ double OwInterface::getZTarget () const
   return CurrentZTarget;
 }
 
-// void OwInterface::setXTarget (double x) const
-// {
-//   CurrentXTarget = x;
-// }
-
-// void OwInterface::setYTarget (double y) const
-// {
-//   CurrentYTarget = y;
-// }
-
-// void OwInterface::setZTarget (double z) const
-// {
-//   CurrentZTarget = z;
-// }
-
 void OwInterface::updateTarget () const
 {
-  CurrentXTarget = GroundControlX;
-  CurrentYTarget = GroundControlY;
-  CurrentZTarget = GroundControlZ;
+  if (FwdLinkReceived == true) {
+    CurrentXTarget = GroundControlX;
+    CurrentYTarget = GroundControlY;
+    CurrentZTarget = GroundControlZ;
+  }
+  else {
+    GroundControlX = CurrentXTarget;
+    GroundControlY = CurrentYTarget;
+    GroundControlZ = CurrentZTarget;
+  }
+}
+
+bool OwInterface::checkTargetStatus () const
+{
+  std::srand(time(0));
+  WaitForGroundControl = (std::rand() % 2);
+  return WaitForGroundControl;
 }
 
 bool OwInterface::getWait () const
