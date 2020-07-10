@@ -9,6 +9,7 @@ Command log_warning (String);
 Command log_error (String);
 Command downlink_message (String);
 Command update_target();
+Command request_fwd_link();
 Boolean Command check_target_status();
 Boolean Lookup Waiting;
 
@@ -20,6 +21,7 @@ WaitForGround:
   if ( Lookup(Waiting) == true )
     {
       log_info ("Waiting for FWD link from Ground Control.");
+      request_fwd_link();
       WaitOnLink:
       {
         while Lookup(Waiting) {

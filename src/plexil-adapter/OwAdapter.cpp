@@ -300,6 +300,9 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "update_target") {
     OwInterface::instance()->updateTarget();
   }
+  else if (name == "request_fwd_link") {
+    OwInterface::instance()->requestFwdLink();
+  }
   else if (name == "check_target_status") {
     retval = OwInterface::instance()->checkTargetStatus();
   }

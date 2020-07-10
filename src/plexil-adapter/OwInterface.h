@@ -83,6 +83,7 @@ class OwInterface
   // void setYTarget (double y) const;
   // void setZTarget (double z) const;
   void updateTarget () const;
+  void requestFwdLink () const;
   bool checkTargetStatus () const;
   bool getWait () const;
   // void setWait (bool wait) const;
@@ -124,6 +125,7 @@ class OwInterface
   ros::Publisher*  m_antennaPanPublisher;
   ros::Publisher*  m_leftImageTriggerPublisher;
   ros::Publisher*  m_groundControlPublisher;
+  ros::Publisher*  m_groundRequestPublisher;
 
   ros::Subscriber* m_antennaPanSubscriber;
   ros::Subscriber* m_antennaTiltSubscriber;

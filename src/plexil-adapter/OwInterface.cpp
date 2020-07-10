@@ -93,7 +93,7 @@ static bool mark_operation_running (const string& name)
   }
 
   ROS_INFO ("Marking %s RUNNING", name.c_str());
-  Running.at (name) = true;
+  Running.at (name) = true;ros::NodeHandle nHandle;
   publish ("Running", true, name);
   return true;
 }
@@ -331,7 +331,11 @@ static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
 {
   // simulate communication delay from earth
   //sleep(10);
-  std::this_thread::sleep_for(std::chrono::seconds(120));
+  // std::this_thread::sleep_for(std::chrono::seconds(120));
+  //std::this_thread::sleep_for(std::chrono::seconds(30));
+  ROS_INFO("GroundControl: Received message, [x].");
+  ROS_INFO("GroundControl: Received message, [y].");
+  ROS_INFO("GroundControl: Received message, [z].");
   GroundControlX = msg->x;
   GroundControlY = msg->y;
   GroundControlZ = msg->z;
@@ -389,7 +393,8 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_moveGuardedClient ("MoveGuarded", true),
     m_groundControlPublisher (nullptr),
-    m_groundControlSubscriber (nullptr)
+    m_groundControlSubscriber (nullptr),
+    m_groundRequestPublisher (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_moveGuardedClient.waitForServer();
@@ -407,6 +412,8 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_instance) delete m_instance;
   if (m_groundControlPublisher) delete m_groundControlPublisher;
+  if (m_groundControlSubscriber) delete m_groundControlSubscriber;
+  if (m_groundRequestPublisher) delete m_groundRequestPublisher;
 }
 
 void OwInterface::initialize()
@@ -431,8 +438,11 @@ void OwInterface::initialize()
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
     m_groundControlPublisher = new ros::Publisher
-    (m_genericNodeHandle->advertise<std_msgs::String>
-    ("/GroundControl/message", qsize, latch));
+       (m_genericNodeHandle->advertise<std_msgs::String>
+       ("/GroundControl/message", qsize, latch));
+    m_groundRequestPublisher = new ros::Publisher
+       (m_genericNodeHandle->advertise<std_msgs::String>
+       ("/GroundControl/request", qsize, latch)); 
 
     // Initialize subscribers
 
@@ -698,12 +708,22 @@ void OwInterface::updateTarget () const
     CurrentXTarget = GroundControlX;
     CurrentYTarget = GroundControlY;
     CurrentZTarget = GroundControlZ;
+    FwdLinkReceived = false;
   }
   else {
-    GroundControlX = CurrentXTarget;
-    GroundControlY = CurrentYTarget;
-    GroundControlZ = CurrentZTarget;
+    // update target internally?
+    // target was already set.
   }
+}
+
+void OwInterface::requestFwdLink () const
+{
+  std_msgs::String message;
+  message.data = "Request for FWD link.";
+  // Simulate time delay for arrival of message to Earth.
+  // 30 seconds.
+  std::this_thread::sleep_for(std::chrono::seconds(30));
+  m_groundRequestPublisher->publish (message);
 }
 
 bool OwInterface::checkTargetStatus () const
