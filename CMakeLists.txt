@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   ow_lander
-  owatb_interface
 )
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -33,7 +32,7 @@ generate_messages(
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS roscpp roslib ow_lander owatb_interface actionlib_msgs
+  CATKIN_DEPENDS roscpp roslib ow_lander actionlib_msgs
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
