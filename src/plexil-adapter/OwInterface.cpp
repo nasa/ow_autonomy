@@ -578,6 +578,16 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
+static void antenna_movement (const string& opname, double goal_degrees)
+{
+  //   Wait for movement to start (joint velocity > 0)
+  //     If it doesn't, report error and return.
+  //   Wait for movement to end (joint velocity = 0)
+  //     If it takes too long, error and return.
+  //   See if it was successful, report if not.
+  mark_operation_finished (opname);
+}
+
 static bool antenna_op (const string& opname,
                         double degrees,
                         ros::Publisher* pub)
@@ -590,16 +600,11 @@ static bool antenna_op (const string& opname,
   radians.data = degrees * D2R;
   ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
-  thread t (monitor_for_faults, opname);
-  t.detach();
+  thread fault_thread (monitor_for_faults, opname);
+  fault_thread.detach();
   pub->publish (radians);
-  // Move Plexil logic here:
-  //   Wait for movement to start
-  //     joint velocity > 0
-  //   Wait for movement to end
-  //     joint velocity = 0
-  //   See if it was successful, report if not.
-  //   Mark as finished, which will terminate fault thread (can be joined)
+  thread antenna_thread (antenna_movement, opname, degrees);
+  antenna_thread.detach();
   return true;
 }
 
