@@ -11,7 +11,7 @@
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <ow_autonomy/MoveGuardedAction.h>
+#include <ow_autonomy/GuardedMoveAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <string>
@@ -27,16 +27,16 @@ class OwInterface
   void initialize ();
 
   // "Demo" functions, perhaps temporary.
-  void armPlanningDemo();
-  void moveGuardedDemo();
-  void moveGuardedActionDemo(); // temporary, proof of concept
+  void digCircularDemo();
+  void guardedMoveDemo();
+  void guardedMoveActionDemo(); // temporary, proof of concept
   void publishTrajectoryDemo();
 
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,
-  // this function matches moveGuardedDemo above.
-  void moveGuarded (double target_x = 2,
+  // this function matches guardedMoveDemo above.
+  void guardedMove (double target_x = 2,
                     double target_y = 0,
                     double target_z = 0.02,
                     double surf_norm_x = 0,
@@ -47,8 +47,8 @@ class OwInterface
                     bool delete_prev_traj = false,
                     bool retract = false);
 
-  // Temporary, until moveGuarded is just a ROS action.
-  void moveGuardedAction (double target_x = 2,
+  // Temporary, until guardedMove is just a ROS action.
+  void guardedMoveAction (double target_x = 2,
                           double target_y = 0,
                           double target_z = 0.02,
                           double surf_norm_x = 0,
@@ -62,7 +62,7 @@ class OwInterface
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
   void takePicture ();
-  void digTrench (double x, double y, double z, double depth,
+  void digLinear (double x, double y, double z, double depth,
                   double length, double width, double pitch, double yaw,
                   double dumpx, double dumpy, double dumpz);
   void takePanorama (double elev_lo, double elev_hi,
@@ -87,7 +87,7 @@ class OwInterface
 
  private:
   // temporary, proof of concept
-  void moveGuardedActionAux (double target_x,
+  void guardedMoveActionAux (double target_x,
                              double target_y,
                              double target_z,
                              double surf_norm_x,
@@ -117,8 +117,8 @@ class OwInterface
   ros::Subscriber* m_cameraSubscriber;
 
   // Action clients
-  actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>
-    m_moveGuardedClient;
+  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>
+    m_guardedMoveClient;
 
 };
 
