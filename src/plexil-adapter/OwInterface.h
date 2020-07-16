@@ -1,9 +1,9 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
-
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
 
 // Interface to lander simulator.  Singleton, because only once instance will
 // ever be needed in the current autonomy scheme, which has one autonomy
