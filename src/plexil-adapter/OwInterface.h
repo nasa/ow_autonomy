@@ -31,7 +31,7 @@ class OwInterface
   void moveGuardedDemo();
   void moveGuardedActionDemo(); // temporary, proof of concept
   void publishTrajectoryDemo();
-  void downlinkDemo(); 
+  // void downlinkDemo(); 
 
   // Operational interface
 
@@ -69,7 +69,7 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
-  void downlinkMessage(std::string messageData);
+  void downlinkTarget();
 
   // State interface
   double getTilt () const;
@@ -79,14 +79,8 @@ class OwInterface
   double getXTarget () const;
   double getYTarget () const;
   double getZTarget () const;
-  // void setXTarget (double x) const;
-  // void setYTarget (double y) const;
-  // void setZTarget (double z) const;
-  void updateTarget () const;
   void requestFwdLink () const;
-  bool checkTargetStatus () const;
   bool getWait () const;
-  // void setWait (bool wait) const;
   bool imageReceived () const;
 
   // These methods apply to all "lander operations", and hide their ROS
@@ -131,7 +125,8 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
-  ros::Subscriber* m_groundControlSubscriber;
+  ros::Subscriber* m_groundFwdLinkSubscriber;
+  ros::Subscriber* m_groundOnboardDecisionSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::MoveGuardedAction>

@@ -10,7 +10,7 @@ Boolean Lookup SampleGood;
 LibraryAction ImageSampleSite();
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
-LibraryAction Downlink();
+LibraryAction DownlinkImage();
 
 CollectAndTransfer:
 {
@@ -39,7 +39,7 @@ CollectAndTransfer:
       LibraryCall Image(desc="sample");
     }
 
-    DownlinkSampleImage: LibraryCall Downlink();
+    DownlinkSampleImage: LibraryCall DownlinkImage();
 
     Transfer:
     {

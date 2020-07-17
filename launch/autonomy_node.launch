@@ -1,6 +1,9 @@
 <!-- Launch the Autonomy module, which is a single node. -->
 
 <launch>
+  <param name="/use_sim_time" value="false"/>
+  <param name="/real_time_sim" value="false"/>
+  <param name="/use_onboard_target" value="true"/>
   <arg name="plan" default="Demo.plx"/>
   <node pkg="ow_autonomy"
         name="autonomy_node"

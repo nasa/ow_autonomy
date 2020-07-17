@@ -7,11 +7,11 @@
 Command log_info (String);
 Command log_warning (String);
 Command log_error (String);
-Command downlink_message (String);
+Command downlink_target ();
 
-Downlink:
+Downlink: Sequence
 {
   log_info ("Downlinking...");
-  downlink_message ("Hello Europa");
-  log_info ("Message sent.");
+  downlink_target ();
+  log_info ("Target sent.");
 }

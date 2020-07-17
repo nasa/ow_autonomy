@@ -18,9 +18,6 @@
 #include <std_msgs/Empty.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
-// #include "std_msgs/MultiArrayDimension.h"
-// #include "std_msgs/MultiArrayLayout.h"
-// #include "std_msgs/Float64MultiArray.h"
 #include "geometry_msgs/Point.h"
 
 // C++
@@ -40,8 +37,7 @@ const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
 // Wait condition
-static bool WaitForGroundControl  = false;
-static bool FwdLinkReceived = false;
+static bool WaitForGroundControl  = true;
 
 // Starting XYZ targets for trench.
 static double CurrentXTarget      = 5;
@@ -327,20 +323,21 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 
 ////////////////////////// Trench Target Support ///////////////////////////////
 
+// Ground Control decides to update target.
 static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
 {
-  // simulate communication delay from earth
-  //sleep(10);
-  // std::this_thread::sleep_for(std::chrono::seconds(120));
-  //std::this_thread::sleep_for(std::chrono::seconds(30));
-  ROS_INFO("GroundControl: Received message, [x].");
-  ROS_INFO("GroundControl: Received message, [y].");
-  ROS_INFO("GroundControl: Received message, [z].");
-  GroundControlX = msg->x;
-  GroundControlY = msg->y;
-  GroundControlZ = msg->z;
+  ROS_INFO("Lander: Received decision, use new target.");
+  CurrentXTarget = msg->x;
+  CurrentYTarget = msg->y;
+  CurrentZTarget = msg->z;
   WaitForGroundControl = false;
-  FwdLinkReceived = true;
+}
+
+// Ground Control decides for Lander to use onboard Target.
+static void onboard_target_callback (const std_msgs::String::ConstPtr& msg)
+{
+  ROS_INFO("Lander: Received decision, %s", msg->data.c_str());
+  WaitForGroundControl = false;
 }
 
 //////////////////// MoveGuarded Action support ////////////////////////////////
@@ -393,8 +390,9 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_moveGuardedClient ("MoveGuarded", true),
     m_groundControlPublisher (nullptr),
-    m_groundControlSubscriber (nullptr),
-    m_groundRequestPublisher (nullptr)
+    m_groundFwdLinkSubscriber (nullptr),
+    m_groundRequestPublisher (nullptr),
+    m_groundOnboardDecisionSubscriber (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_moveGuardedClient.waitForServer();
@@ -412,8 +410,9 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_instance) delete m_instance;
   if (m_groundControlPublisher) delete m_groundControlPublisher;
-  if (m_groundControlSubscriber) delete m_groundControlSubscriber;
+  if (m_groundFwdLinkSubscriber) delete m_groundFwdLinkSubscriber;
   if (m_groundRequestPublisher) delete m_groundRequestPublisher;
+  if (m_groundOnboardDecisionSubscriber) delete m_groundOnboardDecisionSubscriber;
 }
 
 void OwInterface::initialize()
@@ -438,8 +437,8 @@ void OwInterface::initialize()
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
     m_groundControlPublisher = new ros::Publisher
-       (m_genericNodeHandle->advertise<std_msgs::String>
-       ("/GroundControl/message", qsize, latch));
+       (m_genericNodeHandle->advertise<geometry_msgs::Point>
+       ("/GroundControl/downlink", qsize, latch));
     m_groundRequestPublisher = new ros::Publisher
        (m_genericNodeHandle->advertise<std_msgs::String>
        ("/GroundControl/request", qsize, latch)); 
@@ -458,9 +457,12 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
-    m_groundControlSubscriber = new ros::Subscriber
+    m_groundFwdLinkSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
       subscribe("/GroundControl/fwd_link", qsize, target_callback));
+    m_groundOnboardDecisionSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+      subscribe("/GroundControl/use_onboard_target", qsize, onboard_target_callback));
   }
 }
 
@@ -654,11 +656,13 @@ void OwInterface::takePicture ()
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::downlinkMessage (string messageData)
+void OwInterface::downlinkTarget ()
 {
-  std_msgs::String message;
-  message.data = messageData;
-  m_groundControlPublisher->publish (message);
+  geometry_msgs::Point target;
+  target.x = CurrentXTarget;
+  target.y = CurrentYTarget;
+  target.z = CurrentZTarget;
+  m_groundControlPublisher->publish (target);
 }
 
 void OwInterface::digTrench (double x, double y, double z,
@@ -702,46 +706,35 @@ double OwInterface::getZTarget () const
   return CurrentZTarget;
 }
 
-void OwInterface::updateTarget () const
-{
-  if (FwdLinkReceived == true) {
-    CurrentXTarget = GroundControlX;
-    CurrentYTarget = GroundControlY;
-    CurrentZTarget = GroundControlZ;
-    FwdLinkReceived = false;
-  }
-  else {
-    // update target internally?
-    // target was already set.
-  }
-}
-
 void OwInterface::requestFwdLink () const
 {
   std_msgs::String message;
-  message.data = "Request for FWD link.";
-  // Simulate time delay for arrival of message to Earth.
-  // 30 seconds.
-  std::this_thread::sleep_for(std::chrono::seconds(30));
-  m_groundRequestPublisher->publish (message);
-}
+  message.data = "Request for FWD link";
 
-bool OwInterface::checkTargetStatus () const
-{
-  std::srand(time(0));
-  WaitForGroundControl = (std::rand() % 2);
-  return WaitForGroundControl;
+  // Note: This parameter is set inside
+  // ow_autonomy/launch/autonomy_node.launch
+  ros::Duration commsDelay;
+  bool realTimeSim;
+  m_genericNodeHandle->getParam("/real_time_sim", realTimeSim);
+
+  if (realTimeSim == true) {
+    // 50 minutes delay.
+    commsDelay = ros::Duration(3000, 0);
+  }
+  else {
+    // 30 seconds delay.
+    commsDelay = ros::Duration(30, 0);
+  }
+
+  // Simulate time delay for arrival of message to Earth.
+  commsDelay.sleep();
+  m_groundRequestPublisher->publish (message);
 }
 
 bool OwInterface::getWait () const
 {
   return WaitForGroundControl;
 }
-
-// void OwInterface::setWait (bool wait) const
-// {
-//   WaitForGroundControl = wait;
-// }
 
 double OwInterface::getTilt () const
 {

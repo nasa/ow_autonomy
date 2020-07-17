@@ -5,7 +5,8 @@
 Real Lookup time;
 Real Lookup TrenchTargetTimeout;
 Boolean Lookup TrenchIdentified;
-LibraryAction DownlinkImage();
+LibraryAction DownlinkImage;
+LibraryAction Downlink;
 LibraryAction Stub(In String desc);
 Command log_error (...);
 
@@ -15,7 +16,8 @@ GetTrenchTarget:
   Time = Lookup(time);
 
   // TODO: invoke comms, reset on failure.
-  LibraryCall DownlinkImage();
+  LibraryCall DownlinkImage;
+  LibraryCall Downlink;
 
   Try {
     GetInfoFromGround:

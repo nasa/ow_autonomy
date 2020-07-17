@@ -9,7 +9,6 @@ LibraryAction ImageLandingSite;
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
-LibraryAction Downlink;
 LibraryAction CollectAndTransfer;
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
@@ -38,11 +37,10 @@ EuropaMission: Concurrence
     LibraryCall ImageLandingSite;
     LibraryCall InterogateSurface;
     LibraryCall GetTrenchTarget;
+    LibraryCall WaitForGround;
     LibraryCall Excavation;
-    LibraryCall Downlink;
     LibraryCall CollectAndTransfer;
     LibraryCall StartSampleAnalysis;
-    LibraryCall WaitForGround;
     
     log_info ("Europa Mission finished.");
   }

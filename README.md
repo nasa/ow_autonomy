@@ -72,7 +72,11 @@ Run
 
    Note that `/StereoCamera/left/image_raw_mouse_left` appears in the box below.
 
-3. Start the autonomy node.  To use the default plan:
+3. (optional, as needed) If you want to use ROS time instead of system time,
+   open ow_autonomy/launch/autonomy_node.launch and set the "/use_sim_time"
+   parameter to true.
+
+4. Start the autonomy node.  To use the default plan:
 
    `roslaunch ow_autonomy autonomy_node.launch`
 
@@ -86,6 +90,7 @@ Run
    to a .plx file found in:
 
    `<ow_workspace>/devel/etc/plexil`
+   
 
 
 Plans

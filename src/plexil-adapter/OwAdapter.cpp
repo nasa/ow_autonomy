@@ -292,19 +292,11 @@ void OwAdapter::executeCommand(Command *cmd)
     args[0].getValue (name);
     OwInterface::instance()->stopOperation (name);
   }
-  else if (name == "downlink_message") {
-    string messageData;
-    args[0].getValue (messageData);
-    OwInterface::instance()->downlinkMessage(messageData);
-  }
-  else if (name == "update_target") {
-    OwInterface::instance()->updateTarget();
+  else if (name == "downlink_target") {
+    OwInterface::instance()->downlinkTarget();
   }
   else if (name == "request_fwd_link") {
     OwInterface::instance()->requestFwdLink();
-  }
-  else if (name == "check_target_status") {
-    retval = OwInterface::instance()->checkTargetStatus();
   }
   else ROS_ERROR("Invalid command %s", name.c_str());
 

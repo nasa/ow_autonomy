@@ -3,21 +3,22 @@
 // rights reserved.
 
 // Wait for Fwd Link Decision plan.
+// A few options when using this plan. If you want to use ROS time instead 
+// of system time, open ow_autonomy/launch/autonomy_node.launch and set the 
+// "/use_sim_time" parameter to true. If you want to run a full real time 
+// simulation (approx. 2 hr 40 min instead of 1 min 36 sec for communications),
+// set the "/real_time_sim" parameter to true. If you want the "GroundControl"
+// node to use the target set from ground instead of the target aquired 
+// onboard the lander, set the "/use_onboard_target" parameter to false.
 
 Command log_info (String);
-Command log_warning (String);
-Command log_error (String);
-Command downlink_message (String);
-Command update_target();
+// Command log_warning (String);
+// Command log_error (String);
 Command request_fwd_link();
-Boolean Command check_target_status();
 Boolean Lookup Waiting;
 
-WaitForGround:
+WaitForGround: Sequence
 {
-  log_info ("Deciding whether to wait for FWD Link or not.");
-  check_target_status();
-
   if ( Lookup(Waiting) == true )
     {
       log_info ("Waiting for FWD link from Ground Control.");
@@ -25,18 +26,12 @@ WaitForGround:
       WaitOnLink:
       {
         while Lookup(Waiting) {
-          Wait 10.0;
+          // Wait 10.0;
         }
-        update_target();
-        log_info ("FWD link received, target updated.");
+        log_info ("Target updated.");
       }
-      log_info ("Resuming plan.");
-    }
-  else 
-    {
-      log_info ("Proceeding without waiting for FWD link.");
-      update_target();
-      log_info ("Target updated.");
     }
   endif
+
+  log_info ("Resuming plan.");
 }
