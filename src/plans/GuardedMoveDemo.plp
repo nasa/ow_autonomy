@@ -3,21 +3,21 @@
 // rights reserved.
 
 // Demonstrate a guarded move.  Note that this is blocking/syncnronous wrapper
-// of the asynchonous move_guarded_demo command.
+// of the asynchonous guarded_move_demo command.
 
 Command log_info (...);
-Command move_guarded_demo();
+Command guarded_move_demo();
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
-MoveGuardedDemo:
+GuardedMoveDemo:
 {
-  log_info ("Beginning MoveGuarded Demo...");
-  move_guarded_demo();
+  log_info ("Beginning GuardedMove Demo...");
+  guarded_move_demo();
   Block:
   {
-    StartCondition Lookup (Running ("MoveGuarded"));
-    EndCondition Lookup (Finished ("MoveGuarded"));
+    StartCondition Lookup (Running ("GuardedMove"));
+    EndCondition Lookup (Finished ("GuardedMove"));
   }
-  log_info ("MoveGuarded Demo finished");
+  log_info ("GuardedMove Demo finished");
 }

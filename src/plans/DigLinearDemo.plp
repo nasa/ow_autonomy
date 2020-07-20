@@ -2,16 +2,16 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
-// Demonstrate a trench dig.
+// Demonstrate linear digging.
 
 Command log_info (...);
 Command log_warning (...);
-Command dig_trench_op (Real X, Real Y, Real Z, Real Depth, Real Length, Real Width,
+Command dig_linear (Real X, Real Y, Real Z, Real Depth, Real Length, Real Width,
                     Real Pitch, Real Yaw, Real DumpX, Real DumpY, Real DumpZ);
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
-DigTrenchDemo:
+DigLinearDemo:
 {
   // This is the JPL interface.  Most parameters are ignored by the current OW
   // implementation.  The non-ignored values match the service defaults.
@@ -28,12 +28,12 @@ DigTrenchDemo:
   Real DumpY  = 0;   // ignored
   Real DumpZ  = 0;   // ignored
 
-  log_info ("Beginning dig trench demo...");
-  dig_trench_op (X, Y, Z, Depth, Length, Width, Pitch, Yaw, DumpX, DumpY, DumpZ);
+  log_info ("Beginning dig linear demo...");
+  dig_linear (X, Y, Z, Depth, Length, Width, Pitch, Yaw, DumpX, DumpY, DumpZ);
   Block:
   {
-    StartCondition Lookup (Running ("DigTrench"));
-    EndCondition Lookup (Finished ("DigTrench"));
+    StartCondition Lookup (Running ("DigLinear"));
+    EndCondition Lookup (Finished ("DigLinear"));
   }
-  log_info ("Dig trench demo finished");
+  log_info ("Dig linear demo finished");
 }

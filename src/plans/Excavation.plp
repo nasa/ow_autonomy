@@ -25,10 +25,10 @@ LibraryAction Image(In String desc);
 Command log_info (...);
 
 // Directly from draft Ames/JPL interface.
-Boolean Command dig_trench_op (Real startX, Real startY, Real startZ,
-                             Real depth, Real length, Real width,
-                             Real pitch, Real yaw,
-                             Real dumpX, Real dumpY, Real dumpZ);
+Boolean Command dig_linear (Real startX, Real startY, Real startZ,
+                            Real depth, Real length, Real width,
+                            Real pitch, Real yaw,
+                            Real dumpX, Real dumpY, Real dumpZ);
 
 Excavation:
 {
@@ -53,18 +53,17 @@ Excavation:
         EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                       Time >= (DigTheTrench.EXECUTING.START
                                + DIG_TRENCH_TIMEOUT));
-
-        Dig: dig_trench_op (Lookup(TrenchStartX),
-                          Lookup(TrenchStartY),
-                          Lookup(TrenchStartZ),
-                          Lookup(TrenchDepth),
-                          Lookup(TrenchLength),
-                          Lookup(TrenchWidth),
-                          Lookup(TrenchPitch),
-                          Lookup(TrenchYaw),
-                          Lookup(TrenchDumpX),
-                          Lookup(TrenchDumpY),
-                          Lookup(TrenchDumpZ));
+        Dig: dig_linear (Lookup(TrenchStartX),
+                         Lookup(TrenchStartY),
+                         Lookup(TrenchStartZ),
+                         Lookup(TrenchDepth),
+                         Lookup(TrenchLength),
+                         Lookup(TrenchWidth),
+                         Lookup(TrenchPitch),
+                         Lookup(TrenchYaw),
+                         Lookup(TrenchDumpX),
+                         Lookup(TrenchDumpY),
+                         Lookup(TrenchDumpZ));
         FilmDig:
         {
           Repeat DigTheTrench.state == EXECUTING;

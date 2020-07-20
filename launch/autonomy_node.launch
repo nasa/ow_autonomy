@@ -11,8 +11,8 @@
         args="$(arg plan)"
         output="screen" />
   <node pkg="ow_autonomy"
-        name="MoveGuardedServer"
-        type="MoveGuardedServer"
+        name="GuardedMoveServer"
+        type="GuardedMoveServer"
         output="screen" />
   <node pkg="ow_autonomy"
         name="GroundControl"

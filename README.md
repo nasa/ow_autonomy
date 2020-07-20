@@ -127,8 +127,8 @@ Here are some interesting autonomy plans.  Run them as shown, substituting for
 
 5. ROS Action demo: `TestActions.plx`
 
-   This runs a dummy MoveGuarded action (not connected to simulator)
-   concurrently with the real MoveGuarded service.
+   This runs a dummy GuardedMove action (not connected to simulator)
+   concurrently with the real GuardedMove service.
 
 
 Fault Detection
