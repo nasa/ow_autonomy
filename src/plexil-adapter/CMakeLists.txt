@@ -6,6 +6,7 @@ set (HEADERS
   OwAdapter.h
   OwSimInterface.h
   OwSimProxy.h
+	AntennaManager.h
   joint_support.h
   subscriber.h
 )
@@ -16,6 +17,7 @@ set (SOURCES
   OwAdapter.cpp
   OwSimInterfaceROS.cpp
   OwSimProxy.cpp
+	AntennaManager.cpp
   subscriber.cpp
 )
 

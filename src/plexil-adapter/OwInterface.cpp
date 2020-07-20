@@ -580,11 +580,28 @@ void OwInterface::publishTrajectoryDemo()
 
 static void antenna_movement (const string& opname, double goal_degrees)
 {
+  // Execution notes to myself:
+  //   - I can run for as long as it takes the antenna to finish!
+  //   - The caller has run me as a detached thread.  The caller is free of me!
+  //   - I should terminate normally, else I am a bad citizen.
+  //   - I can spawn threads, but do I need to?
+  //   - If I spawn threads, do I need futures, condition variables, etc?
+
   //   Wait for movement to start (joint velocity > 0)
   //     If it doesn't, report error and return.
   //   Wait for movement to end (joint velocity = 0)
   //     If it takes too long, error and return.
   //   See if it was successful, report if not.
+
+  // Thread-less (callback-driven) approach
+  // - note that this could be done in caller, and NO threads are needed!
+  // 1. Set something that makes joint callback track antenna operation
+  //    - when antenna starts, it records it as moving
+  //      - if timeout, terminate with error
+  //    - when it stops, it records it as finished and
+  //      - if timeout, terminate with error
+  //    - after stop, report if goal was not met
+  //    - mark operation finished
   mark_operation_finished (opname);
 }
 
@@ -603,6 +620,8 @@ static bool antenna_op (const string& opname,
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
   pub->publish (radians);
+  
+  // Will no longer need the following.
   thread antenna_thread (antenna_movement, opname, degrees);
   antenna_thread.detach();
   return true;
