@@ -1,4 +1,5 @@
 #include "AntennaManager.h"
+#include "OwInterface.h"
 
 enum class AntennaState
   { resting,            // fully at rest, nothing commanded
@@ -7,7 +8,7 @@ enum class AntennaState
     pre_tilt,           // tilt joint at rest, tilt commanded
     tilting,            // tilt in progress
     panning_and_tilting // pan and tilt in progress
-  };  
+  };
 
 AntennaManager::AntennaManager ()
   : m_state (AntennaState::resting),
@@ -16,4 +17,10 @@ AntennaManager::AntennaManager ()
     m_currentTilt (0),
     m_goalTilt (0)
 {
+}
+
+void AntennaManager::initiateOp (const std::string& opname, double degrees)
+{
+  //  if (opname == 
+  //OwInterface::instance()->
 }

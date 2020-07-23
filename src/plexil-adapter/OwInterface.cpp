@@ -29,20 +29,25 @@ using std::thread;
 // C
 #include <cmath>  // for M_PI and abs
 
+
+//////////////////// Utilities ////////////////////////
+
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
+const double DegreeTolerance = 0.6;    // made up, degees
+const double VelocityTolerance = 0.01; // made up, unitless
+
+static bool within_tolerance (double val1, double val2, double tolerance)
+{
+  return abs (val1 - val2) <= tolerance;
+}
+
 
 //////////////////// Lander Operation Support ////////////////////////
 
-// Tolerance
-
-static bool within_degree_tolerance (double val1, double val2)
-{
-  return abs (val1 - val2) <= 0.6;  // made up constant
-}
-
+const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
@@ -273,13 +278,16 @@ void OwInterface::jointStatesCallback
     string ros_name = msg->name[i];
     if (JointMap.find (ros_name) != JointMap.end()) {
       Joint joint = JointMap[ros_name];
-      JointTelemetryMap[joint] = JointTelemetry (msg->position[i],
-                                                 msg->velocity[i],
-                                                 msg->effort[i]);
+      double position = msg->position[i];
+      double velocity = msg->velocity[i];
+      double effort = msg->effort[i];
+      if (joint == Joint:antenna_pan) managePan (position, velocity);
+      if (joint == Joint:antenna_tilt) manageTilt (position, velocity);
+      JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
-      publish (plexil_name + "Velocity", msg->velocity[i]);
-      publish (plexil_name + "Effort", msg->effort[i]);
-      publish (plexil_name + "Position", msg->position[i]);
+      publish (plexil_name + "Position", position);
+      publish (plexil_name + "Velocity", velocity);
+      publish (plexil_name + "Effort", effort);
       handle_joint_fault (joint, i, msg);
     }
     else ROS_ERROR("jointStatesCallback: unsupported joint %s",
@@ -287,25 +295,46 @@ void OwInterface::jointStatesCallback
   }
 }
 
+void OwInterface::managePan (double position, double velocity)
+{
+  if (m_prePan && velocity > VelocityTolerance) {
+    m_prePan = false;
+    m_panning = true;
+  }
+  else if (m_panning && within_tolerance (velocity, 0, VelocityTolerance)) {
+    m_panning = false;
+    mark_operation_finished (Op_PanAntenna);
+    if (! within_tolerance (m_currentPan, m_goalPan, DegreeTolerance)) {
+      ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
+                m_currentPan, m_goalPan);
+    }
+  }
+  else if (m_panning &
+           ros::Time::now() > m_panStart + ros::Duration (PanTiltTimeout)) {
+    m_panning = false;
+    mark_operation_finished (Op_PanAntenna);
+    ROS_ERROR("Pan timed out");
+    ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
+              m_currentPan, m_goalPan);
+  }
+}
 
 ////////////////////////////// Image Support ///////////////////////////////////
 
-static double CurrentTiltDegrees  = 0.0;
-static double CurrentPanDegrees   = 0.0;
 static bool   ImageReceived       = false;
 
-static void pan_callback
+void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentPanDegrees = msg->set_point * R2D;
-  publish ("PanDegrees", CurrentPanDegrees);
+  m_currentPan = msg->set_point * R2D;
+  publish ("PanDegrees", m_currentPan);
 }
 
-static void tilt_callback
+void OwInterface::tiltCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentTiltDegrees = msg->set_point * R2D;
-  publish ("TiltDegrees", CurrentTiltDegrees);
+  m_currentTilt = msg->set_point * R2D;
+  publish ("TiltDegrees", m_currentTilt);
 }
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
@@ -364,7 +393,12 @@ OwInterface::OwInterface ()
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
-    m_guardedMoveClient ("GuardedMove", true)
+    m_guardedMoveClient ("GuardedMove", true),
+    m_currentPan (0), m_currentTilt (0),
+    m_goalPan (0), m_goalTilt (0),
+    m_prePan (false), m_preTilt (false),
+    m_panning (false), m_tilting (false)
+    // m_panStart, m_tiltStart left uninitialized
 {
   ROS_INFO ("Waiting for action servers...");
   m_guardedMoveClient.waitForServer();
@@ -409,10 +443,12 @@ void OwInterface::initialize()
 
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", qsize, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", qsize,
+                 &OwInterface::tiltCallback, this));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
+       subscribe("/ant_pan_position_controller/state", qsize,
+                 &OwInterface::panCallback, this));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize, OwInterface::jointStatesCallback));
@@ -578,33 +614,6 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-static void antenna_movement (const string& opname, double goal_degrees)
-{
-  // Execution notes to myself:
-  //   - I can run for as long as it takes the antenna to finish!
-  //   - The caller has run me as a detached thread.  The caller is free of me!
-  //   - I should terminate normally, else I am a bad citizen.
-  //   - I can spawn threads, but do I need to?
-  //   - If I spawn threads, do I need futures, condition variables, etc?
-
-  //   Wait for movement to start (joint velocity > 0)
-  //     If it doesn't, report error and return.
-  //   Wait for movement to end (joint velocity = 0)
-  //     If it takes too long, error and return.
-  //   See if it was successful, report if not.
-
-  // Thread-less (callback-driven) approach
-  // - note that this could be done in caller, and NO threads are needed!
-  // 1. Set something that makes joint callback track antenna operation
-  //    - when antenna starts, it records it as moving
-  //      - if timeout, terminate with error
-  //    - when it stops, it records it as finished and
-  //      - if timeout, terminate with error
-  //    - after stop, report if goal was not met
-  //    - mark operation finished
-  mark_operation_finished (opname);
-}
-
 static bool antenna_op (const string& opname,
                         double degrees,
                         ros::Publisher* pub)
@@ -620,28 +629,30 @@ static bool antenna_op (const string& opname,
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
   pub->publish (radians);
-  
-  // Will no longer need the following.
-  thread antenna_thread (antenna_movement, opname, degrees);
-  antenna_thread.detach();
   return true;
 }
 
 bool OwInterface::tiltAntenna (double degrees)
 {
-  if (within_degree_tolerance (degrees, CurrentTiltDegrees)) {
+  if (within_tolerance (degrees, m_currentTilt, DegreeTolerance)) {
     ROS_INFO ("Tilt already at %f degrees, ignoring tilt command.", degrees);
     return true;
   }
+  m_goalTilt = degrees;
+  m_preTilt = true;
+  m_tiltStart = Ros::Time::now();
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
 bool OwInterface::panAntenna (double degrees)
 {
-  if (within_degree_tolerance (degrees, CurrentPanDegrees)) {
+  if (within_tolerance (degrees, m_currentPan, DegreeTolerance)) {
     ROS_INFO ("Pan already at %f degrees, ignoring pan command.", degrees);
     return true;
   }
+  m_goalPan = degrees;
+  m_prePan = true;
+  m_panStart = Ros::Time::now();
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
 
@@ -681,12 +692,12 @@ void OwInterface::digLinear (double x, double y, double z,
 
 double OwInterface::getTilt () const
 {
-  return CurrentTiltDegrees;
+  return m_currentTilt;
 }
 
 double OwInterface::getPanDegrees () const
 {
-  return CurrentPanDegrees;
+  return m_currentPan;
 }
 
 double OwInterface::getPanVelocity () const
