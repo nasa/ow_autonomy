@@ -301,21 +301,21 @@ void OwInterface::managePan (double position, double velocity)
     m_prePan = false;
     m_panning = true;
   }
-  else if (m_panning && within_tolerance (velocity, 0, VelocityTolerance)) {
-    m_panning = false;
-    mark_operation_finished (Op_PanAntenna);
-    if (! within_tolerance (m_currentPan, m_goalPan, DegreeTolerance)) {
-      ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
-                m_currentPan, m_goalPan);
+  else if (m_panning) {
+    bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
+    bool reached = within_tolerance (m_currentPan, m_goalPan, DegreeTolerance);
+    bool timed_out = ros::Time::now() > m_panStart+ros::Duration(PanTiltTimeout);
+    if (stopped || timed_out) {
+      m_panning = false;
+      mark_operation_finished (Op_PanAntenna);
+      if (! reached) {
+        ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
+                  m_currentPan, m_goalPan);
+      }
+      if (timed_out) {
+        ROS_ERROR("Pan timed out");
+      }
     }
-  }
-  else if (m_panning &
-           ros::Time::now() > m_panStart + ros::Duration (PanTiltTimeout)) {
-    m_panning = false;
-    mark_operation_finished (Op_PanAntenna);
-    ROS_ERROR("Pan timed out");
-    ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
-              m_currentPan, m_goalPan);
   }
 }
 
