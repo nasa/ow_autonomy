@@ -1,4 +1,3 @@
-
 // Copyright (c) 2018-2020, United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
@@ -6,17 +5,20 @@
 // Antenna tilt procedure.
 // Input: degrees
 
-LibraryAction JointMovement (In Real NewValue,
-                             In String CurrentValueLookup,
-                             In String VelocityLookup,
-                             In String OpName);
+Boolean Command tilt_antenna (Real);
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
 
 Tilt:
 {
   In Real Degrees;
-  PostCondition JointMovement.outcome == SUCCESS;
-  LibraryCall JointMovement (NewValue = Degrees,
-                             CurrentValueLookup = "TiltDegrees",
-                             VelocityLookup = "TiltVelocity",
-                             OpName = "TiltAntenna");
+
+  tilt_antenna (Degrees);
+
+  Block:
+  {
+    StartCondition Lookup (Running ("TiltAntenna"));
+    EndCondition Lookup (Finished ("TiltAntenna"));
+  }
+
 }

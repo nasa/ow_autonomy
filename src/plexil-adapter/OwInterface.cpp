@@ -321,6 +321,26 @@ void OwInterface::managePan (double position, double velocity)
 
 void OwInterface::manageTilt (double position, double velocity)
 {
+  if (m_preTilt && velocity > VelocityTolerance) {
+    m_preTilt = false;
+    m_tilting = true;
+  }
+  else if (m_tilting) {
+    bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
+    bool reached = within_tolerance (m_currentTilt, m_goalTilt, DegreeTolerance);
+    bool timed_out = ros::Time::now() > m_tiltStart+ros::Duration(PanTiltTimeout);
+    if (stopped || timed_out) {
+      m_tilting = false;
+      mark_operation_finished (Op_TiltAntenna);
+      if (! reached) {
+        ROS_ERROR("Final tilt %f. Goal tilt %f not achieved.",
+                  m_currentTilt, m_goalTilt);
+      }
+      if (timed_out) {
+        ROS_ERROR("Tilt timed out");
+      }
+    }
+  }
 }
 
 
