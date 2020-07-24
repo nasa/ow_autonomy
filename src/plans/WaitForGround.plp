@@ -26,7 +26,7 @@ WaitForGround: Sequence
       WaitOnLink:
       {
         while Lookup(Waiting) {
-          // Wait 10.0;
+          Wait 10.0;
         }
         log_info ("Target updated.");
       }
