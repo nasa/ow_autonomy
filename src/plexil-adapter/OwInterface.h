@@ -100,9 +100,11 @@ class OwInterface
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
-  static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+  void managePan (double position, double velocity);
+  void manageTilt (double position, double velocity);
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
@@ -127,7 +129,7 @@ class OwInterface
   double m_goalPan, m_goalTilt; // commanded pan, tilt values
   bool m_prePan, m_preTilt;     // pan, tilt just commanded
   bool m_panning, m_tilting;    // pan, tilt in progress
-  Ros::Time m_panStart, m_tiltStart;
+  ros::Time m_panStart, m_tiltStart;
 };
 
 #endif

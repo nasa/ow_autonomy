@@ -281,8 +281,8 @@ void OwInterface::jointStatesCallback
       double position = msg->position[i];
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
-      if (joint == Joint:antenna_pan) managePan (position, velocity);
-      if (joint == Joint:antenna_tilt) manageTilt (position, velocity);
+      if (joint == Joint::antenna_pan) managePan (position, velocity);
+      if (joint == Joint::antenna_tilt) manageTilt (position, velocity);
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
       publish (plexil_name + "Position", position);
@@ -318,6 +318,11 @@ void OwInterface::managePan (double position, double velocity)
     }
   }
 }
+
+void OwInterface::manageTilt (double position, double velocity)
+{
+}
+
 
 ////////////////////////////// Image Support ///////////////////////////////////
 
@@ -451,7 +456,8 @@ void OwInterface::initialize()
                  &OwInterface::panCallback, this));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/joint_states", qsize, OwInterface::jointStatesCallback));
+       subscribe("/joint_states", qsize,
+                 &OwInterface::jointStatesCallback, this));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
@@ -640,7 +646,7 @@ bool OwInterface::tiltAntenna (double degrees)
   }
   m_goalTilt = degrees;
   m_preTilt = true;
-  m_tiltStart = Ros::Time::now();
+  m_tiltStart = ros::Time::now();
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
@@ -652,7 +658,7 @@ bool OwInterface::panAntenna (double degrees)
   }
   m_goalPan = degrees;
   m_prePan = true;
-  m_panStart = Ros::Time::now();
+  m_panStart = ros::Time::now();
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
 
