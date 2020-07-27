@@ -89,7 +89,6 @@ static bool mark_operation_running (const string& name)
     return false;
   }
 
-  ROS_INFO ("Marking %s RUNNING", name.c_str());
   Running.at (name) = true;
   publish ("Running", true, name);
   return true;
@@ -100,7 +99,6 @@ static void mark_operation_finished (const string& name)
   if (! Running.at (name)) {
     ROS_WARN ("%s was not running. Should never happen.", name.c_str());
   }
-  ROS_INFO ("Marking %s FINISHED", name.c_str());
   Running.at (name) = false;
   publish ("Running", false, name);
   publish ("Finished", true, name);
