@@ -16,8 +16,6 @@
 #include <sensor_msgs/JointState.h>
 #include <string>
 
-enum class AntennaState;
-
 class OwInterface
 {
  public:
