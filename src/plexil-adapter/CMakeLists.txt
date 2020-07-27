@@ -39,7 +39,7 @@ target_link_libraries(${LIB_NAME}
   )
 
 add_dependencies(${LIB_NAME}
-  ${${LIB_NAME}_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS})
 
 add_executable(autonomy_node autonomy_node.cpp)
@@ -55,14 +55,14 @@ target_link_libraries(GuardedMoveServer
   ${catkin_LIBRARIES})
 
 add_dependencies(GuardedMoveServer
-  ${GuardedMoveServer_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(GuardedMoveClient
   ${catkin_LIBRARIES})
 
 add_dependencies(GuardedMoveClient
-  ${GuardedMoveClient_EXPORTED_TARGETS}
+  ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS})
 
 install(TARGETS autonomy_node GuardedMoveServer GuardedMoveClient
