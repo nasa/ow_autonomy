@@ -103,8 +103,12 @@ class OwInterface
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
   void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
-  void managePan (double position, double velocity);
-  void manageTilt (double position, double velocity);
+  void managePanTilt (const std::string& opname,
+                      double position, double velocity,
+                      double current, double goal,
+                      const ros::Time& start,
+                      bool& premotion, bool& motion);
+  void stopAntenna (const std::string& opname, bool& premotion, bool& motion);
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;

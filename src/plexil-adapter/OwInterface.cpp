@@ -22,9 +22,11 @@
 #include <set>
 #include <map>
 #include <thread>
+#include <functional>
 using std::set;
 using std::map;
 using std::thread;
+using std::ref;
 
 // C
 #include <cmath>  // for M_PI and abs
@@ -36,7 +38,7 @@ using std::thread;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-const double DegreeTolerance = 0.6;    // made up, degees
+const double DegreeTolerance = 0.1;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
 static bool within_tolerance (double val1, double val2, double tolerance)
@@ -281,8 +283,18 @@ void OwInterface::jointStatesCallback
       double position = msg->position[i];
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
-      if (joint == Joint::antenna_pan) managePan (position, velocity);
-      if (joint == Joint::antenna_tilt) manageTilt (position, velocity);
+      if (joint == Joint::antenna_pan) {
+        managePanTilt (Op_PanAntenna,
+                       position, velocity, m_currentPan,
+                       m_goalPan, m_panStart,
+                       ref(m_prePan), ref(m_panning));
+      }
+      else if (joint == Joint::antenna_tilt) {
+        managePanTilt (Op_TiltAntenna,
+                       position, velocity, m_currentTilt,
+                       m_goalTilt, m_tiltStart,
+                       ref(m_preTilt), ref(m_tilting));
+      }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
       publish (plexil_name + "Position", position);
@@ -295,49 +307,44 @@ void OwInterface::jointStatesCallback
   }
 }
 
-void OwInterface::managePan (double position, double velocity)
+void OwInterface::stopAntenna (const string& opname,
+                               bool& premotion, bool& motion)
 {
-  if (m_prePan && velocity > VelocityTolerance) {
-    m_prePan = false;
-    m_panning = true;
-  }
-  else if (m_panning) {
-    bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
-    bool reached = within_tolerance (m_currentPan, m_goalPan, DegreeTolerance);
-    bool timed_out = ros::Time::now() > m_panStart+ros::Duration(PanTiltTimeout);
-    if (stopped || timed_out) {
-      m_panning = false;
-      mark_operation_finished (Op_PanAntenna);
-      if (! reached) {
-        ROS_ERROR("Final pan %f. Goal pan %f not achieved.",
-                  m_currentPan, m_goalPan);
-      }
-      if (timed_out) {
-        ROS_ERROR("Pan timed out");
-      }
-    }
-  }
+  premotion = motion = false;
+  mark_operation_finished (opname);
 }
 
-void OwInterface::manageTilt (double position, double velocity)
+void OwInterface::managePanTilt (const string& opname,
+                                 double position, double velocity,
+                                 double current, double goal,
+                                 const ros::Time& start,
+                                 bool& premotion, bool& motion)
 {
-  if (m_preTilt && velocity > VelocityTolerance) {
-    m_preTilt = false;
-    m_tilting = true;
+  // We are only concerned when there is a pan/tilt in progress.
+  if (! (premotion || motion)) return;
+
+  // Antenna states of interest. 'moving' and 'stopped' are mutually exclusive.
+  // Otherwise these are all orthogonal.
+  bool moving  = velocity > VelocityTolerance;
+  bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
+  bool reached = within_tolerance (current, goal, DegreeTolerance);
+  bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
+
+  if (expired) ROS_ERROR("%s timed out", opname.c_str());
+
+  if (premotion) {
+    if (reached || expired) stopAntenna (opname, ref(premotion), ref(motion));
+    else if (moving) {
+      premotion = false;
+      motion = true;
+    }
   }
-  else if (m_tilting) {
-    bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
-    bool reached = within_tolerance (m_currentTilt, m_goalTilt, DegreeTolerance);
-    bool timed_out = ros::Time::now() > m_tiltStart+ros::Duration(PanTiltTimeout);
-    if (stopped || timed_out) {
-      m_tilting = false;
-      mark_operation_finished (Op_TiltAntenna);
+  else if (motion) {
+    if (stopped || expired) {
+      stopAntenna (opname, ref(premotion), ref(motion));
       if (! reached) {
-        ROS_ERROR("Final tilt %f. Goal tilt %f not achieved.",
-                  m_currentTilt, m_goalTilt);
-      }
-      if (timed_out) {
-        ROS_ERROR("Tilt timed out");
+        ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
+                  opname.c_str(), current, goal);
       }
     }
   }
