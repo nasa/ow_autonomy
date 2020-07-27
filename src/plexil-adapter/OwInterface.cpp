@@ -38,7 +38,7 @@ using std::ref;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-const double DegreeTolerance = 0.1;    // made up, degees
+const double DegreeTolerance = 0.2;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
 static bool within_tolerance (double val1, double val2, double tolerance)
@@ -286,14 +286,12 @@ void OwInterface::jointStatesCallback
       if (joint == Joint::antenna_pan) {
         managePanTilt (Op_PanAntenna,
                        position, velocity, m_currentPan,
-                       m_goalPan, m_panStart,
-                       ref(m_prePan), ref(m_panning));
+                       m_goalPan, m_panStart, ref(m_panning));
       }
       else if (joint == Joint::antenna_tilt) {
         managePanTilt (Op_TiltAntenna,
                        position, velocity, m_currentTilt,
-                       m_goalTilt, m_tiltStart,
-                       ref(m_preTilt), ref(m_tilting));
+                       m_goalTilt, m_tiltStart, ref(m_tilting));
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
@@ -307,45 +305,30 @@ void OwInterface::jointStatesCallback
   }
 }
 
-void OwInterface::stopAntenna (const string& opname,
-                               bool& premotion, bool& motion)
+void OwInterface::stopAntenna (const string& opname, bool& doing)
 {
-  premotion = motion = false;
+  doing = false;
   mark_operation_finished (opname);
 }
 
 void OwInterface::managePanTilt (const string& opname,
                                  double position, double velocity,
                                  double current, double goal,
-                                 const ros::Time& start,
-                                 bool& premotion, bool& motion)
+                                 const ros::Time& start, bool& doing)
 {
   // We are only concerned when there is a pan/tilt in progress.
-  if (! (premotion || motion)) return;
+  if (! doing) return;
 
-  // Antenna states of interest. 'moving' and 'stopped' are mutually exclusive.
-  // Otherwise these are all orthogonal.
-  bool moving  = velocity > VelocityTolerance;
-  bool stopped = within_tolerance (velocity, 0, VelocityTolerance);
+  // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
-  if (expired) ROS_ERROR("%s timed out", opname.c_str());
-
-  if (premotion) {
-    if (reached || expired) stopAntenna (opname, ref(premotion), ref(motion));
-    else if (moving) {
-      premotion = false;
-      motion = true;
-    }
-  }
-  else if (motion) {
-    if (stopped || expired) {
-      stopAntenna (opname, ref(premotion), ref(motion));
-      if (! reached) {
-        ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
-                  opname.c_str(), current, goal);
-      }
+  if (reached || expired) {
+    stopAntenna (opname, ref(doing));
+    if (expired) ROS_ERROR("%s timed out", opname.c_str());
+    if (! reached) {
+      ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
+                opname.c_str(), current, goal);
     }
   }
 }
@@ -428,7 +411,6 @@ OwInterface::OwInterface ()
     m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0),
-    m_prePan (false), m_preTilt (false),
     m_panning (false), m_tilting (false)
     // m_panStart, m_tiltStart left uninitialized
 {
@@ -667,24 +649,24 @@ static bool antenna_op (const string& opname,
 
 bool OwInterface::tiltAntenna (double degrees)
 {
-  if (within_tolerance (degrees, m_currentTilt, DegreeTolerance)) {
-    ROS_INFO ("Tilt already at %f degrees, ignoring tilt command.", degrees);
-    return true;
-  }
+  // if (within_tolerance (degrees, m_currentTilt, DegreeTolerance)) {
+  //   ROS_INFO ("Tilt already at %f degrees, ignoring tilt command.", degrees);
+  //   return true;
+  // }
   m_goalTilt = degrees;
-  m_preTilt = true;
+  m_tilting = true;
   m_tiltStart = ros::Time::now();
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
 bool OwInterface::panAntenna (double degrees)
 {
-  if (within_tolerance (degrees, m_currentPan, DegreeTolerance)) {
-    ROS_INFO ("Pan already at %f degrees, ignoring pan command.", degrees);
-    return true;
-  }
+  // if (within_tolerance (degrees, m_currentPan, DegreeTolerance)) {
+  //   ROS_INFO ("Pan already at %f degrees, ignoring pan command.", degrees);
+  //   return true;
+  // }
   m_goalPan = degrees;
-  m_prePan = true;
+  m_panning = true;
   m_panStart = ros::Time::now();
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
@@ -785,9 +767,4 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
-}
-
-void OwInterface::stopOperation (const string& name) const
-{
-  mark_operation_finished (name);
 }

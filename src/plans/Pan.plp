@@ -15,7 +15,7 @@ Pan:
 
   pan_antenna (Degrees);
 
-  Block:
+  WaitForFinish:
   {
     StartCondition Lookup (Running ("PanAntenna"));
     EndCondition Lookup (Finished ("PanAntenna"));

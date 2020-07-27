@@ -1,0 +1,28 @@
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
+
+// Simple test/demo of antenna and arm operating concurrently.
+
+Command log_info (...);
+
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
+LibraryAction DigCircularDemo;
+
+TestAntennaWithArm:
+{
+  log_info ("Starting Antenna/Arm demo...");
+
+  Ops: Concurrence
+  {
+    LibraryCall TakePanorama (TiltLo = 30, TiltHi = 36,
+                              PanLo = 20, PanHi = 40,
+                              HorizOverlap = 0,
+                              VertOverlap = 0);
+    LibraryCall DigCircularDemo;
+  }
+
+  log_info ("Antenna/Arm demo finished.");
+}

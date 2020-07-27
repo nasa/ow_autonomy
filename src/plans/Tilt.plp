@@ -15,7 +15,7 @@ Tilt:
 
   tilt_antenna (Degrees);
 
-  Block:
+  WaitForFinish:
   {
     StartCondition Lookup (Running ("TiltAntenna"));
     EndCondition Lookup (Finished ("TiltAntenna"));

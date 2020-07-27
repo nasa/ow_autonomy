@@ -287,11 +287,6 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "take_picture") {
     OwInterface::instance()->takePicture();
   }
-  else if (name == "stop_operation") {
-    string name;
-    args[0].getValue (name);
-    OwInterface::instance()->stopOperation (name);
-  }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);

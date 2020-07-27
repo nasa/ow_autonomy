@@ -2,15 +2,17 @@
 // Administrator of the National Aeronautics and Space Administration. All
 // rights reserved.
 
+Command log_info (...);
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
                             In Real HorizOverlap, In Real VertOverlap);
 
 ImageLandingSite:
 {
+  log_info ("Starting Antenna/Camera demo...");
+  
   // NOTE: using a very limited range for now to save time in testing.
   // A more realistic range takes many minutes.
-  
   LibraryCall TakePanorama (TiltLo = 0, TiltHi = 3,
                             PanLo = 90, PanHi = 100,
                             HorizOverlap = 2,
