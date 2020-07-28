@@ -445,29 +445,29 @@ void OwInterface::guardedMoveActionDemo()
 
 void OwInterface::guardedMoveAction (double target_x,
                                      double target_y,
-                                     double surf_norm_x,
-                                     double surf_norm_y,
-                                     double surf_norm_z,
-                                     double offset_dist,
-                                     double overdrive_dist,
+                                     double target_z,
+                                     double direction_x,
+                                     double direction_y,
+                                     double direction_z,
+                                     double search_distance,
                                      bool delete_prev_traj)
 {
   if (! mark_operation_running (Op_GuardedMoveAction)) return;
 
   thread action_thread (&OwInterface::guardedMoveActionAux, this,
-                        target_x, target_y,
-                        surf_norm_x, surf_norm_y, surf_norm_z,
-                        offset_dist, overdrive_dist, delete_prev_traj);
+                        target_x, target_y, target_z,
+                        direction_x, direction_y, direction_z,
+                        search_distance, delete_prev_traj);
   action_thread.detach();
 }
 
 void OwInterface::guardedMoveActionAux (double target_x,
                                         double target_y,
-                                        double surf_norm_x,
-                                        double surf_norm_y,
-                                        double surf_norm_z,
-                                        double offset_dist,
-                                        double overdrive_dist,
+                                        double target_z,
+                                        double direction_x,
+                                        double direction_y,
+                                        double direction_z,
+                                        double search_distance,
                                         bool delete_prev_traj)
 {
   ow_autonomy::GuardedMoveGoal goal;
@@ -475,11 +475,11 @@ void OwInterface::guardedMoveActionAux (double target_x,
   goal.delete_prev_traj = delete_prev_traj;
   goal.target_x = target_x;
   goal.target_y = target_y;
-  goal.surface_normal_x = surf_norm_x;
-  goal.surface_normal_y = surf_norm_y;
-  goal.surface_normal_z = surf_norm_z;
-  goal.offset_distance = offset_dist;
-  goal.overdrive_distance = overdrive_dist;
+  goal.target_z = target_z;
+  goal.direction_x = direction_x;
+  goal.direction_y = direction_y;
+  goal.direction_z = direction_z;
+  goal.search_distance = search_distance;
 
   thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
   m_guardedMoveClient.sendGoal (goal,
@@ -512,11 +512,11 @@ void OwInterface::guardedMoveDemo()
   guardedMove();
 }
 
-void OwInterface::guardedMove (double target_x, double target_y,
-                               double surf_norm_x,
-                               double surf_norm_y,
-                               double surf_norm_z,
-                               double offset_dist, double overdrive_dist,
+void OwInterface::guardedMove (double target_x, double target_y, double target_z,
+                               double direction_x,
+                               double direction_y,
+                               double direction_z,
+                               double search_distance,
                                bool delete_prev_traj)
 {
   if (! mark_operation_running (Op_GuardedMove)) return;
@@ -531,11 +531,11 @@ void OwInterface::guardedMove (double target_x, double target_y,
     srv.request.use_defaults = false;
     srv.request.x = target_x;
     srv.request.y = target_y;
-    srv.request.surface_normal_x = surf_norm_x;
-    srv.request.surface_normal_y = surf_norm_y;
-    srv.request.surface_normal_z = surf_norm_z;
-    srv.request.offset_distance = offset_dist;
-    srv.request.overdrive_distance = overdrive_dist;
+    srv.request.z = target_z;
+    srv.request.direction_x = direction_x;
+    srv.request.direction_y = direction_y;
+    srv.request.direction_z = direction_z;
+    srv.request.search_distance = search_distance;
     srv.request.delete_prev_traj = delete_prev_traj;
     thread service_thread (service_call<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove);

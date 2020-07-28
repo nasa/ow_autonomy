@@ -38,21 +38,21 @@ class OwInterface
   // this function matches guardedMoveDemo above.
   void guardedMove (double target_x = 2,
                     double target_y = 0,
-                    double surf_norm_x = 0,
-                    double surf_norm_y = 0,
-                    double surf_norm_z = 1,
-                    double offset_dist = 0.2,
-                    double overdrive_dist = 0.2,
+                    double target_z = 0.3,
+                    double direction_x = 0,
+                    double direction_y = 0,
+                    double direction_z = 1,
+                    double search_distance = 0.5,
                     bool delete_prev_traj = false);
 
   // Temporary, until guardedMove is just a ROS action.
   void guardedMoveAction (double target_x = 2,
                           double target_y = 0,
-                          double surf_norm_x = 0,
-                          double surf_norm_y = 0,
-                          double surf_norm_z = 1,
-                          double offset_dist = 0.2,
-                          double overdrive_dist = 0.2,
+                          double target_z = 0.3,
+                          double direction_x = 0,
+                          double direction_y = 0,
+                          double direction_z = 1,
+                          double search_distance = 0.5,
                           bool delete_prev_traj = false);
 
   bool tiltAntenna (double degrees);
@@ -85,11 +85,11 @@ class OwInterface
   // temporary, proof of concept
   void guardedMoveActionAux (double target_x,
                              double target_y,
-                             double surf_norm_x,
-                             double surf_norm_y,
-                             double surf_norm_z,
-                             double offset_dist,
-                             double overdrive_dist,
+                             double target_z,
+                             double direction_x,
+                             double direction_y,
+                             double direction_z,
+                             double search_distance,
                              bool delete_prev_traj);
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
