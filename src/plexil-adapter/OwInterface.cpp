@@ -484,9 +484,10 @@ void OwInterface::digCircularDemo()
   if (check_service_client (client)) {
     ow_lander::DigCircular srv;
     srv.request.use_defaults = true;
-    srv.request.trench_x = 0.0;
-    srv.request.trench_y = 0.0;
-    srv.request.trench_d = 0.0;
+    srv.request.x = 0.0;
+    srv.request.y = 0.0;
+    srv.request.depth = 0.0;
+    srv.request.radial = false;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular);
@@ -501,47 +502,41 @@ void OwInterface::guardedMoveActionDemo()
 
 void OwInterface::guardedMoveAction (double target_x,
                                      double target_y,
-                                     double target_z,
                                      double surf_norm_x,
                                      double surf_norm_y,
                                      double surf_norm_z,
                                      double offset_dist,
                                      double overdrive_dist,
-                                     bool delete_prev_traj,
-                                     bool retract)
+                                     bool delete_prev_traj)
 {
   if (! mark_operation_running (Op_GuardedMoveAction)) return;
 
   thread action_thread (&OwInterface::guardedMoveActionAux, this,
-                        target_x, target_y, target_z,
+                        target_x, target_y,
                         surf_norm_x, surf_norm_y, surf_norm_z,
-                        offset_dist, overdrive_dist, delete_prev_traj, retract);
+                        offset_dist, overdrive_dist, delete_prev_traj);
   action_thread.detach();
 }
 
 void OwInterface::guardedMoveActionAux (double target_x,
                                         double target_y,
-                                        double target_z,
                                         double surf_norm_x,
                                         double surf_norm_y,
                                         double surf_norm_z,
                                         double offset_dist,
                                         double overdrive_dist,
-                                        bool delete_prev_traj,
-                                        bool retract)
+                                        bool delete_prev_traj)
 {
   ow_autonomy::GuardedMoveGoal goal;
   goal.use_defaults = false;
   goal.delete_prev_traj = delete_prev_traj;
   goal.target_x = target_x;
   goal.target_y = target_y;
-  goal.target_z = target_z;
   goal.surface_normal_x = surf_norm_x;
   goal.surface_normal_y = surf_norm_y;
   goal.surface_normal_z = surf_norm_z;
   goal.offset_distance = offset_dist;
   goal.overdrive_distance = overdrive_dist;
-  goal.retract = retract;
 
   thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
   m_guardedMoveClient.sendGoal (goal,
@@ -574,13 +569,12 @@ void OwInterface::guardedMoveDemo()
   guardedMove();
 }
 
-void OwInterface::guardedMove (double target_x, double target_y, double target_z,
+void OwInterface::guardedMove (double target_x, double target_y,
                                double surf_norm_x,
                                double surf_norm_y,
                                double surf_norm_z,
                                double offset_dist, double overdrive_dist,
-                               bool delete_prev_traj,
-                               bool retract)
+                               bool delete_prev_traj)
 {
   if (! mark_operation_running (Op_GuardedMove)) return;
 
@@ -592,16 +586,14 @@ void OwInterface::guardedMove (double target_x, double target_y, double target_z
   if (check_service_client (client)) {
     ow_lander::GuardedMove srv;
     srv.request.use_defaults = false;
-    srv.request.target_x = target_x;
-    srv.request.target_y = target_y;
-    srv.request.target_z = target_z;
+    srv.request.x = target_x;
+    srv.request.y = target_y;
     srv.request.surface_normal_x = surf_norm_x;
     srv.request.surface_normal_y = surf_norm_y;
     srv.request.surface_normal_z = surf_norm_z;
     srv.request.offset_distance = offset_dist;
     srv.request.overdrive_distance = overdrive_dist;
     srv.request.delete_prev_traj = delete_prev_traj;
-    srv.request.retract = retract;
     thread service_thread (service_call<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove);
     service_thread.detach();
@@ -677,7 +669,7 @@ void OwInterface::takePicture ()
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::digLinear (double x, double y, double z,
+void OwInterface::digLinear (double x, double y,
                              double depth, double length, double width,
                              double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
@@ -692,9 +684,9 @@ void OwInterface::digLinear (double x, double y, double z,
   if (check_service_client (client)) {
     ow_lander::DigLinear srv;
     srv.request.use_defaults = false;
-    srv.request.trench_x = x;
-    srv.request.trench_y = y;
-    srv.request.trench_d = depth;
+    srv.request.x = x;
+    srv.request.y = y;
+    srv.request.depth = depth;
     srv.request.length = length;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigLinear>,
