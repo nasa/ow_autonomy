@@ -1,9 +1,9 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 #ifndef OW_AUTONOMY_JOINT_SUPPORT_H
 #define OW_AUTONOMY_JOINT_SUPPORT_H
-
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
 
 // Support for lander joints, based on ROS /joint_states message.
 

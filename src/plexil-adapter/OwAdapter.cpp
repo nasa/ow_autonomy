@@ -1,6 +1,6 @@
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
 
 // Implementation of PLEXIL interface adapter.
 
@@ -243,16 +243,15 @@ void OwAdapter::executeCommand(Command *cmd)
     double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
     args[0].getValue(x);
     args[1].getValue(y);
-    args[2].getValue(z);
-    args[3].getValue(depth);
-    args[4].getValue(length);
-    args[5].getValue(width);
-    args[6].getValue(pitch);
-    args[7].getValue(yaw);
-    args[8].getValue(dumpx);
-    args[9].getValue(dumpy);
-    args[10].getValue(dumpz);
-    OwInterface::instance()->digLinear(x, y, z, depth, length, width,
+    args[2].getValue(depth);
+    args[3].getValue(length);
+    args[4].getValue(width);
+    args[5].getValue(pitch);
+    args[6].getValue(yaw);
+    args[7].getValue(dumpx);
+    args[8].getValue(dumpy);
+    args[9].getValue(dumpz);
+    OwInterface::instance()->digLinear(x, y, depth, length, width,
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
   else if (name == "guarded_move") {
@@ -261,18 +260,16 @@ void OwAdapter::executeCommand(Command *cmd)
     bool delete_prev_traj, retract;
     args[0].getValue(target_x);
     args[1].getValue(target_y);
-    args[2].getValue(target_z);
-    args[3].getValue(surf_norm_x);
-    args[4].getValue(surf_norm_y);
-    args[5].getValue(surf_norm_z);
-    args[6].getValue(offset_dist);
-    args[7].getValue(overdrive_dist);
-    args[8].getValue(delete_prev_traj);
-    args[9].getValue(retract);
-    OwInterface::instance()->guardedMove (target_x, target_y, target_z,
+    args[2].getValue(surf_norm_x);
+    args[3].getValue(surf_norm_y);
+    args[4].getValue(surf_norm_z);
+    args[5].getValue(offset_dist);
+    args[6].getValue(overdrive_dist);
+    args[7].getValue(delete_prev_traj);
+    OwInterface::instance()->guardedMove (target_x, target_y,
                                           surf_norm_x, surf_norm_y, surf_norm_z,
                                           offset_dist, overdrive_dist,
-                                          delete_prev_traj, retract);
+                                          delete_prev_traj);
   }
   else if (name == "tilt_antenna") {
     double degrees;

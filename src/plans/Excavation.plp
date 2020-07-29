@@ -1,6 +1,6 @@
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
 
 #include "plexil_defs.h"
 
@@ -25,7 +25,7 @@ LibraryAction Image(In String desc);
 Command log_info (...);
 
 // Directly from draft Ames/JPL interface.
-Boolean Command dig_linear (Real startX, Real startY, Real startZ,
+Boolean Command dig_linear (Real startX, Real startY,
                             Real depth, Real length, Real width,
                             Real pitch, Real yaw,
                             Real dumpX, Real dumpY, Real dumpZ);
@@ -55,7 +55,6 @@ Excavation:
                                + DIG_TRENCH_TIMEOUT));
         Dig: dig_linear (Lookup(TrenchStartX),
                          Lookup(TrenchStartY),
-                         Lookup(TrenchStartZ),
                          Lookup(TrenchDepth),
                          Lookup(TrenchLength),
                          Lookup(TrenchWidth),

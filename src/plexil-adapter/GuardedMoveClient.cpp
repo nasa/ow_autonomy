@@ -1,3 +1,7 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 // Temporary file.  An experimental dummy action client for GuardedMove.
 
 #include <ros/ros.h>
@@ -48,13 +52,11 @@ int main (int argc, char **argv)
   goal.delete_prev_traj = false;
   goal.target_x = 1.2;
   goal.target_y = 0.8;
-  goal.target_z = 0.1;
   goal.surface_normal_x = 0;
   goal.surface_normal_y = 0;
   goal.surface_normal_z = 0;
   goal.offset_distance = 0;
   goal.overdrive_distance = 0;
-  goal.retract = 0;
   client.sendGoal (goal, &doneCB, &activeCB, &feedbackCB);
 
   // Wait for the action to return

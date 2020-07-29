@@ -1,9 +1,9 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
-
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
 
 // Interface to lander simulator.  Singleton, because only once instance will
 // ever be needed in the current autonomy scheme, which has one autonomy
@@ -39,31 +39,27 @@ class OwInterface
   // this function matches guardedMoveDemo above.
   void guardedMove (double target_x = 2,
                     double target_y = 0,
-                    double target_z = 0.02,
                     double surf_norm_x = 0,
                     double surf_norm_y = 0,
                     double surf_norm_z = 1,
                     double offset_dist = 0.2,
                     double overdrive_dist = 0.2,
-                    bool delete_prev_traj = false,
-                    bool retract = false);
+                    bool delete_prev_traj = false);
 
   // Temporary, until guardedMove is just a ROS action.
   void guardedMoveAction (double target_x = 2,
                           double target_y = 0,
-                          double target_z = 0.02,
                           double surf_norm_x = 0,
                           double surf_norm_y = 0,
                           double surf_norm_z = 1,
                           double offset_dist = 0.2,
                           double overdrive_dist = 0.2,
-                          bool delete_prev_traj = false,
-                          bool retract = false);
+                          bool delete_prev_traj = false);
 
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
   void takePicture ();
-  void digLinear (double x, double y, double z, double depth,
+  void digLinear (double x, double y, double depth,
                   double length, double width, double pitch, double yaw,
                   double dumpx, double dumpy, double dumpz);
   void takePanorama (double elev_lo, double elev_hi,
@@ -97,14 +93,12 @@ class OwInterface
   // temporary, proof of concept
   void guardedMoveActionAux (double target_x,
                              double target_y,
-                             double target_z,
                              double surf_norm_x,
                              double surf_norm_y,
                              double surf_norm_z,
                              double offset_dist,
                              double overdrive_dist,
-                             bool delete_prev_traj,
-                             bool retract);
+                             bool delete_prev_traj);
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 

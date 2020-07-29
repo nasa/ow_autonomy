@@ -1,10 +1,8 @@
-// OW autonomy ROS node.
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
 
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
-// __END_LICENSE__
+// OW autonomy ROS node.
 
 // ROS
 #include <ros/ros.h>
