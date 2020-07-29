@@ -443,9 +443,9 @@ void OwInterface::guardedMoveActionDemo()
   guardedMoveAction();
 }
 
-void OwInterface::guardedMoveAction (double target_x,
-                                     double target_y,
-                                     double target_z,
+void OwInterface::guardedMoveAction (double x,
+                                     double y,
+                                     double z,
                                      double direction_x,
                                      double direction_y,
                                      double direction_z,
@@ -455,15 +455,15 @@ void OwInterface::guardedMoveAction (double target_x,
   if (! mark_operation_running (Op_GuardedMoveAction)) return;
 
   thread action_thread (&OwInterface::guardedMoveActionAux, this,
-                        target_x, target_y, target_z,
+                        x, y, z,
                         direction_x, direction_y, direction_z,
                         search_distance, delete_prev_traj);
   action_thread.detach();
 }
 
-void OwInterface::guardedMoveActionAux (double target_x,
-                                        double target_y,
-                                        double target_z,
+void OwInterface::guardedMoveActionAux (double x,
+                                        double y,
+                                        double z,
                                         double direction_x,
                                         double direction_y,
                                         double direction_z,
@@ -473,9 +473,9 @@ void OwInterface::guardedMoveActionAux (double target_x,
   ow_autonomy::GuardedMoveGoal goal;
   goal.use_defaults = false;
   goal.delete_prev_traj = delete_prev_traj;
-  goal.target_x = target_x;
-  goal.target_y = target_y;
-  goal.target_z = target_z;
+  goal.x = x;
+  goal.y = y;
+  goal.z = z;
   goal.direction_x = direction_x;
   goal.direction_y = direction_y;
   goal.direction_z = direction_z;
@@ -512,7 +512,7 @@ void OwInterface::guardedMoveDemo()
   guardedMove();
 }
 
-void OwInterface::guardedMove (double target_x, double target_y, double target_z,
+void OwInterface::guardedMove (double x, double y, double z,
                                double direction_x,
                                double direction_y,
                                double direction_z,
@@ -529,9 +529,9 @@ void OwInterface::guardedMove (double target_x, double target_y, double target_z
   if (check_service_client (client)) {
     ow_lander::GuardedMove srv;
     srv.request.use_defaults = false;
-    srv.request.x = target_x;
-    srv.request.y = target_y;
-    srv.request.z = target_z;
+    srv.request.x = x;
+    srv.request.y = y;
+    srv.request.z = z;
     srv.request.direction_x = direction_x;
     srv.request.direction_y = direction_y;
     srv.request.direction_z = direction_z;

@@ -50,9 +50,9 @@ int main (int argc, char **argv)
   ow_autonomy::GuardedMoveGoal goal;
   goal.use_defaults = false;
   goal.delete_prev_traj = false;
-  goal.target_x = 1.2;
-  goal.target_y = 0.8;
-  goal.target_z = 0.3;
+  goal.x = 1.2;
+  goal.y = 0.8;
+  goal.z = 0.3;
   goal.direction_x = 0;
   goal.direction_y = 0;
   goal.direction_z = 0;

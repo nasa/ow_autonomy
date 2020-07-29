@@ -12,7 +12,7 @@ Boolean Lookup SoftTorqueLimitReached (String joint_name);
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 Command publish_trajectory_demo();
-Command guarded_move (Real target_x, Real target_y, Real target_z,
+Command guarded_move (Real x, Real y, Real z,
                       Real direction_x, Real direction_y, Real direction_z,
                       Real search_distance,
                       Boolean delete_prev_traj);

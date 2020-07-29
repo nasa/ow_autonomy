@@ -36,9 +36,9 @@ class OwInterface
 
   // The defaults currently match those of the activity.  When all are used,
   // this function matches guardedMoveDemo above.
-  void guardedMove (double target_x = 2,
-                    double target_y = 0,
-                    double target_z = 0.3,
+  void guardedMove (double x = 2,
+                    double y = 0,
+                    double z = 0.3,
                     double direction_x = 0,
                     double direction_y = 0,
                     double direction_z = 1,
@@ -46,9 +46,9 @@ class OwInterface
                     bool delete_prev_traj = false);
 
   // Temporary, until guardedMove is just a ROS action.
-  void guardedMoveAction (double target_x = 2,
-                          double target_y = 0,
-                          double target_z = 0.3,
+  void guardedMoveAction (double x = 2,
+                          double y = 0,
+                          double z = 0.3,
                           double direction_x = 0,
                           double direction_y = 0,
                           double direction_z = 1,
@@ -83,9 +83,9 @@ class OwInterface
 
  private:
   // temporary, proof of concept
-  void guardedMoveActionAux (double target_x,
-                             double target_y,
-                             double target_z,
+  void guardedMoveActionAux (double x,
+                             double y,
+                             double z,
                              double direction_x,
                              double direction_y,
                              double direction_z,

@@ -255,18 +255,18 @@ void OwAdapter::executeCommand(Command *cmd)
                                        pitch, yaw, dumpx, dumpy, dumpz);
   }
   else if (name == "guarded_move") {
-    double target_x, target_y, target_z, direction_x, direction_y, direction_z;
+    double x, y, z, direction_x, direction_y, direction_z;
     double search_distance;
     bool delete_prev_traj, retract;
-    args[0].getValue(target_x);
-    args[1].getValue(target_y);
-    args[2].getValue(target_z);
+    args[0].getValue(x);
+    args[1].getValue(y);
+    args[2].getValue(z);
     args[3].getValue(direction_x);
     args[4].getValue(direction_y);
     args[5].getValue(direction_z);
     args[6].getValue(search_distance);
     args[7].getValue(delete_prev_traj);
-    OwInterface::instance()->guardedMove (target_x, target_y, target_z,
+    OwInterface::instance()->guardedMove (x, y, z,
                                           direction_x, direction_y, direction_z,
                                           search_distance,
                                           delete_prev_traj);
