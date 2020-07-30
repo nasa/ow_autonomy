@@ -101,6 +101,9 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "Waiting") {
     value_out = OwInterface::instance()->getWait();
   }
+  else if (state_name == "WaitForGroundTimeout") {
+    value_out = OwInterface::instance()->getWaitForGroundTimeout();
+  }
   else retval = false;
 
   return retval;

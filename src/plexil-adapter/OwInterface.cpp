@@ -36,16 +36,19 @@ using std::thread;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-// Wait condition
+// Wait condition and timeout
 static bool WaitForGroundControl  = true;
+static ros::Duration timeoutDuration = ros::Duration(100,0);
+static ros::Time timeAtStart;
+static ros::Timer timeoutTimer;
 
 // Starting XYZ targets for trench.
 static double CurrentXTarget      = 5;
 static double CurrentYTarget      = 10;
 static double CurrentZTarget      = 0;
-static double GroundControlX      = 0;
-static double GroundControlY      = 0;
-static double GroundControlZ      = 0;
+static double NewXTarget          = 5;
+static double NewYTarget          = 10;
+static double NewZTarget          = 0;
 
 
 //////////////////// Lander Operation Support ////////////////////////
@@ -326,18 +329,36 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 // Ground Control decides to update target.
 static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
 {
-  ROS_INFO("Lander: Received decision, use new target.");
-  CurrentXTarget = msg->x;
-  CurrentYTarget = msg->y;
-  CurrentZTarget = msg->z;
-  WaitForGroundControl = false;
+  if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
+    ROS_INFO("Lander: Received decision, use new target.");
+    NewXTarget = msg->x;
+    NewYTarget = msg->y;
+    NewZTarget = msg->z;
+    WaitForGroundControl = false;
+    publish ("Waiting", false);
+  }
 }
 
 // Ground Control decides for Lander to use onboard Target.
 static void onboard_target_callback (const std_msgs::String::ConstPtr& msg)
 {
-  ROS_INFO("Lander: Received decision, %s", msg->data.c_str());
-  WaitForGroundControl = false;
+  if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
+    NewXTarget = OwInterface::instance()->getXTarget();
+    NewYTarget = OwInterface::instance()->getYTarget();
+    NewZTarget = OwInterface::instance()->getZTarget();
+    ROS_INFO("Lander: Received decision, %s", msg->data.c_str());
+    WaitForGroundControl = false;
+    publish ("Waiting", false);
+  }
+}
+
+static void timeout_timer_callback(const ros::TimerEvent&) 
+{
+  if (WaitForGroundControl == true) {
+    publish ("WaitForGroundTimeout", true);
+    WaitForGroundControl = false;
+    publish ("Waiting", false);
+  }
 }
 
 //////////////////// GuardedMove Action support ////////////////////////////////
@@ -706,34 +727,58 @@ double OwInterface::getZTarget () const
   return CurrentZTarget;
 }
 
+void OwInterface::updateTarget () const {
+  CurrentXTarget = NewXTarget;
+  CurrentYTarget = NewYTarget;
+  CurrentZTarget = NewZTarget;
+}
+
+void OwInterface::timeoutTarget () const {
+  NewXTarget = getXTarget();
+  NewYTarget = getYTarget();
+  NewZTarget = getZTarget();
+}
+
 void OwInterface::requestFwdLink () const
 {
   std_msgs::String message;
   message.data = "Request for FWD link";
 
-  // Note: This parameter is set inside
-  // ow_autonomy/launch/autonomy_node.launch
   ros::Duration commsDelay;
-  bool realTimeSim;
-  m_genericNodeHandle->getParam("/real_time_sim", realTimeSim);
+  
+  int delay;
+  m_genericNodeHandle->getParam("/communications_delay", delay);
+  commsDelay = ros::Duration(delay, 0);
 
-  if (realTimeSim == true) {
-    // 50 minutes delay.
-    commsDelay = ros::Duration(3000, 0);
-  }
-  else {
-    // 30 seconds delay.
-    commsDelay = ros::Duration(30, 0);
-  }
+  // start timeout timer.
+  int tDuration;
+  m_genericNodeHandle->getParam("/timeout_duration", tDuration);
+  timeoutDuration = ros::Duration(tDuration, 0);
+  timeoutTimer = m_genericNodeHandle->createTimer(timeoutDuration, timeout_timer_callback, true);
+  timeAtStart = ros::Time::now();
 
   // Simulate time delay for arrival of message to Earth.
-  commsDelay.sleep();
   m_groundRequestPublisher->publish (message);
 }
 
 bool OwInterface::getWait () const
 {
   return WaitForGroundControl;
+}
+
+bool OwInterface::getWaitForGroundTimeout () const
+{
+  if ((timeAtStart != ros::Time(0.0)) && (timeoutDuration != ros::Duration(0,0))) {
+    if (ros::Time::now() < (timeAtStart + timeoutDuration)) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+  else {
+    return false;
+  }
 }
 
 double OwInterface::getTilt () const

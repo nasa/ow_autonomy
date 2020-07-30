@@ -22,18 +22,18 @@
 // C++
 #include <thread>
 
-ros::Publisher* pubLinkPtr;
-ros::Publisher* pubUseOnboardTargetPtr;
-geometry_msgs::Point* xyzPtr;
-std_msgs::String* onboardTargetMessagePtr;
-ros::Duration* commsDelayPtr;
-ros::Duration* decisionDelayPtr;
-bool* useOnboardPtr;
+static ros::Publisher pubLink;
+static ros::Publisher pubUseOnboardTarget;
+static geometry_msgs::Point xyz;
+static std_msgs::String onboardTargetMessage;
+static ros::Duration commsDelay;
+static ros::Duration decisionDelay;
+static bool useOnboard;
 
 void downlinkCallback(const geometry_msgs::Point::ConstPtr& point)
 {
   // Simulate time delay for arrival of message to Lander.
-  commsDelayPtr->sleep();
+  commsDelay.sleep();
   std::string x = std::to_string(point->x);
   std::string y = std::to_string(point->y);
   std::string z = std::to_string (point->z);
@@ -43,20 +43,21 @@ void downlinkCallback(const geometry_msgs::Point::ConstPtr& point)
 
 void requestCallback(const std_msgs::String::ConstPtr& cmd)
 {
+  commsDelay.sleep();
   ROS_INFO("GroundControl: Received message, [%s].", cmd->data.c_str());
   ROS_INFO("GroundControl: Making Decision.");
   // Simulate time delay for decision making on ground. 
-  decisionDelayPtr->sleep();
+  decisionDelay.sleep();
   ROS_INFO("GroundControl: Sending Decision.");
-  if (*useOnboardPtr == false) {
+  if (useOnboard == false) {
     // Simulate time delay for arrival of message to Lander.
-    commsDelayPtr->sleep();
-    pubLinkPtr->publish(*xyzPtr);
+    commsDelay.sleep();
+    pubLink.publish(xyz);
   }
   else {
     // Simulate time delay for arrival of message to Lander.
-    commsDelayPtr->sleep();
-    pubUseOnboardTargetPtr->publish(*onboardTargetMessagePtr);
+    commsDelay.sleep();
+    pubUseOnboardTarget.publish(onboardTargetMessage);
   }
 }
 
@@ -69,59 +70,42 @@ int main(int argc, char **argv)
   ros::NodeHandle nHandle;
 
   // New target from ground.
-  geometry_msgs::Point xyz;
-  xyz.x = 6;
-  xyz.y = 7;
-  xyz.z = 0;
-  xyzPtr = &xyz;
+
+  double xCoordinate;
+  double yCoordinate;
+  double zCoordinate;
+
+  nHandle.getParam("/x_coordinate", xCoordinate);
+  nHandle.getParam("/y_coordinate", yCoordinate);
+  nHandle.getParam("/z_coordinate", zCoordinate);
+
+  xyz.x = xCoordinate;
+  xyz.y = yCoordinate;
+  xyz.z = zCoordinate;
 
   // For decision to use onboard target.
-  std_msgs::String onboardTargetMessage;
   onboardTargetMessage.data = "Use onboard Target.";
-  onboardTargetMessagePtr = &onboardTargetMessage;
 
-  // Decision to use onboard target or target from ground, and decision
-  // to use full real time communications simulation or not. 
-  // 2 hr 40 min or 1 min 36 sec simulation. Decisions are set in 
-  // ow_autonomy/launch/autonomy_node.launch
-  bool useOnboard;
-  bool realTimeSim;
+  // For Communications Delay and Decision Duration, set in autonomy_node.launch
+  int delay;
+  int dDuration;
   nHandle.getParam("/use_onboard_target", useOnboard);
-  nHandle.getParam("/real_time_sim", realTimeSim);
-  useOnboardPtr = &useOnboard;
+  nHandle.getParam("/communications_delay", delay);
+  nHandle.getParam("/decision_duration", dDuration);
 
-  ros::Duration commsDelay;
-  ros::Duration decisionDelay;
-
-  if (realTimeSim == true) {
-    // 50 minutes delay.
-    commsDelay = ros::Duration(3000, 0);
-    // 1 hour delay.
-    decisionDelay = ros::Duration(3600, 0);
-  }
-  else {
-    // 30 seconds delay.
-    commsDelay = ros::Duration(30, 0);
-    // 36 seconds delay.
-    decisionDelay = ros::Duration(36, 0);
-  }
-
-  commsDelayPtr = &commsDelay;
-  decisionDelayPtr = &decisionDelay;
+  commsDelay = ros::Duration(delay, 0);
+  decisionDelay = ros::Duration(dDuration, 0);
 
   /////////////////////////// Initialize Publishers ////////////////////////////////
   // Publish to /GroundControl/fwd_link when decided to update trench 
   // target to target decided on ground.
-  ros::Publisher pubLink = nHandle.advertise<geometry_msgs::Point>
+  pubLink = nHandle.advertise<geometry_msgs::Point>
       ("/GroundControl/fwd_link", 3, true);
   
   // Publish to /GroundControl/use_onboard_target when decided to use 
   // target obtained by Lander. 
-  ros::Publisher pubUseOnboardTarget = nHandle.advertise<std_msgs::String>
+  pubUseOnboardTarget = nHandle.advertise<std_msgs::String>
       ("GroundControl/use_onboard_target", 3, true);
-
-  pubLinkPtr = &pubLink;
-  pubUseOnboardTargetPtr = &pubUseOnboardTarget;
 
   /////////////////////////// Initialize Subscribers ////////////////////////////////
   // Subscribe to /GroundControl/message topic.

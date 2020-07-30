@@ -12,26 +12,29 @@
 // onboard the lander, set the "/use_onboard_target" parameter to false.
 
 Command log_info (String);
-// Command log_warning (String);
-// Command log_error (String);
 Command request_fwd_link();
+Command update_target();
+Command timeout_target();
 Boolean Lookup Waiting;
+Boolean Lookup WaitForGroundTimeout;
 
-WaitForGround: Sequence
+WaitForGround: Concurrence
 {
-  if ( Lookup(Waiting) == true )
-    {
-      log_info ("Waiting for FWD link from Ground Control.");
-      request_fwd_link();
-      WaitOnLink:
-      {
-        while Lookup(Waiting) {
-          Wait 10.0;
-        }
-        log_info ("Target updated.");
-      }
-    }
-  endif
+  //SkipCondition (NOT Lookup(Waiting));
 
-  log_info ("Resuming plan.");
+  log_info ("Waiting for FWD link from Ground Control.");
+  request_fwd_link();
+
+  TimeoutAction: {
+    StartCondition Lookup(WaitForGroundTimeout);
+    log_info ("Request timed-out, using onboard target.");
+    timeout_target();
+  }
+
+  UpdateAction: {
+    StartCondition NOT Lookup(Waiting);
+    update_target();
+    log_info ("Target updated.");
+    log_info ("Resuming plan.");
+  }
 }

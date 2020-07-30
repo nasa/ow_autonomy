@@ -79,8 +79,11 @@ class OwInterface
   double getXTarget () const;
   double getYTarget () const;
   double getZTarget () const;
+  void updateTarget () const;
+  void timeoutTarget () const;
   void requestFwdLink () const;
   bool getWait () const;
+  bool getWaitForGroundTimeout() const;
   bool imageReceived () const;
 
   // These methods apply to all "lander operations", and hide their ROS

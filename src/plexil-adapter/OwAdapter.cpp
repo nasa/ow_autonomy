@@ -298,6 +298,12 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "request_fwd_link") {
     OwInterface::instance()->requestFwdLink();
   }
+  else if (name == "update_target") {
+    OwInterface::instance()->updateTarget();
+  }
+  else if (name == "timeout_target") {
+    OwInterface::instance()->timeoutTarget();
+  }
   else ROS_ERROR("Invalid command %s", name.c_str());
 
   m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
