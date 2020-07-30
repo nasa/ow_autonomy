@@ -13,7 +13,7 @@ LibraryAction Downlink;
 LibraryAction CollectAndTransfer;
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
-LibraryAction MonitorBattery (InOut Boolean status);
+LibraryAction MonitorBattery (In Boolean continue, InOut Boolean status);
 
 Command log_info (...);
 
@@ -21,12 +21,15 @@ EuropaMission: Concurrence
 {
   // Assumption: checkout is complete.
 
+  Boolean MissionInProgress = true;
+  
   // Health variables - expand/refine as needed
   Boolean BatteryOK, TemperatureOK;
 
   ContingencyMonitors: Concurrence
   {
-    BatteryMonitor: LibraryCall MonitorBattery (status = BatteryOK);
+    BatteryMonitor: LibraryCall MonitorBattery (continue = MissionInProgress,
+                                                status = BatteryOK);
     ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
@@ -41,6 +44,7 @@ EuropaMission: Concurrence
     LibraryCall Downlink;
     LibraryCall CollectAndTransfer;
     LibraryCall StartSampleAnalysis;
+    MissionInProgress = false;
     log_info ("Europa Mission finished.");
   }
 }

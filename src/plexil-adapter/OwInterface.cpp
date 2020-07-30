@@ -285,6 +285,7 @@ void OwInterface::jointStatesCallback
 static double CurrentTilt         = 0.0;
 static double CurrentPanDegrees   = 0.0;
 static bool   ImageReceived       = false;
+static double Voltage             = 25.0;
 
 static void pan_callback
 (const control_msgs::JointControllerState::ConstPtr& msg)
@@ -305,6 +306,12 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
   // Assuming that receipt of this message is success itself.
   ImageReceived = true;
   publish ("ImageReceived", ImageReceived);
+}
+
+static void power_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  Voltage = msg->data;
+  publish ("Voltage", Voltage);
 }
 
 
@@ -356,6 +363,7 @@ OwInterface::OwInterface ()
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
+    m_powerSubscriber (nullptr),
     m_guardedMoveClient ("GuardedMove", true)
 {
   ROS_INFO ("Waiting for action servers...");
@@ -372,6 +380,7 @@ OwInterface::~OwInterface ()
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
   if (m_cameraSubscriber) delete m_cameraSubscriber;
+  if (m_powerSubscriber) delete m_powerSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -411,6 +420,9 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+    m_powerSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/state_of_charge", qsize, power_callback));
   }
 }
 
@@ -645,6 +657,11 @@ double OwInterface::getTiltVelocity () const
 bool OwInterface::imageReceived () const
 {
   return ImageReceived;
+}
+
+double OwInterface::getVoltage () const
+{
+  return Voltage;
 }
 
 bool OwInterface::operationRunning (const string& name) const

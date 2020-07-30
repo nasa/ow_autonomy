@@ -2,10 +2,35 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+Real Lookup Voltage;
+Command log_info (...);
+Command log_warning (...);
+
 MonitorBattery:
 {
+  In Boolean continue;
   InOut Boolean status;
 
-  // Stub
-  status = true;
+  Real MinVoltage = 25.0;  // made up
+
+  MonitorBatteryAux: Concurrence
+  {
+    Repeat true;
+    Exit !continue;
+
+    BatteryGood:
+    {
+      Start Lookup(Voltage) >= MinVoltage;
+      status = true;
+      log_info ("State of charge normal:", Lookup(Voltage));
+    }
+
+    BatteryBad:
+    {
+      Start Lookup(Voltage) < MinVoltage;
+      status = false;
+      log_warning ("Low voltage:", Lookup(Voltage));
+    }
+  }
+  log_info ("Battery Monitor terminating.");
 }

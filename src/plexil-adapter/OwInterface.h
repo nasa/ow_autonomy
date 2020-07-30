@@ -70,6 +70,7 @@ class OwInterface
   double getPanVelocity () const;
   double getTiltVelocity () const;
   bool imageReceived () const;
+  double getVoltage () const;
 
   // These methods apply to all "lander operations", and hide their ROS
   // implementation, which could be services, actions, or ad hoc messaging.
@@ -109,6 +110,7 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+  ros::Subscriber* m_powerSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>
