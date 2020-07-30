@@ -757,7 +757,7 @@ void OwInterface::requestFwdLink () const
   timeoutTimer = m_genericNodeHandle->createTimer(timeoutDuration, timeout_timer_callback, true);
   timeAtStart = ros::Time::now();
 
-  // Simulate time delay for arrival of message to Earth.
+  // send message to GroundControl
   m_groundRequestPublisher->publish (message);
 }
 
