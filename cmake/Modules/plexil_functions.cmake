@@ -1,8 +1,6 @@
-#**************************************************************************#
-#* Copyright © 2019, United States Government, as represented by the      *#
-#* Administrator of the National Aeronautics and Space Administration.    *#
-#* All rights reserved.                                                   *#
-#**************************************************************************#
+# The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+# Research and Simulation can be found in README.md in the root directory of
+# this repository.
 
 # add plexil plans to be compiled. It seems that the plexil
 # compiler cannot compile plans in parallel safely. This function

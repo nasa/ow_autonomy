@@ -1,3 +1,9 @@
+The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+Research and Simulation can be found in README.md in the root directory of
+this repository.
+
+PLEXIL plans
+============
 This directory contains PLEXIL plans that implement onboard autonomy for Ocean
 World landers, as supported by the OceanWATERS software testbed.
 

@@ -1,3 +1,7 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 #ifndef OwSimProxy_H
 #define OwSimProxy_H
 
@@ -5,12 +9,6 @@
 // commands and telemetry.  Now, in addition, a *wrapper* for state queries to
 // the OW simulator.  Eventually it will be just the wrapper, and at this point,
 // this class may be refactored or go away.
-
-// __BEGIN_LICENSE__
-// Copyright (c) 2018-2020, United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration. All
-// rights reserved.
-// __END_LICENSE__
 
 #include <string>
 #include <vector>
