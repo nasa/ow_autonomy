@@ -7,8 +7,11 @@
 Command log_info (String);
 Command log_warning (String);
 Command log_error (String);
+Command downlink_image();
 
 DownlinkImage:
 {
   log_info ("Downlinking image...");
+  downlink_image();
+  log_info ("Image sent.");
 }

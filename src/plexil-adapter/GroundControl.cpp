@@ -41,7 +41,7 @@ static ros::Duration commsDelay;
 static ros::Duration decisionDelay;
 static bool useOnboard;
 
-void downlinkCallback(const geometry_msgs::Point::ConstPtr& point)
+void targetCallback(const geometry_msgs::Point::ConstPtr& point)
 {
   // Simulate time delay for arrival of message to Lander.
   commsDelay.sleep();
@@ -70,6 +70,14 @@ void requestCallback(const std_msgs::String::ConstPtr& cmd)
     commsDelay.sleep();
     pubUseOnboardTarget.publish(onboardTargetMessage);
   }
+}
+
+// placeholder. Just receives a string message for now. Eventually needs 
+// receive an image. 
+void imageCallback(const std_msgs::String::ConstPtr& image)
+{
+  commsDelay.sleep();
+  ROS_INFO("GroundControl: Received image [%s].", image->data.c_str());
 }
 
 int main(int argc, char **argv)
@@ -117,11 +125,14 @@ int main(int argc, char **argv)
       ("GroundControl/use_onboard_target", 3, true);
 
   /////////////////////////// Initialize Subscribers ////////////////////////////////
-  // Subscribe to /GroundControl/message topic.
-  ros::Subscriber sub = nHandle.subscribe("/GroundControl/downlink", 3, downlinkCallback);
+  // Subscribe to /GroundControl/downlink topic.
+  ros::Subscriber subTarget = nHandle.subscribe("/GroundControl/downlink", 3, targetCallback);
 
   // Subscribe to /GroundControl/request topic to respond to requests from lander.
   ros::Subscriber subRequest = nHandle.subscribe("/GroundControl/request", 3, requestCallback);
+
+  // Subscribe to /GroundControl/downlinkImage topic.
+  ros::Subscriber subImage = nHandle.subscribe("/GroundControl/downlinkImage", 3, imageCallback);;
   
   ros::Rate rate(1); // 1 Hz seems appropriate, for now.
   while (ros::ok()) {

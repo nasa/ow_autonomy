@@ -295,6 +295,9 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "downlink_target") {
     OwInterface::instance()->downlinkTarget();
   }
+  else if (name == "downlink_image") {
+    OwInterface::instance()->downlinkImage();
+  }
   else if (name == "request_fwd_link") {
     OwInterface::instance()->requestFwdLink();
   }

@@ -8,38 +8,41 @@ Boolean Lookup TrenchIdentified;
 LibraryAction DownlinkImage;
 LibraryAction Downlink;
 LibraryAction Stub(In String desc);
+LibraryAction WaitForGround;
 Command log_error (...);
 
 GetTrenchTarget:
 {
-  Real Time;
-  Time = Lookup(time);
+  // Real Time;
+  // Time = Lookup(time);
 
   // TODO: invoke comms, reset on failure.
   LibraryCall DownlinkImage;
   LibraryCall Downlink;
+  Wait 1;
+  // Try {
+  //   GetInfoFromGround:
+  //   {
+  //     Integer numAttempts = 0;
+  //     RepeatCondition AttemptGround.outcome == FAILURE;
+  //     InvariantCondition numAttempts <= 1;
+  //     Time = Lookup(time);
+  //     AttemptGround:
+  //     {
+  //       InvariantCondition
+  //         Time < (AttemptGround.EXECUTING.START +
+  //                 Lookup(TrenchTargetTimeout));
+  //       EndCondition Lookup(TrenchIdentified);
+  //       LibraryCall Stub(desc="Getting trench target from ground");
+  //       numAttempts = numAttempts + 1;
+  //     }
+  //   }
+  //   GetTrenchTargetOnboard:
+  //   {
+  //     LibraryCall Stub(desc="Getting trench target onboard");
+  //   }
+  //   log_error ("Failed to get trench target!");
+  // }
 
-  Try {
-    GetInfoFromGround:
-    {
-      Integer numAttempts = 0;
-      RepeatCondition AttemptGround.outcome == FAILURE;
-      InvariantCondition numAttempts <= 1;
-      Time = Lookup(time);
-      AttemptGround:
-      {
-        InvariantCondition
-          Time < (AttemptGround.EXECUTING.START +
-                  Lookup(TrenchTargetTimeout));
-        EndCondition Lookup(TrenchIdentified);
-        LibraryCall Stub(desc="Getting trench target from ground");
-        numAttempts = numAttempts + 1;
-      }
-    }
-    GetTrenchTargetOnboard:
-    {
-      LibraryCall Stub(desc="Getting trench target onboard");
-    }
-    log_error ("Failed to get trench target!");
-  }
+  LibraryCall WaitForGround;
 }

@@ -70,6 +70,7 @@ class OwInterface
                      double lat_overlap, double vert_overlap);
 
   void downlinkTarget();
+  void downlinkImage();
 
   // State interface
   double getTilt () const;
@@ -122,6 +123,7 @@ class OwInterface
   ros::Publisher*  m_antennaPanPublisher;
   ros::Publisher*  m_leftImageTriggerPublisher;
   ros::Publisher*  m_groundControlPublisher;
+  ros::Publisher*  m_groundControlImagePublisher;
   ros::Publisher*  m_groundRequestPublisher;
 
   ros::Subscriber* m_antennaPanSubscriber;

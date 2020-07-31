@@ -413,7 +413,8 @@ OwInterface::OwInterface ()
     m_groundControlPublisher (nullptr),
     m_groundFwdLinkSubscriber (nullptr),
     m_groundRequestPublisher (nullptr),
-    m_groundOnboardDecisionSubscriber (nullptr)
+    m_groundOnboardDecisionSubscriber (nullptr),
+    m_groundControlImagePublisher (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_guardedMoveClient.waitForServer();
@@ -434,6 +435,7 @@ OwInterface::~OwInterface ()
   if (m_groundFwdLinkSubscriber) delete m_groundFwdLinkSubscriber;
   if (m_groundRequestPublisher) delete m_groundRequestPublisher;
   if (m_groundOnboardDecisionSubscriber) delete m_groundOnboardDecisionSubscriber;
+  if (m_groundControlImagePublisher) delete m_groundControlImagePublisher;
 }
 
 void OwInterface::initialize()
@@ -463,6 +465,9 @@ void OwInterface::initialize()
     m_groundRequestPublisher = new ros::Publisher
        (m_genericNodeHandle->advertise<std_msgs::String>
        ("/GroundControl/request", qsize, latch));
+    m_groundControlImagePublisher = new ros::Publisher
+       (m_genericNodeHandle->advertise<std_msgs::String>
+       ("/GroundControl/downlinkImage", qsize, latch));
 
     // Initialize subscribers
 
@@ -684,6 +689,15 @@ void OwInterface::downlinkTarget ()
   target.y = CurrentYTarget;
   target.z = CurrentZTarget;
   m_groundControlPublisher->publish (target);
+}
+
+// placeholder for now. Sends a string but eventually
+// will need to send an image to GroundControl.
+void OwInterface::downlinkImage ()
+{
+  std_msgs::String image;
+  image.data = "Landing site image";
+  m_groundControlImagePublisher->publish (image);
 }
 
 void OwInterface::digLinear (double x, double y, double z,
