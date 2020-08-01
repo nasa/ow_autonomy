@@ -1,48 +1,60 @@
-// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
-// Research and Simulation can be found in README.md in the root directory of
-// this repository.
+// Copyright (c) 2018-2020, United States Government as represented by the
+// Administrator of the National Aeronautics and Space Administration. All
+// rights reserved.
 
-Real Lookup time;
-Real Lookup TrenchTargetTimeout;
-Boolean Lookup TrenchIdentified;
+// Get Trench Target Decision plan.
+//
+// A few options when using this plan. If you want to use ROS time instead 
+// of system time, open ow_autonomy/launch/autonomy_node.launch and set the
+// "/use_sim_time" parameter to true. If you want the "GroundControl" node 
+// to use the target set from ground instead of the target aquired  onboard 
+// the lander, set the "/use_onboard_target" parameter to false. You can 
+// also set the length of time you want the "communications_delay", 
+// "/decision_duration", and "/timeout_duration" to be in seconds. 
+// "/communications_delay" is the delay for message travel time 
+// between the lander and earth. "/decision_duration" is the time 
+// for a decision to be made on "GroundControl" before sending the 
+// message back to the lander. "/timeout_duration" is how long the 
+// lander should wait before moving on without waiting for a response
+// from "GroundControl."" If you choose for Ground Control to send a new
+// target instead of using the onboard target by setting 
+// "/use_onboard_target" to false, you can set the xyz values to anything
+// you would like to test. You do this by adjusting the "/x_coordinate", 
+// "/y_coordinate", and "/z_coordinate" values in the file,
+// autonomy_node.launch.
+
+Command log_info (String);
+Command request_fwd_link();
+Command update_trench_target();
+Command timeout_use_onboard_target();
+Boolean Lookup Waiting;
+Boolean Lookup WaitForGroundTimeout;
 LibraryAction DownlinkImage;
 LibraryAction Downlink;
-LibraryAction Stub(In String desc);
-LibraryAction WaitForGround;
-Command log_error (...);
 
-GetTrenchTarget:
+GetTrenchTarget: Sequence
 {
-  // Real Time;
-  // Time = Lookup(time);
 
-  // TODO: invoke comms, reset on failure.
   LibraryCall DownlinkImage;
   LibraryCall Downlink;
-  Wait 1;
-  // Try {
-  //   GetInfoFromGround:
-  //   {
-  //     Integer numAttempts = 0;
-  //     RepeatCondition AttemptGround.outcome == FAILURE;
-  //     InvariantCondition numAttempts <= 1;
-  //     Time = Lookup(time);
-  //     AttemptGround:
-  //     {
-  //       InvariantCondition
-  //         Time < (AttemptGround.EXECUTING.START +
-  //                 Lookup(TrenchTargetTimeout));
-  //       EndCondition Lookup(TrenchIdentified);
-  //       LibraryCall Stub(desc="Getting trench target from ground");
-  //       numAttempts = numAttempts + 1;
-  //     }
-  //   }
-  //   GetTrenchTargetOnboard:
-  //   {
-  //     LibraryCall Stub(desc="Getting trench target onboard");
-  //   }
-  //   log_error ("Failed to get trench target!");
-  // }
 
-  LibraryCall WaitForGround;
+  log_info ("Waiting for FWD link from Ground Control.");
+  request_fwd_link();
+
+  GetDecisionFromGround: Concurrence
+  {
+    WaitingForGroundTimeout: {
+      StartCondition Lookup(WaitForGroundTimeout);
+      SkipCondition UpdateTrenchTarget.state == FINISHED;
+      log_info ("Request timed-out, using onboard target.");
+      timeout_use_onboard_target();
+    }
+
+    UpdateTrenchTarget: {
+      StartCondition NOT Lookup(Waiting);
+      update_trench_target();
+      log_info ("Trench target updated.");
+      log_info ("Resuming plan.");
+    }
+  }
 }

@@ -5,7 +5,7 @@
   <param name="/use_onboard_target" value="true"/>
   <param name="/communications_delay" type="int" value="30"/>
   <param name="/decision_duration" type="int" value="36"/>
-  <param name="/timeout_duration" type="int" value="110"/>
+  <param name="/timeout_duration" type="int" value="130"/>
   <param name="/x_coordinate" type="double" value="6"/>
   <param name="/y_coordinate" type="double" value="7"/>
   <param name="/z_coordinate" type="double" value="0"/>

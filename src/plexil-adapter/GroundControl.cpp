@@ -41,10 +41,20 @@ static ros::Duration commsDelay;
 static ros::Duration decisionDelay;
 static bool useOnboard;
 
+
+// placeholder. Just receives a string message for now. Eventually needs 
+// receive an image. 
+void imageCallback(const std_msgs::String::ConstPtr& image)
+{
+  // Simulate time delay for arrival of messages to Lander.
+  commsDelay.sleep();
+  ROS_INFO("GroundControl: Received image [%s].", image->data.c_str());
+}
+
 void targetCallback(const geometry_msgs::Point::ConstPtr& point)
 {
-  // Simulate time delay for arrival of message to Lander.
-  commsDelay.sleep();
+  // targetCommsDelay = commsDelay;
+  // targetCommsDelay.sleep();
   std::string x = std::to_string(point->x);
   std::string y = std::to_string(point->y);
   std::string z = std::to_string (point->z);
@@ -54,7 +64,6 @@ void targetCallback(const geometry_msgs::Point::ConstPtr& point)
 
 void requestCallback(const std_msgs::String::ConstPtr& cmd)
 {
-  commsDelay.sleep();
   ROS_INFO("GroundControl: Received message, [%s].", cmd->data.c_str());
   ROS_INFO("GroundControl: Making Decision.");
   // Simulate time duration for decision making on ground. 
@@ -70,14 +79,6 @@ void requestCallback(const std_msgs::String::ConstPtr& cmd)
     commsDelay.sleep();
     pubUseOnboardTarget.publish(onboardTargetMessage);
   }
-}
-
-// placeholder. Just receives a string message for now. Eventually needs 
-// receive an image. 
-void imageCallback(const std_msgs::String::ConstPtr& image)
-{
-  commsDelay.sleep();
-  ROS_INFO("GroundControl: Received image [%s].", image->data.c_str());
 }
 
 int main(int argc, char **argv)

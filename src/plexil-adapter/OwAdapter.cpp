@@ -298,11 +298,11 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "request_fwd_link") {
     OwInterface::instance()->requestFwdLink();
   }
-  else if (name == "update_target") {
-    OwInterface::instance()->updateTarget();
+  else if (name == "update_trench_target") {
+    OwInterface::instance()->updateTrenchTarget();
   }
-  else if (name == "timeout_target") {
-    OwInterface::instance()->timeoutTarget();
+  else if (name == "timeout_use_onboard_target") {
+    OwInterface::instance()->timeoutUseOnboardTarget();
   }
   else ROS_ERROR("Invalid command %s", name.c_str());
 

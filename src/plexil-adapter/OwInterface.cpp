@@ -410,11 +410,11 @@ OwInterface::OwInterface ()
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
     m_guardedMoveClient ("GuardedMove", true),
+    m_groundControlImagePublisher (nullptr),
     m_groundControlPublisher (nullptr),
     m_groundFwdLinkSubscriber (nullptr),
     m_groundRequestPublisher (nullptr),
-    m_groundOnboardDecisionSubscriber (nullptr),
-    m_groundControlImagePublisher (nullptr)
+    m_groundOnboardDecisionSubscriber (nullptr)
 {
   ROS_INFO ("Waiting for action servers...");
   m_guardedMoveClient.waitForServer();
@@ -459,15 +459,15 @@ void OwInterface::initialize()
     m_leftImageTriggerPublisher = new ros::Publisher
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
+    m_groundControlImagePublisher = new ros::Publisher
+       (m_genericNodeHandle->advertise<std_msgs::String>
+       ("/GroundControl/downlinkImage", qsize, latch));
     m_groundControlPublisher = new ros::Publisher
        (m_genericNodeHandle->advertise<geometry_msgs::Point>
        ("/GroundControl/downlink", qsize, latch));
     m_groundRequestPublisher = new ros::Publisher
        (m_genericNodeHandle->advertise<std_msgs::String>
        ("/GroundControl/request", qsize, latch));
-    m_groundControlImagePublisher = new ros::Publisher
-       (m_genericNodeHandle->advertise<std_msgs::String>
-       ("/GroundControl/downlinkImage", qsize, latch));
 
     // Initialize subscribers
 
@@ -734,13 +734,13 @@ double OwInterface::getZTarget () const
   return CurrentZTarget;
 }
 
-void OwInterface::updateTarget () const {
+void OwInterface::updateTrenchTarget () const {
   CurrentXTarget = NewXTarget;
   CurrentYTarget = NewYTarget;
   CurrentZTarget = NewZTarget;
 }
 
-void OwInterface::timeoutTarget () const {
+void OwInterface::timeoutUseOnboardTarget () const {
   NewXTarget = getXTarget();
   NewYTarget = getYTarget();
   NewZTarget = getZTarget();
@@ -750,12 +750,6 @@ void OwInterface::requestFwdLink () const
 {
   std_msgs::String message;
   message.data = "Request for FWD link";
-
-  ros::Duration commsDelay;
-  
-  int delay;
-  m_genericNodeHandle->getParam("/communications_delay", delay);
-  commsDelay = ros::Duration(delay, 0);
 
   // start timeout timer.
   int tDuration;
