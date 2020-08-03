@@ -11,7 +11,6 @@ Real Lookup TrenchWidth;
 Real Lookup TrenchDepth;
 Real Lookup TrenchYaw;
 Real Lookup TrenchPitch;
-Real Lookup TrenchSlopeAngle;
 Real Lookup TrenchStartX;
 Real Lookup TrenchStartY;
 Real Lookup TrenchStartZ;

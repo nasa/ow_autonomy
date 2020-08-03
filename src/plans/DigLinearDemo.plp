@@ -14,20 +14,17 @@ Boolean Lookup Finished (String operation_name);
 
 DigLinearDemo:
 {
-  // This is the JPL interface.  Most parameters are ignored by the current OW
-  // implementation.  The non-ignored values match the service defaults.
-
   Real X      = 1.5;
   Real Y      = 0;
   Real Depth  = 0.02;
   Real Length = 0.3;
   Real GroundPosition = -0.175;
-  Real Width  = 0;   // ignored
-  Real Pitch  = 0;   // ignored
-  Real Yaw    = 0;   // ignored
-  Real DumpX  = 0;   // ignored
-  Real DumpY  = 0;   // ignored
-  Real DumpZ  = 0;   // ignored
+  Real Width  = 0;
+  Real Pitch  = 0;
+  Real Yaw    = 0;
+  Real DumpX  = 0;
+  Real DumpY  = 0;
+  Real DumpZ  = 0;
 
   log_info ("Beginning dig linear demo...");
   dig_linear (X, Y, Depth, Length, GroundPosition, Width, Pitch, Yaw, DumpX, DumpY, DumpZ);
