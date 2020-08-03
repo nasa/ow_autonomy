@@ -327,26 +327,27 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 ////////////////////////// Trench Target Support ///////////////////////////////
 
 // Ground Control decides to update target.
-static void target_callback (const geometry_msgs::Point::ConstPtr& msg)
+static void target_callback (const geometry_msgs::Point::ConstPtr& point)
 {
   if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
     ROS_INFO("Lander: Received decision, use new target.");
-    NewXTarget = msg->x;
-    NewYTarget = msg->y;
-    NewZTarget = msg->z;
+    NewXTarget = point->x;
+    NewYTarget = point->y;
+    NewZTarget = point->z;
     WaitForGroundControl = false;
     publish ("Waiting", false);
   }
 }
 
 // Ground Control decides for Lander to use onboard Target.
-static void onboard_target_callback (const std_msgs::String::ConstPtr& msg)
+// static void onboard_target_callback (const std_msgs::String::ConstPtr& msg)
+static void onboard_target_callback (const geometry_msgs::Point::ConstPtr& point)
 {
   if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
-    NewXTarget = OwInterface::instance()->getXTarget();
-    NewYTarget = OwInterface::instance()->getYTarget();
-    NewZTarget = OwInterface::instance()->getZTarget();
-    ROS_INFO("Lander: Received decision, %s", msg->data.c_str());
+    ROS_INFO("Lander: Received decision, Use onboard target.");
+    NewXTarget = point->x;
+    NewYTarget = point->y;
+    NewZTarget = point->z;
     WaitForGroundControl = false;
     publish ("Waiting", false);
   }
