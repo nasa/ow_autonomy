@@ -240,19 +240,21 @@ void OwAdapter::executeCommand(Command *cmd)
   }
   // Operations
   else if (name == "dig_linear") {
-    double x, y, z, depth, length, width, pitch, yaw, dumpx, dumpy, dumpz;
+    double x, y, depth, length, ground_position, width, pitch, yaw;
+    double dumpx, dumpy, dumpz;
     args[0].getValue(x);
     args[1].getValue(y);
     args[2].getValue(depth);
     args[3].getValue(length);
-    args[4].getValue(width);
-    args[5].getValue(pitch);
-    args[6].getValue(yaw);
-    args[7].getValue(dumpx);
-    args[8].getValue(dumpy);
-    args[9].getValue(dumpz);
-    OwInterface::instance()->digLinear(x, y, depth, length, width,
-                                       pitch, yaw, dumpx, dumpy, dumpz);
+    args[4].getValue(ground_position);
+    args[5].getValue(width);
+    args[6].getValue(pitch);
+    args[7].getValue(yaw);
+    args[8].getValue(dumpx);
+    args[9].getValue(dumpy);
+    args[10].getValue(dumpz);
+    OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
+                                       width, pitch, yaw, dumpx, dumpy, dumpz);
   }
   else if (name == "guarded_move") {
     double x, y, z, direction_x, direction_y, direction_z;
