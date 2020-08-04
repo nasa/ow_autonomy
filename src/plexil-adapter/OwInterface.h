@@ -77,9 +77,6 @@ class OwInterface
   bool finished (const std::string& name) const;
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
-  void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
-  void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
-  void stopOperation (const std::string& name) const;
 
  private:
   // temporary, proof of concept
@@ -94,7 +91,13 @@ class OwInterface
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
-  static void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+  void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+  void managePanTilt (const std::string& opname,
+                      double position, double velocity,
+                      double current, double goal,
+                      const ros::Time& start);
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
@@ -114,7 +117,10 @@ class OwInterface
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>
     m_guardedMoveClient;
 
+  // Antenna state - note that pan and tilt can be concurrent.
+  double m_currentPan, m_currentTilt;
+  double m_goalPan, m_goalTilt;      // commanded pan/tilt values
+  ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
-
 
 #endif

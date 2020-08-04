@@ -13,7 +13,6 @@ LibraryAction ImagePass (In Real PanLo,
                          InOut Real PanAngle,
                          InOut Boolean ReversePan);
 LibraryAction Tilt (In Real Degrees);
-Command tilt_antenna (Real angle);
 
 TiltAndImagePass:
 {
