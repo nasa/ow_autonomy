@@ -29,7 +29,7 @@ using std::thread;
 using std::ref;
 
 // C
-#include <cmath>  // for M_PI and abs
+#include <cmath>  // for M_PI and fabs
 
 
 //////////////////// Utilities ////////////////////////
@@ -43,7 +43,7 @@ const double VelocityTolerance = 0.01; // made up, unitless
 
 static bool within_tolerance (double val1, double val2, double tolerance)
 {
-  return abs (val1 - val2) <= tolerance;
+  return fabs (val1 - val2) <= tolerance;
 }
 
 
@@ -249,10 +249,10 @@ static void handle_overtorque (Joint joint, double effort)
 
   string joint_name = JointPropMap[joint].plexilName;
 
-  if (abs(effort) >= JointPropMap[joint].hardTorqueLimit) {
+  if (fabs(effort) >= JointPropMap[joint].hardTorqueLimit) {
     JointsAtHardTorqueLimit.insert (joint_name);
   }
-  else if (abs(effort) >= JointPropMap[joint].softTorqueLimit) {
+  else if (fabs(effort) >= JointPropMap[joint].softTorqueLimit) {
     JointsAtSoftTorqueLimit.insert(joint_name);
   }
   else {
