@@ -457,7 +457,7 @@ OwInterface::OwInterface ()
     m_groundControlPublisher (nullptr),
     m_groundFwdLinkSubscriber (nullptr),
     m_groundRequestPublisher (nullptr),
-    m_groundOnboardDecisionSubscriber (nullptr)
+    m_groundOnboardDecisionSubscriber (nullptr),
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart left uninitialized
