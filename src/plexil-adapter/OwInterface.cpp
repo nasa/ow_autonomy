@@ -282,14 +282,12 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        managePanTilt (Op_PanAntenna,
-                       position, velocity, m_currentPan,
-                       m_goalPan, m_panStart, ref(m_panning));
+        managePanTilt (Op_PanAntenna, position, velocity, m_currentPan,
+                       m_goalPan, m_panStart);
       }
       else if (joint == Joint::antenna_tilt) {
-        managePanTilt (Op_TiltAntenna,
-                       position, velocity, m_currentTilt,
-                       m_goalTilt, m_tiltStart, ref(m_tilting));
+        managePanTilt (Op_TiltAntenna, position, velocity, m_currentTilt,
+                       m_goalTilt, m_tiltStart);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
@@ -303,26 +301,20 @@ void OwInterface::jointStatesCallback
   }
 }
 
-void OwInterface::stopAntenna (const string& opname, bool& doing)
-{
-  doing = false;
-  mark_operation_finished (opname);
-}
-
 void OwInterface::managePanTilt (const string& opname,
                                  double position, double velocity,
                                  double current, double goal,
-                                 const ros::Time& start, bool& doing)
+                                 const ros::Time& start)
 {
   // We are only concerned when there is a pan/tilt in progress.
-  if (! doing) return;
+  if (! operationRunning (opname)) return;
 
   // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
-    stopAntenna (opname, ref(doing));
+    mark_operation_finished (opname);
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
@@ -408,8 +400,7 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0),
-    m_panning (false), m_tilting (false)
+    m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart left uninitialized
 {
   ROS_INFO ("Waiting for action servers...");
@@ -639,24 +630,14 @@ static bool antenna_op (const string& opname,
 
 bool OwInterface::tiltAntenna (double degrees)
 {
-  // if (within_tolerance (degrees, m_currentTilt, DegreeTolerance)) {
-  //   ROS_INFO ("Tilt already at %f degrees, ignoring tilt command.", degrees);
-  //   return true;
-  // }
   m_goalTilt = degrees;
-  m_tilting = true;
   m_tiltStart = ros::Time::now();
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
 bool OwInterface::panAntenna (double degrees)
 {
-  // if (within_tolerance (degrees, m_currentPan, DegreeTolerance)) {
-  //   ROS_INFO ("Pan already at %f degrees, ignoring pan command.", degrees);
-  //   return true;
-  // }
   m_goalPan = degrees;
-  m_panning = true;
   m_panStart = ros::Time::now();
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }

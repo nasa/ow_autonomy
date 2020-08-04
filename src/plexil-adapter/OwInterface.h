@@ -97,9 +97,7 @@ class OwInterface
   void managePanTilt (const std::string& opname,
                       double position, double velocity,
                       double current, double goal,
-                      const ros::Time& start, bool& doing);
-
-  void stopAntenna (const std::string& opname, bool& doing);
+                      const ros::Time& start);
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
@@ -122,7 +120,6 @@ class OwInterface
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
   double m_goalPan, m_goalTilt;      // commanded pan/tilt values
-  bool m_panning, m_tilting;         // pan/tilt in progress
   ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
 
