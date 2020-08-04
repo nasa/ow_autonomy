@@ -58,8 +58,8 @@ class OwInterface
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
   void takePicture ();
-  void digLinear (double x, double y, double depth,
-                  double length, double width, double pitch, double yaw,
+  void digLinear (double x, double y, double depth, double length,
+                  double ground_position, double width, double pitch, double yaw,
                   double dumpx, double dumpy, double dumpz);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);

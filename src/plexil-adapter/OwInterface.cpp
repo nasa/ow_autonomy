@@ -479,6 +479,7 @@ void OwInterface::digCircularDemo()
     srv.request.y = 0.0;
     srv.request.depth = 0.0;
     srv.request.radial = false;
+    srv.request.ground_position = 0.0;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular);
@@ -651,8 +652,8 @@ void OwInterface::takePicture ()
 }
 
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double width,
-                             double pitch, double yaw,
+                             double depth, double length, double ground_position,
+                             double width, double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
   if (! mark_operation_running (Op_DigLinear)) return;
@@ -669,6 +670,7 @@ void OwInterface::digLinear (double x, double y,
     srv.request.y = y;
     srv.request.depth = depth;
     srv.request.length = length;
+    srv.request.ground_position = ground_position;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigLinear>,
                            client, srv, Op_DigLinear);

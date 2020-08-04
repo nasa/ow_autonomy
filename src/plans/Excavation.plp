@@ -6,11 +6,11 @@
 
 Real Lookup time;
 Real Lookup TrenchLength;
+Real Lookup TrenchGroundPosition;
 Real Lookup TrenchWidth;
 Real Lookup TrenchDepth;
 Real Lookup TrenchYaw;
 Real Lookup TrenchPitch;
-Real Lookup TrenchSlopeAngle;
 Real Lookup TrenchStartX;
 Real Lookup TrenchStartY;
 Real Lookup TrenchStartZ;
@@ -26,8 +26,8 @@ Command log_info (...);
 
 // Directly from draft Ames/JPL interface.
 Boolean Command dig_linear (Real startX, Real startY,
-                            Real depth, Real length, Real width,
-                            Real pitch, Real yaw,
+                            Real depth, Real length, Real groundPosition,
+                            Real width, Real pitch, Real yaw,
                             Real dumpX, Real dumpY, Real dumpZ);
 
 Excavation:
@@ -57,6 +57,7 @@ Excavation:
                          Lookup(TrenchStartY),
                          Lookup(TrenchDepth),
                          Lookup(TrenchLength),
+                         Lookup(TrenchGroundPosition),
                          Lookup(TrenchWidth),
                          Lookup(TrenchPitch),
                          Lookup(TrenchYaw),
