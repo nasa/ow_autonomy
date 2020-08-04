@@ -24,13 +24,18 @@
 #include <set>
 #include <map>
 #include <thread>
+#include <functional>
 using std::set;
 using std::map;
 using std::thread;
+using std::ref;
 
 // C
 #include <cmath>  // for M_PI and abs
 #include <unistd.h>
+
+
+//////////////////// Utilities ////////////////////////
 
 // Degree/Radian
 const double D2R = M_PI / 180.0 ;
@@ -49,9 +54,18 @@ static double CurrentZTarget      = 0;
 static double NewXTarget          = 5;
 static double NewYTarget          = 10;
 static double NewZTarget          = 0;
+const double DegreeTolerance = 0.2;    // made up, degees
+const double VelocityTolerance = 0.01; // made up, unitless
+
+static bool within_tolerance (double val1, double val2, double tolerance)
+{
+  return fabs (val1 - val2) <= tolerance;
+}
 
 
 //////////////////// Lander Operation Support ////////////////////////
+
+const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
@@ -92,7 +106,7 @@ static bool mark_operation_running (const string& name)
   }
 
   ROS_INFO ("Marking %s RUNNING", name.c_str());
-  Running.at (name) = true;ros::NodeHandle nHandle;
+  Running.at (name) = true;
   publish ("Running", true, name);
   return true;
 }
@@ -102,7 +116,6 @@ static void mark_operation_finished (const string& name)
   if (! Running.at (name)) {
     ROS_WARN ("%s was not running. Should never happen.", name.c_str());
   }
-  ROS_INFO ("Marking %s FINISHED", name.c_str());
   Running.at (name) = false;
   publish ("Running", false, name);
   publish ("Finished", true, name);
@@ -253,10 +266,10 @@ static void handle_overtorque (Joint joint, double effort)
 
   string joint_name = JointPropMap[joint].plexilName;
 
-  if (abs(effort) >= JointPropMap[joint].hardTorqueLimit) {
+  if (fabs(effort) >= JointPropMap[joint].hardTorqueLimit) {
     JointsAtHardTorqueLimit.insert (joint_name);
   }
-  else if (abs(effort) >= JointPropMap[joint].softTorqueLimit) {
+  else if (fabs(effort) >= JointPropMap[joint].softTorqueLimit) {
     JointsAtSoftTorqueLimit.insert(joint_name);
   }
   else {
@@ -282,13 +295,22 @@ void OwInterface::jointStatesCallback
     string ros_name = msg->name[i];
     if (JointMap.find (ros_name) != JointMap.end()) {
       Joint joint = JointMap[ros_name];
-      JointTelemetryMap[joint] = JointTelemetry (msg->position[i],
-                                                 msg->velocity[i],
-                                                 msg->effort[i]);
+      double position = msg->position[i];
+      double velocity = msg->velocity[i];
+      double effort = msg->effort[i];
+      if (joint == Joint::antenna_pan) {
+        managePanTilt (Op_PanAntenna, position, velocity, m_currentPan,
+                       m_goalPan, m_panStart);
+      }
+      else if (joint == Joint::antenna_tilt) {
+        managePanTilt (Op_TiltAntenna, position, velocity, m_currentTilt,
+                       m_goalTilt, m_tiltStart);
+      }
+      JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
-      publish (plexil_name + "Velocity", msg->velocity[i]);
-      publish (plexil_name + "Effort", msg->effort[i]);
-      publish (plexil_name + "Position", msg->position[i]);
+      publish (plexil_name + "Position", position);
+      publish (plexil_name + "Velocity", velocity);
+      publish (plexil_name + "Effort", effort);
       handle_joint_fault (joint, i, msg);
     }
     else ROS_ERROR("jointStatesCallback: unsupported joint %s",
@@ -296,25 +318,45 @@ void OwInterface::jointStatesCallback
   }
 }
 
+void OwInterface::managePanTilt (const string& opname,
+                                 double position, double velocity,
+                                 double current, double goal,
+                                 const ros::Time& start)
+{
+  // We are only concerned when there is a pan/tilt in progress.
+  if (! operationRunning (opname)) return;
+
+  // Antenna states of interest,
+  bool reached = within_tolerance (current, goal, DegreeTolerance);
+  bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
+
+  if (reached || expired) {
+    mark_operation_finished (opname);
+    if (expired) ROS_ERROR("%s timed out", opname.c_str());
+    if (! reached) {
+      ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
+                opname.c_str(), current, goal);
+    }
+  }
+}
+
 
 ////////////////////////////// Image Support ///////////////////////////////////
 
-static double CurrentTilt         = 0.0;
-static double CurrentPanDegrees   = 0.0;
 static bool   ImageReceived       = false;
 
-static void pan_callback
+void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentPanDegrees = msg->set_point * R2D;
-  publish ("PanDegrees", CurrentPanDegrees);
+  m_currentPan = msg->set_point * R2D;
+  publish ("PanDegrees", m_currentPan);
 }
 
-static void tilt_callback
+void OwInterface::tiltCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
 {
-  CurrentTilt = msg->set_point * R2D;
-  publish ("TiltDegrees", CurrentTilt);
+  m_currentTilt = msg->set_point * R2D;
+  publish ("TiltDegrees", m_currentTilt);
 }
 
 static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
@@ -416,6 +458,9 @@ OwInterface::OwInterface ()
     m_groundFwdLinkSubscriber (nullptr),
     m_groundRequestPublisher (nullptr),
     m_groundOnboardDecisionSubscriber (nullptr)
+    m_currentPan (0), m_currentTilt (0),
+    m_goalPan (0), m_goalTilt (0)
+    // m_panStart, m_tiltStart left uninitialized
 {
   ROS_INFO ("Waiting for action servers...");
   m_guardedMoveClient.waitForServer();
@@ -474,13 +519,16 @@ void OwInterface::initialize()
 
     m_antennaTiltSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", qsize, tilt_callback));
+       subscribe("/ant_tilt_position_controller/state", qsize,
+                 &OwInterface::tiltCallback, this));
     m_antennaPanSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", qsize, pan_callback));
+       subscribe("/ant_pan_position_controller/state", qsize,
+                 &OwInterface::panCallback, this));
     m_jointStatesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/joint_states", qsize, OwInterface::jointStatesCallback));
+       subscribe("/joint_states", qsize,
+                 &OwInterface::jointStatesCallback, this));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
@@ -510,6 +558,7 @@ void OwInterface::digCircularDemo()
     srv.request.y = 0.0;
     srv.request.depth = 0.0;
     srv.request.radial = false;
+    srv.request.ground_position = 0.0;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular);
@@ -641,29 +690,35 @@ void OwInterface::publishTrajectoryDemo()
   }
 }
 
-static bool antenna_op (const string& name, double degrees, ros::Publisher* pub)
+static bool antenna_op (const string& opname,
+                        double degrees,
+                        ros::Publisher* pub)
 {
-  if (! mark_operation_running (name)) {
+  if (! mark_operation_running (opname)) {
     return false;
   }
 
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
-  ROS_INFO ("Starting %s: %f degrees (%f radians)", name.c_str(),
+  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
-  thread t (monitor_for_faults, name);
-  t.detach();
+  thread fault_thread (monitor_for_faults, opname);
+  fault_thread.detach();
   pub->publish (radians);
   return true;
 }
 
 bool OwInterface::tiltAntenna (double degrees)
 {
+  m_goalTilt = degrees;
+  m_tiltStart = ros::Time::now();
   return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
 }
 
 bool OwInterface::panAntenna (double degrees)
 {
+  m_goalPan = degrees;
+  m_panStart = ros::Time::now();
   return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
 }
 
@@ -695,8 +750,8 @@ void OwInterface::downlinkImage ()
 
 //void OwInterface::digLinear (double x, double y, double z,
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double width,
-                             double pitch, double yaw,
+                             double depth, double length, double ground_position,
+                             double width, double pitch, double yaw,
                              double dumpx, double dumpy, double dumpz)
 {
   if (! mark_operation_running (Op_DigLinear)) return;
@@ -713,6 +768,7 @@ void OwInterface::digLinear (double x, double y,
     srv.request.y = y;
     srv.request.depth = depth;
     srv.request.length = length;
+    srv.request.ground_position = ground_position;
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigLinear>,
                            client, srv, Op_DigLinear);
@@ -785,12 +841,12 @@ bool OwInterface::getWaitForGroundTimeout () const
 
 double OwInterface::getTilt () const
 {
-  return CurrentTilt;
+  return m_currentTilt;
 }
 
 double OwInterface::getPanDegrees () const
 {
-  return CurrentPanDegrees;
+  return m_currentPan;
 }
 
 double OwInterface::getPanVelocity () const
@@ -845,9 +901,4 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
-}
-
-void OwInterface::stopOperation (const string& name) const
-{
-  mark_operation_finished (name);
 }
