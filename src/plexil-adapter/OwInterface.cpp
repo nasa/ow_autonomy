@@ -810,7 +810,7 @@ void OwInterface::requestFwdLink () const
 
   // start timeout timer.
   int tDuration;
-  m_genericNodeHandle->getParam("/timeout_duration", tDuration);
+  m_genericNodeHandle->getParam("/ground_decision_timeout_seconds", tDuration);
   timeoutDuration = ros::Duration(tDuration, 0);
   timeoutTimer = m_genericNodeHandle->createTimer(timeoutDuration, timeout_timer_callback, true);
   timeAtStart = ros::Time::now();

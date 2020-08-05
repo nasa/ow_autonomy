@@ -12,6 +12,13 @@ It also contains a dummy stand-in ROS action server for GuardedMove, as well as
 a standalone node for testing it.  (GuardedMoveServer, GuardedMoveClient).  Run
 the following sequence, in three separate shells.
 
+Speeding up simulation
+======================
+
+If you want to use ROS time instead of system time, open 
+ow_autonomy/launch/autonomy_node.launch and set the "/use_sim_time" parameter 
+to true.
+
 
 ```bash
   roscore

@@ -12,13 +12,9 @@ described in project documentation.
 
 See ow_autonomy/README.md for build instructions.
 
-GroundControl node/GetTrenchTarget.plp
+GetTrenchTarget.plp
 ======================================
-A few options when using this plan or the GroundControl node. 
-
-If you want to use ROS time instead of system time, open 
-ow_autonomy/launch/autonomy_node.launch and set the "/use_sim_time" parameter 
-to true. 
+A few options when using this plan. 
 
 If you want the "GroundControl" node to use the target set from ground instead of 
 the target aquired  onboard the lander, set the "/use_onboard_target" parameter 

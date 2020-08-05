@@ -2,13 +2,13 @@
 
 <launch>
   <param name="/use_sim_time" value="false"/>
-  <param name="/use_onboard_target" value="true"/>
+  <param name="/sample_site_selected_onboard" value="true"/>
   <param name="/communications_delay" type="int" value="30"/>
-  <param name="/decision_duration" type="int" value="36"/>
-  <param name="/timeout_duration" type="int" value="130"/>
-  <param name="/x_coordinate" type="double" value="6"/>
-  <param name="/y_coordinate" type="double" value="7"/>
-  <param name="/z_coordinate" type="double" value="0"/>
+  <param name="/ground_decision_time_seconds" type="int" value="36"/>
+  <param name="/ground_decision_timeout_seconds" type="int" value="130"/>
+  <param name="/sample_site_x_from_ground" type="double" value="6"/>
+  <param name="/sample_site_y_from_ground" type="double" value="7"/>
+  <param name="/sample_site_z_from_ground" type="double" value="0"/>
   <arg name="plan" default="Demo.plx"/>
   <node pkg="ow_autonomy"
         name="autonomy_node"

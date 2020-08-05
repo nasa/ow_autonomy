@@ -76,9 +76,9 @@ int main(int argc, char **argv)
   double yCoordinate;
   double zCoordinate;
 
-  nHandle.getParam("/x_coordinate", xCoordinate);
-  nHandle.getParam("/y_coordinate", yCoordinate);
-  nHandle.getParam("/z_coordinate", zCoordinate);
+  nHandle.getParam("/sample_site_x_from_ground", xCoordinate);
+  nHandle.getParam("/sample_site_y_from_ground", yCoordinate);
+  nHandle.getParam("/sample_site_z_from_ground", zCoordinate);
 
   xyz.x = xCoordinate;
   xyz.y = yCoordinate;
@@ -90,9 +90,9 @@ int main(int argc, char **argv)
   // For Communications Delay and Decision Duration, set in autonomy_node.launch
   int delay;
   int dDuration;
-  nHandle.getParam("/use_onboard_target", useOnboard);
+  nHandle.getParam("/sample_site_selected_onboard", useOnboard);
   nHandle.getParam("/communications_delay", delay);
-  nHandle.getParam("/decision_duration", dDuration);
+  nHandle.getParam("/ground_decision_time_seconds", dDuration);
 
   commsDelay = ros::Duration(delay, 0);
   decisionDelay = ros::Duration(dDuration, 0);
