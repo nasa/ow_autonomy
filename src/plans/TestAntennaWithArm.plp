@@ -1,0 +1,31 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Simple test/demo of antenna and arm operating concurrently.
+
+Command log_info (...);
+
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap);
+LibraryAction DigCircularDemo;
+LibraryAction PublishTrajectoryDemo;
+
+TestAntennaWithArm:
+{
+  log_info ("Starting Antenna/Arm demo...");
+
+  LibraryCall DigCircularDemo;
+  
+  FilmAndDig: Concurrence
+  {
+    LibraryCall TakePanorama (TiltLo = 30, TiltHi = 36,
+                              PanLo = 20, PanHi = 40,
+                              HorizOverlap = 0,
+                              VertOverlap = 0);
+    LibraryCall PublishTrajectoryDemo;
+  }
+
+  log_info ("Antenna/Arm demo finished.");
+}

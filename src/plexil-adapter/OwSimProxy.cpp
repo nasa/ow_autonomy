@@ -33,11 +33,11 @@ bool OwSimProxy::lookup (const std::string& state_name,
   // Eventually, these stubs will go away.
 
   STATE_STUB(TrenchLength, 10)
+  else STATE_STUB(TrenchGroundPosition, -0.175)
   else STATE_STUB(TrenchWidth, 10)
   else STATE_STUB(TrenchDepth, 2)
   else STATE_STUB(TrenchPitch, 0)
   else STATE_STUB(TrenchYaw, 0)
-  else STATE_STUB(TrenchSlopeAngle, 30)
   else STATE_STUB(TrenchStartX, 5)
   else STATE_STUB(TrenchStartY, 10)
   else STATE_STUB(TrenchStartZ, 0)
