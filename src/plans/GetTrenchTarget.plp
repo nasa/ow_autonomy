@@ -5,22 +5,22 @@
 // Get Trench Target Decision plan.
 
 Command log_info (String);
-Command request_fwd_link();
+Command request_ground_decision();
 Command update_trench_target();
 Command timeout_use_onboard_target();
 Boolean Lookup Waiting;
 Boolean Lookup WaitForGroundTimeout;
 LibraryAction DownlinkImage;
-LibraryAction Downlink;
+LibraryAction DownlinkTarget;
 
 GetTrenchTarget: Sequence
 {
 
   LibraryCall DownlinkImage;
-  LibraryCall Downlink;
+  LibraryCall DownlinkTarget;
 
   log_info ("Waiting for FWD link from Ground Control.");
-  request_fwd_link();
+  request_ground_decision();
 
   GetDecisionFromGround: Concurrence
   {
