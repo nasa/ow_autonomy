@@ -803,7 +803,7 @@ void OwInterface::timeoutUseOnboardTarget () const {
   NewZTarget = getZTarget();
 }
 
-void OwInterface::requestFwdLink () const
+void OwInterface::requestGroundDecision () const
 {
   std_msgs::String message;
   message.data = "Request for FWD link";

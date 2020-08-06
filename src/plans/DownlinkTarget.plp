@@ -5,8 +5,11 @@
 Command log_info (String);
 Command log_warning (String);
 Command log_error (String);
+Command downlink_target ();
 
-Downlink: Sequence
+DownlinkTarget: Sequence
 {
-  log_info ("Downlinking...");
+  log_info ("Downlinking Target...");
+  downlink_target ();
+  log_info ("Target sent.");
 }

@@ -73,12 +73,14 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
+
+  // Mission Specific Support (Temporary)
   double getXTarget () const;
   double getYTarget () const;
   double getZTarget () const;
   void updateTrenchTarget () const;
   void timeoutUseOnboardTarget () const;
-  void requestFwdLink () const;
+  void requestGroundDecision () const;
   bool getWait () const;
   bool getWaitForGroundTimeout() const;
   bool imageReceived () const;

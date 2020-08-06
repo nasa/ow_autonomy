@@ -292,8 +292,8 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "downlink_image") {
     OwInterface::instance()->downlinkImage();
   }
-  else if (name == "request_fwd_link") {
-    OwInterface::instance()->requestFwdLink();
+  else if (name == "request_ground_decision") {
+    OwInterface::instance()->requestGroundDecision();
   }
   else if (name == "update_trench_target") {
     OwInterface::instance()->updateTrenchTarget();
