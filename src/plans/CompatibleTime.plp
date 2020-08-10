@@ -6,10 +6,13 @@
 
 LibraryAction Stub(In String desc);
 
+// Determine if the two executions are "compatible" - if not, we will ignore the crashed execution
+// Return false if external parameters (time, position, etc.) make the old execution irrelevant
 CompatibleTime:{
   In Real First;
   In Real Second;
   In String CheckpointName;
+  In String Args;
   InOut Boolean Result;
   LibraryCall Stub(desc="Determining if "+CheckpointName+" times are compatible");
   Result = true;

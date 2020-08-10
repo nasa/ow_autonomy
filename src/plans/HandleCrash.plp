@@ -1,6 +1,7 @@
 LibraryAction CompatibleTime(In Real First,
 			     In Real Second,
 			     In String CheckpointName,
+			     In String Args,
 			     InOut Boolean Result);
 
 Real Lookup CheckpointTime(...);
@@ -17,27 +18,28 @@ HandleCrash:{
   InOut String Info;
   
   // TODO: Currently, ordering a new execution of Name (with IgnoreCrash=true) means previously crashed
-  // executions will be ignored since the successful new panorama will be the most recent.
+  // executions will be ignored since the successful new execution will be the most recent.
   // Is this OK?
   Integer latest_start_boot;
   Integer latest_end_boot;
   Boolean checked_latest = false;
   Boolean compatible_time = true;
-  // Make sure we can use argument string
     
   ExitCondition !Lookup(DidCrash) // Didn't crash
-    || IgnoreCrash // We want to start a new panorama even if we crashed during the old one
-    || (checked_latest && latest_start_boot == latest_end_boot) // Crashed, but completed most recent call with these Args
+    || IgnoreCrash // We want to start a new execution even if we crashed during the old one
+    || (checked_latest && latest_start_boot == latest_end_boot) // Crashed, but completed most recent call with these args
     || (checked_latest && !isKnown(latest_start_boot)) //Never started
-    || !compatible_time; // Never started panorama with these Args
+    || !compatible_time; // Last execution not relevant
 
   
   latest_start_boot = Lookup(CheckpointWhen(CheckpointName+Args));
   latest_end_boot = Lookup(CheckpointWhen(CheckpointName+"End"+Args));
   checked_latest = true;
+  // Determine if the last execution was relevant
   LibraryCall CompatibleTime(First=Lookup(CheckpointTime(CheckpointName+Args,latest_start_boot)),
 			     Second=Lookup(time,1),
 			     CheckpointName=CheckpointName,
+			     Args=Args,
 			     Result=compatible_time);
 
   // From here on out, we can assume we've crashed

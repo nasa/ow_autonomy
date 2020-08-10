@@ -11,7 +11,6 @@ Command log_info (...);
 Command log_error (...);
 
 
-
 Command SetCheckpoint(...);
 Command Flush();
 
@@ -134,7 +133,6 @@ TakePanorama:
                          ReversePan = reverse_pan);
       StringConversion: tilt_string = ToString(tilt);
     }
-
     SetCheckpoint("TakePanorama"+args,true,tilt_string);
     Flush();
     tilt = tilt + tilt_increment;
@@ -157,7 +155,6 @@ TakePanorama:
     Flush();
     tilt = tilt + tilt_increment;
   }
-
   // Cap last pan at TiltHi unless we just did a pass at TiltHi
   if (tilt >= TiltHi && tilt < TiltHi + tilt_increment) {
     LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
