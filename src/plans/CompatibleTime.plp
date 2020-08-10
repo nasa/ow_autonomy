@@ -1,0 +1,16 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plexil_defs.h"
+
+LibraryAction Stub(In String desc);
+
+CompatibleTime:{
+  In Real First;
+  In Real Second;
+  In String CheckpointName;
+  InOut Boolean Result;
+  LibraryCall Stub(desc="Determining if "+CheckpointName+" times are compatible");
+  Result = true;
+}

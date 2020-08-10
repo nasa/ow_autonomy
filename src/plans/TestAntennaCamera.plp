@@ -8,7 +8,8 @@ Command log_info (...);
 
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
-                            In Real HorizOverlap, In Real VertOverlap);
+                            In Real HorizOverlap, In Real VertOverlap,
+			    In Boolean IgnoreCrash);
 
 TestAntennaCamera:
 {
@@ -17,7 +18,8 @@ TestAntennaCamera:
   LibraryCall TakePanorama (TiltLo = 20, TiltHi = 24,
                             PanLo = 45, PanHi = 50,
                             HorizOverlap = 2,
-                            VertOverlap = 2);
+                            VertOverlap = 2,
+			    IgnoreCrash = false);
 
   log_info ("Antenna/Camera demo finished.");
 }

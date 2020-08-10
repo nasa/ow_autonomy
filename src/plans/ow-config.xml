@@ -2,6 +2,13 @@
   <Adapter AdapterType="Utility"/>
   <Adapter AdapterType="OSNativeTime"/>
   <Adapter AdapterType="Launcher"/>
+  <Adapter AdapterType="CheckpointAdapter">
+    <SaveConfiguration Directory="./" />
+    <AdapterConfiguration OKOnExit="true"
+			  FlushOnExit="true"
+			  UseTime="true" />
+  </Adapter>
+  <Adapter AdapterType="StringAdapter"/>
   <Adapter AdapterType="ow_adapter">
     <DefaultCommandAdapter/>
     <DefaultLookupAdapter/>

@@ -10,6 +10,17 @@
 Command log_info (...);
 Command log_error (...);
 
+
+
+Command SetCheckpoint(...);
+Command Flush();
+
+String Command ToString(...);
+Real Command ToReal(String);
+Integer Command find_first_of(...);
+String Command substr(...);
+
+  
 LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 InOut Real PanAngle,
                                 In Real PanIncrement,
@@ -26,12 +37,16 @@ LibraryAction ImagePass (In Real PanLo,
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
 
+LibraryAction HandleCrash(In String CheckpointName,
+			  In String Args,
+			  In Boolean IgnoreCrash,
+			  InOut String Info);
 TakePanorama:
 {
   // All inputs are in degrees
   In Real TiltLo, TiltHi, PanLo, PanHi;
   In Real VertOverlap, HorizOverlap;
-
+  In Boolean IgnoreCrash;
   // Later:
   //   - rows, cols
   //   - image order (top/bottom, right/left - can be enum)
@@ -43,7 +58,9 @@ TakePanorama:
   Real tilt, pan, tilt_increment, pan_increment;
   Boolean reverse_pan = false;
   Boolean exit = false;
-
+  String args;
+  String tilt_string;
+  
   ExitCondition exit;
 
   // Check constraints
@@ -73,12 +90,30 @@ TakePanorama:
   endif;
 
   // Initialize plan variables
-
   tilt = TiltLo;
   pan = PanLo;
+  
   tilt_increment = (VERT_FOV / 2) - VertOverlap;
   pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
 
+  // Behavior: If the latest panorama with these arguments crashed, start from the first incomplete pan
+  CrashHandling:{
+    String tilt_s = "";
+    // Crash handling
+    SynchronousCommand args = ToString(TiltLo,",",TiltHi,",",PanLo,",",PanHi,",",VertOverlap,",",HorizOverlap);
+    LibraryCall HandleCrash(CheckpointName="TakePanorama",
+			    Args=args,
+			    IgnoreCrash=IgnoreCrash,
+			    Info=tilt_s);
+    // tilt_s set only if we crashed
+    // tilt := next tilt to image
+    SetTilt:{
+      SkipCondition tilt_s == "" || !isKnown(tilt_s);
+      SynchronousCommand tilt = ToReal(tilt_s);
+      tilt = tilt+tilt_increment;
+    }
+  }
+  
   // Get to initial position
   InitialPanTilt: Concurrence
   {
@@ -86,23 +121,45 @@ TakePanorama:
     LibraryCall Pan (Degrees = pan);
   }
 
-  // Do a pass from initial position
-  LibraryCall ImagePass (PanIncrement = pan_increment,
+  InitialPass:{
+    // Skip if aren't starting at the bottom
+    SkipCondition tilt != TiltLo;
+    // Do a pass from initial position and convert tilt to a string
+    Concurrence{
+      EndCondition StringConversion.command_handle==COMMAND_SUCCESS
+	&& Imaging.state == FINISHED;
+      Imaging: LibraryCall ImagePass (PanIncrement = pan_increment,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = pan,
                          ReversePan = reverse_pan);
+      StringConversion: tilt_string = ToString(tilt);
+    }
 
-
-  // Iterate through tilt
-  while (tilt + tilt_increment < TiltHi) {
+    SetCheckpoint("TakePanorama"+args,true,tilt_string);
+    Flush();
     tilt = tilt + tilt_increment;
-    LibraryCall TiltAndImagePass (TiltAngle = tilt,
-                                  PanAngle = pan,
-                                  PanIncrement = pan_increment,
-                                  PanLo = PanLo, PanHi = PanHi,
-                                  ReversePan = reverse_pan);
   }
-  if (tilt < TiltHi) {
+
+  
+  // Iterate through tilt
+  while (tilt < TiltHi) {
+    Concurrence{
+      EndCondition StringConversion.command_handle==COMMAND_SUCCESS
+	&& Imaging.state == FINISHED;
+      Imaging: LibraryCall TiltAndImagePass (TiltAngle = tilt,
+				    PanAngle = pan,
+				    PanIncrement = pan_increment,
+				    PanLo = PanLo, PanHi = PanHi,
+				    ReversePan = reverse_pan);
+      StringConversion: tilt_string = ToString(tilt);
+    }
+    SetCheckpoint("TakePanorama"+args,true,tilt_string);
+    Flush();
+    tilt = tilt + tilt_increment;
+  }
+
+  // Cap last pan at TiltHi unless we just did a pass at TiltHi
+  if (tilt >= TiltHi && tilt < TiltHi + tilt_increment) {
     LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,
@@ -110,4 +167,6 @@ TakePanorama:
                                   ReversePan = reverse_pan);
   }
   endif;
+  SetCheckpoint("TakePanoramaEnd"+args,true,"");
+  Flush();
 }
