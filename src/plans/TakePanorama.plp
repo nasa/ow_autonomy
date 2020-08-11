@@ -10,14 +10,15 @@
 Command log_info (...);
 Command log_error (...);
 
-
 Command SetCheckpoint(...);
 Command Flush();
 
-String Command ToString(...);
-Real Command ToReal(String);
-Integer Command find_first_of(...);
-String Command substr(...);
+String Lookup ToString(...);
+Real Lookup StringToReal(String);
+Boolean Lookup StringToBoolean(String);
+Integer Lookup find_first_of(...);
+Integer Lookup find_last_of(...);
+String Lookup substr(...);
 
   
 LibraryAction TiltAndImagePass (In Real TiltAngle,
@@ -25,21 +26,17 @@ LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 In Real PanIncrement,
                                 In Real PanLo,
                                 In Real PanHi,
+                                In String CheckpointName,
                                 InOut Boolean ReversePan);
 
-LibraryAction ImagePass (In Real PanLo,
-                         In Real PanHi,
-                         In Real PanIncrement,
-                         InOut Real PanAngle,
-                         InOut Boolean ReversePan);
 
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
 
 LibraryAction HandleCrash(In String CheckpointName,
-			  In String Args,
-			  In Boolean IgnoreCrash,
-			  InOut String Info);
+                          In String Args,
+                          In Boolean IgnoreCrash,
+                          InOut String Info);
 TakePanorama:
 {
   // All inputs are in degrees
@@ -58,7 +55,6 @@ TakePanorama:
   Boolean reverse_pan = false;
   Boolean exit = false;
   String args;
-  String tilt_string;
   
   ExitCondition exit;
 
@@ -95,21 +91,39 @@ TakePanorama:
   tilt_increment = (VERT_FOV / 2) - VertOverlap;
   pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
 
-  // Behavior: If the latest panorama with these arguments crashed, start from the first incomplete pan
+  // Behavior: If the latest panorama with these arguments crashed, retake the last image and continue from there
   CrashHandling:{
-    String tilt_s = "";
+    String info = "";
     // Crash handling
-    SynchronousCommand args = ToString(TiltLo,",",TiltHi,",",PanLo,",",PanHi,",",VertOverlap,",",HorizOverlap);
+    args = Lookup(ToString(TiltLo,"_",TiltHi,"_",PanLo,"_",PanHi,"_",VertOverlap,"_",HorizOverlap));
     LibraryCall HandleCrash(CheckpointName="TakePanorama",
-			    Args=args,
-			    IgnoreCrash=IgnoreCrash,
-			    Info=tilt_s);
-    // tilt_s set only if we crashed
-    // tilt := next tilt to image
-    SetTilt:{
-      SkipCondition tilt_s == "" || !isKnown(tilt_s);
-      SynchronousCommand tilt = ToReal(tilt_s);
-      tilt = tilt+tilt_increment;
+                            Args=args,
+                            IgnoreCrash=IgnoreCrash,
+                            Info=info);
+    // info set only if we crashed
+    // finish image we were on
+    SetPanTilt:{
+      // Info is of the format reverse_tilt_pan
+      String tilt_s;
+      String pan_s;
+      String reverse_s;
+      SkipCondition info == "" || !isKnown(info);
+      
+      // Split string
+      reverse_s = Lookup(substr(info,
+                                0,
+                                Lookup(find_first_of(info,"_"))));
+      tilt_s =    Lookup(substr(info,
+                                Lookup(find_first_of(info,"_"))+1,
+                                Lookup(find_last_of(info,"_"))-Lookup(find_first_of(info,"_"))-1));
+      pan_s  =    Lookup(substr(info,
+                                Lookup(find_last_of(info,"_"))+1));
+      log_info("Loaded previous checkpoint:: Reverse_pan:",reverse_s," Tilt:",tilt_s,"Pan:",pan_s);
+      
+      // Conversions
+      reverse_pan = Lookup(StringToBoolean(reverse_s));
+      tilt =        Lookup(StringToReal(tilt_s));
+      pan =         Lookup(StringToReal(pan_s));
     }
   }
   
@@ -119,48 +133,28 @@ TakePanorama:
     LibraryCall Tilt (Degrees = tilt);
     LibraryCall Pan (Degrees = pan);
   }
-
-  InitialPass:{
-    // Skip if aren't starting at the bottom
-    SkipCondition tilt != TiltLo;
-    // Do a pass from initial position and convert tilt to a string
-    Concurrence{
-      EndCondition StringConversion.command_handle==COMMAND_SUCCESS
-	&& Imaging.state == FINISHED;
-      Imaging: LibraryCall ImagePass (PanIncrement = pan_increment,
-                         PanLo = PanLo, PanHi = PanHi,
-                         PanAngle = pan,
-                         ReversePan = reverse_pan);
-      StringConversion: tilt_string = ToString(tilt);
-    }
-    SetCheckpoint("TakePanorama"+args,true,tilt_string);
-    Flush();
-    tilt = tilt + tilt_increment;
-  }
-
   
   // Iterate through tilt
   while (tilt < TiltHi) {
-    Concurrence{
-      EndCondition StringConversion.command_handle==COMMAND_SUCCESS
-	&& Imaging.state == FINISHED;
-      Imaging: LibraryCall TiltAndImagePass (TiltAngle = tilt,
-				    PanAngle = pan,
-				    PanIncrement = pan_increment,
-				    PanLo = PanLo, PanHi = PanHi,
-				    ReversePan = reverse_pan);
-      StringConversion: tilt_string = ToString(tilt);
-    }
-    SetCheckpoint("TakePanorama"+args,true,tilt_string);
+    LibraryCall TiltAndImagePass (TiltAngle = tilt,
+                                  PanAngle = pan,
+                                  PanIncrement = pan_increment,
+                                  PanLo = PanLo, PanHi = PanHi,
+                                  CheckpointName="TakePanorama"+args,
+                                  ReversePan = reverse_pan);
+
+    SetCheckpoint("TakePanorama"+args,true,Lookup(ToString(reverse_pan,"_",tilt,"_",pan)));
     Flush();
     tilt = tilt + tilt_increment;
   }
+
   // Cap last pan at TiltHi unless we just did a pass at TiltHi
   if (tilt >= TiltHi && tilt < TiltHi + tilt_increment) {
     LibraryCall TiltAndImagePass (TiltAngle = TiltHi,
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,
                                   PanLo = PanLo, PanHi = PanHi,
+                                  CheckpointName="TakePanorama"+args,
                                   ReversePan = reverse_pan);
   }
   endif;

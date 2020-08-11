@@ -3,10 +3,11 @@
   <Adapter AdapterType="OSNativeTime"/>
   <Adapter AdapterType="Launcher"/>
   <Adapter AdapterType="CheckpointAdapter">
-    <SaveConfiguration Directory="./" />
+    <SaveConfiguration Directory="/home/albert/Desktop/NASA/oceanwaters_ws/saves"
+               RemoveOldSaves="false"/>
     <AdapterConfiguration OKOnExit="true"
-			  FlushOnExit="true"
-			  UseTime="true" />
+              FlushOnExit="true"
+              UseTime="true" />
   </Adapter>
   <Adapter AdapterType="StringAdapter"/>
   <Adapter AdapterType="ow_adapter">

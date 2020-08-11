@@ -7,7 +7,7 @@
 
 LibraryAction ImageLandingSite;
 LibraryAction InterogateSurface;
-LibraryAction GetTrenchTarget(In Boolean IgnoreCrash);
+LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
 LibraryAction CollectAndTransfer;
@@ -36,7 +36,7 @@ EuropaMission: Concurrence
     log_info ("Starting Europa Mission ...");
     LibraryCall ImageLandingSite;
     LibraryCall InterogateSurface;
-    LibraryCall GetTrenchTarget(IgnoreCrash=false);
+    LibraryCall GetTrenchTarget;
     LibraryCall Excavation;
     LibraryCall Downlink;
     LibraryCall CollectAndTransfer;

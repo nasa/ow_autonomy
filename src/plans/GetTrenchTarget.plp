@@ -3,59 +3,24 @@
 // this repository.
 
 Real Lookup time;
-
-Command Flush();
-Command SetCheckpoint(...);
-Boolean Command DidCrash();
-Integer Command CheckpointWhen(...);
-Integer Command CheckpointInfo(...);
-String Command ToString(...);
-Integer Command StringToInteger(String);
-
-
 Real Lookup TrenchTargetTimeout;
 Boolean Lookup TrenchIdentified;
-
 LibraryAction DownlinkImage();
 LibraryAction Stub(In String desc);
-
-LibraryAction HandleCrash(In String CheckpointName,
-			  In String Args,
-			  In Boolean IgnoreCrash,
-			  InOut String Info);
-
 Command log_error (...);
 
 GetTrenchTarget:
 {
-  In Boolean IgnoreCrash;
-  
   Real Time;
-  Integer numAttempts = 0;
-  
   Time = Lookup(time);
 
-  CrashHandling:{
-    String attempts_string = "";
-    String empty_args = ""; // Plexil bug workaround
-    LibraryCall HandleCrash(CheckpointName="GetTrenchTarget",
-			    Args=empty_args,
-			    IgnoreCrash=IgnoreCrash,
-			    Info=attempts_string);
-    // Override tilt if we were in middle of a panorama
-    SetAttempts:{
-      SkipCondition attempts_string == "" || !isKnown(attempts_string);
-      SynchronousCommand numAttempts = StringToInteger(attempts_string);
-    }
-  }
-
-  
   // TODO: invoke comms, reset on failure.
   LibraryCall DownlinkImage();
 
   Try {
     GetInfoFromGround:
     {
+      Integer numAttempts = 0;
       RepeatCondition AttemptGround.outcome == FAILURE;
       InvariantCondition numAttempts <= 1;
       Time = Lookup(time);

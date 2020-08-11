@@ -1,14 +1,13 @@
 LibraryAction CompatibleTime(In Real First,
-			     In Real Second,
-			     In String CheckpointName,
-			     In String Args,
-			     InOut Boolean Result);
+                 In Real Second,
+                 In String CheckpointName,
+                 In String Args,
+                 InOut Boolean Result);
 
 Real Lookup CheckpointTime(...);
 Integer Lookup CheckpointWhen(String);
 String Lookup CheckpointInfo(...);
-Boolean Lookup DidCrash();
-
+Boolean Lookup DidCrash;
 Real Lookup time;
 
 HandleCrash:{
@@ -37,10 +36,10 @@ HandleCrash:{
   checked_latest = true;
   // Determine if the last execution was relevant
   LibraryCall CompatibleTime(First=Lookup(CheckpointTime(CheckpointName+Args,latest_start_boot)),
-			     Second=Lookup(time,1),
-			     CheckpointName=CheckpointName,
-			     Args=Args,
-			     Result=compatible_time);
+                 Second=Lookup(time,1),
+                 CheckpointName=CheckpointName,
+                 Args=Args,
+                 Result=compatible_time);
 
   // From here on out, we can assume we've crashed
   Info = Lookup(CheckpointInfo(CheckpointName+Args,latest_start_boot));
