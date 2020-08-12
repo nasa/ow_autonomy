@@ -3,8 +3,8 @@
   <Adapter AdapterType="OSNativeTime"/>
   <Adapter AdapterType="Launcher"/>
   <Adapter AdapterType="CheckpointAdapter">
-    <SaveConfiguration Directory="/home/albert/Desktop/NASA/oceanwaters_ws/saves"
-               RemoveOldSaves="false"/>
+    <SaveConfiguration Directory="./"
+               RemoveOldSaves="true"/>
     <AdapterConfiguration OKOnExit="true"
               FlushOnExit="true"
               UseTime="true" />

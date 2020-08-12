@@ -10,4 +10,6 @@ World landers, as supported by the OceanWATERS software testbed.
 In particular, EuropaMission.plp implements the Europa Reference Mission as
 described in project documentation.
 
+Note that Checkpoints are saved to ~/.ros by default, specified in ow-config.xml
+
 See ow_autonomy/README.md for build instructions.
