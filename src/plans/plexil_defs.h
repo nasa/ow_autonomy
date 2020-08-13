@@ -37,7 +37,7 @@
 #define TILT_MIN  -45
 #define TILT_MAX  45
 
-// Maximum number of times to attempt getting the target from ground
-#define MAX_TARGET_GROUND_ATTEMPTS 2
+// Maximum number of crashes before assuming something has gone very wrong and attempting to offload all data
+#define MAX_CRASHES 10
 
 #endif

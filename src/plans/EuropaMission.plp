@@ -4,25 +4,37 @@
 
 // Europa reference mission plan.  At present, only Sol 0 of the mission is
 // modeled.
+#include "plexil_defs.h"
 
 LibraryAction ImageLandingSite;
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
-LibraryAction CollectAndTransfer;
+LibraryAction CollectAndTransfer(In Boolean IgnoreCrash);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
+LibraryAction DumpSamples;
+LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
+LibraryAction MonitorSamplesComplete(InOut Boolean status);
 
 Command log_info (...);
+Command SetCheckpoint(...);
+Command Flush();
+Command SetOK();
+
+Integer Lookup CheckpointWhen(String);
+Integer Lookup NumActiveCrashes;
+Boolean Lookup IsOK(Integer);
+Boolean Lookup DidCrash;
 
 EuropaMission: Concurrence
 {
   // Assumption: checkout is complete.
 
   // Health variables - expand/refine as needed
-  Boolean BatteryOK, TemperatureOK;
+  Boolean BatteryOK, TemperatureOK, SamplesOK, SamplesComplete;
 
   ContingencyMonitors: Concurrence
   {
@@ -31,16 +43,121 @@ EuropaMission: Concurrence
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
 
+  ScienceMonitor: Concurrence
+  {
+    SampleMonitor: LibraryCall MonitorSamplesIntegrity(status = SamplesOK);
+    SamplesCompleteMonitor: LibraryCall MonitorSamplesComplete(status = SamplesComplete);
+  }
+
   Mission:
   {
-    log_info ("Starting Europa Mission ...");
-    LibraryCall ImageLandingSite;
-    LibraryCall InterogateSurface;
-    LibraryCall GetTrenchTarget;
-    LibraryCall Excavation;
-    LibraryCall Downlink;
-    LibraryCall CollectAndTransfer;
-    LibraryCall StartSampleAnalysis;
+    Boolean did_crash;
+    did_crash = Lookup(DidCrash);
+
+    CrashHandle: UncheckedSequence
+    {
+      SkipCondition !did_crash;
+
+      OffloadData:
+      {
+        SkipCondition Lookup(NumActiveCrashes)<MAX_CRASHES;
+        log_info("Recorded ",Lookup(NumActiveCrashes)," crashes, likely indication of end-of-mission");
+        OffloadAllData: LibraryCall Stub(desc="Offloading all data");
+      }
+      
+      CommunicateCrash: LibraryCall Stub(desc="Informing Earth of crash");
+
+      // Verify that onboard time is accurate, if possible
+      VerifyTime:Try
+      {
+        EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
+        Brightness: LibraryCall Stub(desc="Roughly verifying time from ground brightness");
+      }
+      
+      VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
+      VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
+      VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
+      RestArm: LibraryCall Stub(desc="Moving arm to safe position"); // TODO: samples in arm?
+    }
+    
+
+    ImageLandingSite: {
+      // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not found
+      // IsOK returns true if that boot was OK, UNKNOWN if not found
+      // Thus SkipCondition is true if and only if the executive crashed
+      // and the last time the checkpoint was set, the executive crashed.
+      // This handles the case of multiple crashes.
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ImageLandingSiteComplete"))));
+      LibraryCall ImageLandingSite;
+      SetCheckpoint("ImageLandingSiteComplete");
+      Flush();
+    }
+    
+    InterrogateSurface:{
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
+      LibraryCall InterogateSurface;
+      SetCheckpoint("InterrogateSurfaceComplete");
+      Flush();
+    }
+    
+    GetTrenchTarget:{
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
+      LibraryCall GetTrenchTarget;
+      SetCheckpoint("GetTrenchTargetComplete");
+      Flush();
+    }
+    
+    Excavation:{
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ExcavationComplete"))));
+      LibraryCall Excavation;
+      SetCheckpoint("ExcavationComplete");
+      Flush();
+    }
+    
+    Downlink:{
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("DownlinkComplete"))));
+      LibraryCall Downlink;
+      SetCheckpoint("DownlinkComplete");
+      Flush();
+    }
+
+    Samples:{
+      Boolean first_collection = true;
+      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("SamplesComplete"))));
+
+      // Repeat until samples correctly processed
+      // If samples don't exist, they are by definition OK
+      // MonitorSamples controls SamplesOK
+      DumpCollectAnalyze:{
+        RepeatCondition SamplesOK == false;
+        
+        DumpSamples:{
+          SkipCondition SamplesOK == true;
+          LibraryCall DumpSamples;
+        }
+        
+        // Stop the moment we need to dump samples
+        CollectAnalyze:{
+          PreCondition       SamplesOK == true;
+          InvariantCondition SamplesOK == true;
+          
+          LibraryCall CollectAndTransfer(IgnoreCrash = !first_collection);
+          LibraryCall StartSampleAnalysis;
+        }
+
+        // If we are going to repeat, we need to know to start fresh
+        first_collection = false;
+      }
+    }
+
+    WaitForSamples:{
+      StartCondition SamplesComplete;
+      SetCheckpoint("SamplesComplete");
+      Flush();
+    }
+    
     log_info ("Europa Mission finished.");
+    SetOK();
+    Flush();
   }
 }

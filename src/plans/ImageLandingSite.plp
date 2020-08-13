@@ -16,5 +16,5 @@ ImageLandingSite:
                             PanLo = 90, PanHi = 100,
                             HorizOverlap = 2,
                             VertOverlap = 2,
-                IgnoreCrash = false);
+                            IgnoreCrash = false);
 }

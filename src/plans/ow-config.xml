@@ -4,10 +4,10 @@
   <Adapter AdapterType="Launcher"/>
   <Adapter AdapterType="CheckpointAdapter">
     <SaveConfiguration Directory="./"
-               RemoveOldSaves="true"/>
+                       RemoveOldSaves="true"/>
     <AdapterConfiguration OKOnExit="true"
-              FlushOnExit="true"
-              UseTime="true" />
+                          FlushOnExit="true"
+                          UseTime="true" />
   </Adapter>
   <Adapter AdapterType="StringAdapter"/>
   <Adapter AdapterType="ow_adapter">
