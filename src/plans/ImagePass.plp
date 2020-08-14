@@ -9,7 +9,7 @@ Command log_debug (...);
 LibraryAction TakePicture ();
 LibraryAction PanAndShoot (In Real PanAngle);
 
-Command SetCheckpoint(String,Boolean,String);
+Command set_checkpoint(String,Boolean,String);
 String Lookup ToString(...);
 
 ImagePass: UncheckedSequence
@@ -26,12 +26,12 @@ ImagePass: UncheckedSequence
     while (PanAngle - PanIncrement > PanLo) {
       PanAngle = PanAngle - PanIncrement;
       LibraryCall PanAndShoot (PanAngle = PanAngle);
-      SetCheckpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
+      set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
     if (PanAngle > PanLo) {
       PanAngle = PanLo;
       LibraryCall PanAndShoot (PanAngle = PanAngle);
-      SetCheckpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
+      set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
     endif;
   }
@@ -41,12 +41,12 @@ ImagePass: UncheckedSequence
     while (PanAngle + PanIncrement < PanHi) {
       PanAngle = PanAngle + PanIncrement;
       LibraryCall PanAndShoot (PanAngle = PanAngle);
-      SetCheckpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
+      set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
     if (PanAngle < PanHi) {
       PanAngle = PanHi;
       LibraryCall PanAndShoot (PanAngle = PanAngle);
-      SetCheckpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
+      set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
     endif;
   }

@@ -14,8 +14,8 @@ String Lookup substr(...);
 Integer Lookup find_first_of(...);
 String Lookup ToString(...);
 
-Command SetCheckpoint(...);
-Command Flush;
+Command set_checkpoint(...);
+Command flush_checkpoints;
 Command log_info(...);
 
 LibraryAction ImageSampleSite();
@@ -78,8 +78,8 @@ CollectAndTransfer:
       EndCondition Lookup(SampleGood); // Material Property Sensing
       LibraryCall Stub(desc="Collecting Sample");
       Wait 1;
-      SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(1,"_",CollectMore)));
-      SynchronousCommand Flush();
+      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(1,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
     }
 
     ImageSample:
@@ -87,8 +87,8 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 2;
       LibraryCall Stub(desc="Aligning camera and sample");
       LibraryCall Image(desc="sample");
-      SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(2,"_",CollectMore)));
-      SynchronousCommand Flush();
+      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(2,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
     }
 
     DownlinkSampleImage:
@@ -96,8 +96,8 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 3;
       LibraryCall Downlink();
       Wait 1;
-      SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(3,"_",CollectMore)));
-      SynchronousCommand Flush();
+      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(3,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
     }
     
     Transfer:
@@ -107,16 +107,16 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 4;
         LibraryCall Stub(desc="Docking");
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(4,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(4,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
       Unload:
       {
         SkipCondition LastComplete >= 5;
         LibraryCall Stub(desc="Unloading");
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(5,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(5,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
       MeasureSample:
       {
@@ -133,8 +133,8 @@ CollectAndTransfer:
         }
         endif;
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(6,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(6,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
       CapSample:
       {
@@ -142,29 +142,29 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 7;
         LibraryCall Stub(desc="Capping Sample");
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(7,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(7,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
       DeliverSample:
       {
         SkipCondition LastComplete >= 8;
         LibraryCall Stub(desc="Delivering Sample");
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(8,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(8,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
       ImageSampleSite:
       {
         SkipCondition LastComplete >= 9;
         LibraryCall ImageSampleSite();
         Wait 1;
-        SetCheckpoint("CollectAndTransfer",true,Lookup(ToString(9,"_",CollectMore)));
-        SynchronousCommand Flush();
+        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(9,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
     }
     // Reset for next repeat
     LastComplete = 0;
   }
-  SetCheckpoint("CollectAndTransferEnd",true,"");
-  SynchronousCommand Flush();
+  set_checkpoint("CollectAndTransferEnd",true,"");
+  SynchronousCommand flush_checkpoints();
 }

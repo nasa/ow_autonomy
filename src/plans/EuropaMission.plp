@@ -20,13 +20,13 @@ LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
 LibraryAction MonitorSamplesComplete(InOut Boolean status);
 
 Command log_info (...);
-Command SetCheckpoint(...);
-Command Flush();
-Command SetOK();
+Command set_checkpoint(...);
+Command flush_checkpoints();
+Command set_boot_ok();
 
 Integer Lookup CheckpointWhen(String);
 Integer Lookup NumberOfUnhandledBoots;
-Boolean Lookup IsOK(Integer);
+Boolean Lookup IsBootOK(Integer);
 Boolean Lookup DidCrash;
 
 EuropaMission: Concurrence
@@ -83,47 +83,47 @@ EuropaMission: Concurrence
 
     ImageLandingSite: {
       // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not found
-      // IsOK returns true if that boot was OK, UNKNOWN if not found
+      // IsBootOK returns true if that boot was OK, UNKNOWN if not found
       // Thus SkipCondition is true if and only if the executive crashed
       // and the last time the checkpoint was set, the executive crashed.
       // This handles the case of multiple crashes.
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ImageLandingSiteComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ImageLandingSiteComplete"))));
       LibraryCall ImageLandingSite;
-      SetCheckpoint("ImageLandingSiteComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("ImageLandingSiteComplete");
+      SynchronousCommand flush_checkpoints();
     }
     
     InterrogateSurface:{
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
       LibraryCall InterogateSurface;
-      SetCheckpoint("InterrogateSurfaceComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("InterrogateSurfaceComplete");
+      SynchronousCommand flush_checkpoints();
     }
     
     GetTrenchTarget:{
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
       LibraryCall GetTrenchTarget;
-      SetCheckpoint("GetTrenchTargetComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("GetTrenchTargetComplete");
+      SynchronousCommand flush_checkpoints();
     }
     
     Excavation:{
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ExcavationComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete"))));
       LibraryCall Excavation;
-      SetCheckpoint("ExcavationComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("ExcavationComplete");
+      SynchronousCommand flush_checkpoints();
     }
     
     Downlink:{
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("DownlinkComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete"))));
       LibraryCall Downlink;
-      SetCheckpoint("DownlinkComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("DownlinkComplete");
+      SynchronousCommand flush_checkpoints();
     }
 
     Samples:{
       Boolean first_collection = true;
-      SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("SamplesComplete"))));
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SamplesComplete"))));
 
       // Repeat until samples correctly processed
       // If samples don't exist, they are by definition OK
@@ -153,12 +153,12 @@ EuropaMission: Concurrence
 
     WaitForSamples:{
       StartCondition SamplesComplete;
-      SetCheckpoint("SamplesComplete");
-      SynchronousCommand Flush();
+      set_checkpoint("SamplesComplete");
+      SynchronousCommand flush_checkpoints();
     }
     
     log_info ("Europa Mission finished.");
-    SetOK();
-    SynchronousCommand Flush();
+    set_boot_ok();
+    SynchronousCommand flush_checkpoints();
   }
 }
