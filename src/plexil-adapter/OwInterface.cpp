@@ -60,6 +60,10 @@ const string Op_DigLinear         = "DigLinear";
 const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
+const string Op_DeliverSample     = "DeliverSample";
+const string Op_Grind             = "Grind";
+const string Op_Stow              = "Stow";
+const string Op_Unstow            = "Unstow";
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
 // in particular because map entries are never added or deleted, and the code
@@ -74,7 +78,11 @@ static map<string, bool> Running
   { Op_DigLinear, false },
   { Op_PublishTrajectory, false },
   { Op_PanAntenna, false },
-  { Op_TiltAntenna, false }
+  { Op_TiltAntenna, false },
+  { Op_DeliverSample, false },
+  { Op_Grind, false },
+  { Op_Stow, false },
+  { Op_Unstow, false }
 };
 
 static bool is_lander_operation (const string& name)
@@ -88,7 +96,6 @@ static bool mark_operation_running (const string& name)
     ROS_WARN ("%s already running, ignoring duplicate request.", name.c_str());
     return false;
   }
-
   Running.at (name) = true;
   publish ("Running", true, name);
   return true;
@@ -146,7 +153,12 @@ const map<string, map<string, string> > Faults
   { Op_DigLinear, ArmFaults },
   { Op_PublishTrajectory, ArmFaults },
   { Op_PanAntenna, AntennaFaults },
-  { Op_TiltAntenna, AntennaFaults }
+  { Op_TiltAntenna, AntennaFaults },
+  { Op_DeliverSample, ArmFaults },
+  { Op_Grind, ArmFaults },
+  { Op_Stow, ArmFaults },
+  { Op_Unstow, ArmFaults }
+
 };
 
 static bool faulty (const string& fault)
@@ -652,9 +664,7 @@ void OwInterface::takePicture ()
 }
 
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double ground_position,
-                             double width, double pitch, double yaw,
-                             double dumpx, double dumpy, double dumpz)
+                             double depth, double length, double ground_position)
 {
   if (! mark_operation_running (Op_DigLinear)) return;
 
@@ -674,6 +684,31 @@ void OwInterface::digLinear (double x, double y,
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigLinear>,
                            client, srv, Op_DigLinear);
+    service_thread.detach();
+  }
+}
+
+void OwInterface::digCircular (double x, double y, double depth,
+                               double ground_position, bool radial)
+{
+  if (! mark_operation_running (Op_DigCircular)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::DigCircular>("arm/dig_circular");
+
+  if (check_service_client (client)) {
+    ow_lander::DigCircular srv;
+    srv.request.use_defaults = false;
+    srv.request.x = x;
+    srv.request.y = y;
+    srv.request.depth = depth;
+    srv.request.ground_position = ground_position;
+    srv.request.radial = radial;
+    srv.request.delete_prev_traj = false;
+    thread service_thread (service_call<ow_lander::DigCircular>,
+                           client, srv, Op_DigCircular);
     service_thread.detach();
   }
 }

@@ -7,14 +7,15 @@
 
 Command log_info (...);
 Command log_warning (...);
-Command dig_circular_demo();
+Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
+                      Boolean radial);
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
 
 DigCircularDemo:
 {
   log_info ("Beginning dig circular demo...");
-  dig_circular_demo();
+  dig_circular (1.5, 0, 0.02, -0.175, false);
   Block:
   {
     StartCondition Lookup (Running ("DigCircular"));
