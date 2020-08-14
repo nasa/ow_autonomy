@@ -23,28 +23,39 @@ HandleCrash:{
   // TODO: Currently, ordering a new execution of Name (with IgnoreCrash=true) means previously crashed
   // executions will be ignored since the successful new execution will be the most recent.
   // Is this OK?
-  Integer latest_start_boot;
+  String OurArgs; // To get around a PLEXIL bug where "" can't be passed to libraries
+  Integer latest_start_boot ; // So we know if lookup is UNKNOWN
   Integer latest_end_boot;
-  Boolean checked_latest = false;
+  Boolean checked_boots = false;
   Boolean compatible_time = true;
-    
+  Boolean exit = false;
+  
   ExitCondition !Lookup(DidCrash) // Didn't crash
     || IgnoreCrash // We want to start a new execution even if we crashed during the old one
-    || (checked_latest && latest_start_boot == latest_end_boot) // Crashed, but completed most recent call with these args
-    || (checked_latest && !isKnown(latest_start_boot)) //Never started
+    || (checked_boots && !isKnown(latest_start_boot)) // Never started
+    || (checked_boots && latest_start_boot == latest_end_boot) // Finished last time
     || !compatible_time; // Last execution not relevant
 
+  // Work around a PLEXIL bug
+  if(Args == "None"){
+    OurArgs = "";
+  }
+  else{
+    OurArgs = Args;
+  }
+  endif;
   
-  latest_start_boot = Lookup(CheckpointWhen(CheckpointName+Args));
-  latest_end_boot = Lookup(CheckpointWhen(CheckpointName+"End"+Args));
-  checked_latest = true;
+  latest_start_boot = Lookup(CheckpointWhen(CheckpointName+OurArgs));
+  latest_end_boot = Lookup(CheckpointWhen(CheckpointName+"End"+OurArgs));
+  checked_boots = true;
+  
   // Determine if the last execution was relevant
-  LibraryCall CompatibleTime(First=Lookup(CheckpointTime(CheckpointName+Args,latest_start_boot)),
+  LibraryCall CompatibleTime(First=Lookup(CheckpointTime(CheckpointName+OurArgs,latest_start_boot)),
                  Second=Lookup(time,1),
                  CheckpointName=CheckpointName,
                  Args=Args,
                  Result=compatible_time);
 
   // From here on out, we can assume we've crashed
-  Info = Lookup(CheckpointInfo(CheckpointName+Args,latest_start_boot));
+  Info = Lookup(CheckpointInfo(CheckpointName+OurArgs,latest_start_boot));
 }

@@ -93,7 +93,7 @@ TakePanorama:
 
   // Behavior: If the latest panorama with these arguments crashed, retake the last image and continue from there
   CrashHandling:{
-    String info = "";
+    String info = "None"; // Can't pass empty strings in
     // Crash handling
     args = Lookup(ToString(TiltLo,"_",TiltHi,"_",PanLo,"_",PanHi,"_",VertOverlap,"_",HorizOverlap));
     LibraryCall HandleCrash(CheckpointName="TakePanorama",
@@ -107,8 +107,8 @@ TakePanorama:
       String tilt_s;
       String pan_s;
       String reverse_s;
-      SkipCondition info == "" || !isKnown(info);
-      
+      SkipCondition info == "None" || !isKnown(info);
+      log_info("Loading previous TakePanorama checkpoint");
       // Split string
       reverse_s = Lookup(substr(info,
                                 0,
@@ -118,22 +118,19 @@ TakePanorama:
                                 Lookup(find_last_of(info,"_"))-Lookup(find_first_of(info,"_"))-1));
       pan_s  =    Lookup(substr(info,
                                 Lookup(find_last_of(info,"_"))+1));
-      log_info("Loaded previous checkpoint:: Reverse_pan:",reverse_s," Tilt:",tilt_s,"Pan:",pan_s);
+      log_info("Loaded previous checkpoint:   Reverse_pan: ",reverse_s," Tilt: ",tilt_s,"Pan: ",pan_s);
       
       // Conversions
       reverse_pan = Lookup(StringToBoolean(reverse_s));
       tilt =        Lookup(StringToReal(tilt_s));
       pan =         Lookup(StringToReal(pan_s));
     }
+
   }
   
   // Get to initial position
-  InitialPanTilt: Concurrence
-  {
-    LibraryCall Tilt (Degrees = tilt);
-    LibraryCall Pan (Degrees = pan);
-  }
-  
+  InitialPan: LibraryCall Pan (Degrees = pan);
+
   // Iterate through tilt
   while (tilt < TiltHi) {
     LibraryCall TiltAndImagePass (TiltAngle = tilt,
@@ -144,7 +141,7 @@ TakePanorama:
                                   ReversePan = reverse_pan);
 
     SetCheckpoint("TakePanorama"+args,true,Lookup(ToString(reverse_pan,"_",tilt,"_",pan)));
-    Flush();
+    SynchronousCommand Flush();
     tilt = tilt + tilt_increment;
   }
 
@@ -159,5 +156,5 @@ TakePanorama:
   }
   endif;
   SetCheckpoint("TakePanoramaEnd"+args,true,"");
-  Flush();
+  SynchronousCommand Flush();
 }

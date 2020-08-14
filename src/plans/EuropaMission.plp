@@ -25,7 +25,7 @@ Command Flush();
 Command SetOK();
 
 Integer Lookup CheckpointWhen(String);
-Integer Lookup NumActiveCrashes;
+Integer Lookup NumberOfUnhandledBoots;
 Boolean Lookup IsOK(Integer);
 Boolean Lookup DidCrash;
 
@@ -60,8 +60,8 @@ EuropaMission: Concurrence
 
       OffloadData:
       {
-        SkipCondition Lookup(NumActiveCrashes)<MAX_CRASHES;
-        log_info("Recorded ",Lookup(NumActiveCrashes)," crashes, likely indication of end-of-mission");
+        SkipCondition Lookup(NumberOfUnhandledBoots)<MAX_CRASHES;
+        log_info("Recorded ",Lookup(NumberOfUnhandledBoots)," crashes, likely indication of end-of-mission");
         OffloadAllData: LibraryCall Stub(desc="Offloading all data");
       }
       
@@ -90,35 +90,35 @@ EuropaMission: Concurrence
       SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ImageLandingSiteComplete"))));
       LibraryCall ImageLandingSite;
       SetCheckpoint("ImageLandingSiteComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
     
     InterrogateSurface:{
       SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
       LibraryCall InterogateSurface;
       SetCheckpoint("InterrogateSurfaceComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
     
     GetTrenchTarget:{
       SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
       LibraryCall GetTrenchTarget;
       SetCheckpoint("GetTrenchTargetComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
     
     Excavation:{
       SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("ExcavationComplete"))));
       LibraryCall Excavation;
       SetCheckpoint("ExcavationComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
     
     Downlink:{
       SkipCondition did_crash && !Lookup(IsOK(Lookup(CheckpointWhen("DownlinkComplete"))));
       LibraryCall Downlink;
       SetCheckpoint("DownlinkComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
 
     Samples:{
@@ -138,9 +138,10 @@ EuropaMission: Concurrence
         
         // Stop the moment we need to dump samples
         CollectAnalyze:{
+          Boolean ignore_crash;
           PreCondition       SamplesOK == true;
           InvariantCondition SamplesOK == true;
-          
+
           LibraryCall CollectAndTransfer(IgnoreCrash = !first_collection);
           LibraryCall StartSampleAnalysis;
         }
@@ -153,11 +154,11 @@ EuropaMission: Concurrence
     WaitForSamples:{
       StartCondition SamplesComplete;
       SetCheckpoint("SamplesComplete");
-      Flush();
+      SynchronousCommand Flush();
     }
     
     log_info ("Europa Mission finished.");
     SetOK();
-    Flush();
+    SynchronousCommand Flush();
   }
 }
