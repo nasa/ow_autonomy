@@ -33,15 +33,17 @@ LibraryAction TiltAndImagePass (In Real TiltAngle,
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
 
-LibraryAction HandleCrash(In String CheckpointName,
-                          In String Args,
-                          In Boolean IgnoreCrash,
-                          InOut String Info);
+LibraryAction GetInfoIfCrash(In String CheckpointName,
+                             In Boolean IgnoreCrash,
+                             InOut Boolean Crashed,
+                             InOut String Info);
 TakePanorama:
 {
   // All inputs are in degrees
+  // TODO: When Europa
   In Real TiltLo, TiltHi, PanLo, PanHi;
   In Real VertOverlap, HorizOverlap;
+  In String InstanceName;
   In Boolean IgnoreCrash;
   // Later:
   //   - rows, cols
@@ -52,14 +54,21 @@ TakePanorama:
 
   // Declare plan variables
   Real tilt, pan, tilt_increment, pan_increment;
+  String OurName;
   Boolean reverse_pan = false;
   Boolean exit = false;
   String args;
   
   ExitCondition exit;
 
-  // Check constraints
+  if(InstanceName == "Args"){
+    OurName = "TakePanorama__"+Lookup(ToString(TiltLo,"_",TiltHi,"_",PanLo,"_",PanHi,"_",VertOverlap,"_",HorizOverlap));
+  }
+  else{
+    OurName = "TakePanorama__"+InstanceName;
+  }
 
+  // Check constraints
   if (TiltLo > TiltHi || TiltLo < TILT_MIN || TiltHi > TILT_MAX) {
     log_error ("TakePanorama: Tilt spec outside valid range, exiting.");
     exit = true;
@@ -94,12 +103,13 @@ TakePanorama:
   // Behavior: If the latest panorama with these arguments crashed, retake the last image and continue from there
   CrashHandling:{
     String info = "None"; // Can't pass empty strings in
-    // Crash handling
-    args = Lookup(ToString(TiltLo,"_",TiltHi,"_",PanLo,"_",PanHi,"_",VertOverlap,"_",HorizOverlap));
-    LibraryCall HandleCrash(CheckpointName="TakePanorama",
-                            Args=args,
-                            IgnoreCrash=IgnoreCrash,
-                            Info=info);
+    Boolean Crashed;
+    
+    LibraryCall GetInfoIfCrash(CheckpointName=OurName,
+                               IgnoreCrash=IgnoreCrash,
+                               Crashed=Crashed,
+                               Info=info);
+    
     // info set only if we crashed
     // finish image we were on
     SetPanTilt:{
@@ -107,7 +117,7 @@ TakePanorama:
       String tilt_s;
       String pan_s;
       String reverse_s;
-      SkipCondition info == "None" || !isKnown(info);
+      SkipCondition !Crashed;
       log_info("Loading previous TakePanorama checkpoint");
       // Split string
       reverse_s = Lookup(substr(info,
@@ -125,9 +135,9 @@ TakePanorama:
       tilt =        Lookup(StringToReal(tilt_s));
       pan =         Lookup(StringToReal(pan_s));
     }
-
   }
-  
+
+  log_info("Beginning panorama with name ",OurName);
   // Get to initial position
   InitialPan: LibraryCall Pan (Degrees = pan);
 
@@ -137,10 +147,10 @@ TakePanorama:
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,
                                   PanLo = PanLo, PanHi = PanHi,
-                                  CheckpointName="TakePanorama"+args,
+                                  CheckpointName=OurName,
                                   ReversePan = reverse_pan);
 
-    set_checkpoint("TakePanorama"+args,true,Lookup(ToString(reverse_pan,"_",tilt,"_",pan)));
+    set_checkpoint(OurName,true,Lookup(ToString(reverse_pan,"_",tilt,"_",pan)));
     SynchronousCommand flush_checkpoints();
     tilt = tilt + tilt_increment;
   }
@@ -151,10 +161,10 @@ TakePanorama:
                                   PanAngle = pan,
                                   PanIncrement = pan_increment,
                                   PanLo = PanLo, PanHi = PanHi,
-                                  CheckpointName="TakePanorama"+args,
+                                  CheckpointName=OurName,
                                   ReversePan = reverse_pan);
   }
   endif;
-  set_checkpoint("TakePanoramaEnd"+args,true,"");
+  set_checkpoint(OurName+"__End",true,"");
   SynchronousCommand flush_checkpoints();
 }

@@ -12,18 +12,9 @@ CompatibleTime:{
   In Real First;
   In Real Second;
   In String CheckpointName;
-  In String Args;
   InOut Boolean Result;
   String OurArgs;
 
-  // Work around a PLEXIL bug
-  if(Args == "None"){
-    OurArgs = "";
-  }
-  else{
-    OurArgs = Args;
-  }
-  endif;
   LibraryCall Stub(desc="Determining if "+CheckpointName+" times are compatible");
   Result = true;
 }

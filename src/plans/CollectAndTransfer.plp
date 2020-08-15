@@ -22,32 +22,37 @@ LibraryAction ImageSampleSite();
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
 LibraryAction Downlink();
-LibraryAction HandleCrash(In String CheckpointName,
-                          In String Args,
-                          In Boolean IgnoreCrash,
-                          InOut String Info);
+LibraryAction GetInfoIfCrash(In String CheckpointName,
+                             In Boolean IgnoreCrash,
+                             InOut Boolean Crashed,
+                             InOut String Info);
 
 CollectAndTransfer:
 {
   In Boolean IgnoreCrash;
+  In String InstanceName;
   Real SampleAmount;
   Real Time;
   Boolean CollectMore = true;
   Integer LastComplete = 0;
   Integer NumberOfCollections = 0;
+  String OurName;
+  OurName = "CollectAndTransfer__"+InstanceName;
   
   CrashHandling:{
     // To get around a plexil bug where passing "" in doesn't work
     // Args will be treated as ""
     String info = "None";
-    LibraryCall HandleCrash(CheckpointName="CollectAndTransfer",
-                            Args="None",
-                            IgnoreCrash=IgnoreCrash,
-                            Info=info);
+    Boolean Crashed;
+    LibraryCall GetInfoIfCrash(CheckpointName=OurName,
+                               IgnoreCrash=IgnoreCrash,
+                               Crashed=Crashed,
+                               Info=info);
+    
     SetCollectMoreLastComplete:{
       String more_s;
       String last_complete_s;
-      SkipCondition info == "None" || !isKnown(info);
+      SkipCondition !Crashed;
       // Split info, which was format LastComplete_DigMore
       last_complete_s = Lookup(substr(info,
                                       0,
@@ -62,6 +67,7 @@ CollectAndTransfer:
   }
 
   // Can assume sample has been dumped if it is invalid
+  log_info("Beginning collection with name ",OurName);
   CollectAndTransfer1:
   {
     InvariantCondition
@@ -78,7 +84,7 @@ CollectAndTransfer:
       EndCondition Lookup(SampleGood); // Material Property Sensing
       LibraryCall Stub(desc="Collecting Sample");
       Wait 1;
-      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(1,"_",CollectMore)));
+      set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
 
@@ -87,7 +93,7 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 2;
       LibraryCall Stub(desc="Aligning camera and sample");
       LibraryCall Image(desc="sample");
-      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(2,"_",CollectMore)));
+      set_checkpoint(OurName,true,Lookup(ToString(2,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
 
@@ -96,7 +102,7 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 3;
       LibraryCall Downlink();
       Wait 1;
-      set_checkpoint("CollectAndTransfer",true,Lookup(ToString(3,"_",CollectMore)));
+      set_checkpoint(OurName,true,Lookup(ToString(3,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
     
@@ -107,7 +113,7 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 4;
         LibraryCall Stub(desc="Docking");
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(4,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(4,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       Unload:
@@ -115,7 +121,7 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 5;
         LibraryCall Stub(desc="Unloading");
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(5,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       MeasureSample:
@@ -133,7 +139,7 @@ CollectAndTransfer:
         }
         endif;
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(6,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       CapSample:
@@ -142,7 +148,7 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 7;
         LibraryCall Stub(desc="Capping Sample");
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(7,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(7,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       DeliverSample:
@@ -150,7 +156,7 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 8;
         LibraryCall Stub(desc="Delivering Sample");
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(8,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(8,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       ImageSampleSite:
@@ -158,13 +164,13 @@ CollectAndTransfer:
         SkipCondition LastComplete >= 9;
         LibraryCall ImageSampleSite();
         Wait 1;
-        set_checkpoint("CollectAndTransfer",true,Lookup(ToString(9,"_",CollectMore)));
+        set_checkpoint(OurName,true,Lookup(ToString(9,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
     }
     // Reset for next repeat
     LastComplete = 0;
   }
-  set_checkpoint("CollectAndTransferEnd",true,"");
+  set_checkpoint(OurName+"__End",true,"");
   SynchronousCommand flush_checkpoints();
 }

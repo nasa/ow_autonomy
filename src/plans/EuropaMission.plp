@@ -6,12 +6,14 @@
 // modeled.
 #include "plexil_defs.h"
 
-LibraryAction ImageLandingSite;
+LibraryAction ImageLandingSite(In String InstanceName,
+                               In Boolean IgnoreCrash);
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
-LibraryAction CollectAndTransfer(In Boolean IgnoreCrash);
+LibraryAction CollectAndTransfer(In String InstanceName,
+                                 In Boolean IgnoreCrash);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
@@ -87,9 +89,11 @@ EuropaMission: Concurrence
       // Thus SkipCondition is true if and only if the executive crashed
       // and the last time the checkpoint was set, the executive crashed.
       // This handles the case of multiple crashes.
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ImageLandingSiteComplete"))));
-      LibraryCall ImageLandingSite;
-      set_checkpoint("ImageLandingSiteComplete");
+
+      // TakePanorama__NAME__End is set by ImageLandingSite
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen(
+                                 "TakePanorama__MissionSol1__End"))));
+      LibraryCall ImageLandingSite(InstanceName="MissionSol1",IgnoreCrash=false);
       SynchronousCommand flush_checkpoints();
     }
     
@@ -142,7 +146,7 @@ EuropaMission: Concurrence
           PreCondition       SamplesOK == true;
           InvariantCondition SamplesOK == true;
 
-          LibraryCall CollectAndTransfer(IgnoreCrash = !first_collection);
+          LibraryCall CollectAndTransfer(InstanceName="MissionSol1", IgnoreCrash = !first_collection);
           LibraryCall StartSampleAnalysis;
         }
 
@@ -151,6 +155,7 @@ EuropaMission: Concurrence
       }
     }
 
+    // Don't finish europa mission until samples have been processed
     WaitForSamples:{
       StartCondition SamplesComplete;
       set_checkpoint("SamplesComplete");
