@@ -259,21 +259,31 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->digCircular(x, y, depth, ground_position, radial);
   }
   else if (name == "guarded_move") {
-    double x, y, z, direction_x, direction_y, direction_z;
+    double x, y, z, dir_x, dir_y, dir_z;
     double search_distance;
-    bool delete_prev_traj, retract;
     args[0].getValue(x);
     args[1].getValue(y);
     args[2].getValue(z);
-    args[3].getValue(direction_x);
-    args[4].getValue(direction_y);
-    args[5].getValue(direction_z);
+    args[3].getValue(dir_x);
+    args[4].getValue(dir_y);
+    args[5].getValue(dir_z);
     args[6].getValue(search_distance);
-    args[7].getValue(delete_prev_traj);
-    OwInterface::instance()->guardedMove (x, y, z,
-                                          direction_x, direction_y, direction_z,
-                                          search_distance,
-                                          delete_prev_traj);
+    OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
+                                          search_distance);
+
+  }
+  else if (name == "deliver_sample") {
+    double x, y, z;
+    args[0].getValue(x);
+    args[1].getValue(y);
+    args[2].getValue(z);
+    OwInterface::instance()->deliverSample (x, y, z);
+  }
+  else if (name == "grind") {
+  }
+  else if (name == "stow") {
+  }
+  else if (name == "unstow") {
   }
   else if (name == "tilt_antenna") {
     double degrees;

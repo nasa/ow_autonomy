@@ -62,6 +62,7 @@ class OwInterface
                   double ground_position);
   void digCircular (double x, double y, double depth,
                     double ground_position, bool radial);
+  void deliverSample (double x, double y, double z);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 

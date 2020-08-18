@@ -7,10 +7,18 @@
 
 // Lander commands
 
-Command dig_linear (Real X, Real Y, Real Depth, Real Length,
-                    Real GroundPosition);
+Command dig_linear (Real x, Real y, Real depth, Real length,
+                    Real ground_pos);
 Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
                       Boolean radial);
+Command deliver_sample (Real x, Real y, Real z);
+Command grind (Real x, Real y, Real depth, Real length, Real ground_pos);
+Command guarded_move (Real x, Real y, Real z,
+                      Real dir_x, Real dir_y, Real dir_z,
+                      Real search_distance);
+Command stow();
+Command unstow();
+
 
 // Plan execution support
 

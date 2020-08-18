@@ -6,19 +6,11 @@
 // NOTE: runs indefinitely.  Autonomy node must be killed to terminate plan.
 
 #include "plexil_defs.h"
+#include "plan-interface.h"
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
 Command publish_trajectory_demo();
-Command guarded_move (Real x, Real y, Real z,
-                      Real direction_x, Real direction_y, Real direction_z,
-                      Real search_distance,
-                      Boolean delete_prev_traj);
-Command log_info (...);
-Command log_warning (...);
-Command log_error (...);
 
 TorqueTest:
 {
@@ -34,7 +26,7 @@ TorqueTest:
     {
       // This node attempts to dig too deep (note -1 Z target), in an effort to
       // overtorque one or more arm joints.
-      guarded_move (2, 0, 0.3, 0, 0, 1, 0.5, false);
+      guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
       WaitForGuardedMove:
       {
         StartCondition Lookup (Running ("GuardedMove"));

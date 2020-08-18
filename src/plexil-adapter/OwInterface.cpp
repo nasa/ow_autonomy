@@ -10,6 +10,7 @@
 // OW - other
 #include <ow_lander/DigCircular.h>
 #include <ow_lander/DigLinear.h>
+#include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/PublishTrajectory.h>
 
@@ -57,10 +58,10 @@ const string Op_GuardedMove       = "GuardedMove";
 const string Op_GuardedMoveAction = "GuardedMoveAction";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
+const string Op_DeliverSample     = "DeliverSample";
 const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
-const string Op_DeliverSample     = "DeliverSample";
 const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
@@ -76,10 +77,10 @@ static map<string, bool> Running
   { Op_GuardedMoveAction, false },
   { Op_DigCircular, false },
   { Op_DigLinear, false },
+  { Op_DeliverSample, false },
   { Op_PublishTrajectory, false },
   { Op_PanAntenna, false },
   { Op_TiltAntenna, false },
-  { Op_DeliverSample, false },
   { Op_Grind, false },
   { Op_Stow, false },
   { Op_Unstow, false }
@@ -151,14 +152,13 @@ const map<string, map<string, string> > Faults
   { Op_GuardedMoveAction, ArmFaults },
   { Op_DigCircular, ArmFaults },
   { Op_DigLinear, ArmFaults },
+  { Op_DeliverSample, ArmFaults },
   { Op_PublishTrajectory, ArmFaults },
   { Op_PanAntenna, AntennaFaults },
   { Op_TiltAntenna, AntennaFaults },
-  { Op_DeliverSample, ArmFaults },
   { Op_Grind, ArmFaults },
   { Op_Stow, ArmFaults },
   { Op_Unstow, ArmFaults }
-
 };
 
 static bool faulty (const string& fault)
@@ -709,6 +709,26 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular);
+    service_thread.detach();
+  }
+}
+
+void OwInterface::deliverSample (double x, double y, double z)
+{
+  if (! mark_operation_running (Op_DeliverSample)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::DeliverSample>("arm/deliver_sample");
+
+  if (check_service_client (client)) {
+    ow_lander::DeliverSample srv;
+    srv.request.x = x;
+    srv.request.y = y;
+    srv.request.z = z;
+    thread service_thread (service_call<ow_lander::DeliverSample>,
+                           client, srv, Op_DeliverSample);
     service_thread.detach();
   }
 }
