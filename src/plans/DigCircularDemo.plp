@@ -5,12 +5,7 @@
 // Demonstrate circular digging.  Note that this is blocking/syncnronous
 // wrapper of the asynchonous dig_circular_demo command.
 
-Command log_info (...);
-Command log_warning (...);
-Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
-                      Boolean radial);
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+#include "plan-interface.h"
 
 DigCircularDemo:
 {
