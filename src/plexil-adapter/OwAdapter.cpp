@@ -280,6 +280,13 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->deliverSample (x, y, z);
   }
   else if (name == "grind") {
+    double x, y, depth, length, ground_position;
+    args[0].getValue(x);
+    args[1].getValue(y);
+    args[2].getValue(depth);
+    args[3].getValue(length);
+    args[4].getValue(ground_position);
+    OwInterface::instance()->grind(x, y, depth, length, ground_position);
   }
   else if (name == "stow") {
   }

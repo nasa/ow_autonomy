@@ -10,6 +10,7 @@
 // OW - other
 #include <ow_lander/DigCircular.h>
 #include <ow_lander/DigLinear.h>
+#include <ow_lander/Grind.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -709,6 +710,31 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.delete_prev_traj = false;
     thread service_thread (service_call<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular);
+    service_thread.detach();
+  }
+}
+
+void OwInterface::grind (double x, double y,
+                         double depth, double length, double ground_pos)
+{
+  if (! mark_operation_running (Op_Grind)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::Grind>("arm/grind");
+
+  if (check_service_client (client)) {
+    ow_lander::Grind srv;
+    srv.request.use_defaults = false;
+    srv.request.x = x;
+    srv.request.y = y;
+    srv.request.depth = depth;
+    srv.request.length = length;
+    srv.request.ground_position = ground_pos;
+    srv.request.delete_prev_traj = false;
+    thread service_thread (service_call<ow_lander::Grind>,
+                           client, srv, Op_Grind);
     service_thread.detach();
   }
 }
