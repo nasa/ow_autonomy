@@ -36,7 +36,13 @@ LibraryAction Pan  (In Real Degrees);
 LibraryAction GetInfoIfCrash(In String CheckpointName,
                              In Boolean IgnoreCrash,
                              InOut Boolean Crashed,
-                             InOut String Info);
+                             InOut String Info,
+                             InOut Real CrashTime);
+
+LibraryAction CompatiblePanorama(In Real First,
+                                 In Real Second,
+                                 In String CheckpointName,
+                                 InOut Boolean Result);
 TakePanorama:
 {
   // All inputs are in degrees
@@ -104,14 +110,26 @@ TakePanorama:
   CrashHandling:{
     String info = "None"; // Can't pass empty strings in
     Boolean Crashed;
+    Real CrashTime;
     
     LibraryCall GetInfoIfCrash(CheckpointName=OurName,
                                IgnoreCrash=IgnoreCrash,
                                Crashed=Crashed,
-                               Info=info);
+                               Info=info,
+                               CrashTime=CrashTime);
     
-    // info set only if we crashed
-    // finish image we were on
+    // If the times aren't compatible, we should act as if we didn't crash
+    CheckPanoramaTimes:{
+      Boolean Compatible;
+      SkipCondition !Crashed;
+      LibraryCall CompatiblePanorama(First=CrashTime,
+                                     Second=Lookup(time,1),
+                                     CheckpointName=OurName,
+                                     Result=Compatible);
+      Crashed = Compatible;
+    }
+    
+    // redo last image we were on
     SetPanTilt:{
       // Info is of the format reverse_tilt_pan
       String tilt_s;

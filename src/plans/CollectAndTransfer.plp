@@ -25,7 +25,8 @@ LibraryAction Downlink();
 LibraryAction GetInfoIfCrash(In String CheckpointName,
                              In Boolean IgnoreCrash,
                              InOut Boolean Crashed,
-                             InOut String Info);
+                             InOut String Info,
+                             InOut Real CrashTime);
 
 CollectAndTransfer:
 {
@@ -44,10 +45,12 @@ CollectAndTransfer:
     // Args will be treated as ""
     String info = "None";
     Boolean Crashed;
+    Real CrashTime; // Not used, sample integrity is handled in another plan
     LibraryCall GetInfoIfCrash(CheckpointName=OurName,
                                IgnoreCrash=IgnoreCrash,
                                Crashed=Crashed,
-                               Info=info);
+                               Info=info,
+                               CrashTime=CrashTime);
     
     SetCollectMoreLastComplete:{
       String more_s;
