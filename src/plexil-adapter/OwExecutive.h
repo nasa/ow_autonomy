@@ -15,16 +15,17 @@
 class OwExecutive
 {
  public:
-  static OwExecutive* instance();
   OwExecutive() { }
   ~OwExecutive();
+  OwExecutive (const OwExecutive&) = delete;
+  OwExecutive& operator= (const OwExecutive&) = delete;
+  
+  static OwExecutive* instance();
 
   bool initialize ();
   bool runPlan (const std::string& filename);
 
  private:
-  OwExecutive (const OwExecutive&);            // undefined (singleton)
-  OwExecutive& operator= (const OwExecutive&); // undefined (singleton)
   static OwExecutive* m_instance;
 };
 
