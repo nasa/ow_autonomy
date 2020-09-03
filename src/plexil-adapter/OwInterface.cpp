@@ -11,6 +11,8 @@
 #include <ow_lander/DigCircular.h>
 #include <ow_lander/DigLinear.h>
 #include <ow_lander/Grind.h>
+#include <ow_lander/Stow.h>
+#include <ow_lander/Unstow.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/PublishTrajectory.h>
@@ -738,6 +740,43 @@ void OwInterface::grind (double x, double y,
     service_thread.detach();
   }
 }
+
+void OwInterface::stow ()
+{
+  if (! mark_operation_running (Op_Stow)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::Stow>("arm/stow");
+
+  if (check_service_client (client)) {
+    ow_lander::Stow srv;
+    srv.request.delete_prev_traj = false;
+    thread service_thread (service_call<ow_lander::Stow>,
+                           client, srv, Op_Stow);
+    service_thread.detach();
+  }
+}
+
+void OwInterface::unstow ()
+{
+  if (! mark_operation_running (Op_Unstow)) return;
+
+  ros::NodeHandle nhandle ("planning");
+
+  ros::ServiceClient client =
+    nhandle.serviceClient<ow_lander::Unstow>("arm/unstow");
+
+  if (check_service_client (client)) {
+    ow_lander::Unstow srv;
+    srv.request.delete_prev_traj = false;
+    thread service_thread (service_call<ow_lander::Unstow>,
+                           client, srv, Op_Unstow);
+    service_thread.detach();
+  }
+}
+
 
 void OwInterface::deliverSample (double x, double y, double z)
 {

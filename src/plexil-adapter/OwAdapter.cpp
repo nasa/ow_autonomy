@@ -51,9 +51,11 @@ static string log_string (const vector<Value>& args)
   return out.str();
 }
 
-static void log_info (const vector<Value>& args)
+void OwAdapter::logInfo (Command* cmd)
 {
-  ROS_INFO("%s", log_string(args).c_str());
+  ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
+  m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);
+  m_execInterface.notifyOfExternalEvent();
 }
 
 static void log_warning (const vector<Value>& args)
@@ -171,6 +173,7 @@ OwAdapter::~OwAdapter ()
 bool OwAdapter::initialize()
 {
   g_configuration->defaultRegisterAdapter(this);
+  g_configuration->registerCommandHandler("log_info", OwAdapter::logInfo);
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
@@ -224,8 +227,7 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   // Utility commands
-  if (name == "log_info") log_info (cmd->getArgValues());
-  else if (name == "log_warning") log_warning (args);
+  if (name == "log_warning") log_warning (args);
   else if (name == "log_error") log_error (args);
   else if (name == "log_debug") log_debug (args);
 
@@ -289,8 +291,10 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->grind(x, y, depth, length, ground_position);
   }
   else if (name == "stow") {
+    OwInterface::instance()->stow();
   }
   else if (name == "unstow") {
+    OwInterface::instance()->unstow();
   }
   else if (name == "tilt_antenna") {
     double degrees;
