@@ -75,7 +75,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_manager->handleAddPlan(doc->document_element());
+    g_execInterface->handleAddPlan(doc->document_element());
   }
   catch (PLEXIL::ParserException const &e) {
     ROS_ERROR("Add of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
@@ -83,7 +83,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_manager->handleValueChange(State::timeState(), 0);
+    g_execInterface->handleValueChange(State::timeState(), 0);
     PlexilApp->run();
   }
   catch (const Error& e) {
@@ -173,7 +173,6 @@ bool OwExecutive::initialize ()
     REGISTER_ADAPTER(OwAdapter, "Ow");
 
     PlexilApp = new ExecApplication();
-    g_manager = new InterfaceManager(*PlexilApp);
 
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
