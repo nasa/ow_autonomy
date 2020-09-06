@@ -75,7 +75,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_manager->handleAddPlan(doc->document_element());
+    g_execInterface->handleAddPlan(doc->document_element());
   }
   catch (PLEXIL::ParserException const &e) {
     ROS_ERROR("Add of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
@@ -83,7 +83,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_manager->handleValueChange(State::timeState(), 0);
+    g_execInterface->handleValueChange(State::timeState(), 0);
     PlexilApp->run();
   }
   catch (const Error& e) {
@@ -161,7 +161,6 @@ static void get_plexil_debug_config()
 bool OwExecutive::initialize ()
 {
   // NOTE: this is the best we can do for now.  ROS provides no API for devel.
-  //
   PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert
@@ -171,10 +170,7 @@ bool OwExecutive::initialize ()
 
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
-
     PlexilApp = new ExecApplication();
-    g_manager = new InterfaceManager(*PlexilApp);
-
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
