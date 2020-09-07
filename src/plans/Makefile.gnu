@@ -18,15 +18,15 @@ PLX = $(PLANS:%=%.plx)
 
 
 %.ple: %.plp OceanWorldDefs.h
-	${PLEXIL_HOME}/scripts/plexilpp $<
+    ${PLEXIL_HOME}/scripts/plexilpp $<
 
 %.plx: %.ple
-	${PLEXIL_HOME}/scripts/plexilc $<
+    ${PLEXIL_HOME}/scripts/plexilc $<
 
 default: $(PLE) $(PLX)
 
 run:
-	plexilexec -p OceanWorldMission.plx -c ow-config.xml
+    plexilexec -p OceanWorldMission.plx -c ow-config.xml
 
 clean:
-	@ rm -f $(PLX) $(PLE) $(EPX)
+    @ rm -f $(PLX) $(PLE) $(EPX)

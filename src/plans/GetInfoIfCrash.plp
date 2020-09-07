@@ -1,0 +1,46 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+Real Lookup CheckpointTime(...);
+Integer Lookup CheckpointWhen(String);
+String Lookup CheckpointInfo(...);
+Boolean Lookup DidCrash;
+Real Lookup time;
+
+GetInfoIfCrash:{
+  
+  In Boolean IgnoreCrash;
+  In String CheckpointName;
+  InOut Boolean Crashed;
+  InOut String Info;
+  InOut Real CrashTime;
+  Crashed = false;
+  
+  HandleCrash:{
+  
+    // TODO: Currently, ordering a new execution with the same name (with IgnoreCrash=true) means previously crashed
+    // executions will be ignored since the successful new execution will be the most recent.
+    // Is this OK?
+    Integer latest_executing_boot; // Latest time we were executing the plan we're checking
+    Integer latest_finished_boot; // Latest time we finished the plan we're checking
+    Boolean checked_boots = false;
+    Boolean exit = false;
+  
+    ExitCondition !Lookup(DidCrash) // Didn't crash
+      || IgnoreCrash // We want to start a new execution even if we crashed during the old one
+      || (checked_boots && !isKnown(latest_executing_boot)) // Never started
+      || (checked_boots && latest_executing_boot >= latest_finished_boot); // Finished after we last started
+
+
+  
+    latest_executing_boot = Lookup(CheckpointWhen(CheckpointName));
+    latest_finished_boot = Lookup(CheckpointWhen(CheckpointName+"__End"));
+    checked_boots = true;
+
+    // From here on out, we can assume we've crashed
+    Info = Lookup(CheckpointInfo(CheckpointName,latest_executing_boot));
+    CrashTime = Lookup(CheckpointTime(CheckpointName,latest_executing_boot));
+    Crashed = true;
+  }
+}

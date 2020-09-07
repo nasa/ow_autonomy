@@ -8,7 +8,9 @@ Command log_info (...);
 
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
-                            In Real HorizOverlap, In Real VertOverlap);
+                            In Real HorizOverlap, In Real VertOverlap,
+                            In String InstanceName,
+                            In Boolean IgnoreCrash);
 LibraryAction DigCircularDemo;
 LibraryAction PublishTrajectoryDemo;
 
@@ -23,7 +25,9 @@ TestAntennaWithArm:
     LibraryCall TakePanorama (TiltLo = 30, TiltHi = 36,
                               PanLo = 20, PanHi = 40,
                               HorizOverlap = 0,
-                              VertOverlap = 0);
+                              VertOverlap = 0,
+                              InstanceName = "TestAntennaWithArm",
+                              IgnoreCrash=true);
     LibraryCall PublishTrajectoryDemo;
   }
 

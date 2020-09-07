@@ -161,7 +161,6 @@ static void get_plexil_debug_config()
 bool OwExecutive::initialize ()
 {
   // NOTE: this is the best we can do for now.  ROS provides no API for devel.
-  //
   PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert
@@ -171,9 +170,7 @@ bool OwExecutive::initialize ()
 
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
-
     PlexilApp = new ExecApplication();
-
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
