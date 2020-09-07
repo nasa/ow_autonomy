@@ -54,8 +54,8 @@ static string log_string (const vector<Value>& args)
 void OwAdapter::logInfo (Command* cmd)
 {
   ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
-  m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);
-  m_execInterface.notifyOfExternalEvent();
+  g_execInterface->handleCommandAck(cmd, COMMAND_SUCCESS);
+  g_execInterface->notifyOfExternalEvent();
 }
 
 static void log_warning (const vector<Value>& args)
