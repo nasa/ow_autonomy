@@ -65,7 +65,7 @@ class OwInterface
   void grind (double x, double y, double depth, double length,
               double ground_position);
   void stow();
-  void unstow();
+  void unstow (int id);
   void deliverSample (double x, double y, double z);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
@@ -83,6 +83,10 @@ class OwInterface
   bool finished (const std::string& name) const;
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
+
+  // Command feedback
+  void setCommandStatusCallback (void (*callback) (int, bool));
+
 
  private:
   // temporary, proof of concept

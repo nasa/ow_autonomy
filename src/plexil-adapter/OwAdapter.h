@@ -37,7 +37,7 @@ public:
   void propagateValueChange (const State&, const std::vector<Value>&) const;
 
   // Command Handlers
-  static void logInfo (PLEXIL::Command* cmd);
+  //  static void logInfo (PLEXIL::Command* cmd);
   //  static void logWarning (PLEXIL::Command* cmd);
   //  static void logError (PLEXIL::Command* cmd);
 

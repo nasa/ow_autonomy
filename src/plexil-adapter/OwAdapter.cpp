@@ -22,8 +22,9 @@
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
 
-// C++/C
+// C++
 #include <list>
+#include <map>
 #include <iostream>
 using std::string;
 using std::vector;
@@ -41,6 +42,47 @@ static Value const Unknown;
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
 
+
+//////////////////////////// Command Handling //////////////////////////////
+
+static int CommandId = 0;
+
+static std::map<int, Command*> CommandRegistry;
+
+static void command_sent (Command* cmd)
+{
+  g_execInterface->handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void command_success (Command* cmd)
+{
+  g_execInterface->handleCommandAck(cmd, COMMAND_SUCCESS);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void ack_command (Command* cmd, PLEXIL::CommandHandleValue handle)
+{
+  g_execInterface->handleCommandAck(cmd, handle);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void command_status_callback (int id, bool success)
+{
+  Command* cmd;
+  
+  try {
+    cmd = CommandRegistry.at(id);
+  }
+  catch (const std::out_of_range& oor) {
+    ROS_ERROR("command_status_callback: no command registered under id %d", id);
+    return;
+  }
+  if (success) ack_command (cmd, COMMAND_SUCCESS);
+  else ack_command (cmd, COMMAND_FAILED);
+}
+
+
 static string log_string (const vector<Value>& args)
 {
   std::ostringstream out;
@@ -51,27 +93,37 @@ static string log_string (const vector<Value>& args)
   return out.str();
 }
 
-void OwAdapter::logInfo (Command* cmd)
+static void log_info (Command* cmd)
 {
   ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
-  g_execInterface->handleCommandAck(cmd, COMMAND_SUCCESS);
-  g_execInterface->notifyOfExternalEvent();
+  ack_command (cmd, COMMAND_SUCCESS);
 }
 
-static void log_warning (const vector<Value>& args)
+static void log_warning (Command* cmd)
 {
-  ROS_WARN("%s", log_string(args).c_str());
+  ROS_WARN("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
 }
 
-static void log_error (const vector<Value>& args)
+static void log_error (Command* cmd)
 {
-  ROS_ERROR("%s", log_string(args).c_str());
+  ROS_ERROR("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
 }
 
-static void log_debug (const vector<Value>& args)
+static void log_debug (Command* cmd)
 {
-  ROS_DEBUG("%s", log_string(args).c_str());
+  ROS_DEBUG("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
 }
+
+static void unstow (Command* cmd)
+{
+  CommandRegistry[CommandId++] = cmd;
+  OwInterface::instance()->unstow (CommandId);
+  command_sent (cmd);
+}
+
 
 
 ////////////////////// Publish/subscribe support ////////////////////////////
@@ -173,12 +225,17 @@ OwAdapter::~OwAdapter ()
 bool OwAdapter::initialize()
 {
   g_configuration->defaultRegisterAdapter(this);
-  g_configuration->registerCommandHandler("log_info", OwAdapter::logInfo);
+  g_configuration->registerCommandHandler("log_info", log_info);
+  g_configuration->registerCommandHandler("log_warning", log_warning);
+  g_configuration->registerCommandHandler("log_error", log_error);
+  g_configuration->registerCommandHandler("log_debug", log_debug);
+  g_configuration->registerCommandHandler("unstow", unstow);
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
+  OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
@@ -209,6 +266,8 @@ bool OwAdapter::shutdown()
 
 void OwAdapter::invokeAbort(Command *cmd)
 {
+  ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
+            cmd->getName().c_str());
 }
 
 void OwAdapter::executeCommand(Command *cmd)
@@ -226,13 +285,8 @@ void OwAdapter::executeCommand(Command *cmd)
   // Command return value
   Value retval = Unknown;
 
-  // Utility commands
-  if (name == "log_warning") log_warning (args);
-  else if (name == "log_error") log_error (args);
-  else if (name == "log_debug") log_debug (args);
-
   // "Demos"
-  else if (name == "dig_circular_demo") OwInterface::instance()->digCircularDemo();
+  if (name == "dig_circular_demo") OwInterface::instance()->digCircularDemo();
   else if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
   else if (name == "guarded_move_action_demo") { // proof of concept for now
     OwInterface::instance()->guardedMoveActionDemo();
@@ -292,9 +346,6 @@ void OwAdapter::executeCommand(Command *cmd)
   }
   else if (name == "stow") {
     OwInterface::instance()->stow();
-  }
-  else if (name == "unstow") {
-    OwInterface::instance()->unstow();
   }
   else if (name == "tilt_antenna") {
     double degrees;

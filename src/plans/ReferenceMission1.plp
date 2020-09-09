@@ -8,7 +8,7 @@ LibraryAction ImageLandingSite;
 LibraryAction InterogateSurface;
 LibraryAction IdentifySampleTarget (InOut Real X, InOut Real Y,
                                     InOut Real GroundPos);
-LibraryAction DigTrench;
+LibraryAction DigTrench (In Real X, In Real Y, In Real GroundPos);
 LibraryAction CollectSample;
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
@@ -33,13 +33,13 @@ ReferenceMission1: Concurrence
   Mission:
   {
     Real trench_x, trench_y, ground_pos;
-    
+
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite;
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
                                       GroundPos = ground_pos);
-    LibraryCall DigTrench;
+    LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos);
     LibraryCall CollectSample;
     LibraryCall StartSampleAnalysis;
     log_info ("Reference Mission 1, Sol 0 complete.");

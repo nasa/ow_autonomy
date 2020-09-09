@@ -1,5 +1,10 @@
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
+
+  // Stub, values taken from DigCircularDemo DigLinearDemo
+  X = 1.5;
+  Y = 0;
+  GroundPos = -0.175;
 }
 

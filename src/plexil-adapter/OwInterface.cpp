@@ -35,6 +35,8 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
+// Temporary
+#define ZEROTEMP 0
 
 //////////////////// Utilities ////////////////////////
 
@@ -52,6 +54,8 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 
 //////////////////// Lander Operation Support ////////////////////////
+
+static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 5.0; // seconds, made up
 
@@ -105,7 +109,7 @@ static bool mark_operation_running (const string& name)
   return true;
 }
 
-static void mark_operation_finished (const string& name)
+static void mark_operation_finished (const string& name, int id)
 {
   if (! Running.at (name)) {
     ROS_WARN ("%s was not running. Should never happen.", name.c_str());
@@ -113,6 +117,7 @@ static void mark_operation_finished (const string& name)
   Running.at (name) = false;
   publish ("Running", false, name);
   publish ("Finished", true, name);
+  CommandStatusCallback (id, true);
 }
 
 
@@ -190,7 +195,8 @@ static void monitor_for_faults (const string& opname)
 /////////////////// ROS Service support //////////////////////
 
 template<class Service>
-static void service_call (ros::ServiceClient client, Service srv, string name)
+static void call_ros_service (ros::ServiceClient client, Service srv,
+                              string name, int id)
 {
   // NOTE: arguments are copies because this function is called in a thread that
   // outlives its caller.  Assumes that service is not already running; this is
@@ -204,7 +210,7 @@ static void service_call (ros::ServiceClient client, Service srv, string name)
   else {
     ROS_ERROR("Failed to call service %s", name.c_str());
   }
-  mark_operation_finished (name);
+  mark_operation_finished (name, id);
   fault_thread.join();
 }
 
@@ -329,7 +335,7 @@ void OwInterface::managePanTilt (const string& opname,
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
-    mark_operation_finished (opname);
+    mark_operation_finished (opname, ZEROTEMP);
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
@@ -477,6 +483,12 @@ void OwInterface::initialize()
   }
 }
 
+void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
+{
+  CommandStatusCallback = callback;
+}
+
+
 void OwInterface::digCircularDemo()
 {
   if (! mark_operation_running (Op_DigCircular)) return;
@@ -496,8 +508,8 @@ void OwInterface::digCircularDemo()
     srv.request.radial = false;
     srv.request.ground_position = 0.0;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular);
+    thread service_thread (call_ros_service<ow_lander::DigCircular>,
+                           client, srv, Op_DigCircular, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -567,7 +579,7 @@ void OwInterface::guardedMoveActionAux (double x,
     ROS_INFO("GuardedMove action did not finish before the time out.");
   }
 
-  mark_operation_finished (Op_GuardedMoveAction);
+  mark_operation_finished (Op_GuardedMoveAction, ZEROTEMP);
   fault_thread.join();
 }
 
@@ -601,8 +613,8 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.direction_z = direction_z;
     srv.request.search_distance = search_distance;
     srv.request.delete_prev_traj = delete_prev_traj;
-    thread service_thread (service_call<ow_lander::GuardedMove>,
-                           client, srv, Op_GuardedMove);
+    thread service_thread (call_ros_service<ow_lander::GuardedMove>,
+                           client, srv, Op_GuardedMove, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -620,8 +632,8 @@ void OwInterface::publishTrajectoryDemo()
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "";
-    thread service_thread (service_call<ow_lander::PublishTrajectory>,
-                           client, srv, Op_PublishTrajectory);
+    thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
+                           client, srv, Op_PublishTrajectory, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -685,8 +697,8 @@ void OwInterface::digLinear (double x, double y,
     srv.request.length = length;
     srv.request.ground_position = ground_position;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::DigLinear>,
-                           client, srv, Op_DigLinear);
+    thread service_thread (call_ros_service<ow_lander::DigLinear>,
+                           client, srv, Op_DigLinear, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -710,8 +722,8 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.ground_position = ground_position;
     srv.request.radial = radial;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular);
+    thread service_thread (call_ros_service<ow_lander::DigCircular>,
+                           client, srv, Op_DigCircular, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -735,8 +747,8 @@ void OwInterface::grind (double x, double y,
     srv.request.length = length;
     srv.request.ground_position = ground_pos;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::Grind>,
-                           client, srv, Op_Grind);
+    thread service_thread (call_ros_service<ow_lander::Grind>,
+                           client, srv, Op_Grind, ZEROTEMP);
     service_thread.detach();
   }
 }
@@ -753,13 +765,13 @@ void OwInterface::stow ()
   if (check_service_client (client)) {
     ow_lander::Stow srv;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::Stow>,
-                           client, srv, Op_Stow);
+    thread service_thread (call_ros_service<ow_lander::Stow>,
+                           client, srv, Op_Stow, ZEROTEMP);
     service_thread.detach();
   }
 }
 
-void OwInterface::unstow ()
+void OwInterface::unstow (int id)
 {
   if (! mark_operation_running (Op_Unstow)) return;
 
@@ -771,8 +783,8 @@ void OwInterface::unstow ()
   if (check_service_client (client)) {
     ow_lander::Unstow srv;
     srv.request.delete_prev_traj = false;
-    thread service_thread (service_call<ow_lander::Unstow>,
-                           client, srv, Op_Unstow);
+    thread service_thread (call_ros_service<ow_lander::Unstow>,
+                           client, srv, Op_Unstow, id);
     service_thread.detach();
   }
 }
@@ -792,8 +804,8 @@ void OwInterface::deliverSample (double x, double y, double z)
     srv.request.x = x;
     srv.request.y = y;
     srv.request.z = z;
-    thread service_thread (service_call<ow_lander::DeliverSample>,
-                           client, srv, Op_DeliverSample);
+    thread service_thread (call_ros_service<ow_lander::DeliverSample>,
+                           client, srv, Op_DeliverSample, ZEROTEMP);
     service_thread.detach();
   }
 }
