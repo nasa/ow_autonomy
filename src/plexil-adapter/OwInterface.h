@@ -73,17 +73,17 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
+  bool imageReceived () const;
 
   // Mission Specific Support (Temporary)
-  double getXTarget () const;
-  double getYTarget () const;
-  double getZTarget () const;
+  double getSampleTargetX () const;
+  double getSampleTargetY () const;
+  double getSampleTargetZ () const;
   void updateTrenchTarget () const;
   void timeoutUseOnboardTarget () const;
-  void requestGroundDecision () const;
-  bool getWait () const;
-  bool getWaitForGroundTimeout() const;
-  bool imageReceived () const;
+  void requestSampleTargetChoice () const;
+  bool waitingForSampleTargetChoice () const;
+  bool sampleTargetReplyTimedOut () const;
 
   // These methods apply to all "lander operations", and hide their ROS
   // implementation, which could be services, actions, or ad hoc messaging.

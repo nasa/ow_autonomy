@@ -293,7 +293,7 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->downlinkImage();
   }
   else if (name == "request_ground_decision") {
-    OwInterface::instance()->requestGroundDecision();
+    OwInterface::instance()->requestSampleTargetChoice();
   }
   else if (name == "update_trench_target") {
     OwInterface::instance()->updateTrenchTarget();

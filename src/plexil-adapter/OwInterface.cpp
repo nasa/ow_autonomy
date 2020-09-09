@@ -371,7 +371,7 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 // Ground Control decides to update target.
 static void target_callback (const geometry_msgs::Point::ConstPtr& point)
 {
-  if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
+  if (OwInterface::instance()->sampleTargetReplyTimedOut() != true) {
     ROS_INFO("Lander: Received decision, use new target.");
     NewXTarget = point->x;
     NewYTarget = point->y;
@@ -385,7 +385,7 @@ static void target_callback (const geometry_msgs::Point::ConstPtr& point)
 // static void onboard_target_callback (const std_msgs::String::ConstPtr& msg)
 static void onboard_target_callback (const geometry_msgs::Point::ConstPtr& point)
 {
-  if (OwInterface::instance()->getWaitForGroundTimeout() != true) {
+  if (OwInterface::instance()->sampleTargetReplyTimedOut() != true) {
     ROS_INFO("Lander: Received decision, Use onboard target.");
     NewXTarget = point->x;
     NewYTarget = point->y;
@@ -776,17 +776,17 @@ void OwInterface::digLinear (double x, double y,
   }
 }
 
-double OwInterface::getXTarget () const
+double OwInterface::getSampleTargetX () const
 {
   return CurrentXTarget;
 }
 
-double OwInterface::getYTarget () const
+double OwInterface::getSampleTargetY () const
 {
   return CurrentYTarget;
 }
 
-double OwInterface::getZTarget () const
+double OwInterface::getSampleTargetZ () const
 {
   return CurrentZTarget;
 }
@@ -798,12 +798,12 @@ void OwInterface::updateTrenchTarget () const {
 }
 
 void OwInterface::timeoutUseOnboardTarget () const {
-  NewXTarget = getXTarget();
-  NewYTarget = getYTarget();
-  NewZTarget = getZTarget();
+  NewXTarget = getSampleTargetX();
+  NewYTarget = getSampleTargetY();
+  NewZTarget = getSampleTargetZ();
 }
 
-void OwInterface::requestGroundDecision () const
+void OwInterface::requestSampleTargetChoice () const
 {
   std_msgs::String message;
   message.data = "Request for FWD link";
@@ -819,12 +819,12 @@ void OwInterface::requestGroundDecision () const
   m_groundRequestPublisher->publish (message);
 }
 
-bool OwInterface::getWait () const
+bool OwInterface::waitingForSampleTargetChoice () const
 {
   return WaitForGroundControl;
 }
 
-bool OwInterface::getWaitForGroundTimeout () const
+bool OwInterface::sampleTargetReplyTimedOut () const
 {
   if ((timeAtStart != ros::Time(0.0)) && (timeoutDuration != ros::Duration(0,0))) {
     if (ros::Time::now() < (timeAtStart + timeoutDuration)) {
