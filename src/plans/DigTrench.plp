@@ -6,9 +6,11 @@
 
 DigTrench:
 {
-  In X;
-  In Y;
-  In GroundPos;
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
 
+  log_info ("Unstowing...");
   SynchronousCommand unstow() Timeout 5.0, 0.1;
+  log_info ("Unstowed.");
 }

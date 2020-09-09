@@ -4,7 +4,8 @@
 
 // Simplified version of the Europa reference mission.
 
-LibraryAction ImageLandingSite;
+LibraryAction ImageLandingSite(In String InstanceName,
+                               In Boolean IgnoreCrash);
 LibraryAction InterogateSurface;
 LibraryAction IdentifySampleTarget (InOut Real X, InOut Real Y,
                                     InOut Real GroundPos);
@@ -35,7 +36,8 @@ ReferenceMission1: Concurrence
     Real trench_x, trench_y, ground_pos;
 
     log_info ("Starting Reference Mission 1, Sol 0 ...");
-    LibraryCall ImageLandingSite;
+    LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
+                                  IgnoreCrash = true);
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
                                       GroundPos = ground_pos);

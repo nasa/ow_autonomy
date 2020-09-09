@@ -1,3 +1,8 @@
+#include "plan-interface.h"
+
+LibraryAction Stub (In String desc);
+
 CollectSample:
 {
+  LibraryCall Stub (desc = "Collected sample.");
 }
