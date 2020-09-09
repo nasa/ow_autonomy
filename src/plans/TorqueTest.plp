@@ -10,7 +10,6 @@
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
-Command publish_trajectory_demo();
 
 TorqueTest:
 {
@@ -32,12 +31,13 @@ TorqueTest:
         StartCondition Lookup (Running ("GuardedMove"));
         EndCondition Lookup (Finished ("GuardedMove"));
       }
-      publish_trajectory_demo();
-      WaitForPublish:
-      {
-        StartCondition Lookup (Running ("PublishTrajectory"));
-        EndCondition Lookup (Finished ("PublishTrajectory"));
-      }
+      SynchronousCommand publish_trajectory() Timeout 20.0, 0.1;
+      
+      // WaitForPublish:
+      // {
+      //   StartCondition Lookup (Running ("PublishTrajectory"));
+      //   EndCondition Lookup (Finished ("PublishTrajectory"));
+      // }
       Digging = false;
     }
 

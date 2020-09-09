@@ -5,6 +5,8 @@
 #ifndef Ow_Plan_Interface_H
 #define Ow_Plan_Interface_H
 
+// PLEXIL interface: commands, lookups, library plans
+
 // Lander commands
 
 Command dig_linear (Real x, Real y, Real depth, Real length,
@@ -18,18 +20,24 @@ Command guarded_move (Real x, Real y, Real z,
                       Real search_distance);
 Command stow();
 Command unstow();
+Command publish_trajectory();
 
-
-// Plan execution support
-
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
-
-// ROS Utilities
+// Utility commands
 
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
+
+
+// Lookups
+
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
+
+
+// Plan Library
+
+LibraryAction Unstow();
 
 
 #endif

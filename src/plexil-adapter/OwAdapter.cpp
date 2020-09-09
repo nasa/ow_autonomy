@@ -70,7 +70,7 @@ static void ack_command (Command* cmd, PLEXIL::CommandHandleValue handle)
 static void command_status_callback (int id, bool success)
 {
   Command* cmd;
-  
+
   try {
     cmd = CommandRegistry.at(id);
   }
@@ -123,6 +123,15 @@ static void unstow (Command* cmd)
   OwInterface::instance()->unstow (CommandId);
   command_sent (cmd);
 }
+
+
+static void publish_trajectory (Command* cmd)
+{
+  CommandRegistry[CommandId++] = cmd;
+  OwInterface::instance()->publishTrajectory (CommandId);
+  command_sent (cmd);
+}
+
 
 
 
@@ -230,6 +239,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_error", log_error);
   g_configuration->registerCommandHandler("log_debug", log_debug);
   g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("publish_trajectory",
+                                          publish_trajectory);
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
@@ -290,9 +301,6 @@ void OwAdapter::executeCommand(Command *cmd)
   else if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
   else if (name == "guarded_move_action_demo") { // proof of concept for now
     OwInterface::instance()->guardedMoveActionDemo();
-  }
-  else if (name == "publish_trajectory_demo") {
-    OwInterface::instance()->publishTrajectoryDemo();
   }
   // Operations
   else if (name == "dig_linear") {

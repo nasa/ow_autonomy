@@ -5,19 +5,18 @@
 // Publish arm planning trajectory.  Note that this is blocking/syncnronous
 // wrapper of the asynchonous publish_trajectory_demo command.
 
-Command log_info (...);
-Command publish_trajectory_demo();
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+#include "plan-interface.h"
 
 PublishTrajectoryDemo:
 {
   log_info ("Publishing arm trajectory...");
-  publish_trajectory_demo();
-  Block:
-  {
-    StartCondition Lookup (Running ("PublishTrajectory"));
-    EndCondition Lookup (Finished ("PublishTrajectory"));
-  }
+  SynchronousCommand publish_trajectory() Timeout 20.0, 0.1;
+
+   Block:
+   {
+     StartCondition Lookup (Running ("PublishTrajectory"));
+     EndCondition Lookup (Finished ("PublishTrajectory"));
+   }
+  
   log_info ("Arm trajectory published.");
 }

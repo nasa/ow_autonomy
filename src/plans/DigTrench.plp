@@ -10,7 +10,5 @@ DigTrench:
   In Real Y;
   In Real GroundPos;
 
-  log_info ("Unstowing...");
-  SynchronousCommand unstow() Timeout 5.0, 0.1;
-  log_info ("Unstowed.");
+  LibraryCall Unstow();
 }

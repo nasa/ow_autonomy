@@ -619,7 +619,7 @@ void OwInterface::guardedMove (double x, double y, double z,
   }
 }
 
-void OwInterface::publishTrajectoryDemo()
+void OwInterface::publishTrajectory (int id)
 {
   if (! mark_operation_running (Op_PublishTrajectory)) return;
 
@@ -633,7 +633,7 @@ void OwInterface::publishTrajectoryDemo()
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "";
     thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
-                           client, srv, Op_PublishTrajectory, ZEROTEMP);
+                           client, srv, Op_PublishTrajectory, id);
     service_thread.detach();
   }
 }

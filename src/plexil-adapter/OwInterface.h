@@ -30,7 +30,7 @@ class OwInterface
   void digCircularDemo();
   void guardedMoveDemo();
   void guardedMoveActionDemo(); // temporary, proof of concept
-  void publishTrajectoryDemo();
+  void publishTrajectory (int id);
 
   // Operational interface
 
