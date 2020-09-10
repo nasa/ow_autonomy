@@ -2,22 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Demonstrate a guarded move.  Note that this is blocking/syncnronous wrapper
-// of the asynchonous guarded_move_demo command.
+// Demonstrate a guarded move.
 
-Command log_info (...);
-Command guarded_move_demo();
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+#include "plan-interface.h"
 
 GuardedMoveDemo:
 {
   log_info ("Beginning GuardedMove Demo...");
-  guarded_move_demo();
-  Block:
-  {
-    StartCondition Lookup (Running ("GuardedMove"));
-    EndCondition Lookup (Finished ("GuardedMove"));
-  }
+  SynchronousCommand guarded_move (2, 0.0, 0.3, 0, 0, 1.0, 0.5);
   log_info ("GuardedMove Demo finished");
 }

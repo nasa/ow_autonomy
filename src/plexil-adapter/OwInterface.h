@@ -26,8 +26,7 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // "Demo" functions, perhaps temporary.
-  void digCircularDemo();
+  // "Demo" functions, temporary.
   void guardedMoveDemo();
   void guardedMoveActionDemo(); // temporary, proof of concept
   void publishTrajectory (int id);
@@ -43,7 +42,7 @@ class OwInterface
                     double direction_y = 0,
                     double direction_z = 1,
                     double search_distance = 0.5,
-                    bool delete_prev_traj = false);
+                    int id = 0);
 
   // Temporary, until guardedMove is just a ROS action.
   void guardedMoveAction (double x = 2,
@@ -61,7 +60,7 @@ class OwInterface
   void digLinear (double x, double y, double depth, double length,
                   double ground_position);
   void digCircular (double x, double y, double depth,
-                    double ground_position, bool radial);
+                    double ground_position, bool radial, int id);
   void grind (double x, double y, double depth, double length,
               double ground_position);
   void stow();

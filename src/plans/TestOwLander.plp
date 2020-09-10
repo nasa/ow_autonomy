@@ -13,6 +13,7 @@ TestOwLander:
 {
   log_info ("Starting ow_lander service demo...");
   LibraryCall GuardedMoveDemo;
+  LibraryCall PublishTrajectoryDemo;
   LibraryCall DigCircularDemo;
   LibraryCall PublishTrajectoryDemo;
   log_info ("ow_lander service demo finished.");

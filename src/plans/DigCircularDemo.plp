@@ -2,19 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Demonstrate circular digging.  Note that this is blocking/syncnronous
-// wrapper of the asynchonous dig_circular_demo command.
+// Demonstrate circular digging.
 
 #include "plan-interface.h"
 
 DigCircularDemo:
 {
   log_info ("Beginning dig circular demo...");
-  dig_circular (1.5, 0, 0.02, -0.175, false);
-  Block:
-  {
-    StartCondition Lookup (Running ("DigCircular"));
-    EndCondition Lookup (Finished ("DigCircular"));
-  }
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.175, false);
   log_info ("Dig circular demo finished");
 }

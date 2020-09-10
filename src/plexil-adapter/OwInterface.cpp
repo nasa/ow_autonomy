@@ -488,32 +488,6 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
   CommandStatusCallback = callback;
 }
 
-
-void OwInterface::digCircularDemo()
-{
-  if (! mark_operation_running (Op_DigCircular)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    // NOTE: typo is deliberate
-    nhandle.serviceClient<ow_lander::DigCircular>("arm/dig_circular");
-
-  if (check_service_client (client)) {
-    ow_lander::DigCircular srv;
-    srv.request.use_defaults = true;
-    srv.request.x = 0.0;
-    srv.request.y = 0.0;
-    srv.request.depth = 0.0;
-    srv.request.radial = false;
-    srv.request.ground_position = 0.0;
-    srv.request.delete_prev_traj = false;
-    thread service_thread (call_ros_service<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular, ZEROTEMP);
-    service_thread.detach();
-  }
-}
-
 void OwInterface::guardedMoveActionDemo()
 {
   guardedMoveAction();
@@ -593,7 +567,7 @@ void OwInterface::guardedMove (double x, double y, double z,
                                double direction_y,
                                double direction_z,
                                double search_distance,
-                               bool delete_prev_traj)
+                               int id)
 {
   if (! mark_operation_running (Op_GuardedMove)) return;
 
@@ -612,15 +586,16 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.direction_y = direction_y;
     srv.request.direction_z = direction_z;
     srv.request.search_distance = search_distance;
-    srv.request.delete_prev_traj = delete_prev_traj;
+    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::GuardedMove>,
-                           client, srv, Op_GuardedMove, ZEROTEMP);
+                           client, srv, Op_GuardedMove, id);
     service_thread.detach();
   }
 }
 
 void OwInterface::publishTrajectory (int id)
 {
+  ROS_INFO("publishTrajectory called with id %d", id);
   if (! mark_operation_running (Op_PublishTrajectory)) return;
 
   ros::NodeHandle nhandle ("planning");
@@ -635,6 +610,7 @@ void OwInterface::publishTrajectory (int id)
     thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
                            client, srv, Op_PublishTrajectory, id);
     service_thread.detach();
+    ROS_INFO("service thread detached");
   }
 }
 
@@ -704,7 +680,7 @@ void OwInterface::digLinear (double x, double y,
 }
 
 void OwInterface::digCircular (double x, double y, double depth,
-                               double ground_position, bool radial)
+                               double ground_position, bool radial, int id)
 {
   if (! mark_operation_running (Op_DigCircular)) return;
 
@@ -723,7 +699,7 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.radial = radial;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular, ZEROTEMP);
+                           client, srv, Op_DigCircular, id);
     service_thread.detach();
   }
 }

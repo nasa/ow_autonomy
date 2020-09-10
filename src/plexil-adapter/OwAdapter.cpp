@@ -78,6 +78,7 @@ static void command_status_callback (int id, bool success)
     ROS_ERROR("command_status_callback: no command registered under id %d", id);
     return;
   }
+  // This ack is needed only when the command was registered.
   if (success) ack_command (cmd, COMMAND_SUCCESS);
   else ack_command (cmd, COMMAND_FAILED);
 }
@@ -124,15 +125,47 @@ static void unstow (Command* cmd)
   command_sent (cmd);
 }
 
-
 static void publish_trajectory (Command* cmd)
 {
-  CommandRegistry[CommandId++] = cmd;
+  CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->publishTrajectory (CommandId);
+  CommandId++;
   command_sent (cmd);
 }
 
+static void guarded_move (Command* cmd)
+{
+  double x, y, z, dir_x, dir_y, dir_z, search_distance;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  args[3].getValue(dir_x);
+  args[4].getValue(dir_y);
+  args[5].getValue(dir_z);
+  args[6].getValue(search_distance);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
+                                        search_distance, CommandId);
+  CommandId++;
+  command_sent (cmd);
+}
 
+static void dig_circular (Command* cmd)
+{
+  double x, y, depth, ground_position;
+  bool radial;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(ground_position);
+  args[4].getValue(radial);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->digCircular(x, y, depth, ground_position, radial,
+                                       CommandId);
+  CommandId++;
+}
 
 
 ////////////////////// Publish/subscribe support ////////////////////////////
@@ -239,6 +272,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_error", log_error);
   g_configuration->registerCommandHandler("log_debug", log_debug);
   g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("publish_trajectory",
                                           publish_trajectory);
   TheAdapter = this;
@@ -296,9 +331,8 @@ void OwAdapter::executeCommand(Command *cmd)
   // Command return value
   Value retval = Unknown;
 
-  // "Demos"
-  if (name == "dig_circular_demo") OwInterface::instance()->digCircularDemo();
-  else if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
+  // "Demos" - temporary
+  if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
   else if (name == "guarded_move_action_demo") { // proof of concept for now
     OwInterface::instance()->guardedMoveActionDemo();
   }
@@ -311,30 +345,6 @@ void OwAdapter::executeCommand(Command *cmd)
     args[3].getValue(length);
     args[4].getValue(ground_position);
     OwInterface::instance()->digLinear(x, y, depth, length, ground_position);
-  }
-  else if (name == "dig_circular") {
-    double x, y, depth, ground_position;
-    bool radial;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(depth);
-    args[4].getValue(ground_position);
-    args[5].getValue(radial);
-    OwInterface::instance()->digCircular(x, y, depth, ground_position, radial);
-  }
-  else if (name == "guarded_move") {
-    double x, y, z, dir_x, dir_y, dir_z;
-    double search_distance;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(z);
-    args[3].getValue(dir_x);
-    args[4].getValue(dir_y);
-    args[5].getValue(dir_z);
-    args[6].getValue(search_distance);
-    OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
-                                          search_distance);
-
   }
   else if (name == "deliver_sample") {
     double x, y, z;

@@ -10,13 +10,17 @@
 PublishTrajectoryDemo:
 {
   log_info ("Publishing arm trajectory...");
-  SynchronousCommand publish_trajectory() Timeout 20.0, 0.1;
 
-   Block:
-   {
-     StartCondition Lookup (Running ("PublishTrajectory"));
-     EndCondition Lookup (Finished ("PublishTrajectory"));
-   }
+  // Plan hangs with this call - why?
+  //  SynchronousCommand publish_trajectory() Timeout 10.0, 0.1;
   
+  SynchronousCommand publish_trajectory();
+
+   // Block:
+   // {
+   //   StartCondition Lookup (Running ("PublishTrajectory"));
+   //   EndCondition Lookup (Finished ("PublishTrajectory"));
+   // }
+
   log_info ("Arm trajectory published.");
 }
