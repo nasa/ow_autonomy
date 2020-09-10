@@ -595,7 +595,6 @@ void OwInterface::guardedMove (double x, double y, double z,
 
 void OwInterface::publishTrajectory (int id)
 {
-  ROS_INFO("publishTrajectory called with id %d", id);
   if (! mark_operation_running (Op_PublishTrajectory)) return;
 
   ros::NodeHandle nhandle ("planning");
@@ -610,7 +609,6 @@ void OwInterface::publishTrajectory (int id)
     thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
                            client, srv, Op_PublishTrajectory, id);
     service_thread.detach();
-    ROS_INFO("service thread detached");
   }
 }
 
