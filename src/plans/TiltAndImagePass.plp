@@ -7,9 +7,14 @@
 
 #include "plexil_defs.h"
 
+String Lookup ToString(...);
+
+
 LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
                          In Real PanIncrement,
+                         In String CheckpointName,
+                         In Real Tilt,
                          InOut Real PanAngle,
                          InOut Boolean ReversePan);
 LibraryAction Tilt (In Real Degrees);
@@ -17,6 +22,7 @@ LibraryAction Tilt (In Real Degrees);
 TiltAndImagePass:
 {
   In Real TiltAngle, PanIncrement, PanLo, PanHi;
+  In String CheckpointName;
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
@@ -24,5 +30,7 @@ TiltAndImagePass:
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = PanAngle,
+                         Tilt = TiltAngle,
+                         CheckpointName = CheckpointName,
                          ReversePan = ReversePan);
 }

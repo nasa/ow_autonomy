@@ -35,6 +35,9 @@ Excavation:
   Real Time;
   Boolean DeepEnough = false;
 
+  // Excavation planning is not done within PLEXIL
+  // so use of Checkpoints requires cooperation with interface
+  // TODO: Verify arm position/safety
   Excavation1:
   {
     RepeatCondition !DeepEnough;
@@ -64,19 +67,21 @@ Excavation:
                          Lookup(TrenchDumpX),
                          Lookup(TrenchDumpY),
                          Lookup(TrenchDumpZ));
-        FilmDig:
-        {
-          Repeat DigTheTrench.state == EXECUTING;
-          LibraryCall Image(desc="trench");
-          Wait FILM_INTERVAL;
-        }
-        SenseDig:
-        {
-          Repeat DigTheTrench.state == EXECUTING;
-          log_info ("Sensing dig...");
-          DiggingSafe = STUB_TRUE;
-          Wait SENSE_DIG_INTERVAL;
-        }
+      }
+      
+      FilmDig:
+      {
+        Repeat DigTheTrench.state == EXECUTING;
+        LibraryCall Image(desc="trench");
+        Wait FILM_INTERVAL;
+      }
+      
+      SenseDig:
+      {
+        Repeat DigTheTrench.state == EXECUTING;
+        log_info ("Sensing dig...");
+        DiggingSafe = STUB_TRUE;
+        Wait SENSE_DIG_INTERVAL;
       }
     }
 

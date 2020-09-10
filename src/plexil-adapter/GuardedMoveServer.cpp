@@ -41,10 +41,11 @@ class GuardedMoveAction
     ros::Rate r(1);
     bool success = true;
     int iterations = 10; // one per second
-    float x_incr = goal->target_x / iterations;
-    float y_incr = goal->target_y / iterations;
+    float x_incr = goal->x / iterations;
+    float y_incr = goal->y / iterations;
+    float z_incr = goal->z / iterations;
 
-    m_feedback.current_x = m_feedback.current_y = 0;
+    m_feedback.current_x = m_feedback.current_y = m_feedback.current_z = 0;
     ROS_INFO ("%s: Executing", m_actionName.c_str());
 
     // start executing the action
@@ -57,13 +58,15 @@ class GuardedMoveAction
       }
       m_feedback.current_x += x_incr;
       m_feedback.current_y += y_incr;
+      m_feedback.current_z += z_incr;
       m_actionServer.publishFeedback (m_feedback);
       r.sleep();
     }
 
     if (success) {
-      m_result.final_x = goal->target_x;
-      m_result.final_y = goal->target_y;
+      m_result.final_x = goal->x;
+      m_result.final_y = goal->y;
+      m_result.final_z = goal->z;
       ROS_INFO ("%s: Succeeded", m_actionName.c_str());
       m_actionServer.setSucceeded (m_result);
     }

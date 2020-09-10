@@ -4,24 +4,39 @@
 
 // Europa reference mission plan.  At present, only Sol 0 of the mission is
 // modeled.
+#include "plexil_defs.h"
 
-LibraryAction ImageLandingSite;
+LibraryAction ImageLandingSite(In String InstanceName,
+                               In Boolean IgnoreCrash);
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
-LibraryAction CollectAndTransfer;
+LibraryAction Downlink;
+LibraryAction CollectAndTransfer(In String InstanceName,
+                                 In Boolean IgnoreCrash);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
+LibraryAction DumpSamples;
+LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
+LibraryAction MonitorSamplesComplete(InOut Boolean status);
 
 Command log_info (...);
+Command set_checkpoint(...);
+Command flush_checkpoints();
+Command set_boot_ok();
+
+Integer Lookup CheckpointWhen(String);
+Integer Lookup NumberOfUnhandledBoots;
+Boolean Lookup IsBootOK(Integer);
+Boolean Lookup DidCrash;
 
 EuropaMission: Concurrence
 {
   // Assumption: checkout is complete.
 
   // Health variables - expand/refine as needed
-  Boolean BatteryOK, TemperatureOK;
+  Boolean BatteryOK, TemperatureOK, SamplesOK, SamplesComplete;
 
   ContingencyMonitors: Concurrence
   {
@@ -30,8 +45,15 @@ EuropaMission: Concurrence
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
 
+  ScienceMonitor: Concurrence
+  {
+    SampleMonitor: LibraryCall MonitorSamplesIntegrity(status = SamplesOK);
+    SamplesCompleteMonitor: LibraryCall MonitorSamplesComplete(status = SamplesComplete);
+  }
+
   Mission:
   {
+<<<<<<< HEAD
     log_info ("Starting Europa Mission ...");
     LibraryCall ImageLandingSite;
     LibraryCall InterogateSurface;
@@ -39,7 +61,119 @@ EuropaMission: Concurrence
     LibraryCall Excavation;
     LibraryCall CollectAndTransfer;
     LibraryCall StartSampleAnalysis;
+=======
+    Boolean did_crash;
+    did_crash = Lookup(DidCrash);
+
+    CrashHandle: UncheckedSequence
+    {
+      SkipCondition !did_crash;
+
+      OffloadData:
+      {
+        SkipCondition Lookup(NumberOfUnhandledBoots)<MAX_CRASHES;
+        log_info("Recorded ",Lookup(NumberOfUnhandledBoots)," crashes, likely indication of end-of-mission");
+        OffloadAllData: LibraryCall Stub(desc="Offloading all data");
+      }
+      
+      CommunicateCrash: LibraryCall Stub(desc="Informing Earth of crash");
+
+      // Verify that onboard time is accurate, if possible
+      VerifyTime:Try
+      {
+        EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
+        Brightness: LibraryCall Stub(desc="Roughly verifying time from ground brightness");
+      }
+      
+      VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
+      VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
+      VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
+      RestArm: LibraryCall Stub(desc="Moving arm to safe position"); // TODO: samples in arm?
+    }
+    
+
+    ImageLandingSite: {
+      // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not found
+      // IsBootOK returns true if that boot was OK, UNKNOWN if not found
+      // Thus SkipCondition is true if and only if the executive crashed
+      // and the last time the checkpoint was set, the executive crashed.
+      // This handles the case of multiple crashes.
+
+      // TakePanorama__NAME__End is set by ImageLandingSite
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen(
+                                 "TakePanorama__MissionSol1__End"))));
+      LibraryCall ImageLandingSite(InstanceName="MissionSol1",IgnoreCrash=false);
+      SynchronousCommand flush_checkpoints();
+    }
+    
+    InterrogateSurface:{
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
+      LibraryCall InterogateSurface;
+      set_checkpoint("InterrogateSurfaceComplete");
+      SynchronousCommand flush_checkpoints();
+    }
+    
+    GetTrenchTarget:{
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
+      LibraryCall GetTrenchTarget;
+      set_checkpoint("GetTrenchTargetComplete");
+      SynchronousCommand flush_checkpoints();
+    }
+    
+    Excavation:{
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete"))));
+      LibraryCall Excavation;
+      set_checkpoint("ExcavationComplete");
+      SynchronousCommand flush_checkpoints();
+    }
+    
+    Downlink:{
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete"))));
+      LibraryCall Downlink;
+      set_checkpoint("DownlinkComplete");
+      SynchronousCommand flush_checkpoints();
+    }
+
+    Samples:{
+      Boolean first_collection = true;
+      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SamplesComplete"))));
+
+      // Repeat until samples correctly processed
+      // If samples don't exist, they are by definition OK
+      // MonitorSamples controls SamplesOK
+      DumpCollectAnalyze:{
+        RepeatCondition SamplesOK == false;
+        
+        DumpSamples:{
+          SkipCondition SamplesOK == true;
+          LibraryCall DumpSamples;
+        }
+        
+        // Stop the moment we need to dump samples
+        CollectAnalyze:{
+          Boolean ignore_crash;
+          PreCondition       SamplesOK == true;
+          InvariantCondition SamplesOK == true;
+
+          LibraryCall CollectAndTransfer(InstanceName="MissionSol1", IgnoreCrash = !first_collection);
+          LibraryCall StartSampleAnalysis;
+        }
+
+        // If we are going to repeat, we need to know to start fresh
+        first_collection = false;
+      }
+    }
+
+    // Don't finish europa mission until samples have been processed
+    WaitForSamples:{
+      StartCondition SamplesComplete;
+      set_checkpoint("SamplesComplete");
+      SynchronousCommand flush_checkpoints();
+    }
+>>>>>>> master
     
     log_info ("Europa Mission finished.");
+    set_boot_ok();
+    SynchronousCommand flush_checkpoints();
   }
 }

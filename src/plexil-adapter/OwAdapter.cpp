@@ -257,20 +257,20 @@ void OwAdapter::executeCommand(Command *cmd)
                                        width, pitch, yaw, dumpx, dumpy, dumpz);
   }
   else if (name == "guarded_move") {
-    double target_x, target_y, target_z, surf_norm_x, surf_norm_y, surf_norm_z;
-    double offset_dist, overdrive_dist;
+    double x, y, z, direction_x, direction_y, direction_z;
+    double search_distance;
     bool delete_prev_traj, retract;
-    args[0].getValue(target_x);
-    args[1].getValue(target_y);
-    args[2].getValue(surf_norm_x);
-    args[3].getValue(surf_norm_y);
-    args[4].getValue(surf_norm_z);
-    args[5].getValue(offset_dist);
-    args[6].getValue(overdrive_dist);
+    args[0].getValue(x);
+    args[1].getValue(y);
+    args[2].getValue(z);
+    args[3].getValue(direction_x);
+    args[4].getValue(direction_y);
+    args[5].getValue(direction_z);
+    args[6].getValue(search_distance);
     args[7].getValue(delete_prev_traj);
-    OwInterface::instance()->guardedMove (target_x, target_y,
-                                          surf_norm_x, surf_norm_y, surf_norm_z,
-                                          offset_dist, overdrive_dist,
+    OwInterface::instance()->guardedMove (x, y, z,
+                                          direction_x, direction_y, direction_z,
+                                          search_distance,
                                           delete_prev_traj);
   }
   else if (name == "tilt_antenna") {

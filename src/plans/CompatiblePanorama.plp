@@ -1,0 +1,23 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plexil_defs.h"
+
+LibraryAction Stub(In String desc);
+
+// Determine if the two executions are "compatible" - if not, we will ignore the crashed execution
+// Return false if external parameters (time, position, etc.) make the old execution irrelevant
+
+// NOTE: The time used in Lookup(time) and in the CheckpointAdapter comes from the default PLEXIL time adapter
+// It is assumed this is configured to be the mission time
+CompatiblePanorama:{
+  In Real First;
+  In Real Second;
+  In String CheckpointName;
+  InOut Boolean Result;
+  String OurArgs;
+
+  LibraryCall Stub(desc="Determining if "+CheckpointName+" times are compatible");
+  Result = true;
+}
