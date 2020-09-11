@@ -202,6 +202,7 @@ static void call_ros_service (ros::ServiceClient client, Service srv,
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
+  ROS_INFO("Starting ROS service %s", name.c_str());
   thread fault_thread (monitor_for_faults, name);
   if (client.call (srv)) { // blocks
     ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
@@ -703,7 +704,7 @@ void OwInterface::digCircular (double x, double y, double depth,
 }
 
 void OwInterface::grind (double x, double y,
-                         double depth, double length, double ground_pos)
+                         double depth, double length, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind)) return;
 
@@ -722,7 +723,7 @@ void OwInterface::grind (double x, double y,
     srv.request.ground_position = ground_pos;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Grind>,
-                           client, srv, Op_Grind, ZEROTEMP);
+                           client, srv, Op_Grind, id);
     service_thread.detach();
   }
 }

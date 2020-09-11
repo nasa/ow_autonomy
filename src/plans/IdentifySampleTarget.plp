@@ -1,10 +1,17 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
 
-  // Stub, values taken from DigCircularDemo DigLinearDemo
+  // Stub.  The real version will use GuardedMove to "interrogate" the terrain
+  // and find a suitable target.  This operation also finds the the ground
+  // position.
+
+  // Values taken from DigCircularDemo and DigLinearDemo.
   X = 1.5;
   Y = 0;
   GroundPos = -0.175;
 }
-

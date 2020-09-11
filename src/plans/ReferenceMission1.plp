@@ -15,7 +15,7 @@ LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
 
-Command log_info (...);
+#include "plan-interface.h"
 
 ReferenceMission1: Concurrence
 {
@@ -38,6 +38,7 @@ ReferenceMission1: Concurrence
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
                                   IgnoreCrash = true);
+    LibraryCall Unstow();
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
                                       GroundPos = ground_pos);

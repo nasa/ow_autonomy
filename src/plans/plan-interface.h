@@ -37,7 +37,8 @@ Boolean Lookup Finished (String operation_name);
 
 // Plan Library
 
-LibraryAction Unstow();
-
+LibraryAction Unstow ();
+LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
+                     In Real GroundPos);
 
 #endif

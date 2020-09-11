@@ -4,12 +4,14 @@
 
 #include "plan-interface.h"
 
-DigTrench:
+Grind:
 {
   In Real X;
   In Real Y;
+  In Real Depth;
+  In Real Length;
   In Real GroundPos;
 
-  LibraryCall Grind (X = X, Y = Y, Depth = 0.05, Length = 0.5,
-                     GroundPos = GroundPos);
+  SynchronousCommand grind (X, Y, Depth, Length, GroundPos);
+  SynchronousCommand publish_trajectory ();
 }

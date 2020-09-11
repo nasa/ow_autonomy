@@ -58,11 +58,11 @@ class OwInterface
   bool panAntenna (double degrees);
   void takePicture ();
   void digLinear (double x, double y, double depth, double length,
-                  double ground_position);
+                  double ground_pos);
   void digCircular (double x, double y, double depth,
-                    double ground_position, bool radial, int id);
+                    double ground_pos, bool radial, int id);
   void grind (double x, double y, double depth, double length,
-              double ground_position);
+              double ground_pos, int id);
   void stow();
   void unstow (int id);
   void deliverSample (double x, double y, double z);

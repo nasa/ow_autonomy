@@ -151,6 +151,20 @@ static void guarded_move (Command* cmd)
   command_sent (cmd);
 }
 
+static void grind (Command* cmd)
+{
+  double x, y, depth, length, ground_pos;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(length);
+  args[4].getValue(ground_pos);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->grind(x, y, depth, length, ground_pos, CommandId);
+  CommandId++;
+}
+
 static void dig_circular (Command* cmd)
 {
   double x, y, depth, ground_position;
@@ -272,6 +286,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_error", log_error);
   g_configuration->registerCommandHandler("log_debug", log_debug);
   g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("publish_trajectory",
@@ -352,15 +367,6 @@ void OwAdapter::executeCommand(Command *cmd)
     args[1].getValue(y);
     args[2].getValue(z);
     OwInterface::instance()->deliverSample (x, y, z);
-  }
-  else if (name == "grind") {
-    double x, y, depth, length, ground_position;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(depth);
-    args[3].getValue(length);
-    args[4].getValue(ground_position);
-    OwInterface::instance()->grind(x, y, depth, length, ground_position);
   }
   else if (name == "stow") {
     OwInterface::instance()->stow();
