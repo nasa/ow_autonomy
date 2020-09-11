@@ -53,15 +53,6 @@ EuropaMission: Concurrence
 
   Mission:
   {
-<<<<<<< HEAD
-    log_info ("Starting Europa Mission ...");
-    LibraryCall ImageLandingSite;
-    LibraryCall InterogateSurface;
-    LibraryCall GetTrenchTarget;
-    LibraryCall Excavation;
-    LibraryCall CollectAndTransfer;
-    LibraryCall StartSampleAnalysis;
-=======
     Boolean did_crash;
     did_crash = Lookup(DidCrash);
 
@@ -170,7 +161,6 @@ EuropaMission: Concurrence
       set_checkpoint("SamplesComplete");
       SynchronousCommand flush_checkpoints();
     }
->>>>>>> master
     
     log_info ("Europa Mission finished.");
     set_boot_ok();

@@ -101,10 +101,6 @@ CollectAndTransfer:
       SynchronousCommand flush_checkpoints();
     }
 
-<<<<<<< HEAD
-    DownlinkSampleImage: LibraryCall DownlinkImage();
-
-=======
     DownlinkSampleImage:
     {
       SkipCondition LastComplete >= 3;
@@ -114,7 +110,6 @@ CollectAndTransfer:
       SynchronousCommand flush_checkpoints();
     }
     
->>>>>>> master
     Transfer:
     {
       Dock:
