@@ -40,5 +40,8 @@ Boolean Lookup Finished (String operation_name);
 LibraryAction Unstow ();
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
                      In Real GroundPos);
+LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
+                           In Real GroundPos, In Boolean Radial);
+LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
 #endif

@@ -764,8 +764,7 @@ void OwInterface::unstow (int id)
   }
 }
 
-
-void OwInterface::deliverSample (double x, double y, double z)
+void OwInterface::deliverSample (double x, double y, double z, int id)
 {
   if (! mark_operation_running (Op_DeliverSample)) return;
 
@@ -780,7 +779,7 @@ void OwInterface::deliverSample (double x, double y, double z)
     srv.request.y = y;
     srv.request.z = z;
     thread service_thread (call_ros_service<ow_lander::DeliverSample>,
-                           client, srv, Op_DeliverSample, ZEROTEMP);
+                           client, srv, Op_DeliverSample, id);
     service_thread.detach();
   }
 }

@@ -65,7 +65,7 @@ class OwInterface
               double ground_pos, int id);
   void stow();
   void unstow (int id);
-  void deliverSample (double x, double y, double z);
+  void deliverSample (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 

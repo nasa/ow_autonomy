@@ -2,6 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// This plan grinds a trench using specified parameters.  The length of the
+// trench is hardcoded for now -- awaiting clarification on how to select length
+// (there are two choices).
+
 #include "plan-interface.h"
 
 DigTrench:
@@ -9,7 +13,14 @@ DigTrench:
   In Real X;
   In Real Y;
   In Real GroundPos;
+  In Real BiteDepth;
+  In Integer NumPasses;
 
-  LibraryCall Grind (X = X, Y = Y, Depth = 0.05, Length = 0.5,
-                     GroundPos = GroundPos);
+  Real trench_length = 0.5;
+
+  for (Integer pass = 1; pass <= NumPasses; pass + 1) {
+    log_info ("Grinding trench, pass ", pass, " of ", NumPasses, "...");
+    LibraryCall Grind (X = X, Y = Y, Depth = pass * BiteDepth,
+                       Length = trench_length, GroundPos = GroundPos);
+  }
 }

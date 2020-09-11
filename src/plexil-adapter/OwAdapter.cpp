@@ -181,6 +181,17 @@ static void dig_circular (Command* cmd)
   CommandId++;
 }
 
+static void deliver_sample (Command* cmd)
+{
+  double x, y, z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->deliverSample (x, y, z, CommandId);
+  CommandId++;
+}
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -289,6 +300,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
+  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
   g_configuration->registerCommandHandler("publish_trajectory",
                                           publish_trajectory);
   TheAdapter = this;
@@ -360,13 +372,6 @@ void OwAdapter::executeCommand(Command *cmd)
     args[3].getValue(length);
     args[4].getValue(ground_position);
     OwInterface::instance()->digLinear(x, y, depth, length, ground_position);
-  }
-  else if (name == "deliver_sample") {
-    double x, y, z;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(z);
-    OwInterface::instance()->deliverSample (x, y, z);
   }
   else if (name == "stow") {
     OwInterface::instance()->stow();
