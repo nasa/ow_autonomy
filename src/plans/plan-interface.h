@@ -44,4 +44,6 @@ LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
                            In Real GroundPos, In Boolean Radial);
 LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
+LibraryAction Stub (In String desc);
+
 #endif

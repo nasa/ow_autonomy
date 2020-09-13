@@ -13,14 +13,13 @@ DigTrench:
   In Real X;
   In Real Y;
   In Real GroundPos;
+  In Real Length;
   In Real BiteDepth;
   In Integer NumPasses;
-
-  Real trench_length = 0.5;
 
   for (Integer pass = 1; pass <= NumPasses; pass + 1) {
     log_info ("Grinding trench, pass ", pass, " of ", NumPasses, "...");
     LibraryCall Grind (X = X, Y = Y, Depth = pass * BiteDepth,
-                       Length = trench_length, GroundPos = GroundPos);
+                       Length = Length, GroundPos = GroundPos);
   }
 }

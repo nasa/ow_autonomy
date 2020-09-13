@@ -6,15 +6,24 @@
 
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
-LibraryAction InterogateSurface;
-LibraryAction IdentifySampleTarget (InOut Real X, InOut Real Y,
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
                                     InOut Real GroundPos);
-LibraryAction DigTrench (In Real X, In Real Y, In Real GroundPos,
-                         In Real BiteDepth, In Integer NumPasses);
-LibraryAction RemoveTailings (In Real X, In Real Y,
-                              In Real GroundPos, In Boolean Radial);
-
-LibraryAction CollectSample;
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Radial);
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
@@ -40,6 +49,9 @@ ReferenceMission1: Concurrence
     Real trench_x, trench_y, ground_pos;
     Boolean radial = true;
 
+    // Hardcoding for now: to be explained or abstracted
+    Real trench_length = 0.5;
+
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
                                   IgnoreCrash = true);
@@ -48,10 +60,13 @@ ReferenceMission1: Concurrence
                                       Y = trench_y,
                                       GroundPos = ground_pos);
     LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                           BiteDepth = 0.05, NumPasses = 2);
+                           Length = trench_length, BiteDepth = 0.05,
+                           NumPasses = 2);
     LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
                                 GroundPos = ground_pos, Radial = radial);
-    LibraryCall CollectSample;
+    LibraryCall CollectSample (X = trench_x, Y = trench_y,
+                               GroundPos = ground_pos, Depth = 0.11,
+                               Length = trench_length);
     LibraryCall StartSampleAnalysis;
     log_info ("Reference Mission 1, Sol 0 complete.");
   }
