@@ -35,8 +35,9 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
-// Temporary
-#define ZEROTEMP 0
+// Temporary (?).  An operation ID that is never used, used for special handling
+// of certain lander operations.
+#define UNUSED_OP_ID (-1)
 
 //////////////////// Utilities ////////////////////////
 
@@ -117,7 +118,7 @@ static void mark_operation_finished (const string& name, int id)
   Running.at (name) = false;
   publish ("Running", false, name);
   publish ("Finished", true, name);
-  CommandStatusCallback (id, true);
+  if (id != UNUSED_OP_ID) CommandStatusCallback (id, true);
 }
 
 
@@ -336,7 +337,7 @@ void OwInterface::managePanTilt (const string& opname,
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
-    mark_operation_finished (opname, ZEROTEMP);
+    mark_operation_finished (opname, UNUSED_OP_ID);
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
@@ -554,7 +555,7 @@ void OwInterface::guardedMoveActionAux (double x,
     ROS_INFO("GuardedMove action did not finish before the time out.");
   }
 
-  mark_operation_finished (Op_GuardedMoveAction, ZEROTEMP);
+  mark_operation_finished (Op_GuardedMoveAction, UNUSED_OP_ID);
   fault_thread.join();
 }
 
@@ -654,7 +655,8 @@ void OwInterface::takePicture ()
 }
 
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double ground_position)
+                             double depth, double length, double ground_position,
+                             int id)
 {
   if (! mark_operation_running (Op_DigLinear)) return;
 
@@ -673,7 +675,7 @@ void OwInterface::digLinear (double x, double y,
     srv.request.ground_position = ground_position;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigLinear>,
-                           client, srv, Op_DigLinear, ZEROTEMP);
+                           client, srv, Op_DigLinear, id);
     service_thread.detach();
   }
 }

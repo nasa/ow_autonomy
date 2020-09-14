@@ -120,24 +120,26 @@ static void log_debug (Command* cmd)
 
 static void stow (Command* cmd)
 {
-  CommandRegistry[CommandId++] = cmd;
+  CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->stow (CommandId);
   command_sent (cmd);
+  CommandId++;
 }
 
 static void unstow (Command* cmd)
 {
-  CommandRegistry[CommandId++] = cmd;
+  CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->unstow (CommandId);
   command_sent (cmd);
+  CommandId++;
 }
 
 static void publish_trajectory (Command* cmd)
 {
   CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->publishTrajectory (CommandId);
-  CommandId++;
   command_sent (cmd);
+  CommandId++;
 }
 
 static void guarded_move (Command* cmd)
@@ -154,8 +156,8 @@ static void guarded_move (Command* cmd)
   CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  CommandId++;
   command_sent (cmd);
+  CommandId++;
 }
 
 static void grind (Command* cmd)
@@ -169,6 +171,7 @@ static void grind (Command* cmd)
   args[4].getValue(ground_pos);
   CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->grind(x, y, depth, length, ground_pos, CommandId);
+  command_sent (cmd);
   CommandId++;
 }
 
@@ -185,6 +188,22 @@ static void dig_circular (Command* cmd)
   CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->digCircular(x, y, depth, ground_position, radial,
                                        CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void dig_linear (Command* cmd)
+{
+  double x, y, depth, length, ground_position;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(length);
+  args[4].getValue(ground_position);
+  OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
+                                     CommandId);
+  command_sent (cmd);
   CommandId++;
 }
 
@@ -197,6 +216,7 @@ static void deliver_sample (Command* cmd)
   args[2].getValue(z);
   CommandRegistry[CommandId] = cmd;
   OwInterface::instance()->deliverSample (x, y, z, CommandId);
+  command_sent (cmd);
   CommandId++;
 }
 
@@ -308,6 +328,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
+  g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
   g_configuration->registerCommandHandler("publish_trajectory",
                                           publish_trajectory);
@@ -372,15 +393,6 @@ void OwAdapter::executeCommand(Command *cmd)
     OwInterface::instance()->guardedMoveActionDemo();
   }
   // Operations
-  else if (name == "dig_linear") {
-    double x, y, depth, length, ground_position;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(depth);
-    args[3].getValue(length);
-    args[4].getValue(ground_position);
-    OwInterface::instance()->digLinear(x, y, depth, length, ground_position);
-  }
   else if (name == "tilt_antenna") {
     double degrees;
     args[0].getValue (degrees);

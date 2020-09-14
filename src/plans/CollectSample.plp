@@ -20,5 +20,7 @@ CollectSample:
                      GroundPos = GroundPos);
   LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
                            GroundPos = GroundPos, Radial = Radial);
+  // NOTE: the given coordinates are the predetermined location of the
+  // receptacle into which the sample is dumped.
   LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.82);
 }
