@@ -118,6 +118,13 @@ static void log_debug (Command* cmd)
   command_success (cmd);
 }
 
+static void stow (Command* cmd)
+{
+  CommandRegistry[CommandId++] = cmd;
+  OwInterface::instance()->stow (CommandId);
+  command_sent (cmd);
+}
+
 static void unstow (Command* cmd)
 {
   CommandRegistry[CommandId++] = cmd;
@@ -296,6 +303,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_warning", log_warning);
   g_configuration->registerCommandHandler("log_error", log_error);
   g_configuration->registerCommandHandler("log_debug", log_debug);
+  g_configuration->registerCommandHandler("stow", stow);
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
@@ -372,9 +380,6 @@ void OwAdapter::executeCommand(Command *cmd)
     args[3].getValue(length);
     args[4].getValue(ground_position);
     OwInterface::instance()->digLinear(x, y, depth, length, ground_position);
-  }
-  else if (name == "stow") {
-    OwInterface::instance()->stow();
   }
   else if (name == "tilt_antenna") {
     double degrees;

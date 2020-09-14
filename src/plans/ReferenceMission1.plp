@@ -23,9 +23,9 @@ LibraryAction CollectSample (In Real X,
                              In Real Y,
                              In Real GroundPos,
                              In Real Depth,
-                             In Real Length);
+                             In Real Length,
+                             In Boolean Radial);
 LibraryAction StartSampleAnalysis;
-LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (InOut Boolean status);
 
 #include "plan-interface.h"
@@ -66,7 +66,8 @@ ReferenceMission1: Concurrence
                                 GroundPos = ground_pos, Radial = radial);
     LibraryCall CollectSample (X = trench_x, Y = trench_y,
                                GroundPos = ground_pos, Depth = 0.11,
-                               Length = trench_length);
+                               Length = trench_length, Radial = radial);
+    LibraryCall Stow();
     LibraryCall StartSampleAnalysis;
     log_info ("Reference Mission 1, Sol 0 complete.");
   }

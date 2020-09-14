@@ -63,7 +63,7 @@ class OwInterface
                     double ground_pos, bool radial, int id);
   void grind (double x, double y, double depth, double length,
               double ground_pos, int id);
-  void stow();
+  void stow (int id);
   void unstow (int id);
   void deliverSample (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,

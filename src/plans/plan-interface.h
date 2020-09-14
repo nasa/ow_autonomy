@@ -9,10 +9,10 @@
 
 // Lander commands
 
-Command dig_linear (Real x, Real y, Real depth, Real length,
-                    Real ground_pos);
 Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
                       Boolean radial);
+Command dig_linear (Real x, Real y, Real depth, Real length,
+                    Real ground_pos);
 Command deliver_sample (Real x, Real y, Real z);
 Command grind (Real x, Real y, Real depth, Real length, Real ground_pos);
 Command guarded_move (Real x, Real y, Real z,
@@ -37,6 +37,7 @@ Boolean Lookup Finished (String operation_name);
 
 // Plan Library
 
+LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
                      In Real GroundPos);

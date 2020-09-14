@@ -728,7 +728,7 @@ void OwInterface::grind (double x, double y,
   }
 }
 
-void OwInterface::stow ()
+void OwInterface::stow (int id)
 {
   if (! mark_operation_running (Op_Stow)) return;
 
@@ -741,7 +741,7 @@ void OwInterface::stow ()
     ow_lander::Stow srv;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Stow>,
-                           client, srv, Op_Stow, ZEROTEMP);
+                           client, srv, Op_Stow, id);
     service_thread.detach();
   }
 }
