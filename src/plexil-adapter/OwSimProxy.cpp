@@ -100,7 +100,7 @@ bool OwSimProxy::lookup (const std::string& state_name,
     value_out = OwInterface::instance()->finished (operation);
   }
   else if (state_name == "Waiting") {
-    value_out = OwInterface::instance()->sampleTargetReplyTimedOut();
+    value_out = OwInterface::instance()->waitingForSampleTargetChoice();
   }
   else if (state_name == "WaitForGroundTimeout") {
     value_out = OwInterface::instance()->sampleTargetReplyTimedOut();
