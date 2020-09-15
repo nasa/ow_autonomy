@@ -56,13 +56,13 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else STATE_STUB(TorqueHighLimit, 800)
 
   else if (state_name == "TrenchStartX") {
-    value_out = OwInterface::instance()->getXTarget();
+    value_out = OwInterface::instance()->getSampleTargetX();
   }
   else if (state_name == "TrenchStartY") {
-    value_out = OwInterface::instance()->getYTarget();
+    value_out = OwInterface::instance()->getSampleTargetY();
   }
   else if (state_name == "TrenchStartZ") {
-    value_out = OwInterface::instance()->getZTarget();
+    value_out = OwInterface::instance()->getSampleTargetZ();
   }
   else if (state_name == "TiltDegrees") {
     value_out = OwInterface::instance()->getTilt();
@@ -100,10 +100,10 @@ bool OwSimProxy::lookup (const std::string& state_name,
     value_out = OwInterface::instance()->finished (operation);
   }
   else if (state_name == "Waiting") {
-    value_out = OwInterface::instance()->getWait();
+    value_out = OwInterface::instance()->waitingForSampleTargetChoice();
   }
   else if (state_name == "WaitForGroundTimeout") {
-    value_out = OwInterface::instance()->getWaitForGroundTimeout();
+    value_out = OwInterface::instance()->sampleTargetReplyTimedOut();
   }
   else retval = false;
 

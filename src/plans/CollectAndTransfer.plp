@@ -7,17 +7,71 @@
 Real Lookup time;
 Real Lookup CollectAndTransferTimeout;
 Boolean Lookup SampleGood;
+
+Boolean Lookup StringToBoolean(String);
+Integer Lookup StringToInteger(String);
+String Lookup substr(...);
+Integer Lookup find_first_of(...);
+String Lookup ToString(...);
+
+Command set_checkpoint(...);
+Command flush_checkpoints;
+Command log_info(...);
+
 LibraryAction ImageSampleSite();
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
 LibraryAction DownlinkImage();
+LibraryAction Downlink();
+LibraryAction GetInfoIfCrash(In String CheckpointName,
+                             In Boolean IgnoreCrash,
+                             InOut Boolean Crashed,
+                             InOut String Info,
+                             InOut Real CrashTime);
 
 CollectAndTransfer:
 {
+  In Boolean IgnoreCrash;
+  In String InstanceName;
   Real SampleAmount;
   Real Time;
   Boolean CollectMore = true;
+  Integer LastComplete = 0;
+  Integer NumberOfCollections = 0;
+  String OurName;
+  OurName = "CollectAndTransfer__"+InstanceName;
+  
+  CrashHandling:{
+    // To get around a plexil bug where passing "" in doesn't work
+    // Args will be treated as ""
+    String info = "None";
+    Boolean Crashed;
+    Real CrashTime; // Not used, sample integrity is handled in another plan
+    LibraryCall GetInfoIfCrash(CheckpointName=OurName,
+                               IgnoreCrash=IgnoreCrash,
+                               Crashed=Crashed,
+                               Info=info,
+                               CrashTime=CrashTime);
+    
+    SetCollectMoreLastComplete:{
+      String more_s;
+      String last_complete_s;
+      SkipCondition !Crashed;
+      // Split info, which was format LastComplete_DigMore
+      last_complete_s = Lookup(substr(info,
+                                      0,
+                                      Lookup(find_first_of(info,"_"))));
+      more_s =          Lookup(substr(info,
+                                      Lookup(find_first_of(info,"_"))+1));
 
+      log_info("Loaded previous checkpoint:  Last_complete: ",last_complete_s," More: ",more_s);
+      CollectMore  = Lookup(StringToBoolean(more_s));
+      LastComplete = Lookup(StringToInteger(last_complete_s));
+    }
+  }
+
+  // Can assume sample has been dumped if it is invalid
+  log_info("Beginning collection with name ",OurName);
   CollectAndTransfer1:
   {
     InvariantCondition
@@ -26,36 +80,101 @@ CollectAndTransfer:
     RepeatCondition CollectMore;
 
     Time = Lookup(time);
-
+    NumberOfCollections = NumberOfCollections + 1;
+    
     Collect:
     {
+      SkipCondition LastComplete >= 1;
       EndCondition Lookup(SampleGood); // Material Property Sensing
       LibraryCall Stub(desc="Collecting Sample");
+      Wait 1;
+      set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
     }
 
     ImageSample:
     {
+      SkipCondition LastComplete >= 2;
       LibraryCall Stub(desc="Aligning camera and sample");
       LibraryCall Image(desc="sample");
+      set_checkpoint(OurName,true,Lookup(ToString(2,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
     }
 
-    DownlinkSampleImage: LibraryCall DownlinkImage();
-
+    DownlinkSampleImage:
+    {
+      SkipCondition LastComplete >= 3;
+      LibraryCall Downlink();
+      Wait 1;
+      set_checkpoint(OurName,true,Lookup(ToString(3,"_",CollectMore)));
+      SynchronousCommand flush_checkpoints();
+    }
+    
     Transfer:
     {
-      Dock: LibraryCall Stub(desc="Docking");
-      Unload: LibraryCall Stub(desc="Unloading");
+      Dock:
+      {
+        SkipCondition LastComplete >= 4;
+        LibraryCall Stub(desc="Docking");
+        Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(4,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
+      }
+      Unload:
+      {
+        SkipCondition LastComplete >= 5;
+        LibraryCall Stub(desc="Unloading");
+        Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
+      }
       MeasureSample:
       {
+        SkipCondition LastComplete >= 6;
         PostCondition !CollectMore;
         LibraryCall Stub(desc="Measuring Sample");
-        CollectMore = STUB_FALSE;
+        // TODO: This is a stub
+        if(NumberOfCollections<2){
+          log_info("Collecting more");
+          CollectMore = true;
+        }
+        else{
+          CollectMore = false;
+        }
+        endif;
         Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
       }
-      CapSample: LibraryCall Stub(desc="Capping Sample");
-      DeliverSample: LibraryCall Stub(desc="Delivering Sample");
-      ImageSampleSite: LibraryCall ImageSampleSite();
+      CapSample:
+      {
+        PreCondition !CollectMore; // In case of crash after flush and before previous PostCondition
+        SkipCondition LastComplete >= 7;
+        LibraryCall Stub(desc="Capping Sample");
+        Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(7,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
+      }
+      DeliverSample:
+      {
+        SkipCondition LastComplete >= 8;
+        LibraryCall Stub(desc="Delivering Sample");
+        Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(8,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
+      }
+      ImageSampleSite:
+      {
+        SkipCondition LastComplete >= 9;
+        LibraryCall ImageSampleSite();
+        Wait 1;
+        set_checkpoint(OurName,true,Lookup(ToString(9,"_",CollectMore)));
+        SynchronousCommand flush_checkpoints();
+      }
     }
-
+    // Reset for next repeat
+    LastComplete = 0;
   }
+  set_checkpoint(OurName+"__End",true,"");
+  SynchronousCommand flush_checkpoints();
 }
