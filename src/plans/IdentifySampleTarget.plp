@@ -13,5 +13,5 @@ IdentifySampleTarget:
   // Values taken from DigCircularDemo and DigLinearDemo.
   X = 1.5;
   Y = 0;
-  GroundPos = -0.175;
+  GroundPos = -0.135;
 }

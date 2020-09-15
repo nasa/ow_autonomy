@@ -9,6 +9,6 @@
 DigCircularDemo:
 {
   log_info ("Beginning dig circular demo...");
-  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.175, false);
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.135, false);
   log_info ("Dig circular demo finished");
 }

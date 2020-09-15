@@ -13,7 +13,7 @@ TestPlanning:
   Plan:
   {
     log_info ("Initiating Planning Service...");
-    dig_circular (1.5, 0, 0.02, -0.175, false);
+    dig_circular (1.5, 0, 0.02, -0.135, false);
   }
   Report:
   {

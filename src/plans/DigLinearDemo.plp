@@ -9,7 +9,7 @@
 DigLinearDemo:
 {
   log_info ("Beginning dig linear demo...");
-  dig_linear (1.5, 0, 0.02, 0.3, -0.175);
+  dig_linear (1.5, 0, 0.02, 0.3, -0.135);
   Block:
   {
     StartCondition Lookup (Running ("DigLinear"));
