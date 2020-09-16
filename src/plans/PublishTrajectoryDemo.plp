@@ -3,24 +3,13 @@
 // this repository.
 
 // Publish arm planning trajectory.  Note that this is blocking/syncnronous
-// wrapper of the asynchonous publish_trajectory_demo command.
+// wrapper of the asynchonous publish_trajectory command.
 
 #include "plan-interface.h"
 
 PublishTrajectoryDemo:
 {
   log_info ("Publishing arm trajectory...");
-
-  // Plan hangs with this call - why?
-  //  SynchronousCommand publish_trajectory() Timeout 10.0, 0.1;
-  
   SynchronousCommand publish_trajectory();
-
-   // Block:
-   // {
-   //   StartCondition Lookup (Running ("PublishTrajectory"));
-   //   EndCondition Lookup (Finished ("PublishTrajectory"));
-   // }
-
   log_info ("Arm trajectory published.");
 }
