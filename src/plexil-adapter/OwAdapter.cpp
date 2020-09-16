@@ -163,14 +163,16 @@ static void guarded_move (Command* cmd)
 static void grind (Command* cmd)
 {
   double x, y, depth, length, ground_pos;
+  bool radial;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(depth);
   args[3].getValue(length);
-  args[4].getValue(ground_pos);
+  args[4].getValue(radial);
+  args[5].getValue(ground_pos);
   CommandRegistry[CommandId] = cmd;
-  OwInterface::instance()->grind(x, y, depth, length, ground_pos, CommandId);
+  OwInterface::instance()->grind(x, y, depth, length, radial, ground_pos, CommandId);
   command_sent (cmd);
   CommandId++;
 }

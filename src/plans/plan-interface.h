@@ -14,7 +14,7 @@ Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
 Command dig_linear (Real x, Real y, Real depth, Real length,
                     Real ground_pos);
 Command deliver_sample (Real x, Real y, Real z);
-Command grind (Real x, Real y, Real depth, Real length, Real ground_pos);
+Command grind (Real x, Real y, Real depth, Real length, Boolean radial, Real ground_pos);
 Command guarded_move (Real x, Real y, Real z,
                       Real dir_x, Real dir_y, Real dir_z,
                       Real search_distance);
@@ -40,7 +40,7 @@ Boolean Lookup Finished (String operation_name);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
-                     In Real GroundPos);
+                     In Boolean Radial, In Real GroundPos);
 LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
                            In Real GroundPos, In Boolean Radial);
 LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);

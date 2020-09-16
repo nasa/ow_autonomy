@@ -17,7 +17,7 @@ CollectSample:
   In Boolean Radial;
 
   LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
-                     GroundPos = GroundPos);
+                     Radial = Radial, GroundPos = GroundPos);
   LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
                            GroundPos = GroundPos, Radial = Radial);
   // NOTE: the given coordinates are the predetermined location of the

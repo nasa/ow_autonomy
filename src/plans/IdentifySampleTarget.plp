@@ -5,6 +5,7 @@
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
+  InOut Boolean Radial;
 
   // Stub.  The real version will use GuardedMove to "interrogate" the terrain
   // and find a suitable target.  This operation also finds the the ground
@@ -13,5 +14,6 @@ IdentifySampleTarget:
   // Values taken from DigCircularDemo and DigLinearDemo.
   X = 1.5;
   Y = 0;
+  Radial = true;
   GroundPos = -0.135;
 }

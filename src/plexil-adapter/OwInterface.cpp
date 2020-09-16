@@ -705,8 +705,8 @@ void OwInterface::digCircular (double x, double y, double depth,
   }
 }
 
-void OwInterface::grind (double x, double y,
-                         double depth, double length, double ground_pos, int id)
+void OwInterface::grind (double x, double y, double depth, double length, 
+                         bool radial, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind)) return;
 
@@ -722,6 +722,7 @@ void OwInterface::grind (double x, double y,
     srv.request.y = y;
     srv.request.depth = depth;
     srv.request.length = length;
+    srv.request.radial = radial;
     srv.request.ground_position = ground_pos;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Grind>,

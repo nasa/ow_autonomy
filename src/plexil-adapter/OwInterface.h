@@ -62,7 +62,7 @@ class OwInterface
   void digCircular (double x, double y, double depth,
                     double ground_pos, bool radial, int id);
   void grind (double x, double y, double depth, double length,
-              double ground_pos, int id);
+              bool radial, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
   void deliverSample (double x, double y, double z, int id);
