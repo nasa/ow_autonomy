@@ -4,31 +4,31 @@
 
 // Simple test/demo of antenna and arm operating concurrently.
 
-Command log_info (...);
+#include "plan-interface.h"
 
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
                             In Real HorizOverlap, In Real VertOverlap,
                             In String InstanceName,
                             In Boolean IgnoreCrash);
-LibraryAction DigCircularDemo;
-LibraryAction PublishTrajectoryDemo;
 
 TestAntennaWithArm:
 {
   log_info ("Starting Antenna/Arm demo...");
-
-  LibraryCall DigCircularDemo;
+  log_info ("First, arm planning...");
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.135, false);
+  log_info ("Next, concurrent arm movement and imaging...");
   
   FilmAndDig: Concurrence
   {
+
     LibraryCall TakePanorama (TiltLo = 30, TiltHi = 36,
                               PanLo = 20, PanHi = 40,
                               HorizOverlap = 0,
                               VertOverlap = 0,
                               InstanceName = "TestAntennaWithArm",
                               IgnoreCrash=true);
-    LibraryCall PublishTrajectoryDemo;
+    publish_trajectory();
   }
 
   log_info ("Antenna/Arm demo finished.");

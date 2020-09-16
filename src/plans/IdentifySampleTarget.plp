@@ -10,7 +10,6 @@ IdentifySampleTarget:
   // and find a suitable target.  This operation also finds the the ground
   // position.
 
-  // Values taken from DigCircularDemo and DigLinearDemo.
   X = 1.5;
   Y = 0;
   GroundPos = -0.135;

@@ -4,19 +4,33 @@
 
 // Demo plan that showcases a variety of lander functions.
 
-LibraryAction TestOwLander();
+#include "plan-interface.h"
+
 LibraryAction TestAntennaCamera();
 LibraryAction TestPlanning();
 LibraryAction TestActions();
 
-Command log_info (...);
-
 Demo:
 {
   log_info ("Starting autonomy demo...");
-  LibraryCall TestOwLander();
+
+  log_info ("Unstowing arm...");
+  LibraryCall Unstow();
+
+  log_info ("A guarded move...");
+  SynchronousCommand guarded_move (2, 0.0, 0.3, 0, 0, 1.0, 0.5);
+  SynchronousCommand publish_trajectory();
+
+  log_info ("A circular dig...");
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.135, false);
+  SynchronousCommand publish_trajectory();
+
   LibraryCall TestAntennaCamera();
   LibraryCall TestPlanning();
   LibraryCall TestActions();
+
+  log_info ("Stowing arm...");
+  LibraryCall Stow();
+
   log_info ("Autonomy demo finished.");
 }

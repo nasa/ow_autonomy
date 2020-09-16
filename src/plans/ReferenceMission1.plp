@@ -49,8 +49,8 @@ ReferenceMission1: Concurrence
     Real trench_x, trench_y, ground_pos;
     Boolean radial = true;
 
-    // Hardcoding for now: to be explained or abstracted
-    Real trench_length = 0.5;
+    // Length should be twice the radius of the arm/scoop, as documented.
+    Real trench_length = 0.92;
 
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
