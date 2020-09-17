@@ -12,7 +12,6 @@ GuardedMove:
   In Real DirX;
   In Real DirY;
   In Real DirZ;
-  In Real Depth;
   In Real SearchDistance;
 
   SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);

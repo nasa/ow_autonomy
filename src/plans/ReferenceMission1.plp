@@ -48,10 +48,14 @@ ReferenceMission1: Concurrence
 
   Mission:
   {
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
-    Boolean radial = true;
+    Boolean radial;
 
-    // Length should be twice the radius of the arm/scoop, as documented.
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
     log_info ("Starting Reference Mission 1, Sol 0 ...");
