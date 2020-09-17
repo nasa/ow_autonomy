@@ -22,7 +22,7 @@ Demo:
   SynchronousCommand publish_trajectory();
 
   log_info ("A circular dig...");
-  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.135, false);
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.155, false);
   SynchronousCommand publish_trajectory();
 
   LibraryCall TestAntennaCamera();

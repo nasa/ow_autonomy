@@ -9,6 +9,7 @@ Real Lookup GroundPosition;
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
+  InOut Boolean Radial;
 
   LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                            DirX = 0, DirY = 0, DirZ = 1,
@@ -17,13 +18,14 @@ IdentifySampleTarget:
   GroundPos = Lookup (GroundPosition);
   if (! isKnown GroundPos) {
     log_error ("Could not find ground, using default.");
-    GroundPos = -0.135;
+    GroundPos = -0.155;
   }
-  
+
   // Stub.  The real version will use GuardedMove to "interrogate" the terrain
   // and find a suitable target.  This operation also finds the the ground
   // position.
 
-  X = 1.5;
+  X = 1.65;
   Y = 0;
+  Radial = true;
 }

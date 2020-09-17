@@ -8,13 +8,15 @@ LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
+                                    InOut Boolean Radial,
                                     InOut Real GroundPos);
 LibraryAction DigTrench (In Real X,
                          In Real Y,
                          In Real GroundPos,
                          In Real Length,
                          In Real BiteDepth,
-                         In Integer NumPasses);
+                         In Integer NumPasses,
+                         In Boolean Radial);
 LibraryAction RemoveTailings (In Real X,
                               In Real Y,
                               In Real GroundPos,
@@ -50,7 +52,7 @@ ReferenceMission1: Concurrence
     Boolean radial = true;
 
     // Length should be twice the radius of the arm/scoop, as documented.
-    Real trench_length = 0.92;
+    Real trench_length = 0.6;
 
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
@@ -58,10 +60,11 @@ ReferenceMission1: Concurrence
     LibraryCall Unstow();
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
-                                      GroundPos = ground_pos);
+                                      GroundPos = ground_pos,
+                                      Radial = radial);
     LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                            Length = trench_length, BiteDepth = 0.05,
-                           NumPasses = 2);
+                           NumPasses = 2, Radial = radial);
     LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
                                 GroundPos = ground_pos, Radial = radial);
     LibraryCall CollectSample (X = trench_x, Y = trench_y,

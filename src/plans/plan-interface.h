@@ -21,11 +21,11 @@ Command dig_linear (Real x, Real y, Real depth, Real length,
 // as well as delivering a sample to the receptacle.
 Command deliver_sample (Real x, Real y, Real z);
 
-Command grind (Real x, Real y, Real depth, Real length, Real ground_pos);
+Command grind (Real x, Real y, Real depth, Real length, Boolean radial, Real ground_pos);
 
-Command guarded_move (Real x, Real y, Real z,  // starting point
-                      Real dir_x, Real dir_y, Real dir_z,  // normal vector
-                      Real search_distance);  // depth along normal vector
+Command guarded_move (Real x, Real y, Real z,
+                      Real dir_x, Real dir_y, Real dir_z,
+                      Real search_distance);
 
 Command unstow();  // move from stowed position to a "ready" position
 
@@ -57,7 +57,7 @@ LibraryAction GuardedMove (In Real X, In Real Y, In Real Z,
                            In Real DirX, In Real DirY, In Real DirZ,
                            In Real SearchDistance);
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
-                     In Real GroundPos);
+                     In Boolean Radial, In Real GroundPos);
 LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
                            In Real GroundPos, In Boolean Radial);
 LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);

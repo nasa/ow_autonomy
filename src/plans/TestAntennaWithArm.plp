@@ -16,7 +16,7 @@ TestAntennaWithArm:
 {
   log_info ("Starting Antenna/Arm demo...");
   log_info ("First, arm planning...");
-  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.135, false);
+  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.155, false);
   log_info ("Next, concurrent arm movement and imaging...");
   
   FilmAndDig: Concurrence
