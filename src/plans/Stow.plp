@@ -2,8 +2,8 @@
 
 Stow:
 {
-  SynchronousCommand unstow() Timeout 2.0, 0.1;
-  SynchronousCommand publish_trajectory() Timeout 5.0, 0.1;
-  SynchronousCommand stow() Timeout 2.0, 0.1;
-  SynchronousCommand publish_trajectory() Timeout 5.0, 0.1;
+  SynchronousCommand unstow();
+  SynchronousCommand publish_trajectory();
+  SynchronousCommand stow();
+  SynchronousCommand publish_trajectory();
 }

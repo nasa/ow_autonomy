@@ -2,6 +2,6 @@
 
 Unstow:
 {
-  SynchronousCommand unstow() Timeout 2.0, 0.1;
-  SynchronousCommand publish_trajectory() Timeout 5.0, 0.1;
+  SynchronousCommand unstow();
+  SynchronousCommand publish_trajectory();
 }

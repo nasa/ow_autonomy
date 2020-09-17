@@ -31,7 +31,7 @@ TorqueTest:
         StartCondition Lookup (Running ("GuardedMove"));
         EndCondition Lookup (Finished ("GuardedMove"));
       }
-      SynchronousCommand publish_trajectory() Timeout 20.0, 0.1;
+      SynchronousCommand publish_trajectory();
       
       // WaitForPublish:
       // {
