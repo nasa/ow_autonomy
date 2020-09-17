@@ -2,15 +2,28 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+#include "plan-interface.h"
+
+Real Lookup GroundPosition;
+
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
 
+  LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
+                           DirX = 0, DirY = 0, DirZ = 1,
+                           SearchDistance = 0.5);
+
+  GroundPos = Lookup (GroundPosition);
+  if (! isKnown GroundPos) {
+    log_error ("Could not find ground, using default.");
+    GroundPos = -0.135;
+  }
+  
   // Stub.  The real version will use GuardedMove to "interrogate" the terrain
   // and find a suitable target.  This operation also finds the the ground
   // position.
 
   X = 1.5;
   Y = 0;
-  GroundPos = -0.135;
 }

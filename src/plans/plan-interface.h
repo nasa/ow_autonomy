@@ -53,6 +53,9 @@ Boolean Lookup Finished (String operation_name);
 
 LibraryAction Stow ();
 LibraryAction Unstow ();
+LibraryAction GuardedMove (In Real X, In Real Y, In Real Z,
+                           In Real DirX, In Real DirY, In Real DirZ,
+                           In Real SearchDistance);
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
                      In Real GroundPos);
 LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
