@@ -36,9 +36,6 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
-// Temporary (?).  An operation ID that is never used, used for special handling
-// of certain lander operations.
-#define UNUSED_OP_ID (-1)
 
 //////////////////// Utilities ////////////////////////
 
@@ -80,19 +77,22 @@ const string Op_Unstow            = "Unstow";
 // insures that each entry can be read/written by only one thread.  (The map
 // itself can be read/written by multiple threads concurrently).
 
-static map<string, bool> Running
+// Unused operation ID that signifies idle lander operation.
+#define IDLE_ID (-1)
+
+static map<string, int> Running
 {
-  { Op_GuardedMove, false },
-  { Op_GuardedMoveAction, false },
-  { Op_DigCircular, false },
-  { Op_DigLinear, false },
-  { Op_DeliverSample, false },
-  { Op_PublishTrajectory, false },
-  { Op_PanAntenna, false },
-  { Op_TiltAntenna, false },
-  { Op_Grind, false },
-  { Op_Stow, false },
-  { Op_Unstow, false }
+  { Op_GuardedMove, IDLE_ID },
+  { Op_GuardedMoveAction, IDLE_ID },
+  { Op_DigCircular, IDLE_ID },
+  { Op_DigLinear, IDLE_ID },
+  { Op_DeliverSample, IDLE_ID },
+  { Op_PublishTrajectory, IDLE_ID },
+  { Op_PanAntenna, IDLE_ID },
+  { Op_TiltAntenna, IDLE_ID },
+  { Op_Grind, IDLE_ID },
+  { Op_Stow, IDLE_ID },
+  { Op_Unstow, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -100,26 +100,26 @@ static bool is_lander_operation (const string& name)
   return Running.find (name) != Running.end();
 }
 
-static bool mark_operation_running (const string& name)
+static bool mark_operation_running (const string& name, int id)
 {
-  if (Running.at (name)) {
+  if (Running.at (name) != IDLE_ID) {
     ROS_WARN ("%s already running, ignoring duplicate request.", name.c_str());
     return false;
   }
-  Running.at (name) = true;
+  Running.at (name) = id;
   publish ("Running", true, name);
   return true;
 }
 
 static void mark_operation_finished (const string& name, int id)
 {
-  if (! Running.at (name)) {
+  if (! Running.at (name) == IDLE_ID) {
     ROS_WARN ("%s was not running. Should never happen.", name.c_str());
   }
-  Running.at (name) = false;
+  Running.at (name) = IDLE_ID;
   publish ("Running", false, name);
   publish ("Finished", true, name);
-  if (id != UNUSED_OP_ID) CommandStatusCallback (id, true);
+  if (id != IDLE_ID) CommandStatusCallback (id, true);
 }
 
 
@@ -181,7 +181,7 @@ static bool faulty (const string& fault)
 static void monitor_for_faults (const string& opname)
 {
   using namespace std::chrono_literals;
-  while (Running.at (opname)) {
+  while (Running.at (opname) != IDLE_ID) {
     ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
     for (auto fault : Faults.at (opname)) {
       if (faulty (fault.first)) {
@@ -333,12 +333,14 @@ void OwInterface::managePanTilt (const string& opname,
   // We are only concerned when there is a pan/tilt in progress.
   if (! operationRunning (opname)) return;
 
+  int id = Running.at (opname);
+
   // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
-    mark_operation_finished (opname, UNUSED_OP_ID);
+    mark_operation_finished (opname, id);
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
@@ -540,29 +542,29 @@ void OwInterface::guardedMoveActionDemo (double x, double y, double z,
                                          double direction_y,
                                          double direction_z,
                                          double search_distance,
-                                         bool delete_prev_traj)
+                                         int id)
 {
-  if (! mark_operation_running (Op_GuardedMoveAction)) return;
+  if (! mark_operation_running (Op_GuardedMoveAction, id)) return;
 
-  thread action_thread (&OwInterface::guardedMoveActionAux, this,
+  thread action_thread (&OwInterface::guardedMoveActionDemo1, this,
                         x, y, z,
                         direction_x, direction_y, direction_z,
-                        search_distance, delete_prev_traj);
+                        search_distance, id);
   action_thread.detach();
 }
 
-void OwInterface::guardedMoveActionAux (double x,
-                                        double y,
-                                        double z,
-                                        double direction_x,
-                                        double direction_y,
-                                        double direction_z,
-                                        double search_distance,
-                                        bool delete_prev_traj)
+void OwInterface::guardedMoveActionDemo1 (double x,
+                                          double y,
+                                          double z,
+                                          double direction_x,
+                                          double direction_y,
+                                          double direction_z,
+                                          double search_distance,
+                                          int id)
 {
   ow_autonomy::GuardedMoveGoal goal;
   goal.use_defaults = false;
-  goal.delete_prev_traj = delete_prev_traj;
+  goal.delete_prev_traj = false;
   goal.x = x;
   goal.y = y;
   goal.z = z;
@@ -593,7 +595,7 @@ void OwInterface::guardedMoveActionAux (double x,
     ROS_INFO("GuardedMove action did not finish before the time out.");
   }
 
-  mark_operation_finished (Op_GuardedMoveAction, UNUSED_OP_ID);
+  mark_operation_finished (Op_GuardedMoveAction, id);
   fault_thread.join();
 }
 
@@ -604,7 +606,7 @@ void OwInterface::guardedMove (double x, double y, double z,
                                double search_distance,
                                int id)
 {
-  if (! mark_operation_running (Op_GuardedMove)) return;
+  if (! mark_operation_running (Op_GuardedMove, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -630,7 +632,7 @@ void OwInterface::guardedMove (double x, double y, double z,
 
 void OwInterface::publishTrajectory (int id)
 {
-  if (! mark_operation_running (Op_PublishTrajectory)) return;
+  if (! mark_operation_running (Op_PublishTrajectory, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -647,11 +649,10 @@ void OwInterface::publishTrajectory (int id)
   }
 }
 
-static bool antenna_op (const string& opname,
-                        double degrees,
-                        ros::Publisher* pub)
+static bool antenna_op (const string& opname, double degrees,
+                        ros::Publisher* pub, int id)
 {
-  if (! mark_operation_running (opname)) {
+  if (! mark_operation_running (opname, id)) {
     return false;
   }
 
@@ -665,18 +666,18 @@ static bool antenna_op (const string& opname,
   return true;
 }
 
-bool OwInterface::tiltAntenna (double degrees)
+bool OwInterface::tiltAntenna (double degrees, int id)
 {
   m_goalTilt = degrees;
   m_tiltStart = ros::Time::now();
-  return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher);
+  return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
 }
 
-bool OwInterface::panAntenna (double degrees)
+bool OwInterface::panAntenna (double degrees, int id)
 {
   m_goalPan = degrees;
   m_panStart = ros::Time::now();
-  return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher);
+  return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
 void OwInterface::takePicture ()
@@ -691,7 +692,7 @@ void OwInterface::digLinear (double x, double y,
                              double depth, double length, double ground_position,
                              int id)
 {
-  if (! mark_operation_running (Op_DigLinear)) return;
+  if (! mark_operation_running (Op_DigLinear, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -716,7 +717,7 @@ void OwInterface::digLinear (double x, double y,
 void OwInterface::digCircular (double x, double y, double depth,
                                double ground_position, bool radial, int id)
 {
-  if (! mark_operation_running (Op_DigCircular)) return;
+  if (! mark_operation_running (Op_DigCircular, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -741,7 +742,7 @@ void OwInterface::digCircular (double x, double y, double depth,
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool radial, double ground_pos, int id)
 {
-  if (! mark_operation_running (Op_Grind)) return;
+  if (! mark_operation_running (Op_Grind, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -766,7 +767,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
 
 void OwInterface::stow (int id)
 {
-  if (! mark_operation_running (Op_Stow)) return;
+  if (! mark_operation_running (Op_Stow, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -784,7 +785,7 @@ void OwInterface::stow (int id)
 
 void OwInterface::unstow (int id)
 {
-  if (! mark_operation_running (Op_Unstow)) return;
+  if (! mark_operation_running (Op_Unstow, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -802,7 +803,7 @@ void OwInterface::unstow (int id)
 
 void OwInterface::deliverSample (double x, double y, double z, int id)
 {
-  if (! mark_operation_running (Op_DeliverSample)) return;
+  if (! mark_operation_running (Op_DeliverSample, id)) return;
 
   ros::NodeHandle nhandle ("planning");
 
@@ -848,7 +849,7 @@ bool OwInterface::imageReceived () const
 bool OwInterface::operationRunning (const string& name) const
 {
   // Note: check in caller guarantees 'at' to return a valid value.
-  return Running.at (name);
+  return Running.at (name) != IDLE_ID;
 }
 
 bool OwInterface::operationFinished (const string& name) const

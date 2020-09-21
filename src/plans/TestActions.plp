@@ -5,7 +5,9 @@
 // Test plan for ROS actions.  Content will evolve as new actions are added.
 
 #include "plan-interface.h"
-Command guarded_move_action_demo();
+Command guarded_move_action_demo (Real x, Real y, Real z,
+                                  Real dir_x, Real dir_y, Real dir_z,
+                                  Real search_distance);
 
 TestActions:
 {
@@ -14,7 +16,7 @@ TestActions:
   StartOperations: Concurrence
   {
     // Start an action (dummy for now)
-    guarded_move_action_demo();
+    guarded_move_action_demo (2, 0, 0.3, 0, 0, 1, 0.5);
 
     // Start a service
     guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);

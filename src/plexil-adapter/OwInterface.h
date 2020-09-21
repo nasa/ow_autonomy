@@ -33,8 +33,8 @@ class OwInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  bool tiltAntenna (double degrees);
-  bool panAntenna (double degrees);
+  bool tiltAntenna (double degrees, int id);
+  bool panAntenna (double degrees, int id);
   void takePicture ();
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
@@ -52,14 +52,11 @@ class OwInterface
   void publishTrajectory (int id);
 
   // Temporary, proof of concept for ROS Actions
-  void guardedMoveActionDemo (double x = 2,
-                              double y = 0,
-                              double z = 0.3,
-                              double direction_x = 0,
-                              double direction_y = 0,
-                              double direction_z = 1,
-                              double search_distance = 0.5,
-                              bool delete_prev_traj = false);
+  void guardedMoveActionDemo (double x, double y, double z,
+                              double direction_x,
+                              double direction_y,
+                              double direction_z,
+                              double search_distance, int id);
 
   // State interface
   double getTilt () const;
@@ -82,15 +79,16 @@ class OwInterface
 
 
  private:
-  // temporary, proof of concept
-  void guardedMoveActionAux (double x,
-                             double y,
-                             double z,
-                             double direction_x,
-                             double direction_y,
-                             double direction_z,
-                             double search_distance,
-                             bool delete_prev_traj);
+  // Temporary, support for public version above
+  void guardedMoveActionDemo1 (double x,
+                               double y,
+                               double z,
+                               double direction_x,
+                               double direction_y,
+                               double direction_z,
+                               double search_distance,
+                               int id);
+  
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 

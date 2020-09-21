@@ -29,8 +29,6 @@ public:
   virtual bool reset();
   virtual bool shutdown();
   virtual void invokeAbort(Command *cmd);
-
-  virtual void executeCommand(Command *cmd);
   virtual void lookupNow (State const& state, StateCacheEntry &entry);
   virtual void subscribe(const State& state);
   virtual void unsubscribe(const State& state);
