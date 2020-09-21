@@ -15,6 +15,7 @@
 #include <ow_lander/Unstow.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
+#include <ow_lander/GuardedMoveResult.h>
 #include <ow_lander/PublishTrajectory.h>
 
 // ROS
@@ -373,10 +374,49 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 }
 
 
+//////////////////// GuardedMove Service support ////////////////////////////////
+
+// NOTE: A severe limitation of this approach and data representation is that
+// only ONE instance of GuardedMove is properly supported.  This is a first cut.
+
+static bool GroundFound = false;
+static double GroundPosition = 0; // value is not used unless GroundFound
+
+bool OwInterface::groundFound () const
+{
+  return GroundFound;
+}
+
+double OwInterface::groundPosition () const
+{
+  return GroundPosition;
+}
+
+static void guarded_move_callback
+(const ow_lander::GuardedMoveResult::ConstPtr& msg)
+{
+  if (msg->success) {
+    GroundFound = true;
+    string frame = msg->frame;
+    string valid = "base_link";
+    if (frame != valid) {  // the only supported value
+      ROS_ERROR("GuardedMoveResult frame was not %s", valid.c_str());
+      return;
+    }
+    GroundPosition = msg->position.z;
+    publish ("GroundFound", GroundFound);
+    publish ("GroundPosition", GroundPosition);
+  }
+  else {
+    ROS_WARN("GuardedMove did not find ground!");
+  }
+}
+
+
 //////////////////// GuardedMove Action support ////////////////////////////////
 
-// At present, this is a prototypical action using a dummy server in this
-// directory, GuardedMoveServer.
+// At present, this is a prototypical ROS action using a dummy server in this
+// directory, GuardedMoveServer.  It is NOT connected to the testbed.
 
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
@@ -421,6 +461,7 @@ OwInterface::OwInterface ()
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
+    m_guardedMoveSubscriber (nullptr),
     m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
@@ -440,6 +481,7 @@ OwInterface::~OwInterface ()
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
   if (m_cameraSubscriber) delete m_cameraSubscriber;
+  if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -482,6 +524,9 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+    m_guardedMoveSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/guarded_move_result", qsize, guarded_move_callback));
   }
 }
 
@@ -490,19 +535,12 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
   CommandStatusCallback = callback;
 }
 
-void OwInterface::guardedMoveActionDemo()
-{
-  guardedMoveAction();
-}
-
-void OwInterface::guardedMoveAction (double x,
-                                     double y,
-                                     double z,
-                                     double direction_x,
-                                     double direction_y,
-                                     double direction_z,
-                                     double search_distance,
-                                     bool delete_prev_traj)
+void OwInterface::guardedMoveActionDemo (double x, double y, double z,
+                                         double direction_x,
+                                         double direction_y,
+                                         double direction_z,
+                                         double search_distance,
+                                         bool delete_prev_traj)
 {
   if (! mark_operation_running (Op_GuardedMoveAction)) return;
 
@@ -557,11 +595,6 @@ void OwInterface::guardedMoveActionAux (double x,
 
   mark_operation_finished (Op_GuardedMoveAction, UNUSED_OP_ID);
   fault_thread.join();
-}
-
-void OwInterface::guardedMoveDemo()
-{
-  guardedMove();
 }
 
 void OwInterface::guardedMove (double x, double y, double z,
@@ -705,7 +738,7 @@ void OwInterface::digCircular (double x, double y, double depth,
   }
 }
 
-void OwInterface::grind (double x, double y, double depth, double length, 
+void OwInterface::grind (double x, double y, double depth, double length,
                          bool radial, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind)) return;

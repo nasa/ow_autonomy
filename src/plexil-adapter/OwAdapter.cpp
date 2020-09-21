@@ -37,7 +37,8 @@ using std::endl;
 ///////////////////////////// Conveniences //////////////////////////////////
 
 // A prettier name for the "unknown" value.
-static Value const Unknown;
+//static Value const Unknown;
+const Value Unknown;
 
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
@@ -390,8 +391,7 @@ void OwAdapter::executeCommand(Command *cmd)
   Value retval = Unknown;
 
   // "Demos" - temporary
-  if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
-  else if (name == "guarded_move_action_demo") { // proof of concept for now
+  if (name == "guarded_move_action_demo") { // proof of concept for now
     OwInterface::instance()->guardedMoveActionDemo();
   }
   // Operations

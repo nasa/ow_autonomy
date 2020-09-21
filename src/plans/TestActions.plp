@@ -4,11 +4,8 @@
 
 // Test plan for ROS actions.  Content will evolve as new actions are added.
 
-Command log_info (...);
-Command guarded_move_demo();
+#include "plan-interface.h"
 Command guarded_move_action_demo();
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
 
 TestActions:
 {
@@ -20,7 +17,7 @@ TestActions:
     guarded_move_action_demo();
 
     // Start a service
-    guarded_move_demo();
+    guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
   }
 
   WaitForFinish:

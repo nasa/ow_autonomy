@@ -26,34 +26,13 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // "Demo" functions, temporary.
-  void guardedMoveDemo();
-  void guardedMoveActionDemo(); // temporary, proof of concept
-  void publishTrajectory (int id);
-
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,
   // this function matches guardedMoveDemo above.
-  void guardedMove (double x = 2,
-                    double y = 0,
-                    double z = 0.3,
-                    double direction_x = 0,
-                    double direction_y = 0,
-                    double direction_z = 1,
-                    double search_distance = 0.5,
-                    int id = 0);
-
-  // Temporary, until guardedMove is just a ROS action.
-  void guardedMoveAction (double x = 2,
-                          double y = 0,
-                          double z = 0.3,
-                          double direction_x = 0,
-                          double direction_y = 0,
-                          double direction_z = 1,
-                          double search_distance = 0.5,
-                          bool delete_prev_traj = false);
-
+  void guardedMove (double x, double y, double z,
+                    double direction_x, double direction_y, double direction_z,
+                    double search_distance, int id);
   bool tiltAntenna (double degrees);
   bool panAntenna (double degrees);
   void takePicture ();
@@ -69,12 +48,27 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
+  // Pubishes trajectory saved by those operations above that are ROS actions.
+  void publishTrajectory (int id);
+
+  // Temporary, proof of concept for ROS Actions
+  void guardedMoveActionDemo (double x = 2,
+                              double y = 0,
+                              double z = 0.3,
+                              double direction_x = 0,
+                              double direction_y = 0,
+                              double direction_z = 1,
+                              double search_distance = 0.5,
+                              bool delete_prev_traj = false);
+
   // State interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
   bool imageReceived () const;
+  bool groundFound () const;
+  double groundPosition () const;
 
   // These methods apply to all "lander operations", and hide their ROS
   // implementation, which could be services, actions, or ad hoc messaging.
@@ -121,6 +115,7 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+  ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>

@@ -89,9 +89,11 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->finished (operation);
   }
+  else if (state_name == "GroundFound") {
+    value_out = OwInterface::instance()->groundFound();
+  }
   else if (state_name == "GroundPosition") {
-    // Stub.  Needs implementation.
-    value_out = PLEXIL::UNKNOWN_TYPE;
+    value_out = OwInterface::instance()->groundPosition();
   }
   else retval = false;
 

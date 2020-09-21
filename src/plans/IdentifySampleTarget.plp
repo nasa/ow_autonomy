@@ -2,33 +2,29 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This is a very stubbed version of a procedure that should "interrogate" the
-// terrain to find a good sampling location (one initially, more later).  
+// This is a simplified version of a procedure that should "interrogate" the
+// terrain to find a good sampling location (one initially, more later).
+// Instead, we choose an arbitrary location and probe for ground position there.
 
 #include "plan-interface.h"
 
-Real Lookup GroundPosition;
+Boolean Lookup GroundFound;
+Real    Lookup GroundPosition;
 
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
   InOut Boolean Radial;
 
-  // Guarded move is at attempt to find the ground position, which is published
-  // on a topic when the scoop hits ground.  The X/Y/Z arguments passed here are
-  // arbitrary.  Search direction is straight down, another arbitrary choice.
-  
+  Postcondition Lookup(GroundFound);
+
+  // Guarded move is at attempt to find the ground position.  The chosen start
+  // position (X/Y/Z) is arbitrary, as is the search direction (vertical).
   LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                            DirX = 0, DirY = 0, DirZ = 1,
                            SearchDistance = 0.5);
 
-  // Temporary hack: this lookup returns Unknown because the autonomy node is
-  // not yet subcribing to the ground position topic (because I can't find it).
-  GroundPos = Lookup (GroundPosition);
-  if (! isKnown(GroundPos)) {
-    log_error ("Could not find ground, using default.");
-    GroundPos = -0.155;
-  }
+  if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
   endif;
 
   // The chosen X/Y sampling location, as well as choice for Radial trench

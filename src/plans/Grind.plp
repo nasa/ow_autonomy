@@ -13,6 +13,7 @@ Grind:
   In Real GroundPos;
   In Boolean Radial;
 
+  //  log_info ("---- Grind X=",X," Y=",Y," Depth=",Depth," Len=",Length,"GroundPos=",GroundPos);
   SynchronousCommand grind (X, Y, Depth, Length, Radial, GroundPos);
   SynchronousCommand publish_trajectory ();
 }

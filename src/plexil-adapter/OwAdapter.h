@@ -36,11 +36,6 @@ public:
   virtual void unsubscribe(const State& state);
   void propagateValueChange (const State&, const std::vector<Value>&) const;
 
-  // Command Handlers
-  //  static void logInfo (PLEXIL::Command* cmd);
-  //  static void logWarning (PLEXIL::Command* cmd);
-  //  static void logError (PLEXIL::Command* cmd);
-
 private:
   bool isStateSubscribed(const State& state) const;
   std::set<State> m_subscribedStates;
