@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// An overly simple battery monitor that detects voltage drop below a fixed
+// threshold.  Supports recharge, which the Europa lander does not.
+
 Real Lookup Voltage;
 Command log_info (...);
 Command log_warning (...);

@@ -22,6 +22,7 @@ IdentifySampleTarget:
                            SearchDistance = 0.5);
 
   if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
+  else ros_warn ("GuardedMove failed to find ground.");
   endif;
 
   // The chosen X/Y sampling location, as well as choice for Radial trench

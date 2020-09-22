@@ -204,10 +204,10 @@ static void call_ros_service (ros::ServiceClient client, Service srv,
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
-  ROS_INFO("Starting ROS service %s", name.c_str());
+  ROS_INFO("  Starting ROS service %s", name.c_str());
   thread fault_thread (monitor_for_faults, name);
   if (client.call (srv)) { // blocks
-    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
+    ROS_INFO("  %s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
   }
   else {
@@ -378,8 +378,8 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage = 4.15;  // faked
-static double RUL     = 28460; // faked
+static double Voltage             = 4.15;  // faked
+static double RemainingUsefulLife = 28460; // faked
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
@@ -389,8 +389,8 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 
 static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 {
-  RUL = msg->data;
-  publish ("RemainingUsefulLife", Voltage);
+  RemainingUsefulLife = msg->data;
+  publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
 
@@ -686,7 +686,7 @@ static bool antenna_op (const string& opname, double degrees,
 
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
-  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
+  ROS_INFO ("  Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
@@ -877,6 +877,11 @@ bool OwInterface::imageReceived () const
 double OwInterface::getVoltage () const
 {
   return Voltage;
+}
+
+double OwInterface::getRemainingUsefulLife () const
+{
+  return RemainingUsefulLife;
 }
 
 bool OwInterface::operationRunning (const string& name) const
