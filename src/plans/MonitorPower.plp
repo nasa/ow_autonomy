@@ -1,0 +1,21 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A very basic power monitor that simply prints power status every 30 seconds.
+
+Real Lookup Voltage;
+Real Lookup RemainingUsefulLife;
+Command log_info (...);
+
+MonitorPower:
+{
+  In Boolean continue;
+
+  Repeat true;
+  Exit !continue;
+
+  log_info ("Battery: state of charge: ", Lookup(Voltage));
+  log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
+  Wait 30;
+}
