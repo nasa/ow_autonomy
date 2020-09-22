@@ -163,16 +163,16 @@ static void guarded_move (Command* cmd)
 static void grind (Command* cmd)
 {
   double x, y, depth, length, ground_pos;
-  bool radial;
+  bool parallel;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(depth);
   args[3].getValue(length);
-  args[4].getValue(radial);
+  args[4].getValue(parallel);
   args[5].getValue(ground_pos);
   CommandRegistry[CommandId] = cmd;
-  OwInterface::instance()->grind(x, y, depth, length, radial, ground_pos, CommandId);
+  OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos, CommandId);
   command_sent (cmd);
   CommandId++;
 }
@@ -180,15 +180,15 @@ static void grind (Command* cmd)
 static void dig_circular (Command* cmd)
 {
   double x, y, depth, ground_position;
-  bool radial;
+  bool parallel;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(depth);
   args[3].getValue(ground_position);
-  args[4].getValue(radial);
+  args[4].getValue(parallel);
   CommandRegistry[CommandId] = cmd;
-  OwInterface::instance()->digCircular(x, y, depth, ground_position, radial,
+  OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
   command_sent (cmd);
   CommandId++;

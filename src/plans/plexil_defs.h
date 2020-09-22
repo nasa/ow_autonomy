@@ -22,7 +22,7 @@
 // Proposed, arbitrary small unitless value for zero velocity tolerance.
 #define ZERO_VEL 0.01
 
-#define NUM_JOINTS 8
+#define NUM_JOINTS 9
 
 // The following are related to antenna and camera.
 

@@ -15,8 +15,9 @@ TorqueTest:
 {
   Boolean Digging = true;
   String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
-                                    "HandYaw" "ProximalPitch" "ScoopYaw"
-                                    "ShoulderPitch" "ShoulderYaw");
+                                    "HandYaw" 
+                                    "ProximalPitch" "ScoopYaw"
+                                    "ShoulderPitch" "ShoulderYaw" "Grinder");
 
   log_info ("Beginning over-torque test...");
   DigAndMonitor: Concurrence

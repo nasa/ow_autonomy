@@ -10,8 +10,8 @@ DigCircular:
   In Real Y;
   In Real Depth;
   In Real GroundPos;
-  In Boolean Radial;
+  In Boolean Parallel;
 
-  SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Radial);
+  SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
   SynchronousCommand publish_trajectory ();
 }

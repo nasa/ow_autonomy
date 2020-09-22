@@ -14,12 +14,12 @@ CollectSample:
   In Real GroundPos;
   In Real Depth;
   In Real Length;
-  In Boolean Radial;
+  In Boolean Parallel;
 
   LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
-                     Radial = Radial, GroundPos = GroundPos);
+                     Parallel = Parallel, GroundPos = GroundPos);
   LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
-                           GroundPos = GroundPos, Radial = Radial);
+                           GroundPos = GroundPos, Parallel = Parallel);
   // NOTE: the given coordinates are the predetermined location of the
   // receptacle into which the sample is dumped.
   LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.82);

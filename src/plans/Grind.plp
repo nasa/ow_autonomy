@@ -11,8 +11,8 @@ Grind:
   In Real Depth;
   In Real Length;
   In Real GroundPos;
-  In Boolean Radial;
+  In Boolean Parallel;
 
-  SynchronousCommand grind (X, Y, Depth, Length, Radial, GroundPos);
+  SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
   SynchronousCommand publish_trajectory ();
 }

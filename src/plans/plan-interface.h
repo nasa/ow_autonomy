@@ -12,7 +12,7 @@
 // The following commands perform only the path planning for the given activity.
 
 Command dig_circular (Real x, Real y, Real depth, Real ground_pos,
-                      Boolean radial); // true means parallel to lander arm
+                      Boolean parallel); // true means parallel to lander arm
 
 Command dig_linear (Real x, Real y, Real depth, Real length,
                     Real ground_pos);
@@ -21,7 +21,7 @@ Command dig_linear (Real x, Real y, Real depth, Real length,
 // as well as delivering a sample to the receptacle.
 Command deliver_sample (Real x, Real y, Real z);
 
-Command grind (Real x, Real y, Real depth, Real length, Boolean radial, Real ground_pos);
+Command grind (Real x, Real y, Real depth, Real length, Boolean parallel, Real ground_pos);
 
 Command guarded_move (Real x, Real y, Real z,
                       Real dir_x, Real dir_y, Real dir_z,
@@ -54,9 +54,9 @@ Boolean Lookup Finished (String operation_name);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
-                     In Boolean Radial, In Real GroundPos);
+                     In Boolean Parallel, In Real GroundPos);
 LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
-                           In Real GroundPos, In Boolean Radial);
+                           In Real GroundPos, In Boolean Parallel);
 LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
 LibraryAction Stub (In String desc);

@@ -12,7 +12,7 @@ RemoveTailings:
   In Real X;
   In Real Y;
   In Real GroundPos;
-  In Boolean Radial;
+  In Boolean Parallel;
 
   // NOTE: These values selected only to save time during testing, as each pass
   // takes several minutes.
@@ -22,7 +22,7 @@ RemoveTailings:
   for (Integer pass = 1; pass <= num_passes; pass + 1) {
     log_info ("Removing tailings, pass ", pass, " of ", num_passes, "...");
     LibraryCall DigCircular (X = X, Y = Y, Depth = bite_depth * pass,
-                             GroundPos = GroundPos, Radial = Radial);
+                             GroundPos = GroundPos, Parallel = Parallel);
     // NOTE: the X/Y/Z values are known coordinates of a predetermined place to
     // dump debris.  A real mission procedure may need more sophistication.
     LibraryCall DeliverSample (X = 1.5, Y = 0.8, Z = 0.25);

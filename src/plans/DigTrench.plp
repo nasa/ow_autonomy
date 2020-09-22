@@ -16,11 +16,11 @@ DigTrench:
   In Real Length;
   In Real BiteDepth;
   In Integer NumPasses;
-  In Boolean Radial;
+  In Boolean Parallel;
 
   for (Integer pass = 1; pass <= NumPasses; pass + 1) {
     log_info ("Grinding trench, pass ", pass, " of ", NumPasses, "...");
     LibraryCall Grind (X = X, Y = Y, Depth = pass * BiteDepth,
-                       Length = Length, Radial = Radial, GroundPos = GroundPos);
+                       Length = Length, Parallel = Parallel, GroundPos = GroundPos);
   }
 }

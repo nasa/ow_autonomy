@@ -17,7 +17,8 @@ enum class Joint {
   hand_yaw,
   scoop_yaw,
   antenna_pan,
-  antenna_tilt
+  antenna_tilt,
+  grinder
 };
 
 struct JointProperties

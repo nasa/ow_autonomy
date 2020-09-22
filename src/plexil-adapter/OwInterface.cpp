@@ -246,7 +246,8 @@ static map<string, Joint> JointMap {
   { "j_hand_yaw", Joint::hand_yaw },
   { "j_scoop_yaw", Joint::scoop_yaw },
   { "j_ant_pan", Joint::antenna_pan },
-  { "j_ant_tilt", Joint::antenna_tilt }
+  { "j_ant_tilt", Joint::antenna_tilt },
+  { "j_grinder", Joint::grinder }
 };
 
 static map<Joint, JointProperties> JointPropMap {
@@ -260,7 +261,8 @@ static map<Joint, JointProperties> JointPropMap {
   { Joint::hand_yaw,       { "j_hand_yaw", "HandYaw", 60, 80 }},
   { Joint::scoop_yaw,      { "j_scoop_yaw", "ScoopYaw", 60, 80 }},
   { Joint::antenna_pan,    { "j_ant_pan", "AntennaPan", 30, 30 }},
-  { Joint::antenna_tilt,   { "j_ant_tilt", "AntennaTilt", 30, 30 }}
+  { Joint::antenna_tilt,   { "j_ant_tilt", "AntennaTilt", 30, 30 }},
+  { Joint::grinder,        { "j_grinder", "Grinder", 30, 30 }}
 };
 
 static map<Joint, JointTelemetry> JointTelemetryMap { };
@@ -681,7 +683,7 @@ void OwInterface::digLinear (double x, double y,
 }
 
 void OwInterface::digCircular (double x, double y, double depth,
-                               double ground_position, bool radial, int id)
+                               double ground_position, bool parallel, int id)
 {
   if (! mark_operation_running (Op_DigCircular)) return;
 
@@ -697,7 +699,7 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.y = y;
     srv.request.depth = depth;
     srv.request.ground_position = ground_position;
-    srv.request.radial = radial;
+    srv.request.parallel = parallel;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular, id);
@@ -706,7 +708,7 @@ void OwInterface::digCircular (double x, double y, double depth,
 }
 
 void OwInterface::grind (double x, double y, double depth, double length, 
-                         bool radial, double ground_pos, int id)
+                         bool parallel, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind)) return;
 
@@ -722,7 +724,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
     srv.request.y = y;
     srv.request.depth = depth;
     srv.request.length = length;
-    srv.request.radial = radial;
+    srv.request.parallel = parallel;
     srv.request.ground_position = ground_pos;
     srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Grind>,
