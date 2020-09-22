@@ -353,7 +353,6 @@ void OwInterface::managePanTilt (const string& opname,
 ////////////////////////////// Image Support ///////////////////////////////////
 
 static bool   ImageReceived       = false;
-static double Voltage             = 25.0;
 
 void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
@@ -376,10 +375,22 @@ static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
   publish ("ImageReceived", ImageReceived);
 }
 
-static void power_callback (const std_msgs::Float64::ConstPtr& msg)
+
+///////////////////////// Power support /////////////////////////////////////
+
+static double Voltage = 4.15;  // faked
+static double RUL     = 28460; // faked
+
+static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
   Voltage = msg->data;
   publish ("Voltage", Voltage);
+}
+
+static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  RUL = msg->data;
+  publish ("RemainingUsefulLife", Voltage);
 }
 
 
@@ -470,7 +481,8 @@ OwInterface::OwInterface ()
     m_antennaPanSubscriber (nullptr),
     m_jointStatesSubscriber (nullptr),
     m_cameraSubscriber (nullptr),
-    m_powerSubscriber (nullptr),
+    m_socSubscriber (nullptr),
+    m_rulSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
     m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
@@ -491,7 +503,8 @@ OwInterface::~OwInterface ()
   if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
   if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
   if (m_cameraSubscriber) delete m_cameraSubscriber;
-  if (m_powerSubscriber) delete m_powerSubscriber;
+  if (m_socSubscriber) delete m_socSubscriber;
+  if (m_rulSubscriber) delete m_rulSubscriber;
   if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
   if (m_instance) delete m_instance;
 }
@@ -535,9 +548,12 @@ void OwInterface::initialize()
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
-    m_powerSubscriber = new ros::Subscriber
+    m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/power_system_node/state_of_charge", qsize, power_callback));
+       subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
+    m_rulSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     m_guardedMoveSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/guarded_move_result", qsize, guarded_move_callback));

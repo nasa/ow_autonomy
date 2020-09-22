@@ -89,7 +89,7 @@ class OwInterface
                                double direction_z,
                                double search_distance,
                                int id);
-  
+
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
@@ -114,7 +114,8 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
-  ros::Subscriber* m_powerSubscriber;
+  ros::Subscriber* m_socSubscriber;
+  ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
