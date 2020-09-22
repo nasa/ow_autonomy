@@ -8,15 +8,12 @@
 
 #include "plan-interface.h"
 
-Boolean Lookup GroundFound;
-Real    Lookup GroundPosition;
-
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
   InOut Boolean Radial;
 
-  Postcondition Lookup(GroundFound);
+  Post Lookup (GroundFound);
 
   // Guarded move is at attempt to find the ground position.  The chosen start
   // position (X/Y/Z) is arbitrary, as is the search direction (vertical).

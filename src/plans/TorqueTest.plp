@@ -8,9 +8,6 @@
 #include "plexil_defs.h"
 #include "plan-interface.h"
 
-Boolean Lookup HardTorqueLimitReached (String joint_name);
-Boolean Lookup SoftTorqueLimitReached (String joint_name);
-
 TorqueTest:
 {
   Boolean Digging = true;
@@ -25,19 +22,20 @@ TorqueTest:
     {
       // This node attempts to dig too deep (note -1 Z target), in an effort to
       // overtorque one or more arm joints.
-      guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
-      WaitForGuardedMove:
-      {
-        StartCondition Lookup (Running ("GuardedMove"));
-        EndCondition Lookup (Finished ("GuardedMove"));
+
+      // First, find ground.
+      // This call doesn't find ground.
+      //      LibraryCall GuardedMove (X=2, Y=0, Z=0, DirX=0, DirY=0, DirZ=-1,
+      //                               SearchDistance=3.0);
+      LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
+                               DirX = 0, DirY = 0, DirZ = 1,
+                               SearchDistance = 0.5);
+      if (Lookup(GroundFound)) {
+        LibraryCall Grind (X=2, Y=0, Depth=2, Length=0.5, Radial=false,
+                           GroundPos=Lookup(GroundPosition));
       }
-      SynchronousCommand publish_trajectory();
-      
-      // WaitForPublish:
-      // {
-      //   StartCondition Lookup (Running ("PublishTrajectory"));
-      //   EndCondition Lookup (Finished ("PublishTrajectory"));
-      // }
+      else log_error ("TorqueTest failed to find ground!");
+      endif;
       Digging = false;
     }
 
