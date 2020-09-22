@@ -1,0 +1,7 @@
+#include "plan-interface.h"
+
+Unstow:
+{
+  SynchronousCommand unstow();
+  SynchronousCommand publish_trajectory();
+}

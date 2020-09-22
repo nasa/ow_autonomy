@@ -6,16 +6,14 @@
 // concurrently with other PLEXIL nodes.  Before, the service call would block
 // the plan and executive.
 
-Command log_info (...);
-Command dig_circular_demo();
-Boolean Lookup Running (String operation_name);
+#include "plan-interface.h"
 
 TestPlanning:
 {
   Plan:
   {
     log_info ("Initiating Planning Service...");
-    dig_circular_demo();
+    dig_circular (1.5, 0, 0.02, -0.155, false);
   }
   Report:
   {

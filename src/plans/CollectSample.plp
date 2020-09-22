@@ -1,0 +1,26 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Collect a sample from a dug trench, per procedure documented on the
+// "Arm/Terrain Interaction" Confluence wiki.
+
+#include "plan-interface.h"
+
+CollectSample:
+{
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
+  In Real Depth;
+  In Real Length;
+  In Boolean Radial;
+
+  LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
+                     Radial = Radial, GroundPos = GroundPos);
+  LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
+                           GroundPos = GroundPos, Radial = Radial);
+  // NOTE: the given coordinates are the predetermined location of the
+  // receptacle into which the sample is dumped.
+  LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.82);
+}

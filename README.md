@@ -31,6 +31,7 @@ MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 ow_autonomy
 ===========
+
 This package contains a candidate onboard autonomy component for an Ocean
 Worlds lander, namely a ROS node embedding a PLEXIL application.
 
@@ -91,7 +92,6 @@ Run
 ```
    NOTES:
     - for faster performance, add `gzclient:=false`
-    - for even faster performance, `gazebo:=false`
     - for better terrain, use `europa_terminator.launch`
 
 2. (optional, as needed) Start rqt for visualization and monitoring.
@@ -110,10 +110,10 @@ Run
    `roslaunch ow_autonomy autonomy_node.launch`
 
    This invocation loads the default PLEXIL plan, Demo.plx, which demonstrates a
-   variety of lander functions: arm planning, guarded move, publishing
-   trajectory (for Gazebo), and panoramic imaging.  It is equivalent to:
+   variety of lander functions: arm planning, guarded move, and panoramic
+   imaging.  It is equivalent to:
 
-   ` roslaunch ow_autonomy autonomy_node.launch plan:=Demo.plx`
+   `roslaunch ow_autonomy autonomy_node.launch plan:=Demo.plx`
 
    Alternatively, you may specify a plan to load, by setting the 'plan' argument
    to a .plx file found in:
@@ -129,10 +129,7 @@ Here are some interesting autonomy plans.  Run them as shown, substituting for
 
   `roslaunch ow_autonomy autonomy_node.launch plan:=Foo.plx`
 
-1. The Europa reference mission Sol 0 prototype: `EuropaMission.plx`
-
-   At present, this plan is stubbed except for the (shortened) panoramic landing
-   site imaging that happens near the beginning.
+1. A Europa reference mission Sol 0 prototype: `ReferenceMission1.plx`
 
 2. A short panoramic imaging demo: `TestAntennaCamera.plx`
 
@@ -157,6 +154,8 @@ Here are some interesting autonomy plans.  Run them as shown, substituting for
 
    This runs a dummy GuardedMove action (not connected to simulator)
    concurrently with the real GuardedMove service.
+   
+6. Demonstration of checkpointed plans: `EuropaMission.plx`
 
 
 Fault Detection
@@ -165,7 +164,7 @@ Fault Detection
 A rudimentary version does nothing more than check relevant fault parameters for
 each lander operation.  Run any plan you like, while setting fault parameters as
 desired (see `ow_faults/README.md` for instructions).  Faults are reported as
-ROS warnings -- that's all for now.
+ROS warnings.
 
 
 Clean

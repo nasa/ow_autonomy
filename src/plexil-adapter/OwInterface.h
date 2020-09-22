@@ -26,51 +26,47 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // "Demo" functions, perhaps temporary.
-  void digCircularDemo();
-  void guardedMoveDemo();
-  void guardedMoveActionDemo(); // temporary, proof of concept
-  void publishTrajectoryDemo();
-
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,
   // this function matches guardedMoveDemo above.
-  void guardedMove (double target_x = 2,
-                    double target_y = 0,
-                    double surf_norm_x = 0,
-                    double surf_norm_y = 0,
-                    double surf_norm_z = 1,
-                    double offset_dist = 0.2,
-                    double overdrive_dist = 0.2,
-                    bool delete_prev_traj = false);
-
-  // Temporary, until guardedMove is just a ROS action.
-  void guardedMoveAction (double target_x = 2,
-                          double target_y = 0,
-                          double surf_norm_x = 0,
-                          double surf_norm_y = 0,
-                          double surf_norm_z = 1,
-                          double offset_dist = 0.2,
-                          double overdrive_dist = 0.2,
-                          bool delete_prev_traj = false);
-
-  bool tiltAntenna (double degrees);
-  bool panAntenna (double degrees);
+  void guardedMove (double x, double y, double z,
+                    double direction_x, double direction_y, double direction_z,
+                    double search_distance, int id);
+  bool tiltAntenna (double degrees, int id);
+  bool panAntenna (double degrees, int id);
   void takePicture ();
   void digLinear (double x, double y, double depth, double length,
-                  double ground_position, double width, double pitch, double yaw,
-                  double dumpx, double dumpy, double dumpz);
+                  double ground_pos, int id);
+  void digCircular (double x, double y, double depth,
+                    double ground_pos, bool radial, int id);
+  void grind (double x, double y, double depth, double length,
+              bool radial, double ground_pos, int id);
+  void stow (int id);
+  void unstow (int id);
+  void deliverSample (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
+
+  // Pubishes trajectory saved by those operations above that are ROS actions.
+  void publishTrajectory (int id);
+
+  // Temporary, proof of concept for ROS Actions
+  void guardedMoveActionDemo (double x, double y, double z,
+                              double direction_x,
+                              double direction_y,
+                              double direction_z,
+                              double search_distance, int id);
 
   // State interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  bool imageReceived () const;
+  bool   imageReceived () const;
   double getVoltage () const;
+  bool   groundFound () const;
+  double groundPosition () const;
 
   // These methods apply to all "lander operations", and hide their ROS
   // implementation, which could be services, actions, or ad hoc messaging.
@@ -79,16 +75,21 @@ class OwInterface
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
+  // Command feedback
+  void setCommandStatusCallback (void (*callback) (int, bool));
+
+
  private:
-  // temporary, proof of concept
-  void guardedMoveActionAux (double target_x,
-                             double target_y,
-                             double surf_norm_x,
-                             double surf_norm_y,
-                             double surf_norm_z,
-                             double offset_dist,
-                             double overdrive_dist,
-                             bool delete_prev_traj);
+  // Temporary, support for public version above
+  void guardedMoveActionDemo1 (double x,
+                               double y,
+                               double z,
+                               double direction_x,
+                               double direction_y,
+                               double direction_z,
+                               double search_distance,
+                               int id);
+  
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
@@ -114,6 +115,7 @@ class OwInterface
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
   ros::Subscriber* m_powerSubscriber;
+  ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>

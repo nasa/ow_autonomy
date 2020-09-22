@@ -1,0 +1,26 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan grinds a trench using specified parameters.  The length of the
+// trench is hardcoded for now -- awaiting clarification on how to select length
+// (there are two choices).
+
+#include "plan-interface.h"
+
+DigTrench:
+{
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
+  In Real Length;
+  In Real BiteDepth;
+  In Integer NumPasses;
+  In Boolean Radial;
+
+  for (Integer pass = 1; pass <= NumPasses; pass + 1) {
+    log_info ("Grinding trench, pass ", pass, " of ", NumPasses, "...");
+    LibraryCall Grind (X = X, Y = Y, Depth = pass * BiteDepth,
+                       Length = Length, Radial = Radial, GroundPos = GroundPos);
+  }
+}
