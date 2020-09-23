@@ -26,36 +26,15 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  // "Demo" functions, temporary.
-  void guardedMoveDemo();
-  void guardedMoveActionDemo(); // temporary, proof of concept
-  void publishTrajectory (int id);
-
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,
   // this function matches guardedMoveDemo above.
-  void guardedMove (double x = 2,
-                    double y = 0,
-                    double z = 0.3,
-                    double direction_x = 0,
-                    double direction_y = 0,
-                    double direction_z = 1,
-                    double search_distance = 0.5,
-                    int id = 0);
-
-  // Temporary, until guardedMove is just a ROS action.
-  void guardedMoveAction (double x = 2,
-                          double y = 0,
-                          double z = 0.3,
-                          double direction_x = 0,
-                          double direction_y = 0,
-                          double direction_z = 1,
-                          double search_distance = 0.5,
-                          bool delete_prev_traj = false);
-
-  bool tiltAntenna (double degrees);
-  bool panAntenna (double degrees);
+  void guardedMove (double x, double y, double z,
+                    double direction_x, double direction_y, double direction_z,
+                    double search_distance, int id);
+  bool tiltAntenna (double degrees, int id);
+  bool panAntenna (double degrees, int id);
   void takePicture ();
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
@@ -69,12 +48,26 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
+  // Pubishes trajectory saved by those operations above that are ROS actions.
+  void publishTrajectory (int id);
+
+  // Temporary, proof of concept for ROS Actions
+  void guardedMoveActionDemo (double x, double y, double z,
+                              double direction_x,
+                              double direction_y,
+                              double direction_z,
+                              double search_distance, int id);
+
   // State interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  bool imageReceived () const;
+  bool   imageReceived () const;
+  double getVoltage () const;
+  double getRemainingUsefulLife () const;
+  bool   groundFound () const;
+  double groundPosition () const;
 
   // These methods apply to all "lander operations", and hide their ROS
   // implementation, which could be services, actions, or ad hoc messaging.
@@ -88,15 +81,16 @@ class OwInterface
 
 
  private:
-  // temporary, proof of concept
-  void guardedMoveActionAux (double x,
-                             double y,
-                             double z,
-                             double direction_x,
-                             double direction_y,
-                             double direction_z,
-                             double search_distance,
-                             bool delete_prev_traj);
+  // Temporary, support for public version above
+  void guardedMoveActionDemo1 (double x,
+                               double y,
+                               double z,
+                               double direction_x,
+                               double direction_y,
+                               double direction_z,
+                               double search_distance,
+                               int id);
+
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
 
@@ -121,6 +115,9 @@ class OwInterface
   ros::Subscriber* m_antennaTiltSubscriber;
   ros::Subscriber* m_jointStatesSubscriber;
   ros::Subscriber* m_cameraSubscriber;
+  ros::Subscriber* m_socSubscriber;
+  ros::Subscriber* m_rulSubscriber;
+  ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>

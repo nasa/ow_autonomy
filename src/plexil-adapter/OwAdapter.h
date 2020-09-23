@@ -29,17 +29,10 @@ public:
   virtual bool reset();
   virtual bool shutdown();
   virtual void invokeAbort(Command *cmd);
-
-  virtual void executeCommand(Command *cmd);
   virtual void lookupNow (State const& state, StateCacheEntry &entry);
   virtual void subscribe(const State& state);
   virtual void unsubscribe(const State& state);
   void propagateValueChange (const State&, const std::vector<Value>&) const;
-
-  // Command Handlers
-  //  static void logInfo (PLEXIL::Command* cmd);
-  //  static void logWarning (PLEXIL::Command* cmd);
-  //  static void logError (PLEXIL::Command* cmd);
 
 private:
   bool isStateSubscribed(const State& state) const;

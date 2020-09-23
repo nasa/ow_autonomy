@@ -89,6 +89,18 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->finished (operation);
   }
+  else if (state_name == "Voltage") {
+    value_out = OwInterface::instance()->getVoltage();
+  }
+  else if (state_name == "RemainingUsefulLife") {
+    value_out = OwInterface::instance()->getRemainingUsefulLife();
+  }
+  else if (state_name == "GroundFound") {
+    value_out = OwInterface::instance()->groundFound();
+  }
+  else if (state_name == "GroundPosition") {
+    value_out = OwInterface::instance()->groundPosition();
+  }
   else retval = false;
 
   return retval;

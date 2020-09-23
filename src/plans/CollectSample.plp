@@ -2,8 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Collect a sample from a dug trench, per procedure documented on the
-// "Arm/Terrain Interaction" Confluence wiki.
+// Collect a sample from a dug trench.
 
 #include "plan-interface.h"
 

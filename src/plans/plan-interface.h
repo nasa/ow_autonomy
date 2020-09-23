@@ -47,18 +47,25 @@ Command log_error (...);
 
 Boolean Lookup Running (String operation_name);
 Boolean Lookup Finished (String operation_name);
+Boolean Lookup HardTorqueLimitReached (String joint_name);
+Boolean Lookup SoftTorqueLimitReached (String joint_name);
+Boolean Lookup GroundFound;
+Real    Lookup GroundPosition;
 
-
-// Plan Library
+// Lander operations
 
 LibraryAction Stow ();
 LibraryAction Unstow ();
+LibraryAction GuardedMove (In Real X, In Real Y, In Real Z,
+                           In Real DirX, In Real DirY, In Real DirZ,
+                           In Real SearchDistance);
 LibraryAction Grind (In Real X, In Real Y, In Real Depth, In Real Length,
                      In Boolean Parallel, In Real GroundPos);
 LibraryAction DigCircular (In Real X, In Real Y, In Real Depth,
                            In Real GroundPos, In Boolean Parallel);
 LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
+// Does nothing
 LibraryAction Stub (In String desc);
 
 #endif

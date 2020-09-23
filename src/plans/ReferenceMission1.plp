@@ -2,8 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Simplified version of the Europa reference mission.
+// Simplified version of the Europa reference mission, Sol 0.
 
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue);
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
 LibraryAction IdentifySampleTarget (InOut Real X,
@@ -28,31 +31,27 @@ LibraryAction CollectSample (In Real X,
                              In Real Length,
                              In Boolean Parallel);
 LibraryAction StartSampleAnalysis;
-LibraryAction MonitorBattery (InOut Boolean status);
-
-#include "plan-interface.h"
 
 ReferenceMission1: Concurrence
 {
-  // Assumption: checkout is complete.
+  Boolean MissionInProgress = true;
+  Boolean PowerStatus;
 
-  // Health variables - expand/refine as needed
-  Boolean BatteryOK, TemperatureOK;
-
-  ContingencyMonitors: Concurrence
-  {
-    BatteryMonitor: LibraryCall MonitorBattery (status = BatteryOK);
-    ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
-    UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
-  }
+  PowerMonitor: LibraryCall MonitorPower (continue = MissionInProgress);
 
   Mission:
   {
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
     Boolean parallel = true;
 
-    // Length should be twice the radius of the arm/scoop, as documented.
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
+
+    Exit (NOT MissionInProgress);
 
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
@@ -62,6 +61,8 @@ ReferenceMission1: Concurrence
                                       Y = trench_y,
                                       GroundPos = ground_pos,
                                       Parallel = parallel);
+    if (! Lookup(GroundFound)) MissionInProgress = false;
+    
     LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                            Length = trench_length, BiteDepth = 0.05,
                            NumPasses = 2, Parallel = parallel);
@@ -72,6 +73,8 @@ ReferenceMission1: Concurrence
                                Length = trench_length, Parallel = parallel);
     LibraryCall Stow();
     LibraryCall StartSampleAnalysis;
+    Wait 2;  // Wait for (stubbed) sample analysis to finish.
     log_info ("Reference Mission 1, Sol 0 complete.");
+    MissionInProgress = false;
   }
 }

@@ -37,7 +37,8 @@ using std::endl;
 ///////////////////////////// Conveniences //////////////////////////////////
 
 // A prettier name for the "unknown" value.
-static Value const Unknown;
+//static Value const Unknown;
+const Value Unknown;
 
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
@@ -160,6 +161,24 @@ static void guarded_move (Command* cmd)
   CommandId++;
 }
 
+static void guarded_move_action_demo (Command* cmd)
+{
+  double x, y, z, dir_x, dir_y, dir_z, search_distance;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  args[3].getValue(dir_x);
+  args[4].getValue(dir_y);
+  args[5].getValue(dir_z);
+  args[6].getValue(search_distance);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->guardedMoveActionDemo (x, y, z, dir_x, dir_y, dir_z,
+                                                  search_distance, CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
 static void grind (Command* cmd)
 {
   double x, y, depth, length, ground_pos;
@@ -221,6 +240,41 @@ static void deliver_sample (Command* cmd)
   command_sent (cmd);
   CommandId++;
 }
+
+static void tilt_antenna (Command* cmd)
+{
+  Value retval = Unknown;
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  CommandRegistry[CommandId] = cmd;
+  retval = OwInterface::instance()->tiltAntenna (degrees, CommandId);
+  command_sent (cmd);
+  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
+  CommandId++;
+}
+
+static void pan_antenna (Command* cmd)
+{
+  Value retval = Unknown;
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  CommandRegistry[CommandId] = cmd;
+  retval = OwInterface::instance()->panAntenna (degrees, CommandId);
+  command_sent (cmd);
+  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
+  CommandId++;
+}
+
+static void take_picture (Command* cmd)
+{
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->takePicture();
+  command_sent (cmd);
+  CommandId++;
+}
+
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -329,9 +383,14 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("guarded_move_action_demo",
+                                          guarded_move_action_demo);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
+  g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
+  g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("take_picture", take_picture);
   g_configuration->registerCommandHandler("publish_trajectory",
                                           publish_trajectory);
   TheAdapter = this;
@@ -372,49 +431,6 @@ void OwAdapter::invokeAbort(Command *cmd)
 {
   ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
             cmd->getName().c_str());
-}
-
-void OwAdapter::executeCommand(Command *cmd)
-{
-
-  // Sends a command (as invoked in a Plexil command node) to the system and
-  // sends the status, and return value if applicable, back to the executive.
-
-  string name = cmd->getName();
-  debugMsg("OwAdapter:executeCommand", " for " << name);
-
-  // Command arguments
-  const vector<Value>& args = cmd->getArgValues();
-
-  // Command return value
-  Value retval = Unknown;
-
-  // "Demos" - temporary
-  if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
-  else if (name == "guarded_move_action_demo") { // proof of concept for now
-    OwInterface::instance()->guardedMoveActionDemo();
-  }
-  // Operations
-  else if (name == "tilt_antenna") {
-    double degrees;
-    args[0].getValue (degrees);
-    retval = OwInterface::instance()->tiltAntenna (degrees);
-  }
-  else if (name == "pan_antenna") {
-    double degrees;
-    args[0].getValue (degrees);
-    retval = OwInterface::instance()->panAntenna (degrees);
-  }
-  else if (name == "take_picture") {
-    OwInterface::instance()->takePicture();
-  }
-  else ROS_ERROR("Invalid command %s", name.c_str());
-
-  m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
-  m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);
-  if (retval != Unknown) m_execInterface.handleCommandReturn(cmd, retval);
-  m_execInterface.notifyOfExternalEvent();
-  debugMsg("OwAdapter:executeCommand", " " << name << " complete");
 }
 
 
