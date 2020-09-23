@@ -12,8 +12,10 @@ Boolean Lookup Finished (String operation_name);
 Tilt:
 {
   In Real Degrees;
-
-  tilt_antenna (Degrees);
+  Boolean started;
+  Exit (! started);
+  
+  started = tilt_antenna (Degrees);
 
   WaitForFinish:
   {

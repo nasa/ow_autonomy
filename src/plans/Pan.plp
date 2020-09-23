@@ -12,13 +12,15 @@ Boolean Lookup Finished (String operation_name);
 Pan:
 {
   In Real Degrees;
+  Boolean started;
 
-  pan_antenna (Degrees);
+  started = pan_antenna (Degrees);
 
-  WaitForFinish:
-  {
-    StartCondition Lookup (Running ("PanAntenna"));
-    EndCondition Lookup (Finished ("PanAntenna"));
+  if (started) {
+    WaitForFinish:
+    {
+      StartCondition Lookup (Running ("PanAntenna"));
+      EndCondition Lookup (Finished ("PanAntenna"));
+    }
   }
-
 }

@@ -2,8 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Europa reference mission plan.  At present, only Sol 0 of the mission is
-// modeled.
+// Sample mission plan based on Europa Lander study.  At present, only Sol 0 of
+// the mission is modeled.  This plan includes a new checkpoint facility for
+// plan persistence.
+
 #include "plexil_defs.h"
 
 LibraryAction ImageLandingSite(In String InstanceName,
@@ -16,7 +18,7 @@ LibraryAction CollectAndTransfer(In String InstanceName,
                                  In Boolean IgnoreCrash);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
-LibraryAction MonitorBattery (InOut Boolean status);
+LibraryAction MonitorBattery (In Boolean continue, InOut Boolean status);
 LibraryAction DumpSamples;
 LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
 LibraryAction MonitorSamplesComplete(InOut Boolean status);
@@ -35,12 +37,15 @@ EuropaMission: Concurrence
 {
   // Assumption: checkout is complete.
 
+  Boolean MissionInProgress = true;
+
   // Health variables - expand/refine as needed
   Boolean BatteryOK, TemperatureOK, SamplesOK, SamplesComplete;
 
   ContingencyMonitors: Concurrence
   {
-    BatteryMonitor: LibraryCall MonitorBattery (status = BatteryOK);
+    BatteryMonitor: LibraryCall MonitorBattery (continue = MissionInProgress,
+                                                status = BatteryOK);
     ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
     UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
   }
@@ -54,6 +59,8 @@ EuropaMission: Concurrence
   Mission:
   {
     Boolean did_crash;
+
+    log_info ("Starting Europa Mission, Sol 0 ...");
     did_crash = Lookup(DidCrash);
 
     CrashHandle: UncheckedSequence
@@ -63,10 +70,11 @@ EuropaMission: Concurrence
       OffloadData:
       {
         SkipCondition Lookup(NumberOfUnhandledBoots)<MAX_CRASHES;
-        log_info("Recorded ",Lookup(NumberOfUnhandledBoots)," crashes, likely indication of end-of-mission");
+        log_info("Recorded ", Lookup(NumberOfUnhandledBoots),
+                 " crashes, likely indication of end-of-mission");
         OffloadAllData: LibraryCall Stub(desc="Offloading all data");
       }
-      
+
       CommunicateCrash: LibraryCall Stub(desc="Informing Earth of crash");
 
       // Verify that onboard time is accurate, if possible
@@ -75,13 +83,13 @@ EuropaMission: Concurrence
         EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
         Brightness: LibraryCall Stub(desc="Roughly verifying time from ground brightness");
       }
-      
+
       VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
       VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
       VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
       RestArm: LibraryCall Stub(desc="Moving arm to safe position"); // TODO: samples in arm?
     }
-    
+
 
     ImageLandingSite: {
       // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not found
@@ -96,28 +104,28 @@ EuropaMission: Concurrence
       LibraryCall ImageLandingSite(InstanceName="MissionSol1",IgnoreCrash=false);
       SynchronousCommand flush_checkpoints();
     }
-    
+
     InterrogateSurface:{
       SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
       LibraryCall InterogateSurface;
       set_checkpoint("InterrogateSurfaceComplete");
       SynchronousCommand flush_checkpoints();
     }
-    
+
     GetTrenchTarget:{
       SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
       LibraryCall GetTrenchTarget;
       set_checkpoint("GetTrenchTargetComplete");
       SynchronousCommand flush_checkpoints();
     }
-    
+
     Excavation:{
       SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete"))));
       LibraryCall Excavation;
       set_checkpoint("ExcavationComplete");
       SynchronousCommand flush_checkpoints();
     }
-    
+
     Downlink:{
       SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete"))));
       LibraryCall Downlink;
@@ -134,12 +142,12 @@ EuropaMission: Concurrence
       // MonitorSamples controls SamplesOK
       DumpCollectAnalyze:{
         RepeatCondition SamplesOK == false;
-        
+
         DumpSamples:{
           SkipCondition SamplesOK == true;
           LibraryCall DumpSamples;
         }
-        
+
         // Stop the moment we need to dump samples
         CollectAnalyze:{
           Boolean ignore_crash;
@@ -161,9 +169,9 @@ EuropaMission: Concurrence
       set_checkpoint("SamplesComplete");
       SynchronousCommand flush_checkpoints();
     }
-    
-    log_info ("Europa Mission finished.");
+    log_info ("Europa Mission, Sol 0 finished.");
     set_boot_ok();
     SynchronousCommand flush_checkpoints();
   }
+  MissionInProgress = false;
 }

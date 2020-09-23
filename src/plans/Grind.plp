@@ -1,0 +1,22 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+Grind:
+{
+  In Real X;
+  In Real Y;
+  In Real Depth;
+  In Real Length;
+  In Real GroundPos;
+  In Boolean Radial;
+
+  // For debugging
+  log_info ("---- Grind X=",X," Y=",Y," Depth=",Depth," Len=",Length,
+            " GroundPos=",GroundPos);
+  
+  SynchronousCommand grind (X, Y, Depth, Length, Radial, GroundPos);
+  SynchronousCommand publish_trajectory ();
+}

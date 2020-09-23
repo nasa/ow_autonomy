@@ -1,0 +1,30 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan removes the tailings from a trench that assumed to have been dug
+// using given X, Y, and GroundPos.
+
+#include "plan-interface.h"
+
+RemoveTailings:
+{
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
+  In Boolean Radial;
+
+  // NOTE: These values selected only to save time during testing, as each pass
+  // takes several minutes.
+  Real bite_depth = 0.05;
+  Integer num_passes = 2;
+
+  for (Integer pass = 1; pass <= num_passes; pass + 1) {
+    log_info ("Removing tailings, pass ", pass, " of ", num_passes, "...");
+    LibraryCall DigCircular (X = X, Y = Y, Depth = bite_depth * pass,
+                             GroundPos = GroundPos, Radial = Radial);
+    // NOTE: the X/Y/Z values are known coordinates of a predetermined place to
+    // dump debris.  A real mission procedure may need more sophistication.
+    LibraryCall DeliverSample (X = 1.5, Y = 0.8, Z = 0.25);
+  }
+}

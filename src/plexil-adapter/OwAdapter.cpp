@@ -22,8 +22,9 @@
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
 
-// C++/C
+// C++
 #include <list>
+#include <map>
 #include <iostream>
 using std::string;
 using std::vector;
@@ -36,10 +37,53 @@ using std::endl;
 ///////////////////////////// Conveniences //////////////////////////////////
 
 // A prettier name for the "unknown" value.
-static Value const Unknown;
+//static Value const Unknown;
+const Value Unknown;
 
 // An empty argument vector.
 static vector<Value> const EmptyArgs;
+
+
+//////////////////////////// Command Handling //////////////////////////////
+
+static int CommandId = 0;
+
+static std::map<int, Command*> CommandRegistry;
+
+static void command_sent (Command* cmd)
+{
+  g_execInterface->handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void command_success (Command* cmd)
+{
+  g_execInterface->handleCommandAck(cmd, COMMAND_SUCCESS);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void ack_command (Command* cmd, PLEXIL::CommandHandleValue handle)
+{
+  g_execInterface->handleCommandAck(cmd, handle);
+  g_execInterface->notifyOfExternalEvent();
+}
+
+static void command_status_callback (int id, bool success)
+{
+  Command* cmd;
+
+  try {
+    cmd = CommandRegistry.at(id);
+  }
+  catch (const std::out_of_range& oor) {
+    ROS_ERROR("command_status_callback: no command registered under id %d", id);
+    return;
+  }
+  // This ack is needed only when the command was registered.
+  if (success) ack_command (cmd, COMMAND_SUCCESS);
+  else ack_command (cmd, COMMAND_FAILED);
+}
+
 
 static string log_string (const vector<Value>& args)
 {
@@ -51,24 +95,184 @@ static string log_string (const vector<Value>& args)
   return out.str();
 }
 
-static void log_info (const vector<Value>& args)
+static void log_info (Command* cmd)
 {
-  ROS_INFO("%s", log_string(args).c_str());
+  ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
+  ack_command (cmd, COMMAND_SUCCESS);
 }
 
-static void log_warning (const vector<Value>& args)
+static void log_warning (Command* cmd)
 {
-  ROS_WARN("%s", log_string(args).c_str());
+  ROS_WARN("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
 }
 
-static void log_error (const vector<Value>& args)
+static void log_error (Command* cmd)
 {
-  ROS_ERROR("%s", log_string(args).c_str());
+  ROS_ERROR("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
 }
 
-static void log_debug (const vector<Value>& args)
+static void log_debug (Command* cmd)
 {
-  ROS_DEBUG("%s", log_string(args).c_str());
+  ROS_DEBUG("%s", log_string(cmd->getArgValues()).c_str());
+  command_success (cmd);
+}
+
+static void stow (Command* cmd)
+{
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->stow (CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void unstow (Command* cmd)
+{
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->unstow (CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void publish_trajectory (Command* cmd)
+{
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->publishTrajectory (CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void guarded_move (Command* cmd)
+{
+  double x, y, z, dir_x, dir_y, dir_z, search_distance;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  args[3].getValue(dir_x);
+  args[4].getValue(dir_y);
+  args[5].getValue(dir_z);
+  args[6].getValue(search_distance);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
+                                        search_distance, CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void guarded_move_action_demo (Command* cmd)
+{
+  double x, y, z, dir_x, dir_y, dir_z, search_distance;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  args[3].getValue(dir_x);
+  args[4].getValue(dir_y);
+  args[5].getValue(dir_z);
+  args[6].getValue(search_distance);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->guardedMoveActionDemo (x, y, z, dir_x, dir_y, dir_z,
+                                                  search_distance, CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void grind (Command* cmd)
+{
+  double x, y, depth, length, ground_pos;
+  bool radial;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(length);
+  args[4].getValue(radial);
+  args[5].getValue(ground_pos);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->grind(x, y, depth, length, radial, ground_pos, CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void dig_circular (Command* cmd)
+{
+  double x, y, depth, ground_position;
+  bool radial;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(ground_position);
+  args[4].getValue(radial);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->digCircular(x, y, depth, ground_position, radial,
+                                       CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void dig_linear (Command* cmd)
+{
+  double x, y, depth, length, ground_position;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(depth);
+  args[3].getValue(length);
+  args[4].getValue(ground_position);
+  OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
+                                     CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void deliver_sample (Command* cmd)
+{
+  double x, y, z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->deliverSample (x, y, z, CommandId);
+  command_sent (cmd);
+  CommandId++;
+}
+
+static void tilt_antenna (Command* cmd)
+{
+  Value retval = Unknown;
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  CommandRegistry[CommandId] = cmd;
+  retval = OwInterface::instance()->tiltAntenna (degrees, CommandId);
+  command_sent (cmd);
+  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
+  CommandId++;
+}
+
+static void pan_antenna (Command* cmd)
+{
+  Value retval = Unknown;
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  CommandRegistry[CommandId] = cmd;
+  retval = OwInterface::instance()->panAntenna (degrees, CommandId);
+  command_sent (cmd);
+  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
+  CommandId++;
+}
+
+static void take_picture (Command* cmd)
+{
+  CommandRegistry[CommandId] = cmd;
+  OwInterface::instance()->takePicture();
+  command_sent (cmd);
+  CommandId++;
 }
 
 
@@ -171,11 +375,30 @@ OwAdapter::~OwAdapter ()
 bool OwAdapter::initialize()
 {
   g_configuration->defaultRegisterAdapter(this);
+  g_configuration->registerCommandHandler("log_info", log_info);
+  g_configuration->registerCommandHandler("log_warning", log_warning);
+  g_configuration->registerCommandHandler("log_error", log_error);
+  g_configuration->registerCommandHandler("log_debug", log_debug);
+  g_configuration->registerCommandHandler("stow", stow);
+  g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("grind", grind);
+  g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("guarded_move_action_demo",
+                                          guarded_move_action_demo);
+  g_configuration->registerCommandHandler("dig_circular", dig_circular);
+  g_configuration->registerCommandHandler("dig_linear", dig_linear);
+  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
+  g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
+  g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("take_picture", take_picture);
+  g_configuration->registerCommandHandler("publish_trajectory",
+                                          publish_trajectory);
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
+  OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
@@ -206,93 +429,8 @@ bool OwAdapter::shutdown()
 
 void OwAdapter::invokeAbort(Command *cmd)
 {
-}
-
-void OwAdapter::executeCommand(Command *cmd)
-{
-
-  // Sends a command (as invoked in a Plexil command node) to the system and
-  // sends the status, and return value if applicable, back to the executive.
-
-  string name = cmd->getName();
-  debugMsg("OwAdapter:executeCommand", " for " << name);
-
-  // Command arguments
-  const vector<Value>& args = cmd->getArgValues();
-
-  // Command return value
-  Value retval = Unknown;
-
-  // Utility commands
-  if (name == "log_info") log_info (cmd->getArgValues());
-  else if (name == "log_warning") log_warning (args);
-  else if (name == "log_error") log_error (args);
-  else if (name == "log_debug") log_debug (args);
-
-  // "Demos"
-  else if (name == "dig_circular_demo") OwInterface::instance()->digCircularDemo();
-  else if (name == "guarded_move_demo") OwInterface::instance()->guardedMoveDemo();
-  else if (name == "guarded_move_action_demo") { // proof of concept for now
-    OwInterface::instance()->guardedMoveActionDemo();
-  }
-  else if (name == "publish_trajectory_demo") {
-    OwInterface::instance()->publishTrajectoryDemo();
-  }
-  // Operations
-  else if (name == "dig_linear") {
-    double x, y, depth, length, ground_position, width, pitch, yaw;
-    double dumpx, dumpy, dumpz;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(depth);
-    args[3].getValue(length);
-    args[4].getValue(ground_position);
-    args[5].getValue(width);
-    args[6].getValue(pitch);
-    args[7].getValue(yaw);
-    args[8].getValue(dumpx);
-    args[9].getValue(dumpy);
-    args[10].getValue(dumpz);
-    OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
-                                       width, pitch, yaw, dumpx, dumpy, dumpz);
-  }
-  else if (name == "guarded_move") {
-    double x, y, z, direction_x, direction_y, direction_z;
-    double search_distance;
-    bool delete_prev_traj, retract;
-    args[0].getValue(x);
-    args[1].getValue(y);
-    args[2].getValue(z);
-    args[3].getValue(direction_x);
-    args[4].getValue(direction_y);
-    args[5].getValue(direction_z);
-    args[6].getValue(search_distance);
-    args[7].getValue(delete_prev_traj);
-    OwInterface::instance()->guardedMove (x, y, z,
-                                          direction_x, direction_y, direction_z,
-                                          search_distance,
-                                          delete_prev_traj);
-  }
-  else if (name == "tilt_antenna") {
-    double degrees;
-    args[0].getValue (degrees);
-    retval = OwInterface::instance()->tiltAntenna (degrees);
-  }
-  else if (name == "pan_antenna") {
-    double degrees;
-    args[0].getValue (degrees);
-    retval = OwInterface::instance()->panAntenna (degrees);
-  }
-  else if (name == "take_picture") {
-    OwInterface::instance()->takePicture();
-  }
-  else ROS_ERROR("Invalid command %s", name.c_str());
-
-  m_execInterface.handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
-  m_execInterface.handleCommandAck(cmd, COMMAND_SUCCESS);
-  if (retval != Unknown) m_execInterface.handleCommandReturn(cmd, retval);
-  m_execInterface.notifyOfExternalEvent();
-  debugMsg("OwAdapter:executeCommand", " " << name << " complete");
+  ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
+            cmd->getName().c_str());
 }
 
 
