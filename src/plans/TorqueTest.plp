@@ -32,7 +32,7 @@ TorqueTest:
                                DirX = 0, DirY = 0, DirZ = 1,
                                SearchDistance = 0.5);
       if (Lookup(GroundFound)) {
-        LibraryCall Grind (X=2, Y=0, Depth=2, Length=0.5, Radial=false,
+        LibraryCall Grind (X=2, Y=0, Depth=2, Length=0.5, Parallel=false,
                            GroundPos=Lookup(GroundPosition));
       }
       else log_error ("TorqueTest failed to find ground!");
