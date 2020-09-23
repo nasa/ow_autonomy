@@ -31,6 +31,5 @@ IdentifySampleTarget:
   Y = 0;
 
   Parallel = true;
-  GroundPos = -0.155;
 
 }

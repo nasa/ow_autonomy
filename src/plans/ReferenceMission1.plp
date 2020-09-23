@@ -43,7 +43,7 @@ ReferenceMission1: Concurrence
   {
     // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
-    Boolean parallel = true;
+    Boolean parallel;
 
     // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
     // However, the max value is generally not appropriate because the scoop
@@ -62,7 +62,7 @@ ReferenceMission1: Concurrence
                                       GroundPos = ground_pos,
                                       Parallel = parallel);
     if (! Lookup(GroundFound)) MissionInProgress = false;
-    
+
     LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                            Length = trench_length, BiteDepth = 0.05,
                            NumPasses = 2, Parallel = parallel);
