@@ -14,8 +14,8 @@ Grind:
   In Boolean Parallel;
 
   // For debugging
-  log_info ("---- Grind X=",X," Y=",Y," Depth=",Depth," Len=",Length,
-            " GroundPos=",GroundPos);
+  //  log_info ("---- Grind X=",X," Y=",Y," Depth=",Depth," Len=",Length,
+  //            " GroundPos=",GroundPos);
 
   SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
   SynchronousCommand publish_trajectory ();
