@@ -20,8 +20,6 @@ IdentifySampleTarget:
   LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                            DirX = 0, DirY = 0, DirZ = 1,
                            SearchDistance = 0.5);
-
-  Wait 4; // Add some delay to make sure the status has been updated 
   if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
   else log_warning ("GuardedMove failed to find ground.");
   endif;
