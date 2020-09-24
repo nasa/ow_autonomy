@@ -17,5 +17,5 @@ MonitorPower:
 
   log_info ("Battery: state of charge: ", Lookup(Voltage));
   log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
-  Wait 30;
+  Wait 120;
 }
