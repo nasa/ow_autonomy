@@ -25,14 +25,11 @@ TorqueTest:
       // overtorque one or more arm joints.
 
       // First, find ground.
-      // This call doesn't find ground.
-      //      LibraryCall GuardedMove (X=2, Y=0, Z=0, DirX=0, DirY=0, DirZ=-1,
-      //                               SearchDistance=3.0);
       LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                                DirX = 0, DirY = 0, DirZ = 1,
                                SearchDistance = 0.5);
       if (Lookup(GroundFound)) {
-        LibraryCall Grind (X=2, Y=0, Depth=2, Length=0.5, Parallel=false,
+        LibraryCall Grind (X=2, Y=0, Depth=3.0, Length=0.5, Parallel=false,
                            GroundPos=Lookup(GroundPosition));
       }
       else log_error ("TorqueTest failed to find ground!");
