@@ -51,8 +51,6 @@ ReferenceMission1: Concurrence
     // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
-    Exit (NOT MissionInProgress);
-
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
                                   IgnoreCrash = true);
@@ -61,20 +59,22 @@ ReferenceMission1: Concurrence
                                       Y = trench_y,
                                       GroundPos = ground_pos,
                                       Parallel = parallel);
-    if (! Lookup(GroundFound)) MissionInProgress = false;
-
-    LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                           Length = trench_length, BiteDepth = 0.05,
-                           NumPasses = 2, Parallel = parallel);
-    LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
-                                GroundPos = ground_pos, Parallel = parallel);
-    LibraryCall CollectSample (X = trench_x, Y = trench_y,
-                               GroundPos = ground_pos, Depth = 0.11,
-                               Length = trench_length, Parallel = parallel);
-    LibraryCall Stow();
-    LibraryCall StartSampleAnalysis;
-    Wait 2;  // Wait for (stubbed) sample analysis to finish.
-    log_info ("Reference Mission 1, Sol 0 complete.");
+    if (Lookup(GroundFound)) {
+      LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                             Length = trench_length, BiteDepth = 0.05,
+                             NumPasses = 2, Parallel = parallel);
+      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                  GroundPos = ground_pos, Parallel = parallel);
+      LibraryCall CollectSample (X = trench_x, Y = trench_y,
+                                 GroundPos = ground_pos, Depth = 0.11,
+                                 Length = trench_length, Parallel = parallel);
+      LibraryCall Stow();
+      LibraryCall StartSampleAnalysis;
+      Wait 2;  // Wait for (stubbed) sample analysis to finish.
+    }
+    else log_error ("Failed to find ground, aborting.");
+    endif;
     MissionInProgress = false;
+    log_info ("Reference Mission 1, Sol 0 complete.");
   }
 }
