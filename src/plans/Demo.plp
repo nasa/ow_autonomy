@@ -14,23 +14,28 @@ Demo:
 {
   log_info ("Starting autonomy demo...");
 
+  LibraryCall TestAntennaCamera();
+
   log_info ("Unstowing arm...");
   LibraryCall Unstow();
 
   log_info ("A guarded move...");
-  SynchronousCommand guarded_move (2, 0.0, 0.3, 0, 0, 1.0, 0.5);
-  SynchronousCommand publish_trajectory();
-
-  log_info ("A circular dig...");
-  SynchronousCommand dig_circular (1.5, 0, 0.02, -0.155, false);
-  SynchronousCommand publish_trajectory();
-
-  LibraryCall TestAntennaCamera();
-  LibraryCall TestPlanning();
-  LibraryCall TestActions();
-
+  LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
+                           DirX = 0, DirY = 0, DirZ = 1,
+                           SearchDistance = 0.5);
+  if (Lookup(GroundFound)) {
+    log_info ("A grind...");
+    LibraryCall Grind (X = 2.0, Y = 0, Depth = 0.05,
+                       Length = 0.3, Parallel = true,
+                       GroundPos = Lookup(GroundPosition));
+    log_info ("A circular dig...");
+    LibraryCall DigCircular (X = 2.0, Y = 0, Depth = 0.05,
+                             GroundPos = Lookup(GroundPosition),
+                             Parallel = true);
+  }
+  else log_error ("Failed to find ground, skipping grind and dig.");
+  endif;
   log_info ("Stowing arm...");
   LibraryCall Stow();
-
   log_info ("Autonomy demo finished.");
 }
