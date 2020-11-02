@@ -72,7 +72,11 @@ ReferenceMission1: Concurrence
       LibraryCall StartSampleAnalysis;
       Wait 2;  // Wait for (stubbed) sample analysis to finish.
     }
-    else log_error ("Failed to find ground, aborting.");
+    else
+    {
+      log_error ("Failed to find ground, aborting.");
+      LibraryCall Stow();
+    }
     endif;
     MissionInProgress = false;
     log_info ("Reference Mission 1, Sol 0 complete.");
