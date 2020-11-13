@@ -43,7 +43,7 @@ using std::ref;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-const double DegreeTolerance = 0.2;    // made up, degees
+const double DegreeTolerance = 0.3;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
 static bool within_tolerance (double val1, double val2, double tolerance)

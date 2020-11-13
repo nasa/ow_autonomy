@@ -5,22 +5,18 @@
 // Antenna tilt procedure.
 // Input: degrees
 
-Boolean Command tilt_antenna (Real);
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+#include "plan-interface.h"
 
 Tilt:
 {
   In Real Degrees;
   Boolean started;
-  Exit (! started);
-  
-  started = tilt_antenna (Degrees);
+  PostCondition (! started);
 
-  WaitForFinish:
-  {
-    StartCondition Lookup (Running ("TiltAntenna"));
-    EndCondition Lookup (Finished ("TiltAntenna"));
+  SynchronousCommand started = tilt_antenna (Degrees);
+
+  if (! started) {
+    log_error ("Failed to start antenna tilt to ", Degrees, " degrees.");
   }
-
+  endif
 }
