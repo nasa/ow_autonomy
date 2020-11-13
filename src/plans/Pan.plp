@@ -10,13 +10,5 @@
 Pan:
 {
   In Real Degrees;
-  Boolean started;
-  PostCondition (! started);
-  
-  SynchronousCommand started = pan_antenna (Degrees);
-
-  if (! started) {
-    log_error ("Failed to start antenna pan to ", Degrees, " degrees.");
-  }
-  endif
+  SynchronousCommand pan_antenna (Degrees);
 }

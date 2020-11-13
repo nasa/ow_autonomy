@@ -9,8 +9,8 @@
 
 // Lander commands
 
-Boolean Command tilt_antenna (Real);
-Boolean Command pan_antenna (Real);
+Command tilt_antenna (Real);
+Command pan_antenna (Real);
 
 // The following commands perform only the path planning for the given activity.
 

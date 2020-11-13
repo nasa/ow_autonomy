@@ -243,27 +243,23 @@ static void deliver_sample (Command* cmd)
 
 static void tilt_antenna (Command* cmd)
 {
-  Value retval = Unknown;
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
   CommandRegistry[CommandId] = cmd;
-  retval = OwInterface::instance()->tiltAntenna (degrees, CommandId);
+  OwInterface::instance()->tiltAntenna (degrees, CommandId);
   command_sent (cmd);
-  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
   CommandId++;
 }
 
 static void pan_antenna (Command* cmd)
 {
-  Value retval = Unknown;
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
   CommandRegistry[CommandId] = cmd;
-  retval = OwInterface::instance()->panAntenna (degrees, CommandId);
+  OwInterface::instance()->panAntenna (degrees, CommandId);
   command_sent (cmd);
-  if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
   CommandId++;
 }
 

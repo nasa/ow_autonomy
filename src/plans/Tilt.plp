@@ -10,13 +10,5 @@
 Tilt:
 {
   In Real Degrees;
-  Boolean started;
-  PostCondition (! started);
-
-  SynchronousCommand started = tilt_antenna (Degrees);
-
-  if (! started) {
-    log_error ("Failed to start antenna tilt to ", Degrees, " degrees.");
-  }
-  endif
+  SynchronousCommand tilt_antenna (Degrees);
 }
