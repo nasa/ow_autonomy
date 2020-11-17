@@ -140,7 +140,7 @@ CollectAndTransfer:
         else{
           CollectMore = false;
         }
-        endif;
+        endif
         Wait 1;
         set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();

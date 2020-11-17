@@ -23,11 +23,14 @@
 #include <StateCacheEntry.hh>
 
 // C++
+#include <utility>  // for std::pair
 #include <list>
 #include <map>
 #include <iostream>
 using std::string;
 using std::vector;
+using std::pair;
+using std::make_pair;
 using std::list;
 using std::copy;
 using std::cout;
@@ -48,29 +51,35 @@ static vector<Value> const EmptyArgs;
 
 static int CommandId = 0;
 
-static std::map<int, Command*> CommandRegistry;
+static std::map<int, pair<Command*, AdapterExecInterface*>> CommandRegistry;
 
-static void command_sent (Command* cmd)
+static void ack_command (Command* cmd,
+                         PLEXIL::CommandHandleValue handle,
+                         AdapterExecInterface* intf)
 {
-  g_execInterface->handleCommandAck(cmd, COMMAND_SENT_TO_SYSTEM);
-  g_execInterface->notifyOfExternalEvent();
+  intf->handleCommandAck(cmd, handle);
+  intf->notifyOfExternalEvent();
 }
 
-static void command_success (Command* cmd)
+static void ack_success (Command* cmd, AdapterExecInterface* intf)
 {
-  g_execInterface->handleCommandAck(cmd, COMMAND_SUCCESS);
-  g_execInterface->notifyOfExternalEvent();
+  ack_command (cmd, COMMAND_SUCCESS, intf);
 }
 
-static void ack_command (Command* cmd, PLEXIL::CommandHandleValue handle)
+static void ack_failure (Command* cmd, AdapterExecInterface* intf)
 {
-  g_execInterface->handleCommandAck(cmd, handle);
-  g_execInterface->notifyOfExternalEvent();
+  ack_command (cmd, COMMAND_FAILED, intf);
+}
+
+
+static void ack_sent (Command* cmd, AdapterExecInterface* intf)
+{
+  ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
 }
 
 static void command_status_callback (int id, bool success)
 {
-  Command* cmd;
+  pair<Command*, AdapterExecInterface*> cmd;
 
   try {
     cmd = CommandRegistry.at(id);
@@ -79,9 +88,8 @@ static void command_status_callback (int id, bool success)
     ROS_ERROR("command_status_callback: no command registered under id %d", id);
     return;
   }
-  // This ack is needed only when the command was registered.
-  if (success) ack_command (cmd, COMMAND_SUCCESS);
-  else ack_command (cmd, COMMAND_FAILED);
+  if (success) ack_success (cmd.first, cmd.second);
+  else ack_failure (cmd.first, cmd.second);
 }
 
 
@@ -95,55 +103,55 @@ static string log_string (const vector<Value>& args)
   return out.str();
 }
 
-static void log_info (Command* cmd)
+static void log_info (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
-  ack_command (cmd, COMMAND_SUCCESS);
+  ack_success (cmd, intf);
 }
 
-static void log_warning (Command* cmd)
+static void log_warning (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_WARN("%s", log_string(cmd->getArgValues()).c_str());
-  command_success (cmd);
+  ack_success (cmd, intf);
 }
 
-static void log_error (Command* cmd)
+static void log_error (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_ERROR("%s", log_string(cmd->getArgValues()).c_str());
-  command_success (cmd);
+  ack_success (cmd, intf);
 }
 
-static void log_debug (Command* cmd)
+static void log_debug (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_DEBUG("%s", log_string(cmd->getArgValues()).c_str());
-  command_success (cmd);
+  ack_success (cmd, intf);
 }
 
-static void stow (Command* cmd)
+static void stow (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->stow (CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void unstow (Command* cmd)
+static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->unstow (CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void publish_trajectory (Command* cmd)
+static void publish_trajectory (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->publishTrajectory (CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void guarded_move (Command* cmd)
+static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
   const vector<Value>& args = cmd->getArgValues();
@@ -154,14 +162,15 @@ static void guarded_move (Command* cmd)
   args[4].getValue(dir_y);
   args[5].getValue(dir_z);
   args[6].getValue(search_distance);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void guarded_move_action_demo (Command* cmd)
+static void guarded_move_action_demo (Command* cmd,
+                                      AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
   const vector<Value>& args = cmd->getArgValues();
@@ -172,14 +181,14 @@ static void guarded_move_action_demo (Command* cmd)
   args[4].getValue(dir_y);
   args[5].getValue(dir_z);
   args[6].getValue(search_distance);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->guardedMoveActionDemo (x, y, z, dir_x, dir_y, dir_z,
                                                   search_distance, CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void grind (Command* cmd)
+static void grind (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, depth, length, ground_pos;
   bool parallel;
@@ -190,13 +199,14 @@ static void grind (Command* cmd)
   args[3].getValue(length);
   args[4].getValue(parallel);
   args[5].getValue(ground_pos);
-  CommandRegistry[CommandId] = cmd;
-  OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos, CommandId);
-  command_sent (cmd);
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
+                                 CommandId);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void dig_circular (Command* cmd)
+static void dig_circular (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, depth, ground_position;
   bool parallel;
@@ -206,14 +216,14 @@ static void dig_circular (Command* cmd)
   args[2].getValue(depth);
   args[3].getValue(ground_position);
   args[4].getValue(parallel);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void dig_linear (Command* cmd)
+static void dig_linear (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, depth, length, ground_position;
   const vector<Value>& args = cmd->getArgValues();
@@ -224,54 +234,54 @@ static void dig_linear (Command* cmd)
   args[4].getValue(ground_position);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void deliver_sample (Command* cmd)
+static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(z);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->deliverSample (x, y, z, CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 
-static void tilt_antenna (Command* cmd)
+static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
 {
   Value retval = Unknown;
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   retval = OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
   CommandId++;
 }
 
-static void pan_antenna (Command* cmd)
+static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
 {
   Value retval = Unknown;
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   retval = OwInterface::instance()->panAntenna (degrees, CommandId);
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   if (retval != Unknown) g_execInterface->handleCommandReturn(cmd, retval);
   CommandId++;
 }
 
-static void take_picture (Command* cmd)
+static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = cmd;
+  CommandRegistry[CommandId] = make_pair (cmd, intf);
   OwInterface::instance()->takePicture();
-  command_sent (cmd);
+  ack_sent (cmd, intf);
   CommandId++;
 }
 

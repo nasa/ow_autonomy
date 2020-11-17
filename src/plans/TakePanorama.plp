@@ -79,25 +79,25 @@ TakePanorama:
     log_error ("TakePanorama: Tilt spec outside valid range, exiting.");
     exit = true;
   }
-  endif;
+  endif
 
   if (PanLo > PanHi || PanLo < PAN_MIN || PanHi > PAN_MAX) {
     log_error ("TakePanorama: Pan spec outside valid range, exiting.");
     exit = true;
   }
-  endif;
+  endif
 
   if (VERT_FOV/2 <= VertOverlap) {
     log_error ("TakePanorama: Vertical overlap too high, exiting.");
     exit = true;
   }
-  endif;
+  endif
 
   if (HORIZ_FOV/2 <= HorizOverlap) {
     log_error ("TakePanorama: Horizontal overlap too high, exiting.");
     exit = true;
   }
-  endif;
+  endif
 
   // Initialize plan variables
   tilt = TiltLo;
@@ -182,7 +182,7 @@ TakePanorama:
                                   CheckpointName=OurName,
                                   ReversePan = reverse_pan);
   }
-  endif;
+  endif
   set_checkpoint(OurName+"__End",true,"");
   SynchronousCommand flush_checkpoints();
 }
