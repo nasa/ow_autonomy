@@ -33,8 +33,8 @@ class OwInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  bool tiltAntenna (double degrees, int id);
-  bool panAntenna (double degrees, int id);
+  void tiltAntenna (double degrees, int id);
+  void panAntenna (double degrees, int id);
   void takePicture ();
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);

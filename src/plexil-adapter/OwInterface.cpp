@@ -679,11 +679,11 @@ void OwInterface::publishTrajectory (int id)
   }
 }
 
-static bool antenna_op (const string& opname, double degrees,
+static void antenna_op (const string& opname, double degrees,
                         ros::Publisher* pub, int id)
 {
   if (! mark_operation_running (opname, id)) {
-    return false;
+    return;
   }
 
   std_msgs::Float64 radians;
@@ -693,21 +693,20 @@ static bool antenna_op (const string& opname, double degrees,
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
   pub->publish (radians);
-  return true;
 }
 
-bool OwInterface::tiltAntenna (double degrees, int id)
+void OwInterface::tiltAntenna (double degrees, int id)
 {
   m_goalTilt = degrees;
   m_tiltStart = ros::Time::now();
-  return antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
+  antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
 }
 
-bool OwInterface::panAntenna (double degrees, int id)
+void OwInterface::panAntenna (double degrees, int id)
 {
   m_goalPan = degrees;
   m_panStart = ros::Time::now();
-  return antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
+  antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
 void OwInterface::takePicture ()
