@@ -806,7 +806,6 @@ void OwInterface::stow (int id)
 
   if (check_service_client (client)) {
     ow_lander::Stow srv;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Stow>,
                            client, srv, Op_Stow, id);
     service_thread.detach();
@@ -824,7 +823,6 @@ void OwInterface::unstow (int id)
 
   if (check_service_client (client)) {
     ow_lander::Unstow srv;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Unstow>,
                            client, srv, Op_Unstow, id);
     service_thread.detach();
