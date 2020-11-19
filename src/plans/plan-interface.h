@@ -9,6 +9,9 @@
 
 // Lander commands
 
+Command tilt_antenna (Real);
+Command pan_antenna (Real);
+
 // The following commands perform only the path planning for the given activity.
 
 Command dig_circular (Real x, Real y, Real depth, Real ground_pos,

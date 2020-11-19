@@ -5,22 +5,10 @@
 // Antenna pan procedure.
 // Input: degrees
 
-Boolean Command pan_antenna (Real);
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+#include "plan-interface.h"
 
 Pan:
 {
   In Real Degrees;
-  Boolean started;
-
-  started = pan_antenna (Degrees);
-
-  if (started) {
-    WaitForFinish:
-    {
-      StartCondition Lookup (Running ("PanAntenna"));
-      EndCondition Lookup (Finished ("PanAntenna"));
-    }
-  }
+  SynchronousCommand pan_antenna (Degrees);
 }
