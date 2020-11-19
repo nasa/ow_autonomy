@@ -653,7 +653,6 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.direction_y = direction_y;
     srv.request.direction_z = direction_z;
     srv.request.search_distance = search_distance;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove, id);
     service_thread.detach();
