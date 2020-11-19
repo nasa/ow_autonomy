@@ -77,7 +77,7 @@ ReferenceMission1: Concurrence
       log_error ("Failed to find ground, aborting.");
       LibraryCall Stow();
     }
-    endif;
+    endif
     MissionInProgress = false;
     log_info ("Reference Mission 1, Sol 0 complete.");
   }

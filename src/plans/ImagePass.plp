@@ -33,7 +33,7 @@ ImagePass: UncheckedSequence
       LibraryCall PanAndShoot (PanAngle = PanAngle);
       set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
-    endif;
+    endif
   }
   else {
     log_debug ("Forward pan. Pan =", PanAngle, "Hi=", PanHi,
@@ -48,8 +48,8 @@ ImagePass: UncheckedSequence
       LibraryCall PanAndShoot (PanAngle = PanAngle);
       set_checkpoint(CheckpointName,true,Lookup(ToString(ReversePan,"_",Tilt,"_",PanAngle)));
     }
-    endif;
+    endif
   }
-  endif;
+  endif
   ReversePan = !ReversePan;
 }

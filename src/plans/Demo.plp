@@ -34,7 +34,7 @@ Demo:
                              Parallel = true);
   }
   else log_error ("Failed to find ground, skipping grind and dig.");
-  endif;
+  endif
   log_info ("Stowing arm...");
   LibraryCall Stow();
   log_info ("Autonomy demo finished.");
