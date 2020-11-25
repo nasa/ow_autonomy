@@ -11,6 +11,7 @@
 
 Command tilt_antenna (Real);
 Command pan_antenna (Real);
+Command take_picture();
 
 // The following commands perform only the path planning for the given activity.
 
@@ -54,6 +55,7 @@ Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
+Boolean Lookup ImageReceived;
 
 // Lander operations
 
