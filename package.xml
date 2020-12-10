@@ -12,6 +12,7 @@
   <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>ow_lander</depend>
+  <depend>owlat_msgs</depend>
 
   <depend>actionlib_msgs</depend>
   <depend>message_generation</depend>
