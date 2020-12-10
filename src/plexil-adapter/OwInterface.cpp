@@ -735,7 +735,6 @@ void OwInterface::digLinear (double x, double y,
     srv.request.depth = depth;
     srv.request.length = length;
     srv.request.ground_position = ground_position;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigLinear>,
                            client, srv, Op_DigLinear, id);
     service_thread.detach();
@@ -760,7 +759,6 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.depth = depth;
     srv.request.ground_position = ground_position;
     srv.request.parallel = parallel;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular, id);
     service_thread.detach();
@@ -786,7 +784,6 @@ void OwInterface::grind (double x, double y, double depth, double length,
     srv.request.length = length;
     srv.request.parallel = parallel;
     srv.request.ground_position = ground_pos;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Grind>,
                            client, srv, Op_Grind, id);
     service_thread.detach();
