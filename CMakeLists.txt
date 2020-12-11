@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   actionlib
   actionlib_msgs
+	geometry_msgs
   ow_lander
 )
 
@@ -23,7 +24,7 @@ add_action_files(
 	)
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs
+  DEPENDENCIES actionlib_msgs geometry_msgs
 )
 
 
@@ -32,7 +33,7 @@ generate_messages(
 ###################################
 
 catkin_package(
-  CATKIN_DEPENDS roscpp roslib ow_lander actionlib_msgs
+  CATKIN_DEPENDS roscpp roslib ow_lander actionlib_msgs geometry_msgs
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 

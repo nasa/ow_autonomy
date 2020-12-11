@@ -447,7 +447,7 @@ static void guarded_move_done_cb
   ROS_INFO ("GuardedMove done callback: finished in state [%s]",
             state.toString().c_str());
   ROS_INFO("GuardedMove done callback: result (%f, %f, %f)",
-           result->final_x, result->final_y, result->final_z);
+           result->final.x, result->final.y, result->final.z);
 }
 
 static void guarded_move_active_cb ()
@@ -459,7 +459,7 @@ static void guarded_move_feedback_cb
 (const ow_autonomy::GuardedMoveFeedbackConstPtr& feedback)
 {
   ROS_INFO ("GuardedMove feedback callback: (%f, %f, %f)",
-            feedback->current_x, feedback->current_y, feedback->current_z);
+            feedback->current.x, feedback->current.y, feedback->current.z);
 }
 
 
@@ -567,40 +567,26 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
   CommandStatusCallback = callback;
 }
 
-void OwInterface::guardedMoveActionDemo (double x, double y, double z,
-                                         double direction_x,
-                                         double direction_y,
-                                         double direction_z,
+void OwInterface::guardedMoveActionDemo (const geometry_msgs::Point& start,
+                                         const geometry_msgs::Point& normal,
                                          double search_distance,
                                          int id)
 {
   if (! mark_operation_running (Op_GuardedMoveAction, id)) return;
 
-  thread action_thread (&OwInterface::guardedMoveActionDemo1, this,
-                        x, y, z,
-                        direction_x, direction_y, direction_z,
-                        search_distance, id);
+  thread action_thread (&OwInterface::guardedMoveActionDemo1, this, start,
+                        normal, search_distance, id);
   action_thread.detach();
 }
 
-void OwInterface::guardedMoveActionDemo1 (double x,
-                                          double y,
-                                          double z,
-                                          double direction_x,
-                                          double direction_y,
-                                          double direction_z,
+void OwInterface::guardedMoveActionDemo1 (const geometry_msgs::Point& start,
+                                          const geometry_msgs::Point& normal,
                                           double search_distance,
                                           int id)
 {
   ow_autonomy::GuardedMoveGoal goal;
-  goal.use_defaults = false;
-  goal.delete_prev_traj = false;
-  goal.x = x;
-  goal.y = y;
-  goal.z = z;
-  goal.direction_x = direction_x;
-  goal.direction_y = direction_y;
-  goal.direction_z = direction_z;
+  goal.start = start;
+  goal.normal = normal;
   goal.search_distance = search_distance;
 
   thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
@@ -619,7 +605,7 @@ void OwInterface::guardedMoveActionDemo1 (double x,
     ow_autonomy::GuardedMoveResultConstPtr result =
       m_guardedMoveClient.getResult();
     ROS_INFO("GuardedMove action result: (%f, %f, %f)",
-             result->final_x, result->final_y, result->final_z);
+             result->final.x, result->final.y, result->final.z);
   }
   else {
     ROS_INFO("GuardedMove action did not finish before the time out.");
@@ -768,7 +754,7 @@ void OwInterface::digCircular (double x, double y, double depth,
   }
 }
 
-void OwInterface::grind (double x, double y, double depth, double length, 
+void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind, id)) return;
