@@ -12,13 +12,12 @@
   <depend>roscpp</depend>
   <depend>roslib</depend>
   <depend>ow_lander</depend>
-  <depend>owlat_msgs</depend>
-
   <depend>actionlib_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>owlat_msgs</depend>
   <depend>message_generation</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->
-
   </export>
 </package>

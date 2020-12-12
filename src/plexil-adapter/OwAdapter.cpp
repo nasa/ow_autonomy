@@ -12,6 +12,7 @@
 
 // ROS
 #include <ros/ros.h>
+#include <geometry_msgs/Point.h>
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -182,8 +183,13 @@ static void guarded_move_action_demo (Command* cmd,
   args[5].getValue(dir_z);
   args[6].getValue(search_distance);
   CommandRegistry[CommandId] = make_pair (cmd, intf);
-  OwInterface::instance()->guardedMoveActionDemo (x, y, z, dir_x, dir_y, dir_z,
-                                                  search_distance, CommandId);
+  // Unfortunately, ROS does not provide a constructor taking x,y,z
+  geometry_msgs::Point start;
+  start.x = x; start.y = y; start.z = z;
+  geometry_msgs::Point normal;
+  normal.x = dir_x; normal.y = dir_y; normal.z = dir_z;
+  OwInterface::instance()->guardedMoveActionDemo (start, normal, search_distance,
+                                                  CommandId);
   ack_sent (cmd, intf);
   CommandId++;
 }
