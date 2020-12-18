@@ -31,8 +31,7 @@ using PLEXIL::InterfaceSchema;
 using std::string;
 using std::ostringstream;
 
-// DEVEL location of PLEXIL files, initialized in initialize().
-// TODO: make this the INSTALLED location, once we have one for OW.
+// Installed location of compiled PLEXIL files, initialized in initialize().
 static string PlexilDir = "";
 
 // The embedded PLEXIL application
@@ -156,7 +155,8 @@ static void get_plexil_debug_config()
 
 bool OwExecutive::initialize ()
 {
-  // NOTE: this is the best we can do for now.  ROS provides no API for devel.
+  // NOTE: this is the best we can do for now.
+  // ROS provides no API to locate the 'devel' directory.
   PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert

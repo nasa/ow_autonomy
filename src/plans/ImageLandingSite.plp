@@ -2,6 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Take a panoramic image of the landing site.
+// NOTE: using a very limited range for now to save time in testing.
+// A more realistic range takes many minutes.
+
 LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
                             In Real PanLo, In Real PanHi,
                             In Real HorizOverlap, In Real VertOverlap,
@@ -10,8 +14,6 @@ LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
 
 ImageLandingSite:
 {
-  // NOTE: using a very limited range for now to save time in testing.
-  // A more realistic range takes many minutes.
   In String InstanceName;
   In Boolean IgnoreCrash;
   LibraryCall TakePanorama (TiltLo = 0, TiltHi = 3,

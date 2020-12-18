@@ -11,7 +11,7 @@ using std::string;
 
 static void stubbed_lookup (const string& name, const string& value)
 {
-  // This warning is too annoying.  Could parameterize it.
+  // This warning is annoying.  Could parameterize it.
   //  ROS_WARN("PLEXIL Adapter: Stubbed lookup of %s returning %s",
   //           name.c_str(), value.c_str());
 }

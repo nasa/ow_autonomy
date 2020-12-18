@@ -23,9 +23,6 @@ include_directories(
   ${PLEXIL_INCLUDE_DIR}
 )
 
-# For debugging
-# message(STATUS "PLEXIL_INCLUDE_DIR = ${PLEXIL_INCLUDE_DIR}")
-
 add_library(${LIB_NAME} SHARED
   ${HEADERS}
   ${SOURCES}
