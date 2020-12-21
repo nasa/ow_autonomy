@@ -765,7 +765,7 @@ void OwInterface::stow (int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Stow>("arm/stow");
+    nhandle.serviceClient<ow_lander::Stow>("/arm/stow");
 
   if (check_service_client (client, Op_Stow)) {
     ow_lander::Stow srv;
