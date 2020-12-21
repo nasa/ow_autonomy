@@ -11,5 +11,4 @@ DeliverSample:
   In Real Z;
 
   SynchronousCommand deliver_sample (X, Y, Z);
-  SynchronousCommand publish_trajectory ();
 }

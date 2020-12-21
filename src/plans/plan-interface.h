@@ -36,9 +36,6 @@ Command unstow();  // move from stowed position to a "ready" position
 Command stow();
 
 
-// This command sends the planned trajectory to Gazebo, i.e. moves real arm
-Command publish_trajectory();
-
 // Utility commands
 
 Command log_info (...);
