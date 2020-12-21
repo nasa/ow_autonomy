@@ -144,14 +144,6 @@ static void unstow (Command* cmd, AdapterExecInterface* intf)
   CommandId++;
 }
 
-static void publish_trajectory (Command* cmd, AdapterExecInterface* intf)
-{
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
-  OwInterface::instance()->publishTrajectory (CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
-}
-
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -403,8 +395,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("take_picture", take_picture);
-  g_configuration->registerCommandHandler("publish_trajectory",
-                                          publish_trajectory);
+  
   TheAdapter = this;
   setSubscriber (receiveBool);
   setSubscriber (receiveString);

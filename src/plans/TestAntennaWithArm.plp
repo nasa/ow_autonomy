@@ -28,7 +28,6 @@ TestAntennaWithArm:
                               VertOverlap = 0,
                               InstanceName = "TestAntennaWithArm",
                               IgnoreCrash=true);
-    publish_trajectory();
   }
 
   log_info ("Antenna/Arm demo finished.");

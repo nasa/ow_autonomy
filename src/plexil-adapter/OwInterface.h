@@ -49,9 +49,6 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
-  // Pubishes trajectory saved by those operations above that are ROS actions.
-  void publishTrajectory (int id);
-
   // Temporary, proof of concept for ROS Actions
   void guardedMoveActionDemo (const geometry_msgs::Point& start,
                               const geometry_msgs::Point& normal,

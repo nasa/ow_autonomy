@@ -16,5 +16,4 @@ Grind:
   In Boolean Parallel;
 
   SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
-  SynchronousCommand publish_trajectory ();
 }

@@ -628,7 +628,7 @@ void OwInterface::guardedMove (double x, double y, double z,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::GuardedMove>("arm/guarded_move");
+    nhandle.serviceClient<ow_lander::GuardedMove>("/arm/guarded_move");
 
   if (check_service_client (client, Op_GuardedMove)) {
     ow_lander::GuardedMove srv;
@@ -642,25 +642,6 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.search_distance = search_distance;
     thread service_thread (call_ros_service<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove, id);
-    service_thread.detach();
-  }
-}
-
-void OwInterface::publishTrajectory (int id)
-{
-  if (! mark_operation_running (Op_PublishTrajectory, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::PublishTrajectory>("arm/publish_trajectory");
-
-  if (check_service_client (client, Op_PublishTrajectory)) {
-    ow_lander::PublishTrajectory srv;
-    srv.request.use_latest = true;
-    srv.request.trajectory_filename = "";
-    thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
-                           client, srv, Op_PublishTrajectory, id);
     service_thread.detach();
   }
 }
@@ -712,7 +693,7 @@ void OwInterface::digLinear (double x, double y,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigLinear>("arm/dig_linear");
+    nhandle.serviceClient<ow_lander::DigLinear>("/arm/dig_linear");
 
   if (check_service_client (client, Op_DigLinear)) {
     ow_lander::DigLinear srv;
@@ -736,7 +717,7 @@ void OwInterface::digCircular (double x, double y, double depth,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigCircular>("arm/dig_circular");
+    nhandle.serviceClient<ow_lander::DigCircular>("/arm/dig_circular");
 
   if (check_service_client (client, Op_DigCircular)) {
     ow_lander::DigCircular srv;
@@ -760,7 +741,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Grind>("arm/grind");
+    nhandle.serviceClient<ow_lander::Grind>("/arm/grind");
 
   if (check_service_client (client, Op_Grind)) {
     ow_lander::Grind srv;
@@ -801,7 +782,8 @@ void OwInterface::unstow (int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Unstow>("arm/unstow");
+    nhandle.serviceClient<ow_lander::Unstow>("/arm/unstow");
+
 
   if (check_service_client (client, Op_Unstow)) {
     ow_lander::Unstow srv;
@@ -818,7 +800,8 @@ void OwInterface::deliverSample (double x, double y, double z, int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DeliverSample>("arm/deliver_sample");
+    nhandle.serviceClient<ow_lander::DeliverSample>("/arm/deliver_sample");
+
 
   if (check_service_client (client, Op_DeliverSample)) {
     ow_lander::DeliverSample srv;
