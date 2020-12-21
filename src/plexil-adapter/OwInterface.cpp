@@ -217,15 +217,16 @@ static void call_ros_service (ros::ServiceClient client, Service srv,
   fault_thread.join();
 }
 
-static bool check_service_client (ros::ServiceClient& client)
+static bool check_service_client (ros::ServiceClient& client,
+                                  const string& name)
 {
   if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
+    ROS_ERROR("Service client for %s does not exist!", name.c_str());
     return false;
   }
 
   if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
+    ROS_ERROR("Service client for %s is invalid!", name.c_str());
     return false;
   }
 
@@ -629,7 +630,7 @@ void OwInterface::guardedMove (double x, double y, double z,
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::GuardedMove>("arm/guarded_move");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_GuardedMove)) {
     ow_lander::GuardedMove srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -654,7 +655,7 @@ void OwInterface::publishTrajectory (int id)
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::PublishTrajectory>("arm/publish_trajectory");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_PublishTrajectory)) {
     ow_lander::PublishTrajectory srv;
     srv.request.use_latest = true;
     srv.request.trajectory_filename = "";
@@ -713,7 +714,7 @@ void OwInterface::digLinear (double x, double y,
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::DigLinear>("arm/dig_linear");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_DigLinear)) {
     ow_lander::DigLinear srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -737,7 +738,7 @@ void OwInterface::digCircular (double x, double y, double depth,
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::DigCircular>("arm/dig_circular");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_DigCircular)) {
     ow_lander::DigCircular srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -761,7 +762,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::Grind>("arm/grind");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_Grind)) {
     ow_lander::Grind srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -785,7 +786,7 @@ void OwInterface::stow (int id)
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::Stow>("arm/stow");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_Stow)) {
     ow_lander::Stow srv;
     thread service_thread (call_ros_service<ow_lander::Stow>,
                            client, srv, Op_Stow, id);
@@ -802,7 +803,7 @@ void OwInterface::unstow (int id)
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::Unstow>("arm/unstow");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_Unstow)) {
     ow_lander::Unstow srv;
     thread service_thread (call_ros_service<ow_lander::Unstow>,
                            client, srv, Op_Unstow, id);
@@ -819,7 +820,7 @@ void OwInterface::deliverSample (double x, double y, double z, int id)
   ros::ServiceClient client =
     nhandle.serviceClient<ow_lander::DeliverSample>("arm/deliver_sample");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_DeliverSample)) {
     ow_lander::DeliverSample srv;
     srv.request.x = x;
     srv.request.y = y;
