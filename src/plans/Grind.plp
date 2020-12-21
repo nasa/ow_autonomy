@@ -2,6 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Perform one pass with the grinding tool, using the given parameters.
+
 #include "plan-interface.h"
 
 Grind:
@@ -12,10 +14,6 @@ Grind:
   In Real Length;
   In Real GroundPos;
   In Boolean Parallel;
-
-  // For debugging
-  //  log_info ("---- Grind X=",X," Y=",Y," Depth=",Depth," Len=",Length,
-  //            " GroundPos=",GroundPos);
 
   SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
   SynchronousCommand publish_trajectory ();

@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Perform a guarded move with the given parameters.
+// A guarded move is typically used to find the ground.
+
 #include "plan-interface.h"
 
 GuardedMove:

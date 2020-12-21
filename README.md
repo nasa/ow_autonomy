@@ -33,10 +33,8 @@ ow_autonomy
 ===========
 
 This package contains a candidate onboard autonomy component for an Ocean
-Worlds lander, namely a ROS node embedding a PLEXIL application.
-
-It's called the `autonomy node`, and only one instance of this node in an
-OceanWATERS application/mission is envisioned at this time.
+Worlds lander, namely a ROS node (named `autonomy node`) embedding a PLEXIL plan
+executive.
 
 
 Contents
@@ -44,19 +42,23 @@ Contents
 
 src/plans directory contains the PLEXIL plans.
 
-src/plexil-adapter contains the supporting code needed to run them, and also the
-ROS node implementation (for now).
+src/plexil-adapter contains the supporting code needed to run the PLEXIL plans,
+and also the ROS node implementation.
 
-See the README files in each subdirectory for more information.
+See the README.md files in each subdirectory for more information.
 
 
 Build
 -----
 
-A prerequisite for building and running this application is a working PLEXIL
-installation, which has its own prerequisites.  For instructions see the
-"Development Environment" Confluence page. The environment variable PLEXIL_HOME
-must be set to PLEXIL's installation pathname.
+See the "Getting Started" section in the parent repository's README.md file,
+viewable at https://github.com/nasa/ow_simulator, for complete installation and
+build instructions as well as hardware/software requirements.  This file recaps
+a few key points and has some supplementary information.
+
+A prerequisite for building and running this package is a working PLEXIL
+installation, which has its own prerequisites. The environment variable
+PLEXIL_HOME must be set to PLEXIL's installation pathname.
 
 Your ROS environment should also first be set up:
 
@@ -82,80 +84,35 @@ last build, a clean rebuild of ow_autonomy is needed.  See bottom of this file
 for instructions.
 
 
-Run
----
+Start the autonomy node
+-----------------------
 
-1. Start the simulator:
+1. First you must start the simulator, e.g.
 
 ```bash
-  roslaunch ow europa_test_dem.launch arm_sim_enable:=true
+  roslaunch ow europa_terminator.launch
 ```
    NOTES:
-    - for faster performance, add `gzclient:=false`
-    - for better terrain, use `europa_terminator.launch`
+    - to omit the Gazebo GUI for faster performance, add `gzclient:=false`
+    - for alternate terrains, other launch files are available:
+      atacama_y1a.launch, europa_terminator_workspace.launch,
+      europa_test_dem.launch.
 
-2. (optional, as needed) Start rqt for visualization and monitoring.
-
-   `rqt`
-
-   If you wish to view camera images:
-
-   a) Select `Plugins/Visualization/Image View`
-	 b) In the topic pulldown menu, select `/StereoCamera/left/image_raw`
-
-   Note that `/StereoCamera/left/image_raw_mouse_left` appears in the box below.
-
-3. Start the autonomy node.  To use the default plan:
+2. Next start the autonomy node.  Starting the autonomy node always runs a
+   PLEXIL plan.  The simplest version is:
 
    `roslaunch ow_autonomy autonomy_node.launch`
 
-   This invocation loads the default PLEXIL plan, Demo.plx, which demonstrates a
-   variety of lander functions: arm planning, guarded move, and panoramic
-   imaging.  It is equivalent to:
+   This invocation loads the default PLEXIL plan, Demo.plx.  A specific plan may
+   be run by adding it to the command line, e.g.
 
-   `roslaunch ow_autonomy autonomy_node.launch plan:=Demo.plx`
+   `roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission1.plx`
 
-   Alternatively, you may specify a plan to load, by setting the 'plan' argument
-   to a .plx file found in:
+   The argument given to the `plan` parameter must be a file found in :
 
    `<ow_workspace>/devel/etc/plexil`
-
-
-Plans
------
-
-Here are some interesting autonomy plans.  Run them as shown, substituting for
-`Foo.plx`:
-
-  `roslaunch ow_autonomy autonomy_node.launch plan:=Foo.plx`
-
-1. A Europa reference mission Sol 0 prototype: `ReferenceMission1.plx`
-
-2. A short panoramic imaging demo: `TestAntennaCamera.plx`
-
-   A small area is imaged, with an iteration of tilts and pans.  To try other
-   regions, edit `ow_autonomy/src/plans/TestAntennaCamera.plp` and enter
-
-   `catkin build ow_autonomy`
-
-   before restarting the autonomy node.  You don't need to restart the simulator.
-
-3. Overtorque detection: `TorqueTest.plx`
-
-   This plan attempts to push the scoop into the ground, which creates joint
-   over-torquing warnings and errors.
-
-4. Concurrency demo: `TestPlanning.plx`
-
-   This runs the arm planning ROS service, while concurrently printing an "in
-   progress" message.  This was not possible before service calls were threaded.
-
-5. ROS Action demo: `TestActions.plx`
-
-   This runs a dummy GuardedMove action (not connected to simulator)
-   concurrently with the real GuardedMove service.
    
-6. Demonstration of checkpointed plans: `EuropaMission.plx`
+   See `plans/README.md` for a description of the PLEXIL plans.
 
 
 Fault Detection
@@ -163,8 +120,11 @@ Fault Detection
 
 A rudimentary version does nothing more than check relevant fault parameters for
 each lander operation.  Run any plan you like, while setting fault parameters as
-desired (see `ow_faults/README.md` for instructions).  Faults are reported as
-ROS warnings.
+desired (see `ow_simulatyor/ow_faults/README.md` for instructions).  You can
+also use `scripts/set-faults.py` which by default sets every fault; edit it as
+needed.
+
+Faults are simply reported, as ROS warnings.
 
 
 Clean
@@ -175,7 +135,7 @@ To clean (remove all build products from) just the ow_autonomy package:
  `cd <ow_workspace>/build`
  `rm -rf ow_autonomy`
 
-To clean the entire ROS workspace (not needed if you're just rebuilding
+To clean the entire ROS workspace (not needed if you only want to rebuild
 ow_autonomy):
 
   `catkin clean`

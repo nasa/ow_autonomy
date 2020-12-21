@@ -2,6 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Deliver material in the scoop to the given point.  This is used for both
+// delivering the sample to its receptacle (which has specific coordinates) and
+// dumping tailings from trench digging.
+
 #include "plan-interface.h"
 
 DeliverSample:

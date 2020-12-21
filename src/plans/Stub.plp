@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan is simply a no-op stand-in for something that needs implementation.
+// This plan is a no-op stand-in for something that needs implementation.
 
 Command log_info (...);
 

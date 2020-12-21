@@ -37,8 +37,7 @@ int main(int argc, char* argv[])
   }
 
   // ROS Loop (runs concurrently with plan).  Note that once this loop starts,
-  // this function (and node) is terminated with an interrupt.  I believe this
-  // is the ROS convention.
+  // this function (and node) is terminated with an interrupt.
 
   ros::Rate rate(1); // 1 Hz seems appropriate, for now.
   while (ros::ok()) {

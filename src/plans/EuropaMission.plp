@@ -2,9 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Sample mission plan based on Europa Lander study.  At present, only Sol 0 of
-// the mission is modeled.  This plan includes a new checkpoint facility for
-// plan persistence.
+// Sample mission plan based on Sol 0 of the Europa Lander study.  This plan
+// uses a checkpoint facility for plan persistence added to PLEXIL in 2020.
 
 #include "plexil_defs.h"
 
@@ -53,7 +52,8 @@ EuropaMission: Concurrence
   ScienceMonitor: Concurrence
   {
     SampleMonitor: LibraryCall MonitorSamplesIntegrity(status = SamplesOK);
-    SamplesCompleteMonitor: LibraryCall MonitorSamplesComplete(status = SamplesComplete);
+    SamplesCompleteMonitor:
+      LibraryCall MonitorSamplesComplete(status = SamplesComplete);
   }
 
   Mission:
@@ -81,53 +81,66 @@ EuropaMission: Concurrence
       VerifyTime:Try
       {
         EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
-        Brightness: LibraryCall Stub(desc="Roughly verifying time from ground brightness");
+        Brightness:
+        LibraryCall Stub(desc="Roughly verifying time from ground brightness");
       }
 
       VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
       VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
       VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
-      RestArm: LibraryCall Stub(desc="Moving arm to safe position"); // TODO: samples in arm?
+      RestArm: LibraryCall Stub(desc="Moving arm to safe position");
     }
 
 
     ImageLandingSite: {
-      // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not found
-      // IsBootOK returns true if that boot was OK, UNKNOWN if not found
-      // Thus SkipCondition is true if and only if the executive crashed
-      // and the last time the checkpoint was set, the executive crashed.
-      // This handles the case of multiple crashes.
+      // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
+      // found IsBootOK returns true if that boot was OK, UNKNOWN if not found
+      // Thus SkipCondition is true if and only if the executive crashed and the
+      // last time the checkpoint was set, the executive crashed.  This handles
+      // the case of multiple crashes.
 
       // TakePanorama__NAME__End is set by ImageLandingSite
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen(
-                                 "TakePanorama__MissionSol1__End"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK
+                 (Lookup
+                  (CheckpointWhen("TakePanorama__MissionSol1__End")))));
       LibraryCall ImageLandingSite(InstanceName="MissionSol1",IgnoreCrash=false);
       SynchronousCommand flush_checkpoints();
     }
 
     InterrogateSurface:{
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("InterrogateSurfaceComplete"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK
+                 (Lookup(CheckpointWhen("InterrogateSurfaceComplete")))));
       LibraryCall InterogateSurface;
       set_checkpoint("InterrogateSurfaceComplete");
       SynchronousCommand flush_checkpoints();
     }
 
     GetTrenchTarget:{
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete")))));
       LibraryCall GetTrenchTarget;
       set_checkpoint("GetTrenchTargetComplete");
       SynchronousCommand flush_checkpoints();
     }
 
     Excavation:{
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete")))));
       LibraryCall Excavation;
       set_checkpoint("ExcavationComplete");
       SynchronousCommand flush_checkpoints();
     }
 
     Downlink:{
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete")))));
       LibraryCall Downlink;
       set_checkpoint("DownlinkComplete");
       SynchronousCommand flush_checkpoints();
@@ -135,7 +148,9 @@ EuropaMission: Concurrence
 
     Samples:{
       Boolean first_collection = true;
-      SkipCondition did_crash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SamplesComplete"))));
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("SamplesComplete")))));
 
       // Repeat until samples correctly processed
       // If samples don't exist, they are by definition OK
@@ -154,7 +169,8 @@ EuropaMission: Concurrence
           PreCondition       SamplesOK == true;
           InvariantCondition SamplesOK == true;
 
-          LibraryCall CollectAndTransfer(InstanceName="MissionSol1", IgnoreCrash = !first_collection);
+          LibraryCall CollectAndTransfer(InstanceName="MissionSol1",
+                                         IgnoreCrash = !first_collection);
           LibraryCall StartSampleAnalysis;
         }
 
