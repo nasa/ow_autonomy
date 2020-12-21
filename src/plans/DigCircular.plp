@@ -13,5 +13,4 @@ DigCircular:
   In Boolean Parallel;
 
   SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
-  SynchronousCommand publish_trajectory ();
 }

@@ -18,5 +18,4 @@ Grind:
   //            " GroundPos=",GroundPos);
 
   SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
-  SynchronousCommand publish_trajectory ();
 }
