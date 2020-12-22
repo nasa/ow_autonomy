@@ -2,9 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform several guarded moves in sequence at different locations.
+// Perform two guarded moves in sequence at different locations, and report the
+// ground position.
 
-// #include "plexil_defs.h"
 #include "plan-interface.h"
 
 TestGuardedMoves:
@@ -25,4 +25,5 @@ TestGuardedMoves:
   }
   else log_error ("First guarded move failed.");
   endif
+  log_info ("TestGuardedMoves plan complete.");
 }
