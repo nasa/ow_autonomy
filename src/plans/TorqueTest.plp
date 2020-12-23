@@ -21,7 +21,7 @@ TorqueTest:
   {
     Dig:
     {
-      // This node attempts to dig too deep (note -1 Z target), in an effort to
+      // This node attempts to dig too deep (grind depth), in an effort to
       // overtorque one or more arm joints.
 
       // First, find ground.

@@ -399,11 +399,8 @@ static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 
 //////////////////// GuardedMove Service support ////////////////////////////////
 
-// NOTE: A severe limitation of this approach and data representation is that
-// only ONE instance of GuardedMove is properly supported.  This is a first cut.
-
 static bool GroundFound = false;
-static double GroundPosition = 0; // value is not used unless GroundFound
+static double GroundPosition = 0; // should not be queried unless GroundFound
 
 bool OwInterface::groundFound () const
 {
@@ -427,7 +424,7 @@ static void guarded_move_callback
       return;
     }
     GroundPosition = msg->position.z;
-    publish ("GroundFound", GroundFound);
+    publish ("GroundFound", true);
     publish ("GroundPosition", GroundPosition);
   }
   else {
@@ -640,6 +637,7 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.direction_y = direction_y;
     srv.request.direction_z = direction_z;
     srv.request.search_distance = search_distance;
+    GroundFound = false;
     thread service_thread (call_ros_service<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove, id);
     service_thread.detach();
