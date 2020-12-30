@@ -54,13 +54,7 @@ Command unstow();
 // Move from "ready" position to stowed position; REQUIRES unstow() first
 Command stow();
 
-
-// This command sends the planned trajectory to Gazebo, i.e. commands the arm
-Command publish_trajectory();
-
-
-// Utility commands.  These create ROS_INFO, ROS_WARN, and ROS_ERROR.
-
+// Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);

@@ -217,15 +217,16 @@ static void call_ros_service (ros::ServiceClient client, Service srv,
   fault_thread.join();
 }
 
-static bool check_service_client (ros::ServiceClient& client)
+static bool check_service_client (ros::ServiceClient& client,
+                                  const string& name)
 {
   if (! client.exists()) {
-    ROS_ERROR("Service client does not exist!");
+    ROS_ERROR("Service client for %s does not exist!", name.c_str());
     return false;
   }
 
   if (! client.isValid()) {
-    ROS_ERROR("Service client is invalid!");
+    ROS_ERROR("Service client for %s is invalid!", name.c_str());
     return false;
   }
 
@@ -398,11 +399,8 @@ static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 
 //////////////////// GuardedMove Service support ////////////////////////////////
 
-// NOTE: A severe limitation of this approach and data representation is that
-// only ONE instance of GuardedMove is properly supported.  This is a first cut.
-
 static bool GroundFound = false;
-static double GroundPosition = 0; // value is not used unless GroundFound
+static double GroundPosition = 0; // should not be queried unless GroundFound
 
 bool OwInterface::groundFound () const
 {
@@ -426,7 +424,7 @@ static void guarded_move_callback
       return;
     }
     GroundPosition = msg->position.z;
-    publish ("GroundFound", GroundFound);
+    publish ("GroundFound", true);
     publish ("GroundPosition", GroundPosition);
   }
   else {
@@ -627,9 +625,9 @@ void OwInterface::guardedMove (double x, double y, double z,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::GuardedMove>("arm/guarded_move");
+    nhandle.serviceClient<ow_lander::GuardedMove>("/arm/guarded_move");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_GuardedMove)) {
     ow_lander::GuardedMove srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -639,28 +637,9 @@ void OwInterface::guardedMove (double x, double y, double z,
     srv.request.direction_y = direction_y;
     srv.request.direction_z = direction_z;
     srv.request.search_distance = search_distance;
-    srv.request.delete_prev_traj = false;
+    GroundFound = false;
     thread service_thread (call_ros_service<ow_lander::GuardedMove>,
                            client, srv, Op_GuardedMove, id);
-    service_thread.detach();
-  }
-}
-
-void OwInterface::publishTrajectory (int id)
-{
-  if (! mark_operation_running (Op_PublishTrajectory, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::PublishTrajectory>("arm/publish_trajectory");
-
-  if (check_service_client (client)) {
-    ow_lander::PublishTrajectory srv;
-    srv.request.use_latest = true;
-    srv.request.trajectory_filename = "";
-    thread service_thread (call_ros_service<ow_lander::PublishTrajectory>,
-                           client, srv, Op_PublishTrajectory, id);
     service_thread.detach();
   }
 }
@@ -712,9 +691,9 @@ void OwInterface::digLinear (double x, double y,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigLinear>("arm/dig_linear");
+    nhandle.serviceClient<ow_lander::DigLinear>("/arm/dig_linear");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_DigLinear)) {
     ow_lander::DigLinear srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -722,7 +701,6 @@ void OwInterface::digLinear (double x, double y,
     srv.request.depth = depth;
     srv.request.length = length;
     srv.request.ground_position = ground_position;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigLinear>,
                            client, srv, Op_DigLinear, id);
     service_thread.detach();
@@ -737,9 +715,9 @@ void OwInterface::digCircular (double x, double y, double depth,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigCircular>("arm/dig_circular");
+    nhandle.serviceClient<ow_lander::DigCircular>("/arm/dig_circular");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_DigCircular)) {
     ow_lander::DigCircular srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -747,7 +725,6 @@ void OwInterface::digCircular (double x, double y, double depth,
     srv.request.depth = depth;
     srv.request.ground_position = ground_position;
     srv.request.parallel = parallel;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::DigCircular>,
                            client, srv, Op_DigCircular, id);
     service_thread.detach();
@@ -762,9 +739,9 @@ void OwInterface::grind (double x, double y, double depth, double length,
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Grind>("arm/grind");
+    nhandle.serviceClient<ow_lander::Grind>("/arm/grind");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_Grind)) {
     ow_lander::Grind srv;
     srv.request.use_defaults = false;
     srv.request.x = x;
@@ -773,7 +750,6 @@ void OwInterface::grind (double x, double y, double depth, double length,
     srv.request.length = length;
     srv.request.parallel = parallel;
     srv.request.ground_position = ground_pos;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Grind>,
                            client, srv, Op_Grind, id);
     service_thread.detach();
@@ -787,11 +763,10 @@ void OwInterface::stow (int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Stow>("arm/stow");
+    nhandle.serviceClient<ow_lander::Stow>("/arm/stow");
 
-  if (check_service_client (client)) {
+  if (check_service_client (client, Op_Stow)) {
     ow_lander::Stow srv;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Stow>,
                            client, srv, Op_Stow, id);
     service_thread.detach();
@@ -805,11 +780,11 @@ void OwInterface::unstow (int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Unstow>("arm/unstow");
+    nhandle.serviceClient<ow_lander::Unstow>("/arm/unstow");
 
-  if (check_service_client (client)) {
+
+  if (check_service_client (client, Op_Unstow)) {
     ow_lander::Unstow srv;
-    srv.request.delete_prev_traj = false;
     thread service_thread (call_ros_service<ow_lander::Unstow>,
                            client, srv, Op_Unstow, id);
     service_thread.detach();
@@ -823,9 +798,10 @@ void OwInterface::deliverSample (double x, double y, double z, int id)
   ros::NodeHandle nhandle ("planning");
 
   ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DeliverSample>("arm/deliver_sample");
+    nhandle.serviceClient<ow_lander::DeliverSample>("/arm/deliver_sample");
 
-  if (check_service_client (client)) {
+
+  if (check_service_client (client, Op_DeliverSample)) {
     ow_lander::DeliverSample srv;
     srv.request.x = x;
     srv.request.y = y;

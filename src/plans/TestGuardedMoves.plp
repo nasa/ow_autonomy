@@ -1,0 +1,29 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform two guarded moves in sequence at different locations, and report the
+// ground position.
+
+#include "plan-interface.h"
+
+TestGuardedMoves:
+{
+  LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
+                           DirX = 0, DirY = 0, DirZ = 1,
+                           SearchDistance = 0.5);
+  if (Lookup(GroundFound)) {
+    log_info ("Found ground (first attempt) at ", Lookup(GroundPosition));
+    LibraryCall GuardedMove (X = 1.8, Y = 0, Z = 0.3,
+                             DirX = 0, DirY = 0, DirZ = 1,
+                             SearchDistance = 0.5);
+    if (Lookup(GroundFound)) {
+      log_info ("Found ground (second attempt) at ", Lookup(GroundPosition));
+    }
+    else log_error ("Second guarded move failed.");
+    endif
+  }
+  else log_error ("First guarded move failed.");
+  endif
+  log_info ("TestGuardedMoves plan complete.");
+}

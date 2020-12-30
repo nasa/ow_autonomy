@@ -18,6 +18,5 @@ GuardedMove:
   In Real SearchDistance;
 
   SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
-  SynchronousCommand publish_trajectory ();
   Wait 5; // Add some delay to make sure the status has been updated
 }
