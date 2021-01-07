@@ -24,19 +24,10 @@
 #include <StateCacheEntry.hh>
 
 // C++
-#include <utility>  // for std::pair
-#include <list>
 #include <map>
-#include <iostream>
 #include <mutex>
 using std::string;
 using std::vector;
-using std::pair;
-using std::make_pair;
-using std::list;
-using std::copy;
-using std::cout;
-using std::endl;
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
