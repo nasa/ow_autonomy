@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <iostream>
+#include <mutex>
 using std::string;
 using std::vector;
 using std::pair;
@@ -52,7 +53,16 @@ static vector<Value> const EmptyArgs;
 
 static int CommandId = 0;
 
-static std::map<int, pair<Command*, AdapterExecInterface*>> CommandRegistry;
+std::mutex g_shared_mutex;
+using CommandRecord = std::tuple<Command*, AdapterExecInterface*, bool>;
+static std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
+
+std::unique_ptr<CommandRecord>& new_command_record(Command* cmd, AdapterExecInterface* intf)
+{
+  auto cr = std::make_tuple(cmd, intf, false);
+  CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
+  return CommandRegistry[CommandId];
+}
 
 static void ack_command (Command* cmd,
                          PLEXIL::CommandHandleValue handle,
@@ -80,17 +90,27 @@ static void ack_sent (Command* cmd, AdapterExecInterface* intf)
 
 static void command_status_callback (int id, bool success)
 {
-  pair<Command*, AdapterExecInterface*> cmd;
-
-  try {
-    cmd = CommandRegistry.at(id);
-  }
-  catch (const std::out_of_range& oor) {
-    ROS_ERROR("command_status_callback: no command registered under id %d", id);
+  auto it = CommandRegistry.find(id);
+  if (it == CommandRegistry.end())
+  {
+    ROS_ERROR_STREAM("command_status_callback: no command registered under id" << id);
     return;
   }
-  if (success) ack_success (cmd.first, cmd.second);
-  else ack_failure (cmd.first, cmd.second);
+
+  std::unique_ptr<CommandRecord>& cr = it->second;
+  Command* cmd = std::get<0>(*cr);
+  AdapterExecInterface* intf = std::get<1>(*cr);
+
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
+  if (success) ack_success (cmd, intf);
+  else ack_failure (cmd, intf);
 }
 
 
@@ -130,18 +150,31 @@ static void log_debug (Command* cmd, AdapterExecInterface* intf)
 
 static void stow (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->stow (CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->unstow (CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -155,35 +188,17 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   args[4].getValue(dir_y);
   args[5].getValue(dir_z);
   args[6].getValue(search_distance);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
-}
-
-static void guarded_move_action_demo (Command* cmd,
-                                      AdapterExecInterface* intf)
-{
-  double x, y, z, dir_x, dir_y, dir_z, search_distance;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(z);
-  args[3].getValue(dir_x);
-  args[4].getValue(dir_y);
-  args[5].getValue(dir_z);
-  args[6].getValue(search_distance);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
-  // Unfortunately, ROS does not provide a constructor taking x,y,z
-  geometry_msgs::Point start;
-  start.x = x; start.y = y; start.z = z;
-  geometry_msgs::Point normal;
-  normal.x = dir_x; normal.y = dir_y; normal.z = dir_z;
-  OwInterface::instance()->guardedMoveActionDemo (start, normal, search_distance,
-                                                  CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void grind (Command* cmd, AdapterExecInterface* intf)
@@ -197,11 +212,17 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   args[3].getValue(length);
   args[4].getValue(parallel);
   args[5].getValue(ground_pos);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
                                  CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void dig_circular (Command* cmd, AdapterExecInterface* intf)
@@ -214,11 +235,17 @@ static void dig_circular (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(depth);
   args[3].getValue(ground_position);
   args[4].getValue(parallel);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void dig_linear (Command* cmd, AdapterExecInterface* intf)
@@ -230,10 +257,17 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(depth);
   args[3].getValue(length);
   args[4].getValue(ground_position);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
@@ -243,10 +277,17 @@ static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(z);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->deliverSample (x, y, z, CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -254,10 +295,17 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -265,18 +313,31 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panAntenna (degrees, CommandId);
-  ack_sent (cmd, intf);
-  CommandId++;
+
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
-  CommandRegistry[CommandId] = make_pair (cmd, intf);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->takePicture();
-  ack_sent (cmd, intf);
-  CommandId++;
+  {
+    std::lock_guard<std::mutex> g(g_shared_mutex);
+    if (!std::get<2>(*cr))
+    {
+      ack_sent (cmd, intf);
+      std::get<2>(*cr) = true;
+    }
+  }
 }
 
 
