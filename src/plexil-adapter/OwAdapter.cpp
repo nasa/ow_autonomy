@@ -88,6 +88,16 @@ static void ack_sent (Command* cmd, AdapterExecInterface* intf)
   ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
 }
 
+static void send_ack_once(Command* cmd, AdapterExecInterface* intf, bool* sent_flag)
+{
+  std::lock_guard<std::mutex> g(g_shared_mutex);
+  if (! (*sent_flag) )
+  {
+    ack_sent (cmd, intf);
+    *sent_flag = true;
+  }
+}
+
 static void command_status_callback (int id, bool success)
 {
   auto it = CommandRegistry.find(id);
@@ -100,15 +110,7 @@ static void command_status_callback (int id, bool success)
   std::unique_ptr<CommandRecord>& cr = it->second;
   Command* cmd = std::get<0>(*cr);
   AdapterExecInterface* intf = std::get<1>(*cr);
-
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
   if (success) ack_success (cmd, intf);
   else ack_failure (cmd, intf);
 }
@@ -152,29 +154,15 @@ static void stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->stow (CommandId);
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
 }
 
 static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->unstow (CommandId);
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -191,14 +179,7 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void grind (Command* cmd, AdapterExecInterface* intf)
@@ -238,14 +219,7 @@ static void dig_circular (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void dig_linear (Command* cmd, AdapterExecInterface* intf)
@@ -260,14 +234,7 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
@@ -279,15 +246,7 @@ static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(z);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->deliverSample (x, y, z, CommandId);
-
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -297,15 +256,7 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->tiltAntenna (degrees, CommandId);
-
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -315,29 +266,14 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panAntenna (degrees, CommandId);
-
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->takePicture();
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 
