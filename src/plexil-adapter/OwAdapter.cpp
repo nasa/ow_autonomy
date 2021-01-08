@@ -45,7 +45,12 @@ static vector<Value> const EmptyArgs;
 static int CommandId = 0;
 
 std::mutex g_shared_mutex;
-using CommandRecord = std::tuple<Command*, AdapterExecInterface*, bool>;
+using CommandRecord = std::tuple<Command*,
+                                 AdapterExecInterface*,
+                                 bool>;
+
+enum CommandRecordFields {CR_COMMAND, CR_ADAPTER, CR_ACK_SENT};
+
 static std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
 
 std::unique_ptr<CommandRecord>& new_command_record(Command* cmd, AdapterExecInterface* intf)
@@ -79,14 +84,15 @@ static void ack_sent (Command* cmd, AdapterExecInterface* intf)
   ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
 }
 
-static void send_ack_once(Command* cmd, AdapterExecInterface* intf, bool* sent_flag, bool skip=false)
+static void send_ack_once(CommandRecord& cr, bool skip=false)
 {
   std::lock_guard<std::mutex> g(g_shared_mutex);
-  if (! (*sent_flag) )
+  bool& sent_flag = std::get<CR_ACK_SENT>(cr);
+  if (!sent_flag)
   {
     if (!skip)
-      ack_sent (cmd, intf);
-    *sent_flag = true;
+      ack_sent(std::get<CR_COMMAND>(cr), std::get<CR_ADAPTER>(cr));
+    sent_flag = true;
   }
 }
 
@@ -100,9 +106,9 @@ static void command_status_callback (int id, bool success)
   }
 
   std::unique_ptr<CommandRecord>& cr = it->second;
-  Command* cmd = std::get<0>(*cr);
-  AdapterExecInterface* intf = std::get<1>(*cr);
-  send_ack_once(cmd, intf, &std::get<2>(*cr), true);
+  Command* cmd = std::get<CR_COMMAND>(*cr);
+  AdapterExecInterface* intf = std::get<CR_ADAPTER>(*cr);
+  send_ack_once(*cr, true);
   if (success) ack_success (cmd, intf);
   else ack_failure (cmd, intf);
 }
@@ -146,7 +152,7 @@ static void stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->stow (CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 
 }
 
@@ -154,7 +160,7 @@ static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->unstow (CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -171,7 +177,7 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void guarded_move_action_demo (Command* cmd,
@@ -194,7 +200,7 @@ static void guarded_move_action_demo (Command* cmd,
   normal.x = dir_x; normal.y = dir_y; normal.z = dir_z;
   OwInterface::instance()->guardedMoveActionDemo (start, normal, search_distance,
                                                   CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void grind (Command* cmd, AdapterExecInterface* intf)
@@ -211,7 +217,7 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
                                  CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void dig_circular (Command* cmd, AdapterExecInterface* intf)
@@ -227,7 +233,7 @@ static void dig_circular (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void dig_linear (Command* cmd, AdapterExecInterface* intf)
@@ -242,7 +248,7 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
@@ -254,7 +260,7 @@ static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(z);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->deliverSample (x, y, z, CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -264,7 +270,7 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -274,14 +280,14 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panAntenna (degrees, CommandId);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->takePicture();
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(*cr);
 }
 
 
