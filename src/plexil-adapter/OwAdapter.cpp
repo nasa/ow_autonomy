@@ -79,12 +79,13 @@ static void ack_sent (Command* cmd, AdapterExecInterface* intf)
   ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
 }
 
-static void send_ack_once(Command* cmd, AdapterExecInterface* intf, bool* sent_flag)
+static void send_ack_once(Command* cmd, AdapterExecInterface* intf, bool* sent_flag, bool skip=false)
 {
   std::lock_guard<std::mutex> g(g_shared_mutex);
   if (! (*sent_flag) )
   {
-    ack_sent (cmd, intf);
+    if (!skip)
+      ack_sent (cmd, intf);
     *sent_flag = true;
   }
 }
@@ -101,7 +102,7 @@ static void command_status_callback (int id, bool success)
   std::unique_ptr<CommandRecord>& cr = it->second;
   Command* cmd = std::get<0>(*cr);
   AdapterExecInterface* intf = std::get<1>(*cr);
-  send_ack_once(cmd, intf, &std::get<2>(*cr));
+  send_ack_once(cmd, intf, &std::get<2>(*cr), true);
   if (success) ack_success (cmd, intf);
   else ack_failure (cmd, intf);
 }
