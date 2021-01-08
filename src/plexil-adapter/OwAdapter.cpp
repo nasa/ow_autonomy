@@ -210,14 +210,7 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
                                  CommandId);
-  {
-    std::lock_guard<std::mutex> g(g_shared_mutex);
-    if (!std::get<2>(*cr))
-    {
-      ack_sent (cmd, intf);
-      std::get<2>(*cr) = true;
-    }
-  }
+  send_ack_once(cmd, intf, &std::get<2>(*cr));
 }
 
 static void dig_circular (Command* cmd, AdapterExecInterface* intf)
