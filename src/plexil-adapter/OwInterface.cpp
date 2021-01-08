@@ -484,14 +484,10 @@ OwInterface::OwInterface ()
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
-    m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart left uninitialized
 {
-  ROS_INFO ("Waiting for action servers...");
-  m_guardedMoveClient.waitForServer();
-  ROS_INFO ("Action servers available.");
 }
 
 OwInterface::~OwInterface ()
