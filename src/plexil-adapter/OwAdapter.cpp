@@ -53,7 +53,8 @@ enum CommandRecordFields {CR_COMMAND, CR_ADAPTER, CR_ACK_SENT};
 
 static std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
 
-std::unique_ptr<CommandRecord>& new_command_record(Command* cmd, AdapterExecInterface* intf)
+std::unique_ptr<CommandRecord>& new_command_record(Command* cmd,
+                                                   AdapterExecInterface* intf)
 {
   auto cr = std::make_tuple(cmd, intf, false);
   CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
@@ -90,8 +91,9 @@ static void send_ack_once(CommandRecord& cr, bool skip=false)
   bool& sent_flag = std::get<CR_ACK_SENT>(cr);
   if (!sent_flag)
   {
-    if (!skip)
+    if (!skip) {
       ack_sent(std::get<CR_COMMAND>(cr), std::get<CR_ADAPTER>(cr));
+    }
     sent_flag = true;
   }
 }
@@ -101,7 +103,8 @@ static void command_status_callback (int id, bool success)
   auto it = CommandRegistry.find(id);
   if (it == CommandRegistry.end())
   {
-    ROS_ERROR_STREAM("command_status_callback: no command registered under id" << id);
+    ROS_ERROR_STREAM("command_status_callback: no command registered under id"
+                     << id);
     return;
   }
 
