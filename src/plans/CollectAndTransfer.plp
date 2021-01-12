@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Collect the sample and transfer it to the receptacle.  This is a variant of
+// CollectSample that includes checkpointing.
+
 #include "plexil_defs.h"
 
 Real Lookup time;
@@ -39,7 +42,7 @@ CollectAndTransfer:
   Integer NumberOfCollections = 0;
   String OurName;
   OurName = "CollectAndTransfer__"+InstanceName;
-  
+
   CrashHandling:{
     // To get around a plexil bug where passing "" in doesn't work
     // Args will be treated as ""
@@ -51,7 +54,7 @@ CollectAndTransfer:
                                Crashed=Crashed,
                                Info=info,
                                CrashTime=CrashTime);
-    
+
     SetCollectMoreLastComplete:{
       String more_s;
       String last_complete_s;
@@ -63,7 +66,8 @@ CollectAndTransfer:
       more_s =          Lookup(substr(info,
                                       Lookup(find_first_of(info,"_"))+1));
 
-      log_info("Loaded previous checkpoint:  Last_complete: ",last_complete_s," More: ",more_s);
+      log_info("Loaded previous checkpoint:  Last_complete: ",
+			last_complete_s," More: ",more_s);
       CollectMore  = Lookup(StringToBoolean(more_s));
       LastComplete = Lookup(StringToInteger(last_complete_s));
     }
@@ -80,7 +84,7 @@ CollectAndTransfer:
 
     Time = Lookup(time);
     NumberOfCollections = NumberOfCollections + 1;
-    
+
     Collect:
     {
       SkipCondition LastComplete >= 1;
@@ -108,7 +112,7 @@ CollectAndTransfer:
       set_checkpoint(OurName,true,Lookup(ToString(3,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
-    
+
     Transfer:
     {
       Dock:
@@ -140,14 +144,15 @@ CollectAndTransfer:
         else{
           CollectMore = false;
         }
-        endif;
+        endif
         Wait 1;
         set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
       CapSample:
       {
-        PreCondition !CollectMore; // In case of crash after flush and before previous PostCondition
+        // In case of crash after flush and before previous PostCondition		
+        PreCondition !CollectMore;
         SkipCondition LastComplete >= 7;
         LibraryCall Stub(desc="Capping Sample");
         Wait 1;

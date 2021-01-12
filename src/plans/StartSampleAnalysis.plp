@@ -5,9 +5,9 @@
 // This plan "spawns" another plan that does the analysis, just for a single
 // instrument for now.  The spawned plan's execution persists after this one
 // finishes.  We could do more here, such as monitor its execution (e.g. time,
-// energy, temperature) and abort it if needed.  But stopping here for now.
+// energy, temperature) and abort it if needed.
 
-// This declaration should work, but does not.
+// This declaration should work, but for some reason does not.
 // String Command StartPlan(String plan_name, ...);
 
 String Command StartPlan(...);

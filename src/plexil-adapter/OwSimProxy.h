@@ -17,17 +17,14 @@
 class OwSimProxy
 {
  public:
-  OwSimProxy () { }
-  // Using compiler's destructor.
+  OwSimProxy () = default;
+  ~OwSimProxy () = default;
+  OwSimProxy (const OwSimProxy&) = delete;
+  OwSimProxy& operator= (const OwSimProxy&) = delete;
+
   bool lookup (const std::string& state_name,
                const std::vector<PLEXIL::Value>& args,
                PLEXIL::Value& value_out);
-
- private:
-  OwSimProxy (const OwSimProxy&);             // undefined; no copying
-  OwSimProxy& operator= (const OwSimProxy&);  // undefined; no assignment
-
 };
-
 
 #endif

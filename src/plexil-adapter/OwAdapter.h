@@ -12,6 +12,8 @@
 #include "InterfaceAdapter.hh"
 #include "Value.hh"
 
+#include <set>
+
 using namespace PLEXIL;
 
 class OwAdapter : public InterfaceAdapter

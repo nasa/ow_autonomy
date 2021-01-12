@@ -2,6 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Stub for sample analysis, which is out of the scope of OceanWATERS.
+
 #include "plexil_defs.h"
 
 LibraryAction Downlink();

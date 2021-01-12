@@ -2,8 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Antenna pan procedure.
-// Input: degrees
+// Pan the antenna to specified degrees.
 
 #include "plan-interface.h"
 

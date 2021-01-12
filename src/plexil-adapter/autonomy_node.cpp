@@ -25,8 +25,16 @@ int main(int argc, char* argv[])
 
   OwInterface::instance()->initialize();
 
+  // wait for the first proper clock message before running the plan
+  ros::Rate warmup_rate(0.1);
+  ros::Time begin = ros::Time::now();
+  while (ros::Time::now() - begin == ros::Duration(0.0))
+  {
+    ros::spinOnce();
+    warmup_rate.sleep();
+  }
+  
   // Run the specified plan
-
   if (argc == 2) {
     ROS_INFO ("Running plan %s", argv[1]);
     OwExecutive::instance()->runPlan (argv[1]); // asynchronous
@@ -37,8 +45,7 @@ int main(int argc, char* argv[])
   }
 
   // ROS Loop (runs concurrently with plan).  Note that once this loop starts,
-  // this function (and node) is terminated with an interrupt.  I believe this
-  // is the ROS convention.
+  // this function (and node) is terminated with an interrupt.
 
   ros::Rate rate(1); // 1 Hz seems appropriate, for now.
   while (ros::ok()) {
