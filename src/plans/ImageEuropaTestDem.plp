@@ -1,0 +1,26 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A test plan for europa_test_dem.launch.  Created solely for Release 7 test
+// 4.5.  Differs from TestAntennaCamera.plp only in pan/tilt angles.
+
+Command log_info (...);
+
+LibraryAction TakePanorama (In Real TiltLo, In Real TiltHi,
+                            In Real PanLo, In Real PanHi,
+                            In Real HorizOverlap, In Real VertOverlap,
+                            In String InstanceName,
+                            In Boolean IgnoreCrash);
+
+ImageEuropaTestDem:
+{
+  log_info ("Starting panoramic image...");
+  LibraryCall TakePanorama (TiltLo = 0, TiltHi = 3,
+                            PanLo = 90, PanHi = 100,
+                            HorizOverlap = 2,
+                            VertOverlap = 2,
+                            InstanceName = "ImageEuropaTestDem1",
+                            IgnoreCrash = true);
+  log_info ("Panoramic image finished.");
+}

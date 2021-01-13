@@ -484,14 +484,10 @@ OwInterface::OwInterface ()
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
-    m_guardedMoveClient ("GuardedMove", true),
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart left uninitialized
 {
-  ROS_INFO ("Waiting for action servers...");
-  m_guardedMoveClient.waitForServer();
-  ROS_INFO ("Action servers available.");
 }
 
 OwInterface::~OwInterface ()
@@ -557,6 +553,11 @@ void OwInterface::initialize()
     m_guardedMoveSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
+
+    ROS_INFO ("Waiting for action servers...");
+    m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
+    m_guardedMoveClient->waitForServer();
+    ROS_INFO ("Action servers available.");
   }
 }
 
@@ -588,20 +589,20 @@ void OwInterface::guardedMoveActionDemo1 (const geometry_msgs::Point& start,
   goal.search_distance = search_distance;
 
   thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
-  m_guardedMoveClient.sendGoal (goal,
+  m_guardedMoveClient->sendGoal (goal,
                                 guarded_move_done_cb,
                                 guarded_move_active_cb,
                                 guarded_move_feedback_cb);
 
   // Wait for the action to return
   bool finished_before_timeout =
-    m_guardedMoveClient.waitForResult (ros::Duration (30.0));
+    m_guardedMoveClient->waitForResult (ros::Duration (30.0));
 
   if (finished_before_timeout) {
-    actionlib::SimpleClientGoalState state = m_guardedMoveClient.getState();
+    actionlib::SimpleClientGoalState state = m_guardedMoveClient->getState();
     ROS_INFO("GuardedMove action finished: %s", state.toString().c_str());
     ow_autonomy::GuardedMoveResultConstPtr result =
-      m_guardedMoveClient.getResult();
+      m_guardedMoveClient->getResult();
     ROS_INFO("GuardedMove action result: (%f, %f, %f)",
              result->final.x, result->final.y, result->final.z);
   }

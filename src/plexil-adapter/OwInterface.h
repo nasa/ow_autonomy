@@ -17,6 +17,8 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
+using GuardedMoveActionClient = actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+
 class OwInterface
 {
  public:
@@ -113,8 +115,7 @@ class OwInterface
   ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
-  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>
-    m_guardedMoveClient;
+  std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
