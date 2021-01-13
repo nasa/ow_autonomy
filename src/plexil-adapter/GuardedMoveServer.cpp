@@ -5,6 +5,7 @@
 // Temporary file.  A dummy action server for GuardedMove.
 
 #include <ros/ros.h>
+#include <geometry_msgs/Point.h>
 #include <actionlib/server/simple_action_server.h>
 #include <ow_autonomy/GuardedMoveAction.h>
 #include <string>
@@ -41,11 +42,12 @@ class GuardedMoveAction
     ros::Rate r(1);
     bool success = true;
     int iterations = 10; // one per second
-    float x_incr = goal->x / iterations;
-    float y_incr = goal->y / iterations;
-    float z_incr = goal->z / iterations;
 
-    m_feedback.current_x = m_feedback.current_y = m_feedback.current_z = 0;
+    float x_incr = goal->start.x / iterations;
+    float y_incr = goal->start.y / iterations;
+    float z_incr = goal->start.z / iterations;
+
+    m_feedback.current.x = m_feedback.current.y = m_feedback.current.z = 0;
     ROS_INFO ("%s: Executing", m_actionName.c_str());
 
     // start executing the action
@@ -56,17 +58,15 @@ class GuardedMoveAction
         success = false;
         break;
       }
-      m_feedback.current_x += x_incr;
-      m_feedback.current_y += y_incr;
-      m_feedback.current_z += z_incr;
+      m_feedback.current.x += x_incr;
+      m_feedback.current.y += y_incr;
+      m_feedback.current.z += z_incr;
       m_actionServer.publishFeedback (m_feedback);
       r.sleep();
     }
 
     if (success) {
-      m_result.final_x = goal->x;
-      m_result.final_y = goal->y;
-      m_result.final_z = goal->z;
+      m_result.final = goal->start;
       ROS_INFO ("%s: Succeeded", m_actionName.c_str());
       m_actionServer.setSucceeded (m_result);
     }

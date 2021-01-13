@@ -14,7 +14,10 @@
 #include <ow_autonomy/GuardedMoveAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
+#include <geometry_msgs/Point.h>
 #include <string>
+
+using GuardedMoveActionClient = actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
 class OwInterface
 {
@@ -48,15 +51,11 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
-  // Pubishes trajectory saved by those operations above that are ROS actions.
-  void publishTrajectory (int id);
-
   // Temporary, proof of concept for ROS Actions
-  void guardedMoveActionDemo (double x, double y, double z,
-                              double direction_x,
-                              double direction_y,
-                              double direction_z,
-                              double search_distance, int id);
+  void guardedMoveActionDemo (const geometry_msgs::Point& start,
+                              const geometry_msgs::Point& normal,
+                              double search_distance,
+                              int id);
 
   // State interface
   double getTilt () const;
@@ -82,12 +81,8 @@ class OwInterface
 
  private:
   // Temporary, support for public version above
-  void guardedMoveActionDemo1 (double x,
-                               double y,
-                               double z,
-                               double direction_x,
-                               double direction_y,
-                               double direction_z,
+  void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
+                               const geometry_msgs::Point& normal,
                                double search_distance,
                                int id);
 
@@ -120,8 +115,7 @@ class OwInterface
   ros::Subscriber* m_guardedMoveSubscriber;
 
   // Action clients
-  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>
-    m_guardedMoveClient;
+  std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

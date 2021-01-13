@@ -7,8 +7,6 @@
 // The subscribers.  Their naming convention is:
 //   Subscribe<value-type><param-type>...
 
-// To do: templatize!
-
 static SubscribeBool SubscriberBool = nullptr;
 static SubscribeDouble SubscriberDouble = nullptr;
 static SubscribeString SubscriberString = nullptr;

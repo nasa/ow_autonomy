@@ -3,7 +3,7 @@
 // this repository.
 
 // This is a simplified version of a procedure that should "interrogate" the
-// terrain to find a good sampling location (one initially, more later).
+// terrain to find a good sampling location.
 // Instead, we choose an arbitrary location and probe for ground position there.
 
 #include "plan-interface.h"
@@ -22,7 +22,7 @@ IdentifySampleTarget:
                            SearchDistance = 0.5);
   if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
   else log_warning ("GuardedMove failed to find ground.");
-  endif;
+  endif
 
   // The chosen X/Y sampling location, as well as choice for Radial trench
   // direction are stubbed here; these choices are arbitrary.
@@ -30,5 +30,4 @@ IdentifySampleTarget:
   Y = 0;
 
   Parallel = true;
-
 }

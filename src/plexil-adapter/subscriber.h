@@ -9,6 +9,9 @@
 // of subscription functions specific to various combinations of return type and
 // parameters.
 
+// To do: incorporate the new template-based version of this pattern developed
+// in the summer of 2020 by Albert Kutsyy.
+
 #include <string>
 using std::string;
 

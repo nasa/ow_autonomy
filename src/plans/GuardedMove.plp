@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Perform a guarded move with the given parameters.
+// A guarded move is typically used to find the ground.
+
 #include "plan-interface.h"
 
 GuardedMove:
@@ -15,6 +18,5 @@ GuardedMove:
   In Real SearchDistance;
 
   SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
-  SynchronousCommand publish_trajectory ();
   Wait 5; // Add some delay to make sure the status has been updated
 }

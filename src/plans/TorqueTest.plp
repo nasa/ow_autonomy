@@ -21,7 +21,7 @@ TorqueTest:
   {
     Dig:
     {
-      // This node attempts to dig too deep (note -1 Z target), in an effort to
+      // This node attempts to dig too deep (grind depth), in an effort to
       // overtorque one or more arm joints.
 
       // First, find ground.
@@ -33,7 +33,7 @@ TorqueTest:
                            GroundPos=Lookup(GroundPosition));
       }
       else log_error ("TorqueTest failed to find ground!");
-      endif;
+      endif
       Digging = false;
     }
 
@@ -47,7 +47,7 @@ TorqueTest:
         elseif (Lookup(SoftTorqueLimitReached(JointNames[i]))) {
           log_warning ("Joint ", JointNames[i], " exceeding its soft limit.");
         }
-        endif;
+        endif
       }
       Wait 1;
     }

@@ -13,20 +13,16 @@
 
 // PLEXIL
 #include "AdapterFactory.hh"
+#include "AdapterExecInterface.hh"
 #include "Debug.hh"
 #include "Error.hh"
 #include "PlexilExec.hh"
 #include "ExecApplication.hh"
-#include "InterfaceManager.hh"
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
 #include "State.hh"
 using PLEXIL::Error;
-using PLEXIL::ExecApplication;
-using PLEXIL::InterfaceManager;
 using PLEXIL::InterfaceSchema;
-using PLEXIL::State;
-using PLEXIL::Value;
 
 // C++
 #include <fstream>
@@ -35,12 +31,11 @@ using PLEXIL::Value;
 using std::string;
 using std::ostringstream;
 
-// DEVEL location of PLEXIL files, initialized in initialize().
-// TODO: make this the INSTALLED location, once we have one for OW.
+// Installed location of compiled PLEXIL files, initialized in initialize().
 static string PlexilDir = "";
 
 // The embedded PLEXIL application
-static ExecApplication* PlexilApp = NULL;
+static PLEXIL::ExecApplication* PlexilApp = NULL;
 
 OwExecutive* OwExecutive::m_instance = NULL;
 
@@ -75,7 +70,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_execInterface->handleAddPlan(doc->document_element());
+    PlexilApp->addPlan (doc);
   }
   catch (PLEXIL::ParserException const &e) {
     ROS_ERROR("Add of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
@@ -83,7 +78,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_execInterface->handleValueChange(State::timeState(), 0);
+    g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
     PlexilApp->run();
   }
   catch (const Error& e) {
@@ -160,7 +155,8 @@ static void get_plexil_debug_config()
 
 bool OwExecutive::initialize ()
 {
-  // NOTE: this is the best we can do for now.  ROS provides no API for devel.
+  // NOTE: this is the best we can do for now.
+  // ROS provides no API to locate the 'devel' directory.
   PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert
@@ -170,7 +166,7 @@ bool OwExecutive::initialize ()
 
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
-    PlexilApp = new ExecApplication();
+    PlexilApp = new PLEXIL::ExecApplication();
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
@@ -193,4 +189,3 @@ bool OwExecutive::initialize ()
   }
   return true;
 }
-
