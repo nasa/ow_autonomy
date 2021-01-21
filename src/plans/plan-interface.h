@@ -7,60 +7,15 @@
 
 // PLEXIL interface: commands, lookups, library plans
 
-// Lander commands
-
-Command tilt_antenna (Real);
-Command pan_antenna (Real);
-Command take_picture();
-
-// The following commands perform only the path planning for the given activity.
-
-Command dig_circular (Real x,
-                      Real y,
-                      Real depth,
-                      Real ground_pos,
-                      Boolean parallel); // true means parallel to lander arm
-
-Command dig_linear (Real x,
-                    Real y,
-                    Real depth,
-                    Real length,
-                    Real ground_pos);
-
-// This dumps the scoop at the given location; can be used for removing tailings
-// as well as delivering a sample to the receptacle.
-Command deliver_sample (Real x,
-                        Real y,
-                        Real z);
-
-Command grind (Real x,
-               Real y,
-               Real depth,
-               Real length,
-               Boolean parallel,
-               Real ground_pos);
-
-Command guarded_move (Real x,
-                      Real y,
-                      Real z,
-                      Real dir_x,
-                      Real dir_y,
-                      Real dir_z,
-                      Real search_distance);
-
-// Move from stowed position to a "ready" position
-Command unstow();
-
-// Move from "ready" position to stowed position; REQUIRES unstow() first
-Command stow();
+#include "lander-commands.h"
 
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
 
-// PLEXIL library versions of lander operations.  These are preferable to the
-// raw commands above, and include the final publish_trajectory.
+
+// PLEXIL library for lander operations.
 
 LibraryAction Stow ();
 LibraryAction Unstow ();
@@ -89,20 +44,29 @@ LibraryAction DeliverSample (In Real X,
                              In Real Y,
                              In Real Z);
 
-// Does nothing
-LibraryAction Stub (In String desc);
 
-
-// Lookups
-
-// Can be used for fine-grain process control, but generally not needed.
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
+// Lander queries
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
+Boolean Lookup ImageReceived;
+
+// Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
-Boolean Lookup ImageReceived;
+
+
+// Misc
+
+// Query whether a given operation has started, or is finished after having been
+// started.  These use the operation names as defined in OwInterface.cpp, and
+// offer fine-grain process control.  They are not required for general use.
+Boolean Lookup Running (String operation_name);
+Boolean Lookup Finished (String operation_name);
+
+// Does nothing, useful as placeholder for real plan.
+LibraryAction Stub (In String description);
+
+
 
 #endif
