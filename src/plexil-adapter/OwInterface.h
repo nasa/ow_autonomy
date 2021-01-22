@@ -12,12 +12,16 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <ow_autonomy/GuardedMoveAction.h>
+#include <ow_lander/UnstowAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/Point.h>
 #include <string>
 
-using GuardedMoveActionClient = actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+using GuardedMoveActionClient =
+  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+using UnstowActionClient =
+  actionlib::SimpleActionClient<ow_lander::UnstowAction>;
 
 class OwInterface
 {
@@ -85,6 +89,7 @@ class OwInterface
                                const geometry_msgs::Point& normal,
                                double search_distance,
                                int id);
+  void unstow1 (int id);
 
   bool operationRunning (const std::string& name) const;
   bool operationFinished (const std::string& name) const;
@@ -116,6 +121,7 @@ class OwInterface
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
+  std::unique_ptr<UnstowActionClient> m_unstowClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

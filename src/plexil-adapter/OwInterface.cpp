@@ -461,6 +461,31 @@ static void guarded_move_feedback_cb
 }
 
 
+//////////////////// Unstow Action support ////////////////////////////////
+
+static void unstow_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_lander::UnstowResultConstPtr& result)
+{
+  ROS_INFO ("Unstow done callback: finished in state [%s]",
+            state.toString().c_str());
+  ROS_INFO("Unstow done callback: result (%f, %f, %f)",
+           result->final_x, result->final_y, result->final_z);
+}
+
+static void unstow_active_cb ()
+{
+  ROS_INFO ("Unstow active callback - goal active!");
+}
+
+static void unstow_feedback_cb
+(const ow_lander::UnstowFeedbackConstPtr& feedback)
+{
+  ROS_INFO ("Unstow feedback callback: (%f, %f, %f)",
+            feedback->current_x, feedback->current_y, feedback->current_z);
+}
+
+
 /////////////////////////// OwInterface members ////////////////////////////////
 
 OwInterface* OwInterface::m_instance = nullptr;
@@ -774,23 +799,41 @@ void OwInterface::stow (int id)
   }
 }
 
-void OwInterface::unstow (int id)
+void OwInterface::unstow (int id)  // as action
 {
   if (! mark_operation_running (Op_Unstow, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Unstow>("/arm/unstow");
-
-
-  if (check_service_client (client, Op_Unstow)) {
-    ow_lander::Unstow srv;
-    thread service_thread (call_ros_service<ow_lander::Unstow>,
-                           client, srv, Op_Unstow, id);
-    service_thread.detach();
-  }
+  thread action_thread (&OwInterface::unstow1, this, id);
+  action_thread.detach();
 }
+
+void OwInterface::unstow1 (int id)
+{
+  ow_lander::UnstowGoal goal;
+  goal.goal = 20;  // Don't know meaning, copying from ow_lander sample client
+
+  thread fault_thread (monitor_for_faults, Op_Unstow);
+  m_unstowClient->sendGoal (goal, unstow_done_cb, unstow_active_cb,
+                            unstow_feedback_cb);
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_unstowClient->waitForResult (ros::Duration (30.0));
+
+  if (finished_before_timeout) {
+    actionlib::SimpleClientGoalState state = m_unstowClient->getState();
+    ROS_INFO("Unstow action finished: %s", state.toString().c_str());
+    ow_lander::UnstowResultConstPtr result = m_unstowClient->getResult();
+    ROS_INFO("Unstow action result: (%f, %f, %f)",
+             result->final_x, result->final_y, result->final_z);
+  }
+  else {
+    ROS_INFO("Unstow action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_Unstow, id);
+  fault_thread.join();
+}
+
 
 void OwInterface::deliverSample (double x, double y, double z, int id)
 {
