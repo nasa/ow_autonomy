@@ -76,9 +76,6 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(s);
     value_out = OwInterface::instance()->softTorqueLimitReached(s);
   }
-  else if (state_name == "ImageReceived") {
-    value_out = OwInterface::instance()->imageReceived();
-  }
   else if (state_name == "Running") {
     string operation;
     args[0].getValue(operation);

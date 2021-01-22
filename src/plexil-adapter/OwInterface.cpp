@@ -355,9 +355,7 @@ void OwInterface::managePanTilt (const string& opname,
 }
 
 
-////////////////////////////// Image Support ///////////////////////////////////
-
-static bool   ImageReceived       = false;
+///////////////////////// Antenna/Camera Support ///////////////////////////////
 
 void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
@@ -838,11 +836,6 @@ double OwInterface::getPanVelocity () const
 double OwInterface::getTiltVelocity () const
 {
   return JointTelemetryMap[Joint::antenna_tilt].velocity;
-}
-
-bool OwInterface::imageReceived () const
-{
-  return ImageReceived;
 }
 
 double OwInterface::getVoltage () const
