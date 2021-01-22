@@ -684,7 +684,7 @@ void OwInterface::takePicture (int id)
 {
   if (! mark_operation_running (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
-  ROS_INFO ("Capturing stereo image using left image trigger.");
+  ROS_INFO ("  Capturing stereo image using left image trigger.");
   thread fault_thread (monitor_for_faults, Op_TakePicture);
   fault_thread.detach();
   m_leftImageTriggerPublisher->publish (msg);

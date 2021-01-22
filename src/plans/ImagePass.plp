@@ -19,7 +19,7 @@ ImagePass: UncheckedSequence
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  LibraryCall TakePicture(); // can fail, failure ignored for now
+  LibraryCall TakePicture();
   if (ReversePan) {
     log_debug ("Reverse pan. Pan =", PanAngle, "Lo=", PanLo,
                "Increment=", PanIncrement);
