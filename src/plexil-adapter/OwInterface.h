@@ -64,7 +64,6 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  bool   imageReceived () const;
   double getVoltage () const;
   double getRemainingUsefulLife () const;
   bool   groundFound () const;

@@ -49,7 +49,6 @@ LibraryAction DeliverSample (In Real X,
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
-Boolean Lookup ImageReceived;
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
@@ -66,7 +65,5 @@ Boolean Lookup Finished (String operation_name);
 
 // Does nothing, useful as placeholder for real plan.
 LibraryAction Stub (In String description);
-
-
 
 #endif
