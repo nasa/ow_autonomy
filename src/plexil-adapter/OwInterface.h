@@ -69,10 +69,9 @@ class OwInterface
   bool   groundFound () const;
   double groundPosition () const;
 
-  // These methods apply to all "lander operations", and hide their ROS
-  // implementation, which could be services, actions, or ad hoc messaging.
+  // Is the given operation (as named in .cpp file) running?
   bool running (const std::string& name) const;
-  bool finished (const std::string& name) const;
+
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
@@ -88,7 +87,6 @@ class OwInterface
                                int id);
 
   bool operationRunning (const std::string& name) const;
-  bool operationFinished (const std::string& name) const;
 
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr&);

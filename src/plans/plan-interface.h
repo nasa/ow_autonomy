@@ -57,11 +57,10 @@ Real    Lookup GroundPosition;
 
 // Misc
 
-// Query whether a given operation has started, or is finished after having been
-// started.  These use the operation names as defined in OwInterface.cpp, and
-// offer fine-grain process control.  They are not required for general use.
+// Query whether a given operation is running.  Uses the operation names as
+// defined in OwInterface.cpp.  Generally not needed, but supports more
+// fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
 
 // Does nothing, useful as placeholder for real plan.
 LibraryAction Stub (In String description);
