@@ -854,24 +854,11 @@ bool OwInterface::operationRunning (const string& name) const
   return Running.at (name) != IDLE_ID;
 }
 
-bool OwInterface::operationFinished (const string& name) const
-{
-  return !operationRunning (name);
-}
-
 bool OwInterface::running (const string& name) const
 {
   if (is_lander_operation (name)) return operationRunning (name);
 
   ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
-  return false;
-}
-
-bool OwInterface::finished (const string& name) const
-{
-  if (is_lander_operation (name)) return operationFinished (name);
-
-  ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
   return false;
 }
 

@@ -81,11 +81,6 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
-  else if (state_name == "Finished") {
-    string operation;
-    args[0].getValue(operation);
-    value_out = OwInterface::instance()->finished (operation);
-  }
   else if (state_name == "Voltage") {
     value_out = OwInterface::instance()->getVoltage();
   }
