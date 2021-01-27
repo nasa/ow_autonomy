@@ -16,7 +16,6 @@
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/GuardedMoveResult.h>
-#include <ow_lander/PublishTrajectory.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -64,7 +63,6 @@ const string Op_GuardedMoveAction = "GuardedMoveAction";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_DeliverSample     = "DeliverSample";
-const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
@@ -87,7 +85,6 @@ static map<string, int> Running
   { Op_DigCircular, IDLE_ID },
   { Op_DigLinear, IDLE_ID },
   { Op_DeliverSample, IDLE_ID },
-  { Op_PublishTrajectory, IDLE_ID },
   { Op_PanAntenna, IDLE_ID },
   { Op_TiltAntenna, IDLE_ID },
   { Op_Grind, IDLE_ID },
@@ -164,7 +161,6 @@ const map<string, map<string, string> > Faults
   { Op_DigCircular, ArmFaults },
   { Op_DigLinear, ArmFaults },
   { Op_DeliverSample, ArmFaults },
-  { Op_PublishTrajectory, ArmFaults },
   { Op_PanAntenna, AntennaFaults },
   { Op_TiltAntenna, AntennaFaults },
   { Op_Grind, ArmFaults },
