@@ -2,9 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test plan for ROS actions.  Content will evolve as new actions are added.
+// Test plan that runs a dummy ROS action concurrently with a (real) ROS service.
 
 #include "plan-interface.h"
+
 Command guarded_move_action_demo (Real x, Real y, Real z,
                                   Real dir_x, Real dir_y, Real dir_z,
                                   Real search_distance);
@@ -15,10 +16,10 @@ TestActions:
 
   StartOperations: Concurrence
   {
-    // Start an action (dummy for now)
+    // Start a ROS action (dummy for now)
     guarded_move_action_demo (2, 0, 0.3, 0, 0, 1, 0.5);
 
-    // Start a service
+    // Start a ROS service
     guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
   }
 
@@ -26,8 +27,8 @@ TestActions:
   {
     StartCondition (Lookup (Running ("GuardedMove")) &&
                     Lookup (Running ("GuardedMoveAction")));
-    EndCondition (Lookup (Finished ("GuardedMove")) &&
-                  Lookup (Finished ("GuardedMoveAction")));
+    EndCondition (!Lookup (Running ("GuardedMove")) &&
+                  !Lookup (Running ("GuardedMoveAction")));
     log_info ("Waiting for operations to finish...");
   }
 

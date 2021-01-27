@@ -1,0 +1,25 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Verifies that a ROS Service can be run concurrently with other PLEXIL nodes.
+// Prior to the current lander operation framework, a Service call would block
+// the plan and executive.
+
+#include "plan-interface.h"
+
+TestService:
+{
+  Service:
+  {
+    log_info ("Initiating ROS Service...");
+    guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
+  }
+  Report:
+  {
+    RepeatCondition Lookup (Running ("GuardedMove"));
+    log_info ("Service in progress...");
+    Wait 1;
+  }
+  log_info ("ROS Service finished.");
+}
