@@ -581,6 +581,8 @@ void OwInterface::initialize()
     ROS_INFO ("Waiting for action servers...");
     m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
     m_guardedMoveClient->waitForServer();
+    m_unstowClient.reset(new UnstowActionClient("Unstow", true));
+    m_unstowClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -813,8 +815,14 @@ void OwInterface::unstow1 (int id)
   goal.goal = 20;  // Don't know meaning, copying from ow_lander sample client
 
   thread fault_thread (monitor_for_faults, Op_Unstow);
-  m_unstowClient->sendGoal (goal, unstow_done_cb, unstow_active_cb,
-                            unstow_feedback_cb);
+  if (m_unstowClient) {
+    m_unstowClient->sendGoal (goal, unstow_done_cb, unstow_active_cb,
+                              unstow_feedback_cb);
+  }
+  else {
+    ROS_ERROR ("m_unstowClient was null!");
+    return;
+  }
 
   // Wait for the action to return
   bool finished_before_timeout =
