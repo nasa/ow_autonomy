@@ -479,8 +479,9 @@ static void unstow_active_cb ()
 static void unstow_feedback_cb
 (const ow_lander::UnstowFeedbackConstPtr& feedback)
 {
-  ROS_INFO ("Unstow feedback callback: (%f, %f, %f)",
-            feedback->current_x, feedback->current_y, feedback->current_z);
+  // Verbose!
+  //  ROS_INFO ("Unstow feedback callback: (%f, %f, %f)",
+  //            feedback->current_x, feedback->current_y, feedback->current_z);
 }
 
 
