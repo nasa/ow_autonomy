@@ -14,10 +14,12 @@
 #include <ow_autonomy/GuardedMoveAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
+#include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
 
-using GuardedMoveActionClient = actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+using GuardedMoveActionClient =
+  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
 class OwInterface
 {
@@ -40,7 +42,7 @@ class OwInterface
                     double search_distance, int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
-  void takePicture ();
+  void takePicture (int id);
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
   void digCircular (double x, double y, double depth,
@@ -64,16 +66,14 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  bool   imageReceived () const;
   double getVoltage () const;
   double getRemainingUsefulLife () const;
   bool   groundFound () const;
   double groundPosition () const;
 
-  // These methods apply to all "lander operations", and hide their ROS
-  // implementation, which could be services, actions, or ad hoc messaging.
+  // Is the given operation (as named in .cpp file) running?
   bool running (const std::string& name) const;
-  bool finished (const std::string& name) const;
+
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
@@ -89,11 +89,11 @@ class OwInterface
                                int id);
 
   bool operationRunning (const std::string& name) const;
-  bool operationFinished (const std::string& name) const;
 
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  void tiltCallback (const control_msgs::JointControllerState::ConstPtr& msg);
-  void panCallback (const control_msgs::JointControllerState::ConstPtr& msg);
+  void tiltCallback (const control_msgs::JointControllerState::ConstPtr&);
+  void panCallback (const control_msgs::JointControllerState::ConstPtr&);
+  void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void managePanTilt (const std::string& opname,
                       double position, double velocity,
                       double current, double goal,

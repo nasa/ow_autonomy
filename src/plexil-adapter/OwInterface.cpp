@@ -16,12 +16,10 @@
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/GuardedMoveResult.h>
-#include <ow_lander/PublishTrajectory.h>
 
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
-#include <sensor_msgs/Image.h>
 
 // C++
 #include <set>
@@ -66,12 +64,12 @@ const string Op_GuardedMoveAction = "GuardedMoveAction";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_DeliverSample     = "DeliverSample";
-const string Op_PublishTrajectory = "PublishTrajectory";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
+const string Op_TakePicture       = "TakePicture";
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
 // in particular because map entries are never added or deleted, and the code
@@ -88,12 +86,12 @@ static map<string, int> Running
   { Op_DigCircular, IDLE_ID },
   { Op_DigLinear, IDLE_ID },
   { Op_DeliverSample, IDLE_ID },
-  { Op_PublishTrajectory, IDLE_ID },
   { Op_PanAntenna, IDLE_ID },
   { Op_TiltAntenna, IDLE_ID },
   { Op_Grind, IDLE_ID },
   { Op_Stow, IDLE_ID },
-  { Op_Unstow, IDLE_ID }
+  { Op_Unstow, IDLE_ID },
+  { Op_TakePicture, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -184,7 +182,8 @@ const map<string, map<string, string> > Faults
   { Op_TiltAntenna, AntennaFaults },
   { Op_Grind, unionOfFaults()},
   { Op_Stow, unionOfFaults()},
-  { Op_Unstow, unionOfFaults()}
+  { Op_Unstow, unionOfFaults()},
+  { Op_TakePicture, AntennaFaults } // for now
 };
 
 static bool faulty (const string& fault)
@@ -369,9 +368,7 @@ void OwInterface::managePanTilt (const string& opname,
 }
 
 
-////////////////////////////// Image Support ///////////////////////////////////
-
-static bool   ImageReceived       = false;
+///////////////////////// Antenna/Camera Support ///////////////////////////////
 
 void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
@@ -387,11 +384,13 @@ void OwInterface::tiltCallback
   publish ("TiltDegrees", m_currentTilt);
 }
 
-static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
+void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
-  // Assuming that receipt of this message is success itself.
-  ImageReceived = true;
-  publish ("ImageReceived", ImageReceived);
+  // NOTE: the received image is ignored for now.
+
+  if (operationRunning (Op_TakePicture)) {
+    mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
+  }
 }
 
 
@@ -559,7 +558,8 @@ void OwInterface::initialize()
                  &OwInterface::jointStatesCallback, this));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+       subscribe("/StereoCamera/left/image_raw", qsize,
+                 &OwInterface::cameraCallback, this));
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
@@ -691,11 +691,13 @@ void OwInterface::panAntenna (double degrees, int id)
   antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
-void OwInterface::takePicture ()
+void OwInterface::takePicture (int id)
 {
+  if (! mark_operation_running (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
-  ImageReceived = false;
-  publish ("ImageReceived", ImageReceived);
+  ROS_INFO ("  Capturing stereo image using left image trigger.");
+  thread fault_thread (monitor_for_faults, Op_TakePicture);
+  fault_thread.detach();
   m_leftImageTriggerPublisher->publish (msg);
 }
 
@@ -849,11 +851,6 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetryMap[Joint::antenna_tilt].velocity;
 }
 
-bool OwInterface::imageReceived () const
-{
-  return ImageReceived;
-}
-
 double OwInterface::getVoltage () const
 {
   return Voltage;
@@ -870,24 +867,11 @@ bool OwInterface::operationRunning (const string& name) const
   return Running.at (name) != IDLE_ID;
 }
 
-bool OwInterface::operationFinished (const string& name) const
-{
-  return !operationRunning (name);
-}
-
 bool OwInterface::running (const string& name) const
 {
   if (is_lander_operation (name)) return operationRunning (name);
 
   ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
-  return false;
-}
-
-bool OwInterface::finished (const string& name) const
-{
-  if (is_lander_operation (name)) return operationFinished (name);
-
-  ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
   return false;
 }
 

@@ -76,18 +76,10 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(s);
     value_out = OwInterface::instance()->softTorqueLimitReached(s);
   }
-  else if (state_name == "ImageReceived") {
-    value_out = OwInterface::instance()->imageReceived();
-  }
   else if (state_name == "Running") {
     string operation;
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
-  }
-  else if (state_name == "Finished") {
-    string operation;
-    args[0].getValue(operation);
-    value_out = OwInterface::instance()->finished (operation);
   }
   else if (state_name == "Voltage") {
     value_out = OwInterface::instance()->getVoltage();

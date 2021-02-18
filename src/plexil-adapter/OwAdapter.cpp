@@ -289,7 +289,7 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->takePicture();
+  OwInterface::instance()->takePicture (CommandId);
   send_ack_once(*cr);
 }
 
