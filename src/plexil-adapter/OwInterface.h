@@ -31,8 +31,6 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
-  const std::map<std::string, std::string> unionOfFaults();
-
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,
@@ -82,6 +80,9 @@ class OwInterface
 
 
  private:
+  //create Union of two Fault maps
+  const std::map<std::string, std::string> unionTwoFaultMaps(std::map<std::string, std::string> map1, std::map<std::string, std::string> map2);
+
   // Temporary, support for public version above
   void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
                                const geometry_msgs::Point& normal,
