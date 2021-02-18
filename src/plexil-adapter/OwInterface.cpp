@@ -11,8 +11,8 @@
 #include <ow_lander/DigCircular.h>
 #include <ow_lander/DigLinear.h>
 #include <ow_lander/Grind.h>
-#include <ow_lander/Stow.h>
-#include <ow_lander/Unstow.h>
+//#include <ow_lander/Stow.h>
+//#include <ow_lander/Unstow.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/GuardedMoveResult.h>
@@ -459,12 +459,18 @@ static void guarded_move_feedback_cb
 }
 
 
+//////////////////// General Action support ///////////////////////////////
+
+const auto ActionTimeoutSecs = 30.0;
+
 //////////////////// Unstow Action support ////////////////////////////////
 
 static void unstow_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const ow_lander::UnstowResultConstPtr& result)
 {
+  // For debugging, remove later
+
   ROS_INFO ("Unstow done callback: finished in state [%s]",
             state.toString().c_str());
   ROS_INFO("Unstow done callback: result (%f, %f, %f)",
@@ -479,9 +485,32 @@ static void unstow_active_cb ()
 static void unstow_feedback_cb
 (const ow_lander::UnstowFeedbackConstPtr& feedback)
 {
-  // Verbose!
-  //  ROS_INFO ("Unstow feedback callback: (%f, %f, %f)",
-  //            feedback->current_x, feedback->current_y, feedback->current_z);
+  // Nothing meaningful to do here
+}
+
+//////////////////// Stow Action support ////////////////////////////////
+
+static void stow_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_lander::StowResultConstPtr& result)
+{
+  // For debugging, remove later
+
+  ROS_INFO ("Stow done callback: finished in state [%s]",
+            state.toString().c_str());
+  ROS_INFO("Stow done callback: result (%f, %f, %f)",
+           result->final_x, result->final_y, result->final_z);
+}
+
+static void stow_active_cb ()
+{
+  ROS_INFO ("Stow active callback - goal active!");
+}
+
+static void stow_feedback_cb
+(const ow_lander::StowFeedbackConstPtr& feedback)
+{
+  // Nothing meaningful to do here
 }
 
 
@@ -584,6 +613,8 @@ void OwInterface::initialize()
     m_guardedMoveClient->waitForServer();
     m_unstowClient.reset(new UnstowActionClient("Unstow", true));
     m_unstowClient->waitForServer();
+    m_stowClient.reset(new StowActionClient("Stow", true));
+    m_stowClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -786,6 +817,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
   }
 }
 
+/*
 void OwInterface::stow (int id)
 {
   if (! mark_operation_running (Op_Stow, id)) return;
@@ -802,6 +834,7 @@ void OwInterface::stow (int id)
     service_thread.detach();
   }
 }
+*/
 
 void OwInterface::unstow (int id)  // as action
 {
@@ -813,7 +846,7 @@ void OwInterface::unstow (int id)  // as action
 void OwInterface::unstow1 (int id)
 {
   ow_lander::UnstowGoal goal;
-  goal.goal = 20;  // Don't know meaning, copying from ow_lander sample client
+  goal.goal = 0;  // Arbitrary, meaningless value
 
   thread fault_thread (monitor_for_faults, Op_Unstow);
   if (m_unstowClient) {
@@ -827,20 +860,47 @@ void OwInterface::unstow1 (int id)
 
   // Wait for the action to return
   bool finished_before_timeout =
-    m_unstowClient->waitForResult (ros::Duration (30.0));
+    m_unstowClient->waitForResult (ros::Duration (ActionTimeoutSecs));
 
-  if (finished_before_timeout) {
-    actionlib::SimpleClientGoalState state = m_unstowClient->getState();
-    ROS_INFO("Unstow action finished: %s", state.toString().c_str());
-    ow_lander::UnstowResultConstPtr result = m_unstowClient->getResult();
-    ROS_INFO("Unstow action result: (%f, %f, %f)",
-             result->final_x, result->final_y, result->final_z);
-  }
-  else {
-    ROS_INFO("Unstow action did not finish before the time out.");
+  if (! finished_before_timeout) {
+    ROS_WARN ("Unstow action did not finish before the time out.");
   }
 
   mark_operation_finished (Op_Unstow, id);
+  fault_thread.join();
+}
+
+void OwInterface::stow (int id)  // as action
+{
+  if (! mark_operation_running (Op_Stow, id)) return;
+  thread action_thread (&OwInterface::stow1, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::stow1 (int id)
+{
+  ow_lander::StowGoal goal;
+  goal.goal = 0;  // Arbitrary, meaningless value
+
+  thread fault_thread (monitor_for_faults, Op_Stow);
+  if (m_stowClient) {
+    m_stowClient->sendGoal (goal, stow_done_cb, stow_active_cb,
+                              stow_feedback_cb);
+  }
+  else {
+    ROS_ERROR ("m_stowClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_stowClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("Stow action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_Stow, id);
   fault_thread.join();
 }
 

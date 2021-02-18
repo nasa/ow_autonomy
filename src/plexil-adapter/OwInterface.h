@@ -10,9 +10,13 @@
 // executive per lander.
 
 #include <ros/ros.h>
+
+// Actions
 #include <actionlib/client/simple_action_client.h>
 #include <ow_autonomy/GuardedMoveAction.h>
 #include <ow_lander/UnstowAction.h>
+#include <ow_lander/StowAction.h>
+
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
@@ -24,6 +28,9 @@ using GuardedMoveActionClient =
 
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
+
+using StowActionClient =
+  actionlib::SimpleActionClient<ow_lander::StowAction>;
 
 class OwInterface
 {
@@ -90,6 +97,7 @@ class OwInterface
                                double search_distance,
                                int id);
   void unstow1 (int id);
+  void stow1 (int id);
 
   bool operationRunning (const std::string& name) const;
 
@@ -122,6 +130,7 @@ class OwInterface
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<UnstowActionClient> m_unstowClient;
+  std::unique_ptr<StowActionClient> m_stowClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
