@@ -155,6 +155,14 @@ const map<string, string> ArmFaults
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
+const map<string, string> Power Faults
+{
+  // Param name -> human-readable
+  { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
+  { "/faults/instantaneous_capacity_loss_power_failure", "State of Charge" },
+  { "/faults/thermal_power_failure", "Thermal Power" }
+};
+
 const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
