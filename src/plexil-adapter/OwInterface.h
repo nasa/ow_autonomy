@@ -29,6 +29,8 @@ class OwInterface
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
+  const std::map<std::string, std::string> unionOfFaults();
+
   // Operational interface
 
   // The defaults currently match those of the activity.  When all are used,

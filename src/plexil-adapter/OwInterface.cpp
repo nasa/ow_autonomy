@@ -25,6 +25,7 @@
 
 // C++
 #include <set>
+#include <string>
 #include <map>
 #include <thread>
 #include <functional>
@@ -163,9 +164,9 @@ const map<string, string> PowerFaults
   { "/faults/thermal_power_failure", "Thermal Power" }
 };
 
-const map<string, string> unionOfFaults()
+const std::map<string, string> unionOfFaults()
 {
-  map<string,string> unionMap = ArmFaults;
+  std::map<string,string> unionMap = ArmFaults;
   unionMap.insert(PowerFaults.begin(), PowerFaults.end());
   return unionMap;
 }
@@ -174,16 +175,16 @@ const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
   { Op_GuardedMove, unionOfFaults() },
-  { Op_GuardedMoveAction, ArmFaults },
-  { Op_DigCircular, ArmFaults },
-  { Op_DigLinear, ArmFaults },
-  { Op_DeliverSample, ArmFaults },
-  { Op_PublishTrajectory, ArmFaults },
+  { Op_GuardedMoveAction, unionOfFaults()},
+  { Op_DigCircular, unionOfFaults()},
+  { Op_DigLinear, unionOfFaults()},
+  { Op_DeliverSample, unionOfFaults()},
+  { Op_PublishTrajectory, unionOfFaults()},
   { Op_PanAntenna, AntennaFaults },
   { Op_TiltAntenna, AntennaFaults },
-  { Op_Grind, ArmFaults },
-  { Op_Stow, ArmFaults },
-  { Op_Unstow, ArmFaults }
+  { Op_Grind, unionOfFaults()},
+  { Op_Stow, unionOfFaults()},
+  { Op_Unstow, unionOfFaults()}
 };
 
 static bool faulty (const string& fault)
