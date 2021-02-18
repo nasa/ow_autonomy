@@ -155,7 +155,7 @@ const map<string, string> ArmFaults
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
-const map<string, string> Power Faults
+const map<string, string> PowerFaults
 {
   // Param name -> human-readable
   { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
@@ -163,10 +163,17 @@ const map<string, string> Power Faults
   { "/faults/thermal_power_failure", "Thermal Power" }
 };
 
+const map<string, string> unionOfFaults()
+{
+  map<string,string> unionMap = ArmFaults;
+  unionMap.insert(PowerFaults.begin(), PowerFaults.end());
+  return unionMap;
+}
+
 const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, ArmFaults },
+  { Op_GuardedMove, unionOfFaults() },
   { Op_GuardedMoveAction, ArmFaults },
   { Op_DigCircular, ArmFaults },
   { Op_DigLinear, ArmFaults },
