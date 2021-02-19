@@ -16,6 +16,7 @@
 #include <ow_autonomy/GuardedMoveAction.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
+#include <ow_lander/GrindAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -31,6 +32,9 @@ using UnstowActionClient =
 
 using StowActionClient =
   actionlib::SimpleActionClient<ow_lander::StowAction>;
+
+using GrindActionClient =
+  actionlib::SimpleActionClient<ow_lander::GrindAction>;
 
 class OwInterface
 {
@@ -98,6 +102,8 @@ class OwInterface
                                int id);
   void unstow1 (int id);
   void stow1 (int id);
+  void grind1 (double x, double y, double depth, double length,
+               bool parallel, double ground_pos, int id);
 
   bool operationRunning (const std::string& name) const;
 
@@ -131,6 +137,7 @@ class OwInterface
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<UnstowActionClient> m_unstowClient;
   std::unique_ptr<StowActionClient> m_stowClient;
+  std::unique_ptr<GrindActionClient> m_grindClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
