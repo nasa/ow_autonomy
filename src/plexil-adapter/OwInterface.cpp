@@ -10,9 +10,7 @@
 // OW - other
 #include <ow_lander/DigCircular.h>
 #include <ow_lander/DigLinear.h>
-#include <ow_lander/Grind.h>
-//#include <ow_lander/Stow.h>
-//#include <ow_lander/Unstow.h>
+//#include <ow_lander/Grind.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
 #include <ow_lander/GuardedMoveResult.h>
@@ -513,6 +511,31 @@ static void stow_feedback_cb
   // Nothing meaningful to do here
 }
 
+//////////////////// Grind Action support ////////////////////////////////
+
+static void grind_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_lander::GrindResultConstPtr& result)
+{
+  // For debugging, remove later
+
+  ROS_INFO ("Grind done callback: finished in state [%s]",
+            state.toString().c_str());
+  ROS_INFO("Grind done callback: result (%f, %f, %f)",
+           result->final_x, result->final_y, result->final_z);
+}
+
+static void grind_active_cb ()
+{
+  ROS_INFO ("Grind active callback - goal active!");
+}
+
+static void grind_feedback_cb
+(const ow_lander::GrindFeedbackConstPtr& feedback)
+{
+  // Nothing meaningful to do here
+}
+
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
@@ -615,6 +638,8 @@ void OwInterface::initialize()
     m_unstowClient->waitForServer();
     m_stowClient.reset(new StowActionClient("Stow", true));
     m_stowClient->waitForServer();
+    m_grindClient.reset(new GrindActionClient("Grind", true));
+    m_grindClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -792,6 +817,7 @@ void OwInterface::digCircular (double x, double y, double depth,
   }
 }
 
+/*
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
@@ -813,24 +839,6 @@ void OwInterface::grind (double x, double y, double depth, double length,
     srv.request.ground_position = ground_pos;
     thread service_thread (call_ros_service<ow_lander::Grind>,
                            client, srv, Op_Grind, id);
-    service_thread.detach();
-  }
-}
-
-/*
-void OwInterface::stow (int id)
-{
-  if (! mark_operation_running (Op_Stow, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Stow>("/arm/stow");
-
-  if (check_service_client (client, Op_Stow)) {
-    ow_lander::Stow srv;
-    thread service_thread (call_ros_service<ow_lander::Stow>,
-                           client, srv, Op_Stow, id);
     service_thread.detach();
   }
 }
@@ -901,6 +909,40 @@ void OwInterface::stow1 (int id)
   }
 
   mark_operation_finished (Op_Stow, id);
+  fault_thread.join();
+}
+
+void OwInterface::grind (int id)  // as action
+{
+  if (! mark_operation_running (Op_Grind, id)) return;
+  thread action_thread (&OwInterface::grind1, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::grind1 (int id)
+{
+  ow_lander::GrindGoal goal;
+  goal.goal = 0;  // Arbitrary, meaningless value
+
+  thread fault_thread (monitor_for_faults, Op_Grind);
+  if (m_grindClient) {
+    m_grindClient->sendGoal (goal, grind_done_cb, grind_active_cb,
+                              grind_feedback_cb);
+  }
+  else {
+    ROS_ERROR ("m_grindClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_grindClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("Grind action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_Grind, id);
   fault_thread.join();
 }
 
