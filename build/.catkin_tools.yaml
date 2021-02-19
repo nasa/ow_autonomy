@@ -1,6 +1,0 @@
-devel_space: /home/mlma/oceanwaters_ws/src/ow_autonomy/devel
-install: false
-install_space: /home/mlma/oceanwaters_ws/src/ow_autonomy/install
-profile: default
-source_space: /home/mlma/oceanwaters_ws/src/ow_autonomy/src
-workspace: /home/mlma/oceanwaters_ws/src/ow_autonomy
