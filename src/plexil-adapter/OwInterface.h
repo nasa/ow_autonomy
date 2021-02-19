@@ -80,6 +80,7 @@ class OwInterface
 
 
  private:
+                                           
   // Temporary, support for public version above
   void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
                                const geometry_msgs::Point& normal,

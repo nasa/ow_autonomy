@@ -153,20 +153,37 @@ const map<string, string> ArmFaults
   { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
 };
 
+const map<string, string> PowerFaults
+{
+  // Param name -> human-readable
+  { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
+  { "/faults/instantaneous_capacity_loss_power_failure", "State of Charge" },
+  { "/faults/thermal_power_failure", "Thermal Power" }
+};
+
+// Combines two maps together and returns the union. Only handles maps where there is no overlap in keys.
+static const map<string, string> combine_maps(const map<string, string>& map1, 
+                                            const map<string, string>& map2)
+{
+  map<string,string> unionMap = map1;
+  unionMap.insert(map2.begin(), map2.end());
+  return unionMap;
+}
+
 const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, ArmFaults },
-  { Op_GuardedMoveAction, ArmFaults },
-  { Op_DigCircular, ArmFaults },
-  { Op_DigLinear, ArmFaults },
-  { Op_DeliverSample, ArmFaults },
-  { Op_PanAntenna, AntennaFaults },
-  { Op_TiltAntenna, AntennaFaults },
-  { Op_Grind, ArmFaults },
-  { Op_Stow, ArmFaults },
-  { Op_Unstow, ArmFaults },
-  { Op_TakePicture, AntennaFaults } // for now
+  { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
+  { Op_GuardedMoveAction, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
+  { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
+  { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
+  { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
+  { Op_Stow, combine_maps(ArmFaults, PowerFaults) },
+  { Op_Unstow, combine_maps(ArmFaults, PowerFaults) },
+  { Op_TakePicture, combine_maps(AntennaFaults, PowerFaults) } // for now
 };
 
 static bool faulty (const string& fault)
