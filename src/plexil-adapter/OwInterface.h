@@ -17,6 +17,7 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
+#include <utility>
 
 #include <ow_faults/SystemFaults.h>
 #include <ow_faults/ArmFaults.h>
@@ -105,10 +106,38 @@ class OwInterface
                       double current, double goal,
                       const ros::Time& start);
   void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
-  void componentFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
-  void componentFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
-  void componentFaultCallback (const ow_faults::PTFaults::ConstPtr&);
+  void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
+  void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
+  void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
+//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
+
+  std::map<std::string,std::pair<uint64_t, bool>> systemErrors = 
+  {
+    {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
+    {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
+  };
+
+  std::map<std::string,std::pair<uint32_t, bool>> armErrors = {
+    {"HARDWARE_ERROR", std::make_pair(1, false)},
+    {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
+    {"COLLISION_ERROR", std::make_pair(3, false)},
+    {"ESTOP_ERROR", std::make_pair(4, false)},
+    {"POSITION_LIMIT_ERROR", std::make_pair(5, false)},
+    {"TORQUE_LIMIT_ERROR", std::make_pair(6, false)},
+    {"VELOCITY_LIMIT_ERROR", std::make_pair(7, false)},
+    {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
+  };
+
+  std::map<std::string,std::pair<uint32_t, bool>> powerErrors = {
+    {"HARDWARE_ERROR", std::make_pair(1, false)}
+  };
+
+  std::map<std::string,std::pair<uint32_t, bool>> ptErrors = {
+    {"HARDWARE_ERROR", std::make_pair(1, false)},
+    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  };
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;

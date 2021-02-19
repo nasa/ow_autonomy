@@ -35,22 +35,6 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
-//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
-
-const uint64_t ARM_EXECUTION_ERROR = 4;
-const uint64_t POWER_EXECUTION_ERROR = 512;
-const uint64_t PT_EXECUTION_ERROR = 128;
-
-const uint64_t HARDWARE_ERROR = 1;
-const uint64_t JOINT_LIMIT_ERROR = 2;
-const uint64_t TRAJECTORY_GENERATION_ERROR = 2;
-const uint64_t COLLISION_ERROR = 3;
-const uint64_t ESTOP_ERROR = 4;
-const uint64_t POSITION_LIMIT_ERROR = 5;
-const uint64_t TORQUE_LIMIT_ERROR = 6;
-const uint64_t VELOCITY_LIMIT_ERROR = 7;
-const uint64_t NO_FORCE_DATA_ERROR = 8;
-
 //////////////////// Utilities ////////////////////////
 
 // Degree/Radian
@@ -262,7 +246,6 @@ static bool check_service_client (ros::ServiceClient& client,
   return true;
 }
 
-
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
 static set<string> JointsAtHardTorqueLimit { };
@@ -330,75 +313,89 @@ void OwInterface::systemFaultMessageCallback
   // Publish all joint information for visibility to PLEXIL and handle any
   // system-level fault messages.
   uint64_t msg_val = msg->value;
-  
-  if (((msg_val & ARM_EXECUTION_ERROR) == ARM_EXECUTION_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: ARM EXECUTION ERROR");
-  }
-  if (((msg_val & POWER_EXECUTION_ERROR) == POWER_EXECUTION_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: POWER EXECUTION ERROR");
-  }
-  if (((msg_val & PT_EXECUTION_ERROR) == PT_EXECUTION_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: ANTENNA EXECUTION ERROR");
+
+  for (auto const& entry : systemErrors){
+    string key = entry.first;
+    uint64_t value = entry.second.first;
+    bool b = entry.second.second;
+
+    if (!b && ((msg_val & value) == value)){
+      ROS_ERROR("SYSTEM ERROR: %s", key.c_str() );
+      systemErrors[key].second = true;
+    }
+    else if (b && ((msg_val & value) != value)){
+      ROS_INFO("RESOLVED SYSTEM ERROR: %s", key.c_str() );
+      systemErrors[key].second = false;
+    }
   }
 }
 
-void OwInterface::componentFaultCallback
+void OwInterface::armFaultCallback
 (const  ow_faults::ArmFaults::ConstPtr& msg)
 {
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
-  uint64_t msg_val = msg->value;
+  uint32_t msg_val = msg->value;
   
-  if (((msg_val & HARDWARE_ERROR) == HARDWARE_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: ARM HARDWARE ERROR");
-  }
-  if (((msg_val & TRAJECTORY_GENERATION_ERROR) == TRAJECTORY_GENERATION_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: TRAJECTORY GENERATION ERROR");
-  }
-  if (((msg_val & POSITION_LIMIT_ERROR) == POSITION_LIMIT_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: POSITION LIMIT ERROR");
-  }
-  if (((msg_val & COLLISION_ERROR) == COLLISION_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: COLLISION ERROR");
-  }
-  if (((msg_val & ESTOP_ERROR) == ESTOP_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: ESTOP ERROR");
-  }
-  if (((msg_val & TORQUE_LIMIT_ERROR) == TORQUE_LIMIT_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: TORQUE LIMIT ERROR");
-  }
-  if (((msg_val & VELOCITY_LIMIT_ERROR) == VELOCITY_LIMIT_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: VELOCITY LIMIT ERROR");
-  }
-  if (((msg_val & NO_FORCE_DATA_ERROR) == NO_FORCE_DATA_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: NO FORCE DATA ERROR");
+  for (auto const& entry : armErrors){
+    string key = entry.first;
+    uint32_t value = entry.second.first;
+    bool b = entry.second.second;
+
+    if (!b && ((msg_val & value) == value)){
+      ROS_ERROR("ARM ERROR: %s", key.c_str() );
+      armErrors[key].second = true;
+    }
+    else if (b && ((msg_val & value) != value)){
+      ROS_INFO("RESOLVED ARM ERROR: %s", key.c_str() );
+      armErrors[key].second = false;
+    }
   }
 }
 
-void OwInterface::componentFaultCallback
+void OwInterface::powerFaultCallback
 (const  ow_faults::PowerFaults::ConstPtr& msg)
 {
   // Publish all POWER FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
-  uint64_t msg_val = msg->value;
+  uint32_t msg_val = msg->value;
   
-  if (((msg_val & HARDWARE_ERROR) == HARDWARE_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: HARDWARE ERROR");
+  for (auto const& entry : powerErrors){
+    string key = entry.first;
+    uint32_t value = entry.second.first;
+    bool b = entry.second.second;
+
+    if (!b && ((msg_val & value) == value)){
+      ROS_ERROR("POWER ERROR: %s", key.c_str() );
+      powerErrors[key].second = true;
+    }
+    else if (b && ((msg_val & value) != value)){
+      ROS_INFO("RESOLVED POWER ERROR: %s", key.c_str() );
+      powerErrors[key].second = false;
+    }
   }
 }
 
-void OwInterface::componentFaultCallback
+void OwInterface::antennaFaultCallback
 (const  ow_faults::PTFaults::ConstPtr& msg)
 {
   // Publish all PANT TILT ANTENNA information for visibility to PLEXIL and handle any
   // system-level fault messages.
-  uint64_t msg_val = msg->value;
+  uint32_t msg_val = msg->value;
   
-  if (((msg_val & HARDWARE_ERROR) == HARDWARE_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: HARDWARE ERROR");
-  }
-  if (((msg_val & JOINT_LIMIT_ERROR) == JOINT_LIMIT_ERROR)) {
-    ROS_ERROR("SYSTEM ERROR: JOINT LIMIT ERROR");
+  for (auto const& entry : ptErrors){
+    string key = entry.first;
+    uint32_t value = entry.second.first;
+    bool b = entry.second.second;
+
+    if (!b && ((msg_val & value) == value)){
+      ROS_ERROR("ANTENNA ERROR: %s", key.c_str() );
+      ptErrors[key].second = true;
+    }
+    else if (b && ((msg_val & value) != value)){
+      ROS_INFO("RESOLVED ANTENNA ERROR: %s", key.c_str() );
+      ptErrors[key].second = false;
+    }
   }
 }
 
@@ -673,16 +670,20 @@ void OwInterface::initialize()
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/system_faults_status", qsize,  &OwInterface::systemFaultMessageCallback, this));
+       subscribe("/system_faults_status", qsize,  
+                &OwInterface::systemFaultMessageCallback, this));
     m_armFaultMessagesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/arm_faults_status", qsize,  &OwInterface::componentFaultCallback, this));
+       subscribe("/arm_faults_status", qsize,  
+                &OwInterface::armFaultCallback, this));
     m_powerFaultMessagesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/power_faults_status", qsize,  &OwInterface::componentFaultCallback, this));
+       subscribe("/power_faults_status", qsize,
+                &OwInterface::powerFaultCallback, this));
     m_ptFaultMessagesSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/pt_faults_status", qsize,  &OwInterface::componentFaultCallback, this));
+       subscribe("/pt_faults_status", qsize, 
+                &OwInterface::antennaFaultCallback, this));
 
     ROS_INFO ("Waiting for action servers...");
     m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
