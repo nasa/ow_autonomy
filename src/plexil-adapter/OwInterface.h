@@ -81,8 +81,9 @@ class OwInterface
 
  private:
   //create Union of two Fault maps
-  const std::map<std::string, std::string> unionTwoFaultMaps(std::map<std::string, std::string> map1, std::map<std::string, std::string> map2);
-
+  const std::map<std::string, std::string> unionTwoFaultMaps( const std::map<std::string, std::string>& map1, 
+                                            const std::map<std::string, std::string>& map2);
+                                            
   // Temporary, support for public version above
   void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
                                const geometry_msgs::Point& normal,

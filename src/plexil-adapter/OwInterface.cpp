@@ -23,7 +23,6 @@
 
 // C++
 #include <set>
-#include <string>
 #include <map>
 #include <thread>
 #include <functional>
@@ -162,9 +161,10 @@ const map<string, string> PowerFaults
   { "/faults/thermal_power_failure", "Thermal Power" }
 };
 
-const std::map<string, string> unionTwoFaultMaps(std::map<std::string, std::string> map1, std::map<std::string, std::string> map2)
+const map<string, string> unionTwoFaultMaps(const map<string, string>& map1, 
+                                            const map<string, string>& map2)
 {
-  std::map<string,string> unionMap = map1;
+  map<string,string> unionMap = map1;
   unionMap.insert(map2.begin(), map2.end());
   return unionMap;
 }
