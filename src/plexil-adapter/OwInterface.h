@@ -105,9 +105,9 @@ class OwInterface
                       double current, double goal,
                       const ros::Time& start);
   void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
-  // void armFaultMessageCallback (const ow_faults::ArmFaults::ConstPtr&);
-  // void powerFaultMessageCallback (const ow_faults::PowerFaults::ConstPtr&);
-  // void ptFaultMessageCallback (const ow_faults::PTFaults::ConstPtr&);
+  void componentFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
+  void componentFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
+  void componentFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
 
   static OwInterface* m_instance;
