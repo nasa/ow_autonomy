@@ -35,6 +35,11 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
+//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
+
+const uint64_t ARM_EXECUTION_ERROR = 4;
+const uint64_t POWER_EXECUTION_ERROR = 512;
+const uint64_t PT_EXECUTION_ERROR = 128;
 
 //////////////////// Utilities ////////////////////////
 
@@ -309,6 +314,24 @@ static void handle_joint_fault (Joint joint, int joint_index,
   handle_overtorque (joint, msg->effort[joint_index]);
 }
 
+void OwInterface::systemFaultMessageCallback
+(const  ow_faults::SystemFaults::ConstPtr& msg)
+{
+  // Publish all joint information for visibility to PLEXIL and handle any
+  // system-level fault messages.
+  uint64_t msg_val = msg->value;
+  
+  if (((msg_val & ARM_EXECUTION_ERROR) == ARM_EXECUTION_ERROR)) {
+    ROS_ERROR("SYSTEM ERROR: ARM EXECUTION ERROR");
+  }
+  if (((msg_val & POWER_EXECUTION_ERROR) == POWER_EXECUTION_ERROR)) {
+    ROS_ERROR("SYSTEM ERROR: POWER EXECUTION ERROR");
+  }
+  if (((msg_val & PT_EXECUTION_ERROR) == PT_EXECUTION_ERROR)) {
+    ROS_ERROR("SYSTEM ERROR: ANTENNA EXECUTION ERROR");
+  }
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -498,6 +521,11 @@ OwInterface::OwInterface ()
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
+    m_systemFaultMessagesSubscriber (nullptr),
+    // m_guardedMoveSubscriber (nullptr),
+    // m_guardedMoveSubscriber (nullptr),
+    // m_guardedMoveSubscriber (nullptr),
+
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart left uninitialized
@@ -516,6 +544,10 @@ OwInterface::~OwInterface ()
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
   if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
+  if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
+  if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
+  if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
+  if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -568,6 +600,19 @@ void OwInterface::initialize()
     m_guardedMoveSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
+    // subscribers for fault messages
+    m_systemFaultMessagesSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/system_faults_status", qsize,  &OwInterface::systemFaultMessageCallback, this));
+    // m_armFaultMessagesSubscriber = new ros::Subscriber
+    //   (m_genericNodeHandle ->
+    //    subscribe("/arm_faults_status", qsize,  &OwInterface::armFaultMessageCallback));
+    // m_powerFaultMessagesSubscriber = new ros::Subscriber
+    //   (m_genericNodeHandle ->
+    //    subscribe("/power_faults_status", qsize,  &OwInterface::powerFaultMessageCallback));
+    // m_ptFaultMessagesSubscriber = new ros::Subscriber
+    //   (m_genericNodeHandle ->
+    //    subscribe("/pt_faults_status", qsize,  &OwInterface::ptFaultMessageCallback));
 
     ROS_INFO ("Waiting for action servers...");
     m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));

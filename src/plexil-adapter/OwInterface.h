@@ -18,6 +18,11 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
+#include <ow_faults/SystemFaults.h>
+#include <ow_faults/ArmFaults.h>
+#include <ow_faults/PowerFaults.h>
+#include <ow_faults/PTFaults.h>
+
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
@@ -99,6 +104,11 @@ class OwInterface
                       double position, double velocity,
                       double current, double goal,
                       const ros::Time& start);
+  void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
+  // void armFaultMessageCallback (const ow_faults::ArmFaults::ConstPtr&);
+  // void powerFaultMessageCallback (const ow_faults::PowerFaults::ConstPtr&);
+  // void ptFaultMessageCallback (const ow_faults::PTFaults::ConstPtr&);
+
 
   static OwInterface* m_instance;
   ros::NodeHandle* m_genericNodeHandle;
@@ -116,6 +126,11 @@ class OwInterface
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
+
+  ros::Subscriber* m_systemFaultMessagesSubscriber;
+  ros::Subscriber* m_armFaultMessagesSubscriber;
+  ros::Subscriber* m_powerFaultMessagesSubscriber;
+  ros::Subscriber* m_ptFaultMessagesSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
