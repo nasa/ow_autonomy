@@ -342,13 +342,8 @@ void OwInterface::armFaultCallback
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
-    if (!b && ((msg_val & value) == value)){
-      ROS_ERROR("ARM ERROR: %s", key.c_str() );
-      armErrors[key].second = true;
-    }
-    else if (b && ((msg_val & value) != value)){
-      ROS_INFO("RESOLVED ARM ERROR: %s", key.c_str() );
-      armErrors[key].second = false;
+    if (checkFaultMessages("ARM", msg_val, key, value, b)) {
+      armErrors[key].second = !armErrors[key].second;
     }
   }
 }
@@ -365,13 +360,8 @@ void OwInterface::powerFaultCallback
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
-    if (!b && ((msg_val & value) == value)){
-      ROS_ERROR("POWER ERROR: %s", key.c_str() );
-      powerErrors[key].second = true;
-    }
-    else if (b && ((msg_val & value) != value)){
-      ROS_INFO("RESOLVED POWER ERROR: %s", key.c_str() );
-      powerErrors[key].second = false;
+    if (checkFaultMessages("POWER", msg_val, key, value, b)) {
+      powerErrors[key].second = !powerErrors[key].second;
     }
   }
 }
@@ -388,15 +378,24 @@ void OwInterface::antennaFaultCallback
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
-    if (!b && ((msg_val & value) == value)){
-      ROS_ERROR("ANTENNA ERROR: %s", key.c_str() );
-      ptErrors[key].second = true;
-    }
-    else if (b && ((msg_val & value) != value)){
-      ROS_INFO("RESOLVED ANTENNA ERROR: %s", key.c_str() );
-      ptErrors[key].second = false;
+    if (checkFaultMessages("ANTENNA", msg_val, key, value, b)) {
+      ptErrors[key].second = !ptErrors[key].second;
     }
   }
+}
+
+bool OwInterface::checkFaultMessages
+(string fault_component, uint32_t msg_val, string key, uint32_t value, bool b )
+{
+  if (!b && ((msg_val & value) == value)){
+    ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
+    return 1;
+  }
+  else if (b && ((msg_val & value) != value)){
+    ROS_INFO("RESOLVED %s ERROR: %s", fault_component.c_str(), key.c_str() );
+    return 1;
+  }
+  return 0;
 }
 
 void OwInterface::jointStatesCallback
