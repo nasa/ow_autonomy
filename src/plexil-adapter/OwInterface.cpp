@@ -23,7 +23,6 @@
 
 // C++
 #include <set>
-#include <string>
 #include <map>
 #include <thread>
 #include <functional>
@@ -161,9 +160,11 @@ const map<string, string> PowerFaults
   { "/faults/thermal_power_failure", "Thermal Power" }
 };
 
-const std::map<string, string> unionTwoFaultMaps(std::map<std::string, std::string> map1, std::map<std::string, std::string> map2)
+// Combines two maps together and returns the union. Only handles maps where there is no overlap in keys.
+static const map<string, string> combine_maps(const map<string, string>& map1, 
+                                            const map<string, string>& map2)
 {
-  std::map<string,string> unionMap = map1;
+  map<string,string> unionMap = map1;
   unionMap.insert(map2.begin(), map2.end());
   return unionMap;
 }
@@ -171,17 +172,17 @@ const std::map<string, string> unionTwoFaultMaps(std::map<std::string, std::stri
 const map<string, map<string, string> > Faults
 {
   // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_GuardedMoveAction, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_DigCircular, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_DigLinear, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_DeliverSample, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_PanAntenna, unionTwoFaultMaps(AntennaFaults, PowerFaults) },
-  { Op_TiltAntenna, unionTwoFaultMaps(AntennaFaults, PowerFaults) },
-  { Op_Grind, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_Stow, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_Unstow, unionTwoFaultMaps(ArmFaults, PowerFaults) },
-  { Op_TakePicture, unionTwoFaultMaps(AntennaFaults, PowerFaults) } // for now
+  { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
+  { Op_GuardedMoveAction, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
+  { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
+  { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
+  { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
+  { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
+  { Op_Stow, combine_maps(ArmFaults, PowerFaults) },
+  { Op_Unstow, combine_maps(ArmFaults, PowerFaults) },
+  { Op_TakePicture, combine_maps(AntennaFaults, PowerFaults) } // for now
 };
 
 static bool faulty (const string& fault)
