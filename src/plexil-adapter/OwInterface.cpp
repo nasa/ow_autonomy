@@ -469,10 +469,10 @@ static void unstow_done_cb
 {
   // For debugging, remove later
 
-  ROS_INFO ("Unstow done callback: finished in state [%s]",
-            state.toString().c_str());
-  ROS_INFO("Unstow done callback: result (%f, %f, %f)",
-           result->final_x, result->final_y, result->final_z);
+  //  ROS_INFO ("Unstow done callback: finished in state [%s]",
+  //            state.toString().c_str());
+  //  ROS_INFO("Unstow done callback: result (%f, %f, %f)",
+  //           result->final_x, result->final_y, result->final_z);
 }
 
 static void unstow_active_cb ()
@@ -494,10 +494,10 @@ static void stow_done_cb
 {
   // For debugging, remove later
 
-  ROS_INFO ("Stow done callback: finished in state [%s]",
-            state.toString().c_str());
-  ROS_INFO("Stow done callback: result (%f, %f, %f)",
-           result->final_x, result->final_y, result->final_z);
+  //  ROS_INFO ("Stow done callback: finished in state [%s]",
+  //            state.toString().c_str());
+  //  ROS_INFO("Stow done callback: result (%f, %f, %f)",
+  //           result->final_x, result->final_y, result->final_z);
 }
 
 static void stow_active_cb ()
@@ -519,10 +519,10 @@ static void grind_done_cb
 {
   // For debugging, remove later
 
-  ROS_INFO ("Grind done callback: finished in state [%s]",
-            state.toString().c_str());
-  ROS_INFO("Grind done callback: result (%f, %f, %f)",
-           result->final_x, result->final_y, result->final_z);
+  //  ROS_INFO ("Grind done callback: finished in state [%s]",
+  //            state.toString().c_str());
+  //  ROS_INFO("Grind done callback: result (%f, %f, %f)",
+  //           result->final_x, result->final_y, result->final_z);
 }
 
 static void grind_active_cb ()
@@ -912,15 +912,18 @@ void OwInterface::stow1 (int id)
   fault_thread.join();
 }
 
-void OwInterface::grind (int id)  // as action
+void OwInterface::grind (double x, double y, double depth, double length,
+                         bool parallel, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind, id)) return;
-  thread action_thread (&OwInterface::grind1, this, id);
-  action_thread.detach();
+  //  thread action_thread (&OwInterface::grind1, this, id);
+  //  action_thread.detach();
 }
 
-void OwInterface::grind1 (int id)
+void OwInterface::grind1 (double x, double y, double depth, double length,
+                          bool parallel, double ground_pos, int id)
 {
+  /*
   ow_lander::GrindGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
@@ -944,6 +947,7 @@ void OwInterface::grind1 (int id)
 
   mark_operation_finished (Op_Grind, id);
   fault_thread.join();
+  */
 }
 
 
