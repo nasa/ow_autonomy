@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ow_autonomy)
 
-set(EXEC_NAME autonomy)
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -51,7 +49,6 @@ catkin_add_env_hooks(60.ow_autonomy
 
 
 include_directories(
-  include
   ${catkin_INCLUDE_DIRS}
   ${PLEXIL_INCLUDE_DIR}
 )
