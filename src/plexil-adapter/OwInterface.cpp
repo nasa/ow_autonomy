@@ -331,8 +331,7 @@ void OwInterface::systemFaultMessageCallback
   }
 }
 
-void OwInterface::armFaultCallback
-(const  ow_faults::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback(const  ow_faults::ArmFaults::ConstPtr& msg)
 {
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
@@ -349,8 +348,7 @@ void OwInterface::armFaultCallback
   }
 }
 
-void OwInterface::powerFaultCallback
-(const  ow_faults::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback(const  ow_faults::PowerFaults::ConstPtr& msg)
 {
   // Publish all POWER FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
@@ -367,8 +365,7 @@ void OwInterface::powerFaultCallback
   }
 }
 
-void OwInterface::antennaFaultCallback
-(const  ow_faults::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg)
 {
   // Publish all PANT TILT ANTENNA information for visibility to PLEXIL and handle any
   // system-level fault messages.
@@ -385,18 +382,17 @@ void OwInterface::antennaFaultCallback
   }
 }
 
-bool OwInterface::checkFaultMessages
-(string fault_component, uint32_t msg_val, string key, uint32_t value, bool b )
+bool OwInterface::checkFaultMessages(string fault_component, uint32_t msg_val, string key, uint32_t value, bool b )
 {
   if (!b && ((msg_val & value) == value)){
     ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
-    return 1;
+    return true;
   }
   else if (b && ((msg_val & value) != value)){
     ROS_INFO("RESOLVED %s ERROR: %s", fault_component.c_str(), key.c_str() );
-    return 1;
+    return true;
   }
-  return 0;
+  return false;
 }
 
 void OwInterface::jointStatesCallback

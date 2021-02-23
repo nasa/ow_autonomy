@@ -17,7 +17,7 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
-#include <utility>
+// #include <utility>
 
 #include <ow_faults/SystemFaults.h>
 #include <ow_faults/ArmFaults.h>
@@ -114,7 +114,9 @@ class OwInterface
                                         bool b );
 
 //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
-
+// structure of all maps for faults is the following:
+// key = (string) fault name
+// value = (pair) ( (int) numberical fault value, booleon of if fault exists)
   std::map<std::string,std::pair<uint64_t, bool>> systemErrors = 
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
@@ -159,10 +161,10 @@ class OwInterface
   ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
 
-  std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
+  ros::Subscriber* m_systemFaultMessagesSubscriber;
+  ros::Subscriber* m_armFaultMessagesSubscriber;
+  ros::Subscriber* m_powerFaultMessagesSubscriber;
+  ros::Subscriber* m_ptFaultMessagesSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
