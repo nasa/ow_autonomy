@@ -320,14 +320,10 @@ void OwInterface::systemFaultMessageCallback
     uint64_t value = entry.second.first;
     bool b = entry.second.second;
 
-    if (!b && ((msg_val & value) == value)){
-      ROS_ERROR("SYSTEM ERROR: %s", key.c_str() );
-      systemErrors[key].second = true;
+    if (checkFaultMessages("SYSTEM", msg_val, key, value, b)) {
+      systemErrors[key].second = !systemErrors[key].second;
     }
-    else if (b && ((msg_val & value) != value)){
-      ROS_INFO("RESOLVED SYSTEM ERROR: %s", key.c_str() );
-      systemErrors[key].second = false;
-    }
+    
   }
 }
 
@@ -370,7 +366,7 @@ void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg
   // Publish all PANT TILT ANTENNA information for visibility to PLEXIL and handle any
   // system-level fault messages.
   uint32_t msg_val = msg->value;
-  
+
   for (auto const& entry : ptErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
@@ -382,7 +378,8 @@ void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg
   }
 }
 
-bool OwInterface::checkFaultMessages(string fault_component, uint32_t msg_val, string key, uint32_t value, bool b )
+template <typename T>
+bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key, T value, bool b )
 {
   if (!b && ((msg_val & value) == value)){
     ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
@@ -607,10 +604,10 @@ OwInterface::~OwInterface ()
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
   if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
-  if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
-  if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
-  if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
-  if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
+  // if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
+  // if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
+  // if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
+  // if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -664,22 +661,22 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
     // subscribers for fault messages
-    m_systemFaultMessagesSubscriber = new ros::Subscriber
+    m_systemFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/system_faults_status", qsize,  
-                &OwInterface::systemFaultMessageCallback, this));
-    m_armFaultMessagesSubscriber = new ros::Subscriber
+                &OwInterface::systemFaultMessageCallback, this)));
+    m_armFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/arm_faults_status", qsize,  
-                &OwInterface::armFaultCallback, this));
-    m_powerFaultMessagesSubscriber = new ros::Subscriber
+                &OwInterface::armFaultCallback, this)));
+    m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_faults_status", qsize,
-                &OwInterface::powerFaultCallback, this));
-    m_ptFaultMessagesSubscriber = new ros::Subscriber
+                &OwInterface::powerFaultCallback, this)));
+    m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/pt_faults_status", qsize, 
-                &OwInterface::antennaFaultCallback, this));
+                &OwInterface::antennaFaultCallback, this)));
 
     ROS_INFO ("Waiting for action servers...");
     m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));

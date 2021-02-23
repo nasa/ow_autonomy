@@ -107,10 +107,12 @@ class OwInterface
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
+  
+  template <typename T>
   bool checkFaultMessages(std::string fault_component, 
-                                        uint32_t msg_val, 
+                                        T msg_val, 
                                         std::string key, 
-                                        uint32_t value, 
+                                        T value, 
                                         bool b );
 
 //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
