@@ -161,10 +161,10 @@ class OwInterface
   ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
 
-  ros::Subscriber* m_systemFaultMessagesSubscriber;
-  ros::Subscriber* m_armFaultMessagesSubscriber;
-  ros::Subscriber* m_powerFaultMessagesSubscriber;
-  ros::Subscriber* m_ptFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
