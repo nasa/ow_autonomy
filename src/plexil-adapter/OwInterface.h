@@ -11,12 +11,12 @@
 
 #include <ros/ros.h>
 
-// Actions
+// ROS Actions
 #include <actionlib/client/simple_action_client.h>
-#include <ow_autonomy/GuardedMoveAction.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
+#include <ow_lander/GuardedmoveAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -24,17 +24,14 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-using GuardedMoveActionClient =
-  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
-
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
-
 using StowActionClient =
   actionlib::SimpleActionClient<ow_lander::StowAction>;
-
 using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
+using GuardedMoveActionClient =
+  actionlib::SimpleActionClient<ow_lander::GuardedmoveAction>;
 
 class OwInterface
 {
@@ -48,8 +45,6 @@ class OwInterface
 
   // Operational interface
 
-  // The defaults currently match those of the activity.  When all are used,
-  // this function matches guardedMoveDemo above.
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
@@ -67,12 +62,6 @@ class OwInterface
   void deliverSample (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
-
-  // Temporary, proof of concept for ROS Actions
-  void guardedMoveActionDemo (const geometry_msgs::Point& start,
-                              const geometry_msgs::Point& normal,
-                              double search_distance,
-                              int id);
 
   // State interface
   double getTilt () const;
@@ -95,15 +84,13 @@ class OwInterface
 
 
  private:
-  // Temporary, support for public version above
-  void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
-                               const geometry_msgs::Point& normal,
-                               double search_distance,
-                               int id);
   void unstow1 (int id);
   void stow1 (int id);
   void grind1 (double x, double y, double depth, double length,
                bool parallel, double ground_pos, int id);
+  void guardedMove1 (double x, double y, double z,
+                     double direction_x, double direction_y, double direction_z,
+                     double search_distance, int id);
 
   bool operationRunning (const std::string& name) const;
 
