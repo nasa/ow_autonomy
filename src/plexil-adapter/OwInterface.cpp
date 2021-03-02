@@ -423,7 +423,7 @@ static void guarded_move_callback
     ROS_WARN("GuardedMove did not find ground!");
   }
   */
-  // Faking it until I learn how ground position is found and where encoded
+  // Faking it until ground found success is added to result message
   GroundFound = true;
   GroundPosition = msg->final.z;
   publish ("GroundFound", true);
