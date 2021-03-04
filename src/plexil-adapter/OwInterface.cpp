@@ -65,6 +65,24 @@ const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
 
+enum LanderOps {
+  GuardedMove,
+  DigCircular,
+  DigLinear,
+  DeliverSample,
+  Pan,
+  Tilt,
+  Grind,
+  Stow,
+  Unstow,
+  TakePicture
+};
+
+static std::vector<string> LanderOpNames =
+  { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_DeliverSample,
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
+  };
+
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
 // in particular because map entries are never added or deleted, and the code
 // insures that each entry can be read/written by only one thread.  (The map
@@ -195,10 +213,10 @@ static void call_ros_service (ros::ServiceClient client, Service srv,
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
-  ROS_INFO("  Starting ROS service %s", name.c_str());
+  ROS_INFO("Starting ROS service %s", name.c_str());
   thread fault_thread (monitor_for_faults, name);
   if (client.call (srv)) { // blocks
-    ROS_INFO("  %s returned: %d, %s", name.c_str(), srv.response.success,
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
   }
   else {
@@ -403,6 +421,7 @@ double OwInterface::groundPosition () const
   return GroundPosition;
 }
 
+// Obsolete, remove when ROS actions are fully in place
 static void guarded_move_callback
 (const ow_lander::GuardedmoveResult::ConstPtr& msg)
 {
@@ -431,11 +450,35 @@ static void guarded_move_callback
   publish ("GroundPosition", GroundPosition);
 }
 
+//////////////////// General Action support ///////////////////////////////
 
-//////////////////// GuardedMove Action support ////////////////////////////////
+const auto ActionTimeoutSecs = 120.0; // much too long, refine this altogether
 
-// At present, this is a prototypical ROS action using a dummy server in this
-// directory, GuardedMoveServer.  It is NOT connected to the testbed.
+
+//////////////////// ROS Action callbacks - generic //////////////////////
+
+template<typename T>
+static void action_feedback_cb (const T& feedback)
+{
+}
+
+template<int OpIndex>
+static void active_cb ()
+{
+  ROS_INFO ("%s started...", LanderOpNames[OpIndex].c_str());
+}
+
+template<int OpIndex, typename T>
+static void action_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result_ignored)
+{
+  ROS_INFO ("%s finished in state %s", LanderOpNames[OpIndex].c_str(),
+            state.toString().c_str());
+}
+
+
+//////////////////// ROS Action callbacks - specific //////////////////////
 
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
@@ -447,99 +490,6 @@ static void guarded_move_done_cb
   publish ("GroundFound", true);
   publish ("GroundPosition", GroundPosition);
 }
-
-static void guarded_move_active_cb ()
-{
-  ROS_INFO ("GuardedMove active callback - goal active!");
-}
-
-static void guarded_move_feedback_cb
-(const ow_lander::GuardedmoveFeedbackConstPtr& feedback)
-{
-}
-
-
-//////////////////// General Action support ///////////////////////////////
-
-const auto ActionTimeoutSecs = 60.0; // much too long, refine this altogether
-
-//////////////////// Unstow Action support ////////////////////////////////
-
-static void unstow_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_lander::UnstowResultConstPtr& result)
-{
-}
-
-static void unstow_active_cb ()
-{
-  ROS_INFO ("Unstow active callback - goal active!");
-}
-
-static void unstow_feedback_cb
-(const ow_lander::UnstowFeedbackConstPtr& feedback)
-{
-}
-
-//////////////////// Stow Action support ////////////////////////////////
-
-static void stow_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_lander::StowResultConstPtr& result)
-{
-}
-
-static void stow_active_cb ()
-{
-  ROS_INFO ("Stow active callback - goal active!");
-}
-
-static void stow_feedback_cb
-(const ow_lander::StowFeedbackConstPtr& feedback)
-{
-}
-
-//////////////////// ROS Action callbacks - generic //////////////////////
-
-/*
-static void grind_feedback_cb
-(const ow_lander::GrindFeedbackConstPtr& feedback)
-{
-}
-*/
-
-template<typename T>
-static void action_feedback_cb
-(const T& feedback)
-{
-}
-
-//////////////////// ROS Action callbacks - specific //////////////////////
-
-static void grind_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_lander::GrindResultConstPtr& result)
-{
-  ROS_INFO ("Grind finished in state %s", state.getText().c_str());
-}
-
-static void grind_active_cb ()
-{
-  ROS_INFO ("Grind started...");
-}
-
-static void dig_circular_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_lander::DigCircularResultConstPtr& result)
-{
-  ROS_INFO ("DigCircular finished in state %s", state.getText().c_str());
-}
-
-static void dig_circular_active_cb ()
-{
-  ROS_INFO ("DigCircular started...");
-}
-
 
 
 /////////////////////////// OwInterface members ////////////////////////////////
@@ -665,7 +615,7 @@ static void antenna_op (const string& opname, double degrees,
 
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
-  ROS_INFO ("  Starting %s: %f degrees (%f radians)", opname.c_str(),
+  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
@@ -690,7 +640,7 @@ void OwInterface::takePicture (int id)
 {
   if (! mark_operation_running (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
-  ROS_INFO ("  Capturing stereo image using left image trigger.");
+  ROS_INFO ("Capturing stereo image using left image trigger.");
   thread fault_thread (monitor_for_faults, Op_TakePicture);
   fault_thread.detach();
   m_leftImageTriggerPublisher->publish (msg);
@@ -721,32 +671,6 @@ void OwInterface::digLinear (double x, double y,
   }
 }
 
-/*
-void OwInterface::digCircular (double x, double y, double depth,
-                               double ground_position, bool parallel, int id)
-{
-  if (! mark_operation_running (Op_DigCircular, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigCircular>("/arm/dig_circular");
-
-  if (check_service_client (client, Op_DigCircular)) {
-    ow_lander::DigCircular srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.ground_position = ground_position;
-    srv.request.parallel = parallel;
-    thread service_thread (call_ros_service<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular, id);
-    service_thread.detach();
-  }
-}
-*/
-
 void OwInterface::digCircular (double x, double y, double depth,
                                double ground_pos, bool parallel, int id)
 {
@@ -769,8 +693,8 @@ void OwInterface::digCircular1 (double x, double y, double depth,
   thread fault_thread (monitor_for_faults, Op_DigCircular);
   if (m_digCircularClient) {
     m_digCircularClient->sendGoal
-      (goal, dig_circular_done_cb,
-       dig_circular_active_cb,
+      (goal, action_done_cb<DigCircular, ow_lander::DigCircularResultConstPtr>,
+       active_cb<DigCircular>,
        action_feedback_cb<ow_lander::DigCircularFeedbackConstPtr>);
   }
   else {
@@ -805,8 +729,10 @@ void OwInterface::unstow1 (int id)
 
   thread fault_thread (monitor_for_faults, Op_Unstow);
   if (m_unstowClient) {
-    m_unstowClient->sendGoal (goal, unstow_done_cb, unstow_active_cb,
-                              unstow_feedback_cb);
+    m_unstowClient->sendGoal
+      (goal, action_done_cb<Unstow, ow_lander::UnstowResultConstPtr>,
+       active_cb<Unstow>,
+       action_feedback_cb<ow_lander::UnstowFeedbackConstPtr>);
   }
   else {
     ROS_ERROR ("m_unstowClient was null!");
@@ -839,8 +765,10 @@ void OwInterface::stow1 (int id)
 
   thread fault_thread (monitor_for_faults, Op_Stow);
   if (m_stowClient) {
-    m_stowClient->sendGoal (goal, stow_done_cb, stow_active_cb,
-                              stow_feedback_cb);
+    m_stowClient->sendGoal
+      (goal, action_done_cb<Stow, ow_lander::StowResultConstPtr>,
+       active_cb<Stow>,
+       action_feedback_cb<ow_lander::StowFeedbackConstPtr>);
   }
   else {
     ROS_ERROR ("m_stowClient was null!");
@@ -882,7 +810,8 @@ void OwInterface::grind1 (double x, double y, double depth, double length,
   thread fault_thread (monitor_for_faults, Op_Grind);
   if (m_grindClient) {
     m_grindClient->sendGoal
-      (goal, grind_done_cb, grind_active_cb,
+      (goal, action_done_cb<Grind, ow_lander::GrindResultConstPtr>,
+       active_cb<Grind>,
        action_feedback_cb<ow_lander::GrindFeedbackConstPtr>);
   }
   else {
@@ -927,9 +856,10 @@ void OwInterface::guardedMove1 (double x, double y, double z,
 
   thread fault_thread (monitor_for_faults, Op_GuardedMove);
   if (m_guardedMoveClient) {
-    m_guardedMoveClient->sendGoal (goal, guarded_move_done_cb,
-                                   guarded_move_active_cb,
-                                   guarded_move_feedback_cb);
+    m_guardedMoveClient->sendGoal
+      (goal, guarded_move_done_cb,
+       active_cb<GuardedMove>,
+       action_feedback_cb<ow_lander::GuardedmoveFeedbackConstPtr>);
   }
   else {
     ROS_ERROR ("m_guardedMoveClient was null!");
