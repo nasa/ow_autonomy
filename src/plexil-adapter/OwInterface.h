@@ -17,6 +17,7 @@
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedmoveAction.h>
+#include <ow_lander/DigCircularAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -32,6 +33,8 @@ using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedmoveAction>;
+using DigCircularActionClient =
+  actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 
 class OwInterface
 {
@@ -91,6 +94,9 @@ class OwInterface
   void guardedMove1 (double x, double y, double z,
                      double direction_x, double direction_y, double direction_z,
                      double search_distance, int id);
+  void digCircular1 (double x, double y, double depth,
+                     double ground_pos, bool parallel, int id);
+
 
   bool operationRunning (const std::string& name) const;
 
@@ -125,6 +131,7 @@ class OwInterface
   std::unique_ptr<UnstowActionClient> m_unstowClient;
   std::unique_ptr<StowActionClient> m_stowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
+  std::unique_ptr<DigCircularActionClient> m_digCircularClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

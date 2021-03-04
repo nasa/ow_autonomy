@@ -424,6 +424,7 @@ static void guarded_move_callback
   }
   */
   // Faking it until ground found success is added to result message
+  ROS_INFO ("---- guarded_move_callback found");
   GroundFound = true;
   GroundPosition = msg->final.z;
   publish ("GroundFound", true);
@@ -440,6 +441,11 @@ static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const ow_lander::GuardedmoveResultConstPtr& result)
 {
+  // Faking it until ground found success is added to result message
+  GroundFound = true;
+  GroundPosition = result->final.z;
+  publish ("GroundFound", true);
+  publish ("GroundPosition", GroundPosition);
 }
 
 static void guarded_move_active_cb ()
@@ -455,7 +461,7 @@ static void guarded_move_feedback_cb
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 30.0;
+const auto ActionTimeoutSecs = 60.0; // much too long, refine this altogether
 
 //////////////////// Unstow Action support ////////////////////////////////
 
@@ -493,23 +499,47 @@ static void stow_feedback_cb
 {
 }
 
-//////////////////// Grind Action support ////////////////////////////////
+//////////////////// ROS Action callbacks - generic //////////////////////
+
+/*
+static void grind_feedback_cb
+(const ow_lander::GrindFeedbackConstPtr& feedback)
+{
+}
+*/
+
+template<typename T>
+static void action_feedback_cb
+(const T& feedback)
+{
+}
+
+//////////////////// ROS Action callbacks - specific //////////////////////
 
 static void grind_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const ow_lander::GrindResultConstPtr& result)
 {
+  ROS_INFO ("Grind finished in state %s", state.getText().c_str());
 }
 
 static void grind_active_cb ()
 {
-  ROS_INFO ("Grind active callback - goal active!");
+  ROS_INFO ("Grind started...");
 }
 
-static void grind_feedback_cb
-(const ow_lander::GrindFeedbackConstPtr& feedback)
+static void dig_circular_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_lander::DigCircularResultConstPtr& result)
 {
+  ROS_INFO ("DigCircular finished in state %s", state.getText().c_str());
 }
+
+static void dig_circular_active_cb ()
+{
+  ROS_INFO ("DigCircular started...");
+}
+
 
 
 /////////////////////////// OwInterface members ////////////////////////////////
@@ -607,14 +637,16 @@ void OwInterface::initialize()
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
 
     ROS_INFO ("Waiting for action servers...");
-    m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
+    m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
     m_guardedMoveClient->waitForServer();
-    m_unstowClient.reset(new UnstowActionClient("Unstow", true));
+    m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
     m_unstowClient->waitForServer();
-    m_stowClient.reset(new StowActionClient("Stow", true));
+    m_stowClient.reset(new StowActionClient(Op_Stow, true));
     m_stowClient->waitForServer();
-    m_grindClient.reset(new GrindActionClient("Grind", true));
+    m_grindClient.reset(new GrindActionClient(Op_Grind, true));
     m_grindClient->waitForServer();
+    m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
+    m_digCircularClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -623,39 +655,6 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 {
   CommandStatusCallback = callback;
 }
-
-/*
-void OwInterface::guardedMove (double x, double y, double z,
-                               double direction_x,
-                               double direction_y,
-                               double direction_z,
-                               double search_distance,
-                               int id)
-{
-  if (! mark_operation_running (Op_GuardedMove, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::GuardedMove>("/arm/guarded_move");
-
-  if (check_service_client (client, Op_GuardedMove)) {
-    ow_lander::GuardedMove srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.z = z;
-    srv.request.direction_x = direction_x;
-    srv.request.direction_y = direction_y;
-    srv.request.direction_z = direction_z;
-    srv.request.search_distance = search_distance;
-    GroundFound = false;
-    thread service_thread (call_ros_service<ow_lander::GuardedMove>,
-                           client, srv, Op_GuardedMove, id);
-    service_thread.detach();
-  }
-}
-*/
 
 static void antenna_op (const string& opname, double degrees,
                         ros::Publisher* pub, int id)
@@ -722,6 +721,7 @@ void OwInterface::digLinear (double x, double y,
   }
 }
 
+/*
 void OwInterface::digCircular (double x, double y, double depth,
                                double ground_position, bool parallel, int id)
 {
@@ -745,33 +745,51 @@ void OwInterface::digCircular (double x, double y, double depth,
     service_thread.detach();
   }
 }
-
-/*
-void OwInterface::grind (double x, double y, double depth, double length,
-                         bool parallel, double ground_pos, int id)
-{
-  if (! mark_operation_running (Op_Grind, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Grind>("/arm/grind");
-
-  if (check_service_client (client, Op_Grind)) {
-    ow_lander::Grind srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.length = length;
-    srv.request.parallel = parallel;
-    srv.request.ground_position = ground_pos;
-    thread service_thread (call_ros_service<ow_lander::Grind>,
-                           client, srv, Op_Grind, id);
-    service_thread.detach();
-  }
-}
 */
+
+void OwInterface::digCircular (double x, double y, double depth,
+                               double ground_pos, bool parallel, int id)
+{
+  if (! mark_operation_running (Op_DigCircular, id)) return;
+  thread action_thread (&OwInterface::digCircular1, this, x, y, depth,
+                        ground_pos, parallel, id);
+  action_thread.detach();
+}
+
+void OwInterface::digCircular1 (double x, double y, double depth,
+                                double ground_pos, bool parallel, int id)
+{
+  ow_lander::DigCircularGoal goal;
+  goal.x_start = x;
+  goal.y_start = y;
+  goal.depth = depth;
+  goal.ground_position = ground_pos;
+  goal.parallel = parallel;
+
+  thread fault_thread (monitor_for_faults, Op_DigCircular);
+  if (m_digCircularClient) {
+    m_digCircularClient->sendGoal
+      (goal, dig_circular_done_cb,
+       dig_circular_active_cb,
+       action_feedback_cb<ow_lander::DigCircularFeedbackConstPtr>);
+  }
+  else {
+    ROS_ERROR ("m_digCircularClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_digCircularClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("DigCircular action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_DigCircular, id);
+  fault_thread.join();
+}
+
 
 void OwInterface::unstow (int id)  // as action
 {
@@ -863,8 +881,9 @@ void OwInterface::grind1 (double x, double y, double depth, double length,
 
   thread fault_thread (monitor_for_faults, Op_Grind);
   if (m_grindClient) {
-    m_grindClient->sendGoal (goal, grind_done_cb, grind_active_cb,
-                              grind_feedback_cb);
+    m_grindClient->sendGoal
+      (goal, grind_done_cb, grind_active_cb,
+       action_feedback_cb<ow_lander::GrindFeedbackConstPtr>);
   }
   else {
     ROS_ERROR ("m_grindClient was null!");

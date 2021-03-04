@@ -35,7 +35,6 @@ LibraryAction StartSampleAnalysis;
 ReferenceMission1: Concurrence
 {
   Boolean MissionInProgress = true;
-  Boolean PowerStatus;
 
   PowerMonitor: LibraryCall MonitorPower (continue = MissionInProgress);
 
