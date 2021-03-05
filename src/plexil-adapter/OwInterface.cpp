@@ -8,8 +8,7 @@
 #include "joint_support.h"
 
 // OW - other
-//#include <ow_lander/DeliverSample.h>
-#include <ow_lander/GuardedMoveResult.h>
+//#include <ow_lander/GuardedMoveResult.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -200,47 +199,6 @@ static void monitor_for_faults (const string& opname)
   }
 }
 
-
-/////////////////// ROS Service support //////////////////////
-
-template<class Service>
-static void call_ros_service (ros::ServiceClient client, Service srv,
-                              string name, int id)
-{
-  // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.  Assumes that service is not already running; this is
-  // checked upstream.
-
-  ROS_INFO("Starting ROS service %s", name.c_str());
-  thread fault_thread (monitor_for_faults, name);
-  if (client.call (srv)) { // blocks
-    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
-             srv.response.message.c_str());  // make DEBUG later
-  }
-  else {
-    ROS_ERROR("Failed to call service %s", name.c_str());
-  }
-  mark_operation_finished (name, id);
-  fault_thread.join();
-}
-
-static bool check_service_client (ros::ServiceClient& client,
-                                  const string& name)
-{
-  if (! client.exists()) {
-    ROS_ERROR("Service client for %s does not exist!", name.c_str());
-    return false;
-  }
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client for %s is invalid!", name.c_str());
-    return false;
-  }
-
-  return true;
-}
-
-
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
 static set<string> JointsAtHardTorqueLimit { };
@@ -419,11 +377,12 @@ double OwInterface::groundPosition () const
   return GroundPosition;
 }
 
+/* Old, when service was used
 // Obsolete, remove when ROS actions are fully in place
 static void guarded_move_callback
 (const ow_lander::GuardedmoveResult::ConstPtr& msg)
 {
-  /* Old, when service was used
+
   if (msg->success) {
     GroundFound = true;
     string frame = msg->frame;
@@ -439,7 +398,6 @@ static void guarded_move_callback
   else {
     ROS_WARN("GuardedMove did not find ground!");
   }
-  */
   // Faking it until ground found success is added to result message
   ROS_INFO ("---- guarded_move_callback found");
   GroundFound = true;
@@ -447,6 +405,7 @@ static void guarded_move_callback
   publish ("GroundFound", true);
   publish ("GroundPosition", GroundPosition);
 }
+*/
 
 //////////////////// General Action support ///////////////////////////////
 
@@ -580,28 +539,30 @@ void OwInterface::initialize()
     m_rulSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
-    m_guardedMoveSubscriber = new ros::Subscriber
-      (m_genericNodeHandle ->
-       subscribe("/guarded_move_result", qsize, guarded_move_callback));
+    // m_guardedMoveSubscriber = new ros::Subscriber
+    //   (m_genericNodeHandle ->
+    //    subscribe("/guarded_move_result", qsize, guarded_move_callback));
 
-    ROS_INFO ("Waiting for action servers...");
+
     // TODO: does it make more sense to do all the resets, followed by waits, or
     // to thread them for faster competion? (it takes seconds for servers to
     // come up)
     m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
-    m_guardedMoveClient->waitForServer();
     m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
-    m_unstowClient->waitForServer();
     m_stowClient.reset(new StowActionClient(Op_Stow, true));
-    m_stowClient->waitForServer();
     m_grindClient.reset(new GrindActionClient(Op_Grind, true));
-    m_grindClient->waitForServer();
     m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
-    m_digCircularClient->waitForServer();
     m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
-    m_digLinearClient->waitForServer();
-    m_deliverClient.reset(new DeliverActionClient(Op_DigLinear, true));
-    m_deliverClient->waitForServer();
+    m_deliverClient.reset(new DeliverActionClient(Op_DeliverSample, true));
+
+    ROS_INFO ("Waiting for action servers...");
+    m_guardedMoveClient->waitForServer();
+    //    m_unstowClient->waitForServer();
+    //    m_stowClient->waitForServer();
+    //    m_grindClient->waitForServer();
+    //    m_digCircularClient->waitForServer();
+    //    m_digLinearClient->waitForServer();
+    //    m_deliverClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -942,29 +903,6 @@ void OwInterface::guardedMove1 (double x, double y, double z,
   mark_operation_finished (Op_GuardedMove, id);
   fault_thread.join();
 }
-
-/*
-void OwInterface::deliverSample (double x, double y, double z, int id)
-{
-  if (! mark_operation_running (Op_DeliverSample, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DeliverSample>("/arm/deliver_sample");
-
-
-  if (check_service_client (client, Op_DeliverSample)) {
-    ow_lander::DeliverSample srv;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.z = z;
-    thread service_thread (call_ros_service<ow_lander::DeliverSample>,
-                           client, srv, Op_DeliverSample, id);
-    service_thread.detach();
-  }
-}
-*/
 
 double OwInterface::getTilt () const
 {
