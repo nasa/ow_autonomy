@@ -7,9 +7,6 @@
 #include "subscriber.h"
 #include "joint_support.h"
 
-// OW - other
-//#include <ow_lander/GuardedMoveResult.h>
-
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
@@ -509,8 +506,8 @@ static void guarded_move_callback
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 120.0; // much too long, refine this altogether
-
+const auto ActionTimeoutSecs = 120.0; // TODO: make this action-specific
+const auto ActionServerTimeout = 10.0; // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
 
@@ -669,9 +666,6 @@ void OwInterface::initialize()
     //   (m_genericNodeHandle ->
     //    subscribe("/guarded_move_result", qsize, guarded_move_callback));
 
-    // TODO: does it make more sense to do all the resets, followed by waits, or
-    // to thread them for faster competion? (it takes seconds for servers to
-    // come up)
     m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
     m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
     m_stowClient.reset(new StowActionClient(Op_Stow, true));
@@ -680,15 +674,21 @@ void OwInterface::initialize()
     m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
     m_deliverClient.reset(new DeliverActionClient(Op_DeliverSample, true));
 
-    ROS_INFO ("Waiting for action servers...");
-    m_guardedMoveClient->waitForServer();
-    m_unstowClient->waitForServer();
-    m_stowClient->waitForServer();
-    m_grindClient->waitForServer();
-    m_digCircularClient->waitForServer();
-    m_digLinearClient->waitForServer();
-    m_deliverClient->waitForServer();
-    ROS_INFO ("Action servers available.");
+    if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Unstow action server did not connect!");
+    }
+    if (! m_stowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Stow action server did not connect!");
+    }
+    if (! m_digCircularClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("DigCircular action server did not connect!");
+    }
+    if (! m_digLinearClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("DigLinear action server did not connect!");
+    }
+    if (! m_deliverClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Deliver action server did not connect!");
+    }
   }
 }
 
@@ -743,6 +743,31 @@ void OwInterface::deliverSample (double x, double y, double z, int id)
   thread action_thread (&OwInterface::deliverSample1, this, x, y, z, id);
   action_thread.detach();
 }
+
+/* tempate this!
+  thread fault_thread (monitor_for_faults, Op_DeliverSample);
+  if (m_deliverClient) {
+    m_deliverClient->sendGoal
+      (goal, action_done_cb<DeliverSample, ow_lander::DeliverResultConstPtr>,
+       active_cb<DeliverSample>,
+       action_feedback_cb<ow_lander::DeliverFeedbackConstPtr>);
+  }
+  else {
+    ROS_ERROR ("m_deliverClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_deliverClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("Deliver action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_DeliverSample, id);
+  fault_thread.join();
+*/
 
 void OwInterface::deliverSample1 (double x, double y, double z, int id)
 {
