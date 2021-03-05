@@ -18,6 +18,8 @@
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedmoveAction.h>
 #include <ow_lander/DigCircularAction.h>
+#include <ow_lander/DigLinearAction.h>
+#include <ow_lander/DeliverAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -35,6 +37,10 @@ using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedmoveAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
+using DigLinearActionClient =
+  actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
+using DeliverActionClient =
+  actionlib::SimpleActionClient<ow_lander::DeliverAction>;
 
 class OwInterface
 {
@@ -96,6 +102,9 @@ class OwInterface
                      double search_distance, int id);
   void digCircular1 (double x, double y, double depth,
                      double ground_pos, bool parallel, int id);
+  void digLinear1 (double x, double y, double depth, double length,
+                   double ground_pos, int id);
+  void deliverSample1 (double x, double y, double z, int id);
 
 
   bool operationRunning (const std::string& name) const;
@@ -132,6 +141,8 @@ class OwInterface
   std::unique_ptr<StowActionClient> m_stowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
+  std::unique_ptr<DigLinearActionClient> m_digLinearClient;
+  std::unique_ptr<DeliverActionClient> m_deliverClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

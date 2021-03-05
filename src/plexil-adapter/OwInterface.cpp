@@ -8,9 +8,7 @@
 #include "joint_support.h"
 
 // OW - other
-#include <ow_lander/DigCircular.h>
-#include <ow_lander/DigLinear.h>
-#include <ow_lander/DeliverSample.h>
+//#include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMoveResult.h>
 
 // ROS
@@ -587,6 +585,9 @@ void OwInterface::initialize()
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
 
     ROS_INFO ("Waiting for action servers...");
+    // TODO: does it make more sense to do all the resets, followed by waits, or
+    // to thread them for faster competion? (it takes seconds for servers to
+    // come up)
     m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
     m_guardedMoveClient->waitForServer();
     m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
@@ -597,6 +598,10 @@ void OwInterface::initialize()
     m_grindClient->waitForServer();
     m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
     m_digCircularClient->waitForServer();
+    m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
+    m_digLinearClient->waitForServer();
+    m_deliverClient.reset(new DeliverActionClient(Op_DigLinear, true));
+    m_deliverClient->waitForServer();
     ROS_INFO ("Action servers available.");
   }
 }
@@ -646,30 +651,90 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
+void OwInterface::deliverSample (double x, double y, double z, int id)
+{
+  if (! mark_operation_running (Op_DeliverSample, id)) return;
+  thread action_thread (&OwInterface::deliverSample1, this, x, y, z, id);
+  action_thread.detach();
+}
+
+void OwInterface::deliverSample1 (double x, double y, double z, int id)
+{
+  ow_lander::DeliverGoal goal;
+  goal.delivery.x = x;
+  goal.delivery.y = y;
+  goal.delivery.z = z;
+
+  thread fault_thread (monitor_for_faults, Op_DeliverSample);
+  if (m_deliverClient) {
+    m_deliverClient->sendGoal
+      (goal, action_done_cb<DeliverSample, ow_lander::DeliverResultConstPtr>,
+       active_cb<DeliverSample>,
+       action_feedback_cb<ow_lander::DeliverFeedbackConstPtr>);
+  }
+  else {
+    ROS_ERROR ("m_deliverClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_deliverClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("Deliver action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_DeliverSample, id);
+  fault_thread.join();
+}
+
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double ground_position,
+                             double depth, double length, double ground_pos,
                              int id)
 {
   if (! mark_operation_running (Op_DigLinear, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigLinear>("/arm/dig_linear");
-
-  if (check_service_client (client, Op_DigLinear)) {
-    ow_lander::DigLinear srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.length = length;
-    srv.request.ground_position = ground_position;
-    thread service_thread (call_ros_service<ow_lander::DigLinear>,
-                           client, srv, Op_DigLinear, id);
-    service_thread.detach();
-  }
+  thread action_thread (&OwInterface::digLinear1, this, x, y, depth,
+                        length, ground_pos, id);
+  action_thread.detach();
 }
+
+
+void OwInterface::digLinear1 (double x, double y,
+                              double depth, double length, double ground_pos,
+                              int id)
+{
+  ow_lander::DigLinearGoal goal;
+  goal.x_start = x;
+  goal.y_start = y;
+  goal.depth = depth;
+  goal.length = length;
+  goal.ground_position = ground_pos;
+
+  thread fault_thread (monitor_for_faults, Op_DigLinear);
+  if (m_digLinearClient) {
+    m_digLinearClient->sendGoal
+      (goal, action_done_cb<DigLinear, ow_lander::DigLinearResultConstPtr>,
+       active_cb<DigLinear>,
+       action_feedback_cb<ow_lander::DigLinearFeedbackConstPtr>);
+  }
+  else {
+    ROS_ERROR ("m_digLinearClient was null!");
+    return;
+  }
+
+  // Wait for the action to return
+  bool finished_before_timeout =
+    m_digLinearClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+
+  if (! finished_before_timeout) {
+    ROS_WARN ("DigLinear action did not finish before the time out.");
+  }
+
+  mark_operation_finished (Op_DigLinear, id);
+  fault_thread.join();
+}
+
 
 void OwInterface::digCircular (double x, double y, double depth,
                                double ground_pos, bool parallel, int id)
@@ -878,7 +943,7 @@ void OwInterface::guardedMove1 (double x, double y, double z,
   fault_thread.join();
 }
 
-
+/*
 void OwInterface::deliverSample (double x, double y, double z, int id)
 {
   if (! mark_operation_running (Op_DeliverSample, id)) return;
@@ -899,6 +964,7 @@ void OwInterface::deliverSample (double x, double y, double z, int id)
     service_thread.detach();
   }
 }
+*/
 
 double OwInterface::getTilt () const
 {
