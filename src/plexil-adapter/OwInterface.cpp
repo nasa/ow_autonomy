@@ -506,7 +506,7 @@ static void guarded_move_callback
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 420.0; // TODO: make this action-specific
+const auto ActionTimeoutSecs = 90.0; // TODO: make this action-specific
 const auto ActionServerTimeout = 10.0; // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
