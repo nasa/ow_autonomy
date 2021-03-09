@@ -47,7 +47,7 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
-const string Op_GuardedMove       = "Guardedmove";
+const string Op_GuardedMove       = "Guarded_move";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_DeliverSample     = "Deliver";
@@ -496,7 +496,6 @@ static void guarded_move_callback
     ROS_WARN("GuardedMove did not find ground!");
   }
   // Faking it until ground found success is added to result message
-  ROS_INFO ("---- guarded_move_callback found");
   GroundFound = true;
   GroundPosition = msg->final.z;
   publish ("GroundFound", true);
@@ -688,6 +687,9 @@ void OwInterface::initialize()
     }
     if (! m_deliverClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Deliver action server did not connect!");
+    }
+    if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("GuardedMove action server did not connect!");
     }
   }
 }
@@ -1031,6 +1033,7 @@ void OwInterface::guardedMove1 (double x, double y, double z,
   goal.search_distance = search_dist;
 
   thread fault_thread (monitor_for_faults, Op_GuardedMove);
+
   if (m_guardedMoveClient) {
     m_guardedMoveClient->sendGoal
       (goal, guarded_move_done_cb,

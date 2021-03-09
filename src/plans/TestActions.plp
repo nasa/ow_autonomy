@@ -11,8 +11,14 @@ TestActions:
   log_info ("Beginning action test...");
 
   LibraryCall Unstow();
+
 	LibraryCall GuardedMove (X=2, Y=0, Z=0.3, DirX=0, DirY=0, DirZ=1,
-													 SearchDistance=0.5);
-	
+                           SearchDistance=0.5);
+
+  LibraryCall Grind (X = 1.65, Y = 0, Depth = 0.05,
+                     Length = 0.6, Parallel = true,
+                     GroundPos = -0.155);
+
+
   log_info ("Action test finished.");
 }
