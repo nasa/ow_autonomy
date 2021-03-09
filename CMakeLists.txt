@@ -19,11 +19,6 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-add_action_files(
-  DIRECTORY action
-  FILES GuardedMove.action
-  )
-
 generate_messages(
   DEPENDENCIES actionlib_msgs geometry_msgs
 )

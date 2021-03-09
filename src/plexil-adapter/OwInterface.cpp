@@ -47,10 +47,10 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
-const string Op_GuardedMove       = "GuardedMove";
+const string Op_GuardedMove       = "Guardedmove";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
-const string Op_DeliverSample     = "DeliverSample";
+const string Op_DeliverSample     = "Deliver";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
@@ -506,7 +506,7 @@ static void guarded_move_callback
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 120.0; // TODO: make this action-specific
+const auto ActionTimeoutSecs = 420.0; // TODO: make this action-specific
 const auto ActionServerTimeout = 10.0; // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
