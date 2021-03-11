@@ -2,18 +2,17 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform one pass with the grinding tool, using the given parameters.
+// Perform one pass of a linear digging action.
 
 #include "lander-commands.h"
 
-Grind:
+DigLinear:
 {
   In Real X;
   In Real Y;
   In Real Depth;
   In Real Length;
   In Real GroundPos;
-  In Boolean Parallel;
 
-  SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
 }

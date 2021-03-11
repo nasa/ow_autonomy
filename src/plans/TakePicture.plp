@@ -4,7 +4,7 @@
 
 // Take a picture with the stereo camera.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 TakePicture:
 {

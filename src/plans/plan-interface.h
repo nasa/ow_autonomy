@@ -40,6 +40,12 @@ LibraryAction DigCircular (In Real X,
                            In Real GroundPos,
                            In Boolean Parallel);
 
+LibraryAction DigLinear (In Real X,
+                         In Real Y,
+                         In Real Depth,
+                         In Real Length,
+                         In Real GroundPos);
+
 LibraryAction DeliverSample (In Real X,
                              In Real Y,
                              In Real Z);

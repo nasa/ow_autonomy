@@ -5,7 +5,7 @@
 // Perform a guarded move with the given parameters.
 // A guarded move is typically used to find the ground.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 GuardedMove:
 {

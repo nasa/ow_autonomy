@@ -5,7 +5,7 @@
 // Stow the arm, which requires an unstow() first.  These commands simply move
 // the arm to specific coordinates.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 Stow:
 {
