@@ -46,9 +46,9 @@ LibraryAction DigLinear (In Real X,
                          In Real Length,
                          In Real GroundPos);
 
-LibraryAction DeliverSample (In Real X,
-                             In Real Y,
-                             In Real Z);
+LibraryAction Deliver (In Real X,
+                       In Real Y,
+                       In Real Z);
 
 
 // Lander queries

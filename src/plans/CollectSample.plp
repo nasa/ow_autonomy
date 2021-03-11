@@ -21,5 +21,5 @@ CollectSample:
                            GroundPos = GroundPos, Parallel = Parallel);
   // NOTE: the given coordinates are the predetermined location of the
   // receptacle into which the sample is dumped.
-  LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.84);
+  LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
 }

@@ -74,7 +74,7 @@ class OwInterface
               bool parallel, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
-  void deliverSample (double x, double y, double z, int id);
+  void deliver (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
@@ -99,6 +99,11 @@ class OwInterface
 
 
  private:
+  template <int OpIndex, class ActionClient, class Goal,
+    class ResultPtr, class FeedbackPtr>
+    void runAction (const std::string& opname,
+                    std::unique_ptr<ActionClient>&,
+                    const Goal&, int id);
   void unstow1 (int id);
   void stow1 (int id);
   void grind1 (double x, double y, double depth, double length,
@@ -110,7 +115,7 @@ class OwInterface
                      double ground_pos, bool parallel, int id);
   void digLinear1 (double x, double y, double depth, double length,
                    double ground_pos, int id);
-  void deliverSample1 (double x, double y, double z, int id);
+  void deliver1 (double x, double y, double z, int id);
 
   bool operationRunning (const std::string& name) const;
 
@@ -126,19 +131,19 @@ class OwInterface
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
-  
+
   template <typename T>
-  bool checkFaultMessages(std::string fault_component, 
-                                        T msg_val, 
-                                        std::string key, 
-                                        T value, 
+  bool checkFaultMessages(std::string fault_component,
+                                        T msg_val,
+                                        std::string key,
+                                        T value,
                                         bool b );
 
 //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
 // structure of all maps for faults is the following:
 // key = (string) fault name
 // value = (pair) ( (int) numberical fault value, booleon of if fault exists)
-  std::map<std::string,std::pair<uint64_t, bool>> systemErrors = 
+  std::map<std::string,std::pair<uint64_t, bool>> systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},

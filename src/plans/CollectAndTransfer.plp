@@ -159,7 +159,7 @@ CollectAndTransfer:
         set_checkpoint(OurName,true,Lookup(ToString(7,"_",CollectMore)));
         SynchronousCommand flush_checkpoints();
       }
-      DeliverSample:
+      Deliver:
       {
         SkipCondition LastComplete >= 8;
         LibraryCall Stub(desc="Delivering Sample");

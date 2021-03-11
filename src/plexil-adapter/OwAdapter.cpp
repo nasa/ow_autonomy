@@ -231,7 +231,7 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
-static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
+static void deliver (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z;
   const vector<Value>& args = cmd->getArgValues();
@@ -239,7 +239,7 @@ static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue(y);
   args[2].getValue(z);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->deliverSample (x, y, z, CommandId);
+  OwInterface::instance()->deliver (x, y, z, CommandId);
   send_ack_once(*cr);
 }
 
@@ -380,7 +380,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
-  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
+  g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("take_picture", take_picture);

@@ -50,7 +50,7 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 const string Op_GuardedMove       = "Guarded_move";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
-const string Op_DeliverSample     = "Deliver";
+const string Op_Deliver     = "Deliver";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
@@ -62,7 +62,7 @@ enum LanderOps {
   GuardedMove,
   DigCircular,
   DigLinear,
-  DeliverSample,
+  Deliver,
   Pan,
   Tilt,
   Grind,
@@ -72,7 +72,7 @@ enum LanderOps {
 };
 
 static std::vector<string> LanderOpNames =
-  { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_DeliverSample,
+  { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
     Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
   };
 
@@ -89,7 +89,7 @@ static map<string, int> Running
   { Op_GuardedMove, IDLE_ID },
   { Op_DigCircular, IDLE_ID },
   { Op_DigLinear, IDLE_ID },
-  { Op_DeliverSample, IDLE_ID },
+  { Op_Deliver, IDLE_ID },
   { Op_PanAntenna, IDLE_ID },
   { Op_TiltAntenna, IDLE_ID },
   { Op_Grind, IDLE_ID },
@@ -181,7 +181,7 @@ const map<string, map<string, string> > Faults
   { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
   { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
   { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
+  { Op_Deliver, combine_maps(ArmFaults, PowerFaults) },
   { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
   { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
   { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
@@ -344,7 +344,8 @@ void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg
 }
 
 template <typename T>
-bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key, T value, bool b )
+bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key,
+                                     T value, bool b )
 {
   if (!b && ((msg_val & value) == value)){
     ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
@@ -671,7 +672,7 @@ void OwInterface::initialize()
     m_grindClient.reset(new GrindActionClient(Op_Grind, true));
     m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
     m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
-    m_deliverClient.reset(new DeliverActionClient(Op_DeliverSample, true));
+    m_deliverClient.reset(new DeliverActionClient(Op_Deliver, true));
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -739,67 +740,52 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::deliverSample (double x, double y, double z, int id)
+void OwInterface::deliver (double x, double y, double z, int id)
 {
-  if (! mark_operation_running (Op_DeliverSample, id)) return;
-  thread action_thread (&OwInterface::deliverSample1, this, x, y, z, id);
+  if (! mark_operation_running (Op_Deliver, id)) return;
+  thread action_thread (&OwInterface::deliver1, this, x, y, z, id);
   action_thread.detach();
 }
 
-/* tempate this!
-  thread fault_thread (monitor_for_faults, Op_DeliverSample);
-  if (m_deliverClient) {
-    m_deliverClient->sendGoal
-      (goal, action_done_cb<DeliverSample, ow_lander::DeliverResultConstPtr>,
-       active_cb<DeliverSample>,
-       action_feedback_cb<ow_lander::DeliverFeedbackConstPtr>);
+template <int OpIndex, class ActionClient, class Goal,
+          class ResultPtr, class FeedbackPtr>
+void OwInterface::runAction (const string& opname,
+                             std::unique_ptr<ActionClient>& ac,
+                             const Goal& goal, int id)
+{
+  thread fault_thread (monitor_for_faults, opname);
+  if (ac) {
+    ac->sendGoal (goal, action_done_cb<OpIndex, ResultPtr>, active_cb<OpIndex>,
+                  action_feedback_cb<FeedbackPtr>);
   }
   else {
-    ROS_ERROR ("m_deliverClient was null!");
+    ROS_ERROR ("%s action client was null!", opname.c_str());
     return;
   }
 
   // Wait for the action to return
   bool finished_before_timeout =
-    m_deliverClient->waitForResult (ros::Duration (ActionTimeoutSecs));
+    ac->waitForResult (ros::Duration (ActionTimeoutSecs));
 
   if (! finished_before_timeout) {
-    ROS_WARN ("Deliver action did not finish before the time out.");
+    ROS_WARN ("%s action did not finish before the time out.", opname.c_str());
   }
 
-  mark_operation_finished (Op_DeliverSample, id);
+  mark_operation_finished (opname, id);
   fault_thread.join();
-*/
+}
 
-void OwInterface::deliverSample1 (double x, double y, double z, int id)
+void OwInterface::deliver1 (double x, double y, double z, int id)
 {
   ow_lander::DeliverGoal goal;
   goal.delivery.x = x;
   goal.delivery.y = y;
   goal.delivery.z = z;
-
-  thread fault_thread (monitor_for_faults, Op_DeliverSample);
-  if (m_deliverClient) {
-    m_deliverClient->sendGoal
-      (goal, action_done_cb<DeliverSample, ow_lander::DeliverResultConstPtr>,
-       active_cb<DeliverSample>,
-       action_feedback_cb<ow_lander::DeliverFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_deliverClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_deliverClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("Deliver action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_DeliverSample, id);
-  fault_thread.join();
+  runAction<Deliver, actionlib::SimpleActionClient<ow_lander::DeliverAction>,
+            ow_lander::DeliverGoal,
+            ow_lander::DeliverResultConstPtr,
+            ow_lander::DeliverFeedbackConstPtr>
+    (Op_Deliver, m_deliverClient, goal, id);
 }
 
 void OwInterface::digLinear (double x, double y,
@@ -824,28 +810,11 @@ void OwInterface::digLinear1 (double x, double y,
   goal.length = length;
   goal.ground_position = ground_pos;
 
-  thread fault_thread (monitor_for_faults, Op_DigLinear);
-  if (m_digLinearClient) {
-    m_digLinearClient->sendGoal
-      (goal, action_done_cb<DigLinear, ow_lander::DigLinearResultConstPtr>,
-       active_cb<DigLinear>,
-       action_feedback_cb<ow_lander::DigLinearFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_digLinearClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_digLinearClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("DigLinear action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_DigLinear, id);
-  fault_thread.join();
+  runAction<DigLinear, actionlib::SimpleActionClient<ow_lander::DigLinearAction>,
+            ow_lander::DigLinearGoal,
+            ow_lander::DigLinearResultConstPtr,
+            ow_lander::DigLinearFeedbackConstPtr>
+    (Op_DigLinear, m_digLinearClient, goal, id);
 }
 
 
@@ -868,28 +837,11 @@ void OwInterface::digCircular1 (double x, double y, double depth,
   goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  thread fault_thread (monitor_for_faults, Op_DigCircular);
-  if (m_digCircularClient) {
-    m_digCircularClient->sendGoal
-      (goal, action_done_cb<DigCircular, ow_lander::DigCircularResultConstPtr>,
-       active_cb<DigCircular>,
-       action_feedback_cb<ow_lander::DigCircularFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_digCircularClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_digCircularClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("DigCircular action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_DigCircular, id);
-  fault_thread.join();
+  runAction<DigCircular, actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
+            ow_lander::DigCircularGoal,
+            ow_lander::DigCircularResultConstPtr,
+            ow_lander::DigCircularFeedbackConstPtr>
+    (Op_DigCircular, m_digCircularClient, goal, id);
 }
 
 
@@ -905,28 +857,11 @@ void OwInterface::unstow1 (int id)
   ow_lander::UnstowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  thread fault_thread (monitor_for_faults, Op_Unstow);
-  if (m_unstowClient) {
-    m_unstowClient->sendGoal
-      (goal, action_done_cb<Unstow, ow_lander::UnstowResultConstPtr>,
-       active_cb<Unstow>,
-       action_feedback_cb<ow_lander::UnstowFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_unstowClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_unstowClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("Unstow action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_Unstow, id);
-  fault_thread.join();
+  runAction<Unstow, actionlib::SimpleActionClient<ow_lander::UnstowAction>,
+            ow_lander::UnstowGoal,
+            ow_lander::UnstowResultConstPtr,
+            ow_lander::UnstowFeedbackConstPtr>
+    (Op_Unstow, m_unstowClient, goal, id);
 }
 
 void OwInterface::stow (int id)  // as action
@@ -941,28 +876,11 @@ void OwInterface::stow1 (int id)
   ow_lander::StowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  thread fault_thread (monitor_for_faults, Op_Stow);
-  if (m_stowClient) {
-    m_stowClient->sendGoal
-      (goal, action_done_cb<Stow, ow_lander::StowResultConstPtr>,
-       active_cb<Stow>,
-       action_feedback_cb<ow_lander::StowFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_stowClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_stowClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("Stow action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_Stow, id);
-  fault_thread.join();
+  runAction<Stow, actionlib::SimpleActionClient<ow_lander::StowAction>,
+            ow_lander::StowGoal,
+            ow_lander::StowResultConstPtr,
+            ow_lander::StowFeedbackConstPtr>
+    (Op_Stow, m_stowClient, goal, id);
 }
 
 void OwInterface::grind (double x, double y, double depth, double length,
@@ -985,28 +903,11 @@ void OwInterface::grind1 (double x, double y, double depth, double length,
   goal.parallel = parallel;
   goal.ground_position = ground_pos;
 
-  thread fault_thread (monitor_for_faults, Op_Grind);
-  if (m_grindClient) {
-    m_grindClient->sendGoal
-      (goal, action_done_cb<Grind, ow_lander::GrindResultConstPtr>,
-       active_cb<Grind>,
-       action_feedback_cb<ow_lander::GrindFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_grindClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_grindClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("Grind action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_Grind, id);
-  fault_thread.join();
+  runAction<Grind, actionlib::SimpleActionClient<ow_lander::GrindAction>,
+            ow_lander::GrindGoal,
+            ow_lander::GrindResultConstPtr,
+            ow_lander::GrindFeedbackConstPtr>
+    (Op_Grind, m_grindClient, goal, id);
 }
 
 void OwInterface::guardedMove (double x, double y, double z,
@@ -1031,6 +932,9 @@ void OwInterface::guardedMove1 (double x, double y, double z,
   goal.normal.y = dir_y;
   goal.normal.z = dir_z;
   goal.search_distance = search_dist;
+
+  // NOTE: this function does not use runAction() typically called here, because
+  // of the specialized 'done' callback.
 
   thread fault_thread (monitor_for_faults, Op_GuardedMove);
 

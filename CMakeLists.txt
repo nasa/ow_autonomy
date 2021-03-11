@@ -19,9 +19,9 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-generate_messages(
-  DEPENDENCIES actionlib_msgs geometry_msgs
-)
+#generate_messages(
+#  DEPENDENCIES actionlib_msgs geometry_msgs
+#)
 
 
 ###################################
