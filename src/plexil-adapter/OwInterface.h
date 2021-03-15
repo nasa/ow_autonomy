@@ -26,7 +26,6 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
-// #include <utility>
 
 #include <ow_faults/SystemFaults.h>
 #include <ow_faults/ArmFaults.h>
@@ -134,15 +133,15 @@ class OwInterface
 
   template <typename T>
   bool checkFaultMessages(std::string fault_component,
-                                        T msg_val,
-                                        std::string key,
-                                        T value,
-                                        bool b );
+                          T msg_val,
+                          std::string key,
+                          T value,
+                          bool b );
 
-//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
-// structure of all maps for faults is the following:
-// key = (string) fault name
-// value = (pair) ( (int) numberical fault value, booleon of if fault exists)
+  //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
+  // structure of all maps for faults is the following:
+  // key = (string) fault name
+  // value = (pair) ( (int) numberical fault value, booleon of if fault exists)
   std::map<std::string,std::pair<uint64_t, bool>> systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},

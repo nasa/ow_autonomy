@@ -50,7 +50,7 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 const string Op_GuardedMove       = "Guarded_move";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
-const string Op_Deliver     = "Deliver";
+const string Op_Deliver           = "Deliver";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
@@ -166,9 +166,10 @@ const map<string, string> PowerFaults
   { "/faults/thermal_power_failure", "Thermal Power" }
 };
 
-// Combines two maps together and returns the union. Only handles maps where there is no overlap in keys.
+// Combines two maps together and returns the union. Only handles maps where
+// there is no overlap in keys.
 static const map<string, string> combine_maps(const map<string, string>& map1,
-                                            const map<string, string>& map2)
+                                              const map<string, string>& map2)
 {
   map<string,string> unionMap = map1;
   unionMap.insert(map2.begin(), map2.end());
@@ -506,7 +507,7 @@ static void guarded_move_callback
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 90.0; // TODO: make this action-specific
+const auto ActionTimeoutSecs = 120.0;  // TODO: make this action-specific
 const auto ActionServerTimeout = 10.0; // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
