@@ -11,7 +11,6 @@
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
-#include <ow_autonomy/GuardedMoveAction.h>
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
@@ -23,9 +22,6 @@
 #include <ow_faults/ArmFaults.h>
 #include <ow_faults/PowerFaults.h>
 #include <ow_faults/PTFaults.h>
-
-using GuardedMoveActionClient =
-  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
 class OwInterface
 {
@@ -59,12 +55,6 @@ class OwInterface
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
-  // Temporary, proof of concept for ROS Actions
-  void guardedMoveActionDemo (const geometry_msgs::Point& start,
-                              const geometry_msgs::Point& normal,
-                              double search_distance,
-                              int id);
-
   // State interface
   double getTilt () const;
   double getPanDegrees () const;
@@ -86,13 +76,6 @@ class OwInterface
 
 
  private:
-                                           
-  // Temporary, support for public version above
-  void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
-                               const geometry_msgs::Point& normal,
-                               double search_distance,
-                               int id);
-
   bool operationRunning (const std::string& name) const;
 
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
@@ -167,9 +150,6 @@ class OwInterface
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
-
-  // Action clients
-  std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

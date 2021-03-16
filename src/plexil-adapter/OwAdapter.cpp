@@ -183,29 +183,6 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
-static void guarded_move_action_demo (Command* cmd,
-                                      AdapterExecInterface* intf)
-{
-  double x, y, z, dir_x, dir_y, dir_z, search_distance;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(z);
-  args[3].getValue(dir_x);
-  args[4].getValue(dir_y);
-  args[5].getValue(dir_z);
-  args[6].getValue(search_distance);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  // Unfortunately, ROS does not provide a constructor taking x,y,z
-  geometry_msgs::Point start;
-  start.x = x; start.y = y; start.z = z;
-  geometry_msgs::Point normal;
-  normal.x = dir_x; normal.y = dir_y; normal.z = dir_z;
-  OwInterface::instance()->guardedMoveActionDemo (start, normal, search_distance,
-                                                  CommandId);
-  send_ack_once(*cr);
-}
-
 static void grind (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, depth, length, ground_pos;
@@ -401,8 +378,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
-  g_configuration->registerCommandHandler("guarded_move_action_demo",
-                                          guarded_move_action_demo);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
