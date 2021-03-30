@@ -11,21 +11,21 @@ if __name__ == "__main__":
   rospy.init_node("faults_client")
   client = dynamic_reconfigure.client.Client('/faults')
   params = { 'ant_pan_encoder_failure' : 'True',
-             'ant_tilt_torque_sensor_failure' : 'True',
-             'ant_pan_torque_sensor_failure' : 'True',
+             'ant_tilt_effort_failure' : 'True',
+             'ant_pan_effort_failure' : 'True',
              'ant_tilt_encoder_failure' : 'True',
              'dist_pitch_encoder_failure' : 'True',
-             'dist_pitch_torque_sensor_failure' : 'True',
+             'dist_pitch_effort_failure' : 'True',
              'hand_yaw_encoder_failure' : 'True',
-             'hand_yaw_torque_sensor_failure' : 'True',
+             'hand_yaw_effort_failure' : 'True',
              'prox_pitch_encoder_failure' : 'True',
-             'prox_pitch_torque_sensor_failure' : 'True',
+             'prox_pitch_effort_failure' : 'True',
              'scoop_yaw_encoder_failure' : 'True',
-             'scoop_yaw_torque_sensor_failure' : 'True',
+             'scoop_yaw_effort_failure' : 'True',
              'shou_pitch_encoder_failure' : 'True',
-             'shou_pitch_torque_sensor_failure' : 'True',
+             'shou_pitch_effort_failure' : 'True',
              'shou_yaw_encoder_failure' : 'True',
-             'shou_yaw_torque_sensor_failure' : 'True' }
+             'shou_yaw_effort_failure' : 'True' }
 
   rate = rospy.Rate(0.1)
   while not rospy.is_shutdown():
