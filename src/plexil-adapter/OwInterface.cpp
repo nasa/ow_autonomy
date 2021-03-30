@@ -461,7 +461,10 @@ static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 }
 
 
-//////////////////// GuardedMove Service support ////////////////////////////////
+//////////////////// GuardedMove Action support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition in the PLEXIL command.  They
+// are not accurate outside the context of a single GuardedMove command.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound
@@ -476,34 +479,15 @@ double OwInterface::groundPosition () const
   return GroundPosition;
 }
 
-/* Old, when service was used
-// Obsolete, remove when ROS actions are fully in place
-static void guarded_move_callback
-(const ow_lander::GuardedmoveResult::ConstPtr& msg)
+static void guarded_move_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const ow_lander::GuardedmoveResultConstPtr& result)
 {
-
-  if (msg->success) {
-    GroundFound = true;
-    string frame = msg->frame;
-    string valid = "base_link";
-    if (frame != valid) {  // the only supported value
-      ROS_ERROR("GuardedMoveResult frame was not %s", valid.c_str());
-      return;
-    }
-    GroundPosition = msg->position.z;
-    publish ("GroundFound", true);
-    publish ("GroundPosition", GroundPosition);
-  }
-  else {
-    ROS_WARN("GuardedMove did not find ground!");
-  }
-  // Faking it until ground found success is added to result message
-  GroundFound = true;
-  GroundPosition = msg->final.z;
-  publish ("GroundFound", true);
+  GroundFound = result->success;
+  GroundPosition = result->final.z;
+  publish ("GroundFound", GroundFound);
   publish ("GroundPosition", GroundPosition);
 }
-*/
 
 //////////////////// General Action support ///////////////////////////////
 
@@ -532,21 +516,6 @@ static void action_done_cb
             state.toString().c_str());
 }
 
-
-//////////////////// ROS Action callbacks - specific //////////////////////
-
-static void guarded_move_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_lander::GuardedmoveResultConstPtr& result)
-{
-  // Faking it until ground found success is added to result message
-  GroundFound = true;
-  GroundPosition = result->final.z;
-  publish ("GroundFound", true);
-  publish ("GroundPosition", GroundPosition);
-}
-
-
 /////////////////////////// OwInterface members ////////////////////////////////
 
 OwInterface* OwInterface::m_instance = nullptr;
@@ -569,7 +538,6 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
-    m_guardedMoveSubscriber (nullptr),
     m_systemFaultMessagesSubscriber (nullptr),
     m_armFaultMessagesSubscriber (nullptr),
     m_powerFaultMessagesSubscriber (nullptr),
@@ -577,7 +545,7 @@ OwInterface::OwInterface ()
 
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
-    // m_panStart, m_tiltStart left uninitialized
+    // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
 
@@ -592,11 +560,6 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
-  if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
-  // if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
-  // if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
-  // if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
-  // if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -663,9 +626,6 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this)));
-    // m_guardedMoveSubscriber = new ros::Subscriber
-    //   (m_genericNodeHandle ->
-    //    subscribe("/guarded_move_result", qsize, guarded_move_callback));
 
     m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
     m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
