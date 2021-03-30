@@ -127,38 +127,38 @@ static void mark_operation_finished (const string& name, int id)
 // parameters is just a simple first cut (stub really) for actual fault
 // detection which would look at telemetry.
 
-const map<string, string> AntennaFaults
-{
-  // Param name -> human-readable
-  { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
-  { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "/faults/ant_pan_effort_failure", "Antenna Pan Torque Sensor" },
-  { "/faults/ant_tilt_effort_failure", "Antenna Tilt Torque Sensor" }
-};
+// const map<string, string> AntennaFaults
+// {
+//   // Param name -> human-readable
+//   { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
+//   { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
+//   { "/faults/ant_pan_effort_failure", "Antenna Pan Torque Sensor" },
+//   { "/faults/ant_tilt_effort_failure", "Antenna Tilt Torque Sensor" }
+// };
 
-const map<string, string> ArmFaults
-{
-  // Param name -> human-readable
-  { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
-  { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "/faults/shou_pitch_effort_failure", "Shoulder Pitch Torque Sensor" },
-  { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "/faults/prox_pitch_effort_failure", "Proximal Pitch Torque Sensor" },
-  { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
-  { "/faults/dist_pitch_effort_failure", "Distal Pitch Torque Sensor" },
-  { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "/faults/hand_yaw_effort_failure", "Hand Yaw Torque Sensor" },
-  { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "/faults/scoop_yaw_effort_failure", "Scoop Yaw Torque Sensor" }
-};
+// const map<string, string> ArmFaults
+// {
+//   // Param name -> human-readable
+//   { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
+//   { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
+//   { "/faults/shou_pitch_effort_failure", "Shoulder Pitch Torque Sensor" },
+//   { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
+//   { "/faults/prox_pitch_effort_failure", "Proximal Pitch Torque Sensor" },
+//   { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
+//   { "/faults/dist_pitch_effort_failure", "Distal Pitch Torque Sensor" },
+//   { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
+//   { "/faults/hand_yaw_effort_failure", "Hand Yaw Torque Sensor" },
+//   { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
+//   { "/faults/scoop_yaw_effort_failure", "Scoop Yaw Torque Sensor" }
+// };
 
-const map<string, string> PowerFaults
-{
-  // Param name -> human-readable
-  { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
-  { "/faults/instantaneous_capacity_loss_power_failure", "State of Charge" },
-  { "/faults/thermal_power_failure", "Thermal Power" }
-};
+// const map<string, string> PowerFaults
+// {
+//   // Param name -> human-readable
+//   { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
+//   { "/faults/instantaneous_capacity_loss_power_failure", "State of Charge" },
+//   { "/faults/thermal_power_failure", "Thermal Power" }
+// };
 
 // Combines two maps together and returns the union. Only handles maps where there is no overlap in keys.
 static const map<string, string> combine_maps(const map<string, string>& map1, 
@@ -169,21 +169,21 @@ static const map<string, string> combine_maps(const map<string, string>& map1,
   return unionMap;
 }
 
-const map<string, map<string, string> > Faults
-{
-  // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
-  { Op_GuardedMoveAction, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
-  { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
-  { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
-  { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
-  { Op_Stow, combine_maps(ArmFaults, PowerFaults) },
-  { Op_Unstow, combine_maps(ArmFaults, PowerFaults) },
-  { Op_TakePicture, combine_maps(AntennaFaults, PowerFaults) } // for now
-};
+// const map<string, map<string, string> > Faults
+// {
+//   // Map each lander operation to its relevant fault set.
+//   { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_GuardedMoveAction, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
+//   { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
+//   { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_Stow, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_Unstow, combine_maps(ArmFaults, PowerFaults) },
+//   { Op_TakePicture, combine_maps(AntennaFaults, PowerFaults) } // for now
+// };
 
 static bool faulty (const string& fault)
 {
@@ -192,19 +192,25 @@ static bool faulty (const string& fault)
   return val;
 }
 
+// static void monitor_for_faults (const string& opname)
+// {
+//   using namespace std::chrono_literals;
+//   while (Running.at (opname) != IDLE_ID) {
+//     ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
+//     for (auto fault : Faults.at (opname)) {
+//       if (faulty (fault.first)) {
+//         ROS_WARN("Fault in %s: %s failure.",
+//                  opname.c_str(), fault.second.c_str());
+//       }
+//     }
+//     std::this_thread::sleep_for (1s);
+//   }
+// }
+
 static void monitor_for_faults (const string& opname)
 {
-  using namespace std::chrono_literals;
-  while (Running.at (opname) != IDLE_ID) {
-    ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
-    for (auto fault : Faults.at (opname)) {
-      if (faulty (fault.first)) {
-        ROS_WARN("Fault in %s: %s failure.",
-                 opname.c_str(), fault.second.c_str());
-      }
-    }
-    std::this_thread::sleep_for (1s);
-  }
+
+//needs some other logic here? Or maybe this just goes away
 }
 
 
