@@ -16,8 +16,8 @@ TestAntennaCamera:
 {
   log_info ("Starting Antenna/Camera demo...");
 
-  LibraryCall TakePanorama (TiltLo = 20, TiltHi = 24,
-                            PanLo = 45, PanHi = 50,
+  LibraryCall TakePanorama (TiltLo = 20, TiltHi = 26,
+                            PanLo = 45, PanHi = 70,
                             HorizOverlap = 2,
                             VertOverlap = 2,
                             InstanceName = "TestAntennaCamera",
