@@ -6,5 +6,10 @@
         name="autonomy_node"
         type="autonomy_node"
         args="$(arg plan)"
-        output="screen" />
+        output="screen" >
+		<remap from="/ant_pan_position_controller/command"
+           to="/_original/ant_pan_position_controller/command"/>
+    <remap from="/ant_tilt_position_controller/command"
+           to="/_original/ant_tilt_position_controller/command"/>         
+  </node>
 </launch>
