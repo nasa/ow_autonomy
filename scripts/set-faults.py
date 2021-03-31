@@ -33,5 +33,5 @@ if __name__ == "__main__":
 
   rate = rospy.Rate(0.1)
   while not rospy.is_shutdown():
-    # config = client.update_configuration(params)
+    config = client.update_configuration(params)
     rate.sleep()
