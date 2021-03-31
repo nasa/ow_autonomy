@@ -138,8 +138,8 @@ const map<string, string> AntennaFaults
   // Param name -> human-readable
   { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
   { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "/faults/ant_pan_torque_sensor_failure", "Antenna Pan Torque Sensor" },
-  { "/faults/ant_tilt_torque_sensor_failure", "Antenna Tilt Torque Sensor" }
+  { "/faults/ant_pan_effort_failure", "Antenna Pan Torque Sensor" },
+  { "/faults/ant_tilt_effort_failure", "Antenna Tilt Torque Sensor" }
 };
 
 const map<string, string> ArmFaults
@@ -147,15 +147,15 @@ const map<string, string> ArmFaults
   // Param name -> human-readable
   { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
   { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
+  { "/faults/shou_pitch_effort_failure", "Shoulder Pitch Torque Sensor" },
   { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
+  { "/faults/prox_pitch_effort_failure", "Proximal Pitch Torque Sensor" },
   { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
-  { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
+  { "/faults/dist_pitch_effort_failure", "Distal Pitch Torque Sensor" },
   { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
+  { "/faults/hand_yaw_effort_failure", "Hand Yaw Torque Sensor" },
   { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
+  { "/faults/scoop_yaw_effort_failure", "Scoop Yaw Torque Sensor" }
 };
 
 const map<string, string> PowerFaults
