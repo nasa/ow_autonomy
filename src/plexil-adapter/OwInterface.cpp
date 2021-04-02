@@ -481,7 +481,7 @@ double OwInterface::groundPosition () const
 
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
- const ow_lander::GuardedmoveResultConstPtr& result)
+ const ow_lander::GuardedMoveResultConstPtr& result)
 {
   GroundFound = result->success;
   GroundPosition = result->final.z;
@@ -885,7 +885,7 @@ void OwInterface::guardedMove1 (double x, double y, double z,
                                 double dir_x, double dir_y, double dir_z,
                                 double search_dist, int id)
 {
-  ow_lander::GuardedmoveGoal goal;
+  ow_lander::GuardedMoveGoal goal;
   goal.start.x = x;
   goal.start.y = y;
   goal.start.z = z;
@@ -903,7 +903,7 @@ void OwInterface::guardedMove1 (double x, double y, double z,
     m_guardedMoveClient->sendGoal
       (goal, guarded_move_done_cb,
        active_cb<GuardedMove>,
-       action_feedback_cb<ow_lander::GuardedmoveFeedbackConstPtr>);
+       action_feedback_cb<ow_lander::GuardedMoveFeedbackConstPtr>);
   }
   else {
     ROS_ERROR ("m_guardedMoveClient was null!");

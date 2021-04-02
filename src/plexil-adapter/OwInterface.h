@@ -16,7 +16,7 @@
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
-#include <ow_lander/GuardedmoveAction.h>
+#include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
@@ -39,7 +39,7 @@ using StowActionClient =
 using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
-  actionlib::SimpleActionClient<ow_lander::GuardedmoveAction>;
+  actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
