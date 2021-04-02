@@ -4,6 +4,10 @@
 # Research and Simulation can be found in README.md in the root directory of
 # this repository.
 
+# This is a utility script for fault injection.  The default script injects
+# every available fault.  Edit your local copy as needed for your testing
+# purposes.
+
 import rospy
 import dynamic_reconfigure.client
 
