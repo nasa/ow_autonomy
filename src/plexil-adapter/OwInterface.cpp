@@ -127,12 +127,12 @@ static void monitor_for_faults (const string& opname)
   // This (threaded) function was formerly used for operation-specific fault
   // monitoring, using a mechanism that has been removed, which was direct
   // inspection of the fault injection ROS parameters.  TBD whether it will be
-  // used again, but leaving it in place for now.
+  // used again, but leaving it here for now.
 
-  using namespace std::chrono_literals;
-  while (Running.at (opname) != IDLE_ID) {
-    std::this_thread::sleep_for (1s);
-  }
+  //  using namespace std::chrono_literals;
+  //  while (Running.at (opname) != IDLE_ID) {
+  //    std::this_thread::sleep_for (1s);
+  //  }
 }
 
 
