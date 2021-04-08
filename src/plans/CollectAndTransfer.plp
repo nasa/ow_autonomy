@@ -10,7 +10,6 @@
 
 Real Lookup time;
 Real Lookup CollectAndTransferTimeout;
-Boolean Lookup SampleGood;
 
 Boolean Lookup StringToBoolean(String);
 Integer Lookup StringToInteger(String);
@@ -43,12 +42,11 @@ CollectAndTransfer:
   In Boolean Parallel;
 
   Real SampleAmount;
-  Real Time;
   Boolean CollectMore = true;
   Integer LastComplete = 0;
-  Integer NumberOfCollections = 0;
   String OurName;
-  OurName = "CollectAndTransfer__"+InstanceName;
+
+  OurName = "CollectAndTransfer__" + InstanceName;
 
   CrashHandling:{
     // To get around a plexil bug where passing "" in doesn't work
@@ -81,28 +79,19 @@ CollectAndTransfer:
     }
   }
 
-  // Can assume sample has been dumped if it is invalid
-  log_info("Beginning collection with name ",OurName);
+  log_info ("Beginning sample collection with name ", OurName);
+
   CollectAndTransfer1:
   {
-    InvariantCondition
-      Time < (CollectAndTransfer.EXECUTING.START +
-              Lookup(CollectAndTransferTimeout));
-    RepeatCondition CollectMore;
-
-    Time = Lookup(time);
-    NumberOfCollections = NumberOfCollections + 1;
-
     Collect:
     // TODO: split this into two nodes
     {
       SkipCondition LastComplete >= 1;
-      EndCondition Lookup(SampleGood); // Material Property Sensing
       LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
                          Parallel = Parallel, GroundPos = GroundPos);
       LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
                                GroundPos = GroundPos, Parallel = Parallel);
-      Wait 1;
+      Wait 1;  // TODO: why this wait?
       set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
@@ -128,7 +117,7 @@ CollectAndTransfer:
     Transfer:
     {
       SkipCondition LastComplete >= 4;
-			
+
       // NOTE: the given coordinates are the predetermined location of the
       // receptacle into which the sample is dumped.
       LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.84);
@@ -137,50 +126,51 @@ CollectAndTransfer:
       SynchronousCommand flush_checkpoints();
     }
 
-    MeasureSample:
-		{
-			SkipCondition LastComplete >= 5;
-			PostCondition !CollectMore;
-			LibraryCall Stub(desc="Measuring Sample");
-			// TODO: This is a stub
-			if(NumberOfCollections<2){
-				log_info("Collecting more");
-				CollectMore = true;
-			}
-			else{
-				CollectMore = false;
-			}
-			endif
-			Wait 1;
-			set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
-			SynchronousCommand flush_checkpoints();
-		}
-		CapSample:
-		{
-			// In case of crash after flush and before previous PostCondition
-			PreCondition !CollectMore;
-			SkipCondition LastComplete >= 6;
-			LibraryCall Stub(desc="Capping Sample");
-			Wait 1;
-			set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore)));
-			SynchronousCommand flush_checkpoints();
-		}
-		DeliverSampleToScience:
-		{
-			SkipCondition LastComplete >= 7;
-			LibraryCall Stub(desc="Delivering Sample to Science Instrument");
-			Wait 1;
-			set_checkpoint(OurName,true,Lookup(ToString(7,"_",CollectMore)));
-			SynchronousCommand flush_checkpoints();
-		}
-		ImageSampleSite:
-		{
-			SkipCondition LastComplete >= 8;
-			LibraryCall ImageSampleSite();
-			Wait 1;
-			set_checkpoint(OurName,true,Lookup(ToString(8,"_",CollectMore)));
-			SynchronousCommand flush_checkpoints();
-		}
+    /* MeasureSample: */
+		/* { */
+		/* 	SkipCondition LastComplete >= 5; */
+		/* 	PostCondition !CollectMore; */
+		/* 	LibraryCall Stub(desc="Measuring Sample"); */
+		/* 	// TODO: This is a stub */
+		/* 	if(NumberOfCollections<2){ */
+		/* 		log_info("Collecting more sample."); */
+		/* 		CollectMore = true; */
+		/* 	} */
+		/* 	else{ */
+		/* 		log_info("Done collecting sample."); */
+		/* 		CollectMore = false; */
+		/* 	} */
+		/* 	endif */
+		/* 	Wait 1; */
+		/* 	set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore))); */
+		/* 	SynchronousCommand flush_checkpoints(); */
+		/* } */
+		/* CapSample: */
+		/* { */
+		/* 	// In case of crash after flush and before previous PostCondition */
+		/* 	PreCondition !CollectMore; */
+		/* 	SkipCondition LastComplete >= 6; */
+		/* 	LibraryCall Stub(desc="Capping Sample"); */
+		/* 	Wait 1; */
+		/* 	set_checkpoint(OurName,true,Lookup(ToString(6,"_",CollectMore))); */
+		/* 	SynchronousCommand flush_checkpoints(); */
+		/* } */
+		/* DeliverSampleToScience: */
+		/* { */
+		/* 	SkipCondition LastComplete >= 7; */
+		/* 	LibraryCall Stub(desc="Delivering Sample to Science Instrument"); */
+		/* 	Wait 1; */
+		/* 	set_checkpoint(OurName,true,Lookup(ToString(7,"_",CollectMore))); */
+		/* 	SynchronousCommand flush_checkpoints(); */
+		/* } */
+		/* ImageSampleSite: */
+		/* { */
+		/* 	SkipCondition LastComplete >= 8; */
+		/* 	LibraryCall ImageSampleSite(); */
+		/* 	Wait 1; */
+		/* 	set_checkpoint(OurName,true,Lookup(ToString(8,"_",CollectMore))); */
+		/* 	SynchronousCommand flush_checkpoints(); */
+		/* } */
 	}
   // Reset for next repeat
   LastComplete = 0;
