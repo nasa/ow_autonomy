@@ -6,6 +6,7 @@
 // uses a checkpoint facility for plan persistence added to PLEXIL in 2020.
 
 #include "plexil_defs.h"
+#include "plan-interface.h"
 
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
@@ -13,8 +14,28 @@ LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
+LibraryAction Image (In String desc);
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
 LibraryAction CollectAndTransfer(In String InstanceName,
-                                 In Boolean IgnoreCrash);
+                                 In Boolean IgnoreCrash,
+                                 In Real X, In Real Y,
+                                 In Real GroundPos,
+                                 In Real Depth, In Real Length,
+                                 In Boolean Parallel);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction MonitorBattery (In Boolean continue, InOut Boolean status);
@@ -22,7 +43,6 @@ LibraryAction DumpSamples;
 LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
 LibraryAction MonitorSamplesComplete(InOut Boolean status);
 
-Command log_info (...);
 Command set_checkpoint(...);
 Command flush_checkpoints();
 Command set_boot_ok();
@@ -60,6 +80,18 @@ EuropaMission: Concurrence
   {
     Boolean did_crash;
 
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    Invariant MissionInProgress;
+
     log_info ("Starting Europa Mission, Sol 0 ...");
     did_crash = Lookup(DidCrash);
 
@@ -91,7 +123,6 @@ EuropaMission: Concurrence
       RestArm: LibraryCall Stub(desc="Moving arm to safe position");
     }
 
-
     ImageLandingSite: {
       // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
       // found IsBootOK returns true if that boot was OK, UNKNOWN if not found
@@ -119,23 +150,44 @@ EuropaMission: Concurrence
       SynchronousCommand flush_checkpoints();
     }
 
-    GetTrenchTarget:{
-      SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete")))));
-      LibraryCall GetTrenchTarget;
-      set_checkpoint("GetTrenchTargetComplete");
-      SynchronousCommand flush_checkpoints();
+    LibraryCall Unstow();
+    LibraryCall IdentifySampleTarget (X = trench_x,
+                                      Y = trench_y,
+                                      GroundPos = ground_pos,
+                                      Parallel = parallel);
+
+    if (! Lookup(GroundFound)) {
+      log_error ("Failed to find ground, aborting.");
+      MissionInProgress = false;
     }
 
-    Excavation:{
-      SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete")))));
-      LibraryCall Excavation;
-      set_checkpoint("ExcavationComplete");
-      SynchronousCommand flush_checkpoints();
+    DigAndImage: Concurrence {
+      Boolean DiggingSafe = true;
+      Dig:
+      {
+        InvariantCondition DiggingSafe;
+        LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                               Length = trench_length, BiteDepth = 0.05,
+                               NumPasses = 2, Parallel = parallel);
+      }
+      ImageDig:
+      {
+        Repeat Dig.state == EXECUTING;
+        LibraryCall Image(desc="trench");
+        Wait FILM_INTERVAL;
+      }
+
+      SenseDig:
+      {
+        Repeat Dig.state == EXECUTING;
+        LibraryCall Stub (desc="Sensing dig");
+        DiggingSafe = STUB_TRUE;
+        Wait SENSE_DIG_INTERVAL;
+      }
     }
+    LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                GroundPos = ground_pos, Parallel = parallel);
+    LibraryCall Image(desc="trench");
 
     Downlink:{
       SkipCondition
@@ -170,7 +222,11 @@ EuropaMission: Concurrence
           InvariantCondition SamplesOK == true;
 
           LibraryCall CollectAndTransfer(InstanceName="MissionSol1",
-                                         IgnoreCrash = !first_collection);
+                                         IgnoreCrash = !first_collection,
+                                         X = trench_x, Y = trench_y,
+                                         GroundPos = ground_pos,
+                                         Depth = 0.11, Length = trench_length,
+                                         Parallel = parallel);
           LibraryCall StartSampleAnalysis;
         }
 
@@ -188,6 +244,8 @@ EuropaMission: Concurrence
     log_info ("Europa Mission, Sol 0 finished.");
     set_boot_ok();
     SynchronousCommand flush_checkpoints();
+
+    LibraryCall Stow();
+    MissionInProgress = false;
   }
-  MissionInProgress = false;
 }

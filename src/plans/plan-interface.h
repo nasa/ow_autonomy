@@ -62,7 +62,4 @@ Real    Lookup GroundPosition;
 // fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
 
-// Does nothing, useful as placeholder for real plan.
-LibraryAction Stub (In String description);
-
 #endif
