@@ -406,7 +406,7 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-// TODO: use NAN
+// TODO: use NAN (Jira OW-656)
 static double Voltage             = 4.15;  // faked
 static double RemainingUsefulLife = 28460; // faked
 
@@ -418,8 +418,8 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 
 static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 {
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RemainingUsefulLife = msg->data;
-  ROS_INFO ("---- rul_callback: RUL = %f", RemainingUsefulLife);
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 

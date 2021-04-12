@@ -132,11 +132,12 @@ EuropaMission: Concurrence
       // finding sampling location and ending with delivering the sample to its
       // destination.
 
-      // Note that this node is checkpointed as a single step, because data needed
-      // to checkpoint the indivual steps (trench_x, trench_y, ground_pos,
-      // parallel, and the GroundFound lookup) is not persistent.  In other words,
-      // there is no checkpointing within this node -- the entire node would be
-      // repeated if a crash occurred during its execution.
+      // Note that this node is checkpointed as a single step, because data
+      // needed to checkpoint the indivual steps (trench_x, trench_y,
+      // ground_pos, parallel, and the GroundFound lookup) is not persistent.
+      // In other words, there is no checkpointing within this node -- the
+      // entire node would be repeated if a crash occurred during its execution.
+      // Jira OW-657 is for making this plan fully interruptable.
 
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
