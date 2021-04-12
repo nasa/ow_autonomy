@@ -2,8 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Sample mission plan based on Sol 0 of the Europa Lander study.  This plan
-// uses a checkpoint facility for plan persistence added to PLEXIL in 2020.
+// Simplified version of the Europa Lander reference mission, Sol 0.  Performs
+// the same operation sequence as ReferenceMission1.plp, adding stubbed
+// operations that are found in the mission description, as well as partial
+// support for crash recovery and plan persistence using PLEXIL's checkpointing
+// facility.
 
 #include "plexil_defs.h"
 #include "plan-interface.h"
@@ -44,13 +47,12 @@ LibraryAction DumpSamples;
 EuropaMission: Concurrence
 {
   Boolean MissionInProgress = true;
-  Boolean did_crash; // Unknown  TODO: -> DidCrash
+  Boolean DidCrash; // Unknown
 
   PowerMonitor: LibraryCall MonitorPower (continue = MissionInProgress);
 
   Mission:
   {
-
     // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
     Boolean parallel;
@@ -64,11 +66,11 @@ EuropaMission: Concurrence
     Invariant MissionInProgress;
 
     log_info ("Starting Europa Mission, Sol 0 ...");
-    did_crash = Lookup(DidCrash);
+    DidCrash = Lookup(DidCrash);
 
     CrashHandle: UncheckedSequence
     {
-      SkipCondition !did_crash;
+      SkipCondition !DidCrash;
 
       OffloadData:
       {
@@ -107,10 +109,9 @@ EuropaMission: Concurrence
     {
       // TakePanorama__NAME__End is set by ImageLandingSite
       SkipCondition
-        (did_crash &&
+        (DidCrash &&
          !Lookup(IsBootOK
-                 (Lookup
-                  (CheckpointWhen ("TakePanorama__MissionSol1__End")))));
+                 (Lookup (CheckpointWhen ("TakePanorama__MissionSol1__End")))));
       LibraryCall ImageLandingSite (InstanceName = "MissionSol1",
                                     IgnoreCrash = false);
       SynchronousCommand flush_checkpoints();
@@ -119,8 +120,7 @@ EuropaMission: Concurrence
     UnstowArm:
     {
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
       LibraryCall Unstow();
       set_checkpoint("ArmUnstowed");
       SynchronousCommand flush_checkpoints();
@@ -139,8 +139,7 @@ EuropaMission: Concurrence
       // repeated if a crash occurred during its execution.
 
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
 
       // NOTE: this call has the side effect of setting the GroundFound external
       // variable, as well as the four variables passed in.
@@ -199,8 +198,7 @@ EuropaMission: Concurrence
     SampleAnalysis:
     {
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
       LibraryCall StartSampleAnalysis;
       set_checkpoint("SampleAnalyzed");
       SynchronousCommand flush_checkpoints();
@@ -209,8 +207,7 @@ EuropaMission: Concurrence
     StowArm:
     {
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
       LibraryCall Stow();
       set_checkpoint("ArmStowed");
       SynchronousCommand flush_checkpoints();
