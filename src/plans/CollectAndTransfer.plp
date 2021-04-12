@@ -77,7 +77,6 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 1;
       LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
                          Parallel = Parallel, GroundPos = GroundPos);
-      //      Wait 1;  // TODO: why this wait?
       set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
@@ -86,7 +85,6 @@ CollectAndTransfer:
       SkipCondition LastComplete >= 2;
       LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
                                GroundPos = GroundPos, Parallel = Parallel);
-      //      Wait 1;  // TODO: why this wait?
       set_checkpoint(OurName,true,Lookup(ToString(2,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
