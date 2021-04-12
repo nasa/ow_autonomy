@@ -406,6 +406,7 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
+// TODO: use NAN
 static double Voltage             = 4.15;  // faked
 static double RemainingUsefulLife = 28460; // faked
 
@@ -418,11 +419,16 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
 {
   RemainingUsefulLife = msg->data;
+  ROS_INFO ("---- rul_callback: RUL = %f", RemainingUsefulLife);
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
 
 //////////////////// GuardedMove Service support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition within the GuardedMove
+// operation: it is not meaningful otherwise, and can be possibly misused given
+// the current plan interface.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound

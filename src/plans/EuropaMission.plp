@@ -8,6 +8,7 @@
 #include "plexil_defs.h"
 #include "plan-interface.h"
 
+LibraryAction MonitorPower (In Boolean continue);
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
 LibraryAction InterogateSurface;
@@ -40,155 +41,184 @@ LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
 LibraryAction DumpSamples;
 
-Command set_checkpoint(...);
-Command flush_checkpoints();
-Command set_boot_ok();
-
-Integer Lookup CheckpointWhen(String);
-Integer Lookup NumberOfUnhandledBoots;
-Boolean Lookup IsBootOK(Integer);
-Boolean Lookup DidCrash;
-
-EuropaMission:
+EuropaMission: Concurrence
 {
   Boolean MissionInProgress = true;
   Boolean did_crash; // Unknown  TODO: -> DidCrash
 
-  // These 4 variables are assigned in the call to IdentifySampleTarget.
-  Real trench_x, trench_y, ground_pos;
-  Boolean parallel;
+  PowerMonitor: LibraryCall MonitorPower (continue = MissionInProgress);
 
-  // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
-  // However, the max value is generally not appropriate because the scoop
-  // should not be inserted so deep into the ground.  Here, estimating a
-  // reasonable value given the other trenching parameters used.
-  Real trench_length = 0.6;
-
-  Invariant MissionInProgress;
-
-  log_info ("Starting Europa Mission, Sol 0 ...");
-  did_crash = Lookup(DidCrash);
-
-  CrashHandle: UncheckedSequence
+  Mission:
   {
-    SkipCondition !did_crash;
 
-    OffloadData:
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    Invariant MissionInProgress;
+
+    log_info ("Starting Europa Mission, Sol 0 ...");
+    did_crash = Lookup(DidCrash);
+
+    CrashHandle: UncheckedSequence
     {
-      SkipCondition Lookup(NumberOfUnhandledBoots)<MAX_CRASHES;
-      log_info("Recorded ", Lookup(NumberOfUnhandledBoots),
-               " crashes, likely indication of end-of-mission");
-      OffloadAllData: LibraryCall Stub(desc="Offloading all data");
+      SkipCondition !did_crash;
+
+      OffloadData:
+      {
+        SkipCondition Lookup(NumberOfUnhandledBoots)<MAX_CRASHES;
+        log_info("Recorded ", Lookup(NumberOfUnhandledBoots),
+                 " crashes, likely indication of end-of-mission");
+        OffloadAllData: LibraryCall Stub(desc="Offloading all data");
+      }
+
+      CommunicateCrash: LibraryCall Stub(desc="Informing Earth of crash");
+
+      // Verify that onboard time is accurate, if possible
+      VerifyTime:Try
+      {
+        EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
+        Brightness:
+        LibraryCall Stub(desc="Roughly verifying time from ground brightness");
+      }
+
+      VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
+      VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
+      VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
+      RestArm: LibraryCall Stub(desc="Moving arm to safe position");
     }
 
-    CommunicateCrash: LibraryCall Stub(desc="Informing Earth of crash");
+    // Brief summary of checkpoint interface:
+    //  - CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
+    //    found.
+    //  - IsBootOK returns true if that boot was OK, UNKNOWN if not found.
+    //
+    // Thus the SkipCondition in the following nodes is true if and only if the
+    // executive crashed and the last time the checkpoint was set, the executive
+    // crashed.  This handles the case of multiple crashes.
 
-    // Verify that onboard time is accurate, if possible
-    VerifyTime:Try
+    ImageLandingSite:
     {
-      EarthTime: LibraryCall Stub(desc="Verifying time with Earth");
-      Brightness:
-      LibraryCall Stub(desc="Roughly verifying time from ground brightness");
+      // TakePanorama__NAME__End is set by ImageLandingSite
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK
+                 (Lookup
+                  (CheckpointWhen ("TakePanorama__MissionSol1__End")))));
+      LibraryCall ImageLandingSite (InstanceName = "MissionSol1",
+                                    IgnoreCrash = false);
+      SynchronousCommand flush_checkpoints();
     }
 
-    VerifyPosition: LibraryCall Stub(desc="Verifying lander position");
-    VerifyHardware: LibraryCall Stub(desc="Verifying hardware integrity");
-    VerifySoftware: LibraryCall Stub(desc="Verifying software integrity");
-    RestArm: LibraryCall Stub(desc="Moving arm to safe position");
-  }
-
-  ImageLandingSite: {
-    // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
-    // found IsBootOK returns true if that boot was OK, UNKNOWN if not found
-    // Thus SkipCondition is true if and only if the executive crashed and the
-    // last time the checkpoint was set, the executive crashed.  This handles
-    // the case of multiple crashes.
-
-    // TakePanorama__NAME__End is set by ImageLandingSite
-    SkipCondition
-      (did_crash &&
-       !Lookup(IsBootOK
-               (Lookup
-                (CheckpointWhen ("TakePanorama__MissionSol1__End")))));
-    LibraryCall ImageLandingSite (InstanceName = "MissionSol1",
-                                  IgnoreCrash = false);
-    SynchronousCommand flush_checkpoints();
-  }
-
-  LibraryCall Unstow();
-  // TODO: add checkpoint
-  LibraryCall IdentifySampleTarget (X = trench_x,
-                                    Y = trench_y,
-                                    GroundPos = ground_pos,
-                                    Parallel = parallel);
-
-  if (! Lookup(GroundFound)) {
-    log_error ("Failed to find ground. Stowing arm and stopping.");
-    LibraryCall Stow();
-    MissionInProgress = false;
-  }
-
-  // TODO: add checkpoint
-  DigAndImage: Concurrence {
-    Boolean DiggingSafe = true;
-    Dig:
+    UnstowArm:
     {
-      InvariantCondition DiggingSafe;
-      LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                             Length = trench_length, BiteDepth = 0.05,
-                             NumPasses = 2, Parallel = parallel);
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
+      LibraryCall Unstow();
+      set_checkpoint("ArmUnstowed");
+      SynchronousCommand flush_checkpoints();
     }
-    ImageDig:
+
+    SampleCollection:
     {
-      Repeat Dig.state == EXECUTING;
+      // This node includes all phases of sample collection, beginning with
+      // finding sampling location and ending with delivering the sample to its
+      // destination.
+
+      // Note that this node is checkpointed as a single step, because data needed
+      // to checkpoint the indivual steps (trench_x, trench_y, ground_pos,
+      // parallel, and the GroundFound lookup) is not persistent.  In other words,
+      // there is no checkpointing within this node -- the entire node would be
+      // repeated if a crash occurred during its execution.
+
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
+
+      // NOTE: this call has the side effect of setting the GroundFound external
+      // variable, as well as the four variables passed in.
+      LibraryCall IdentifySampleTarget (X = trench_x,
+                                        Y = trench_y,
+                                        GroundPos = ground_pos,
+                                        Parallel = parallel);
+
+      if (! Lookup(GroundFound)) {
+        // Note that the default value of GroundFound is false, so
+        log_error ("Failed to find ground. Stowing arm and stopping.");
+        LibraryCall Stow();
+        MissionInProgress = false;
+      }
+
+      DigAndImage: Concurrence {
+        Boolean DiggingSafe = true;
+        Dig:
+        {
+          InvariantCondition DiggingSafe;
+          LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                                 Length = trench_length, BiteDepth = 0.05,
+                                 NumPasses = 2, Parallel = parallel);
+        }
+        ImageDig:
+        {
+          Repeat Dig.state == EXECUTING;
+          LibraryCall Image(desc="trench");
+          Wait FILM_INTERVAL;
+        }
+
+        SenseDig:
+        {
+          Repeat Dig.state == EXECUTING;
+          LibraryCall Stub (desc="Sensing dig");
+          DiggingSafe = STUB_TRUE;
+          Wait SENSE_DIG_INTERVAL;
+        }
+      }
+
+      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                  GroundPos = ground_pos, Parallel = parallel);
       LibraryCall Image(desc="trench");
-      Wait FILM_INTERVAL;
-    }
+      LibraryCall Downlink;
 
-    SenseDig:
-    {
-      Repeat Dig.state == EXECUTING;
-      LibraryCall Stub (desc="Sensing dig");
-      DiggingSafe = STUB_TRUE;
-      Wait SENSE_DIG_INTERVAL;
-    }
-  }
-  // TODO: add checkpoint
-  LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
-                              GroundPos = ground_pos, Parallel = parallel);
-  LibraryCall Image(desc="trench");
-
-  Downlink:{
-    SkipCondition
-      (did_crash &&
-       !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete")))));
-    LibraryCall Downlink;
-    set_checkpoint("DownlinkComplete");
-    SynchronousCommand flush_checkpoints();
-  }
-
-   SampleCollection:{
-    SkipCondition
-      (did_crash &&
-       !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
-
-    Collect:{
       LibraryCall CollectAndTransfer(InstanceName="MissionSol1",
                                      IgnoreCrash = false,
                                      X = trench_x, Y = trench_y,
                                      GroundPos = ground_pos,
                                      Depth = 0.11, Length = trench_length,
                                      Parallel = parallel);
-      set_checkpoint("SampleCollected");
+      set_checkpoint ("SampleCollected");
       SynchronousCommand flush_checkpoints();
     }
+
+    SampleAnalysis:
+    {
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+      LibraryCall StartSampleAnalysis;
+      set_checkpoint("SampleAnalyzed");
+      SynchronousCommand flush_checkpoints();
+    }
+
+    StowArm:
+    {
+      SkipCondition
+        (did_crash &&
+         !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
+      LibraryCall Stow();
+      set_checkpoint("ArmStowed");
+      SynchronousCommand flush_checkpoints();
+    }
+
+    log_info ("Europa Mission, Sol 0 finished.");
+    set_boot_ok();
+    SynchronousCommand flush_checkpoints();
+    MissionInProgress = false;
   }
-
-  LibraryCall StartSampleAnalysis; // TODO: add checkpoint
-  LibraryCall Stow();  // TODO: add checkpoint
-  log_info ("Europa Mission, Sol 0 finished.");
-
-  set_boot_ok();
-  SynchronousCommand flush_checkpoints();
-  MissionInProgress = false;
 }
