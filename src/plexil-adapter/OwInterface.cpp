@@ -19,6 +19,7 @@
 
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
 
 // C++
@@ -416,7 +417,7 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
   publish ("Voltage", Voltage);
 }
 
-static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
@@ -587,13 +588,13 @@ void OwInterface::initialize()
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
-    m_rulSubscriber = new ros::Subscriber
-      (m_genericNodeHandle ->
-       subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     m_batteryTempSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/battery_temperature", qsize,
                  temperature_callback));
+    m_rulSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     m_guardedMoveSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/guarded_move_result", qsize, guarded_move_callback));
