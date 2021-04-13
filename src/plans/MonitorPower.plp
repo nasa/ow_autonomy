@@ -2,11 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A very basic power monitor that simply prints power status every 30 seconds.
+// A very simple power monitor that prints power status at a regular interval.
 
-Real Lookup Voltage;
-Real Lookup RemainingUsefulLife;
-Command log_info (...);
+#include "plan-interface.h"
 
 MonitorPower:
 {
@@ -17,5 +15,6 @@ MonitorPower:
 
   log_info ("Battery: state of charge: ", Lookup(Voltage));
   log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
-  Wait 120;
+  log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
+  Wait 60;
 }
