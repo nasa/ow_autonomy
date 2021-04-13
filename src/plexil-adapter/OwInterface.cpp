@@ -406,9 +406,9 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = 4.15;  // faked
-static double RemainingUsefulLife = 28460; // faked
-static double BatteryTemperature  = 0;  // temp
+static double Voltage             = NAN;
+static double RemainingUsefulLife = NAN;
+static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
