@@ -591,19 +591,19 @@ void OwInterface::initialize()
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/system_faults_status", qsize,
+       subscribe("/faults/jpl/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this)));
     m_armFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/arm_faults_status", qsize,
+       subscribe("/faults/jpl/arm_faults_status", qsize,
                 &OwInterface::armFaultCallback, this)));
     m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/power_faults_status", qsize,
+       subscribe("/faults/jpl/power_faults_status", qsize,
                 &OwInterface::powerFaultCallback, this)));
     m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/pt_faults_status", qsize,
+       subscribe("/faults/jpl/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this)));
 
     ROS_INFO ("Waiting for action servers...");
