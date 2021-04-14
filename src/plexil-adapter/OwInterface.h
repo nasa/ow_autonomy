@@ -70,7 +70,7 @@ class OwInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getVoltage () const;
+  double getStateOfCharge () const;
   double getRemainingUsefulLife () const;
   double getBatteryTemperature () const;
   bool   groundFound () const;

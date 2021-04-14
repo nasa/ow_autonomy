@@ -81,8 +81,8 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
-  else if (state_name == "Voltage") {
-    value_out = OwInterface::instance()->getVoltage();
+  else if (state_name == "StateOfCharge") {
+    value_out = OwInterface::instance()->getStateOfCharge();
   }
   else if (state_name == "RemainingUsefulLife") {
     value_out = OwInterface::instance()->getRemainingUsefulLife();

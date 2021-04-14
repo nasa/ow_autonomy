@@ -1,0 +1,169 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Based on ReferenceMission1, this version uses the PLEXIL 'Try' construct,
+// paired with new success/failure tests in child plans, to implement alternate
+// policies when there are failures.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean proceed);
+LibraryAction ImageLandingSite(In String InstanceName,
+                               In Boolean IgnoreCrash);
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+LibraryAction StartSampleAnalysis;
+
+ReferenceMission2: Concurrence
+{
+  Integer MissionAttempts = 0;
+
+  // Guards
+  Boolean ProceedWithMission = true;
+  Boolean MissionInProgress = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            proceed = ProceedWithMission);
+  WaitForPower:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !ProceedWithMission;
+    Skip !MissionInProgress;
+
+    log_info ("Waiting for battery to resume normal state...");
+    Wait 5;
+  }
+
+  Mission:
+  {
+    // Mission state
+    Boolean LandingSiteImaged = false;
+    Boolean ArmUnstowed = false;
+    Boolean SampleTargetSearchAttempted = false;
+    Boolean TrenchDug = false;
+    Boolean TailingsRemoved = false; // combine with trench dig?
+    Boolean SampleCollected = false;
+    Boolean ArmStowed = false;
+    Boolean SampleAnalysisFinished = false;
+
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    Invariant ProceedWithMission;
+    Repeat MissionInProgress && !SampleAnalysisFinished;
+    Start MissionInProgress && ProceedWithMission;
+    Skip !MissionInProgress;
+
+    log_info ("Starting ReferenceMission2 plan...");
+
+    MissionAttempt:
+    {
+      MissionAttempts = MissionAttempts + 1;
+      log_info ("Starting mission sequence, attempt ", MissionAttempts, "...");
+
+      if (! LandingSiteImaged) {
+        LibraryCall ImageLandingSite (InstanceName = "ReferenceMission2",
+                                      IgnoreCrash = true);
+        LandingSiteImaged = true;
+      }
+
+      if (! ArmUnstowed) {
+        LibraryCall Unstow();
+        ArmUnstowed = true;
+      }
+
+      if (! SampleTargetSearchAttempted) {
+        LibraryCall IdentifySampleTarget (X = trench_x,
+                                          Y = trench_y,
+                                          GroundPos = ground_pos,
+                                          Parallel = parallel);
+        SampleTargetSearchAttempted = true;
+      }
+
+      if (Lookup(GroundFound)) {
+
+        if (! TrenchDug) {
+          LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                                 Length = trench_length, BiteDepth = 0.05,
+                                 NumPasses = 2, Parallel = parallel);
+          TrenchDug = true;
+        }
+
+        if (! TailingsRemoved) {
+          LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                      GroundPos = ground_pos, Parallel = parallel);
+          TailingsRemoved = true;
+        }
+
+        if (! SampleCollected) {
+          LibraryCall CollectSample (X = trench_x, Y = trench_y,
+                                     GroundPos = ground_pos, Depth = 0.11,
+                                     Length = trench_length, Parallel = parallel);
+          SampleCollected = true;
+        }
+
+        if (! ArmStowed) {
+          LibraryCall Stow();
+          ArmStowed = true;
+        }
+
+        if (! SampleAnalysisFinished) {
+          LibraryCall StartSampleAnalysis;  // asynchronous
+          Wait 2;  // Wait for sample analysis to finish.
+          SampleAnalysisFinished = true;
+        }
+      }
+      else
+        {
+          log_error ("Failed to find ground, aborting.");
+          if (! ArmStowed) {
+            LibraryCall Stow();
+            ArmStowed = true;
+          }
+        }
+      endif;
+      log_info ("Mission attempt ", MissionAttempts, " completed!");
+      MissionInProgress = false;
+    }
+    log_info ("ReferenceMission2 plan complete.");
+  }
+}

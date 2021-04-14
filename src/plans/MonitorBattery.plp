@@ -5,7 +5,7 @@
 // An overly simple battery monitor that detects voltage drop below a fixed
 // threshold.  Supports recharge, which the Europa lander does not.
 
-Real Lookup Voltage;
+Real Lookup StateOfCharge;
 Command log_info (...);
 Command log_warning (...);
 
@@ -14,7 +14,7 @@ MonitorBattery:
   In Boolean continue;
   InOut Boolean status;
 
-  Real MinVoltage = 25.0;  // made up
+  Real MinStateOfCharge = 0.10;  // made up
 
   MonitorBatteryAux: Concurrence
   {
@@ -23,16 +23,16 @@ MonitorBattery:
 
     BatteryGood:
     {
-      Start Lookup(Voltage) >= MinVoltage;
+      Start Lookup(StateOfCharge) >= MinStateOfCharge;
       status = true;
-      log_info ("State of charge normal:", Lookup(Voltage));
+      log_info ("State of charge normal:", Lookup(StateOfCharge));
     }
 
     BatteryBad:
     {
-      Start Lookup(Voltage) < MinVoltage;
+      Start Lookup(StateOfCharge) < MinStateOfCharge;
       status = false;
-      log_warning ("Low voltage:", Lookup(Voltage));
+      log_warning ("Low voltage:", Lookup(StateOfCharge));
     }
   }
   log_info ("Battery Monitor terminating.");

@@ -2,19 +2,37 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A very simple power monitor that prints power status at a regular interval.
+// Report battery values at regular interval and set health variables
+// appropriately.
 
 #include "plan-interface.h"
+
+Real Lookup time;
 
 MonitorPower:
 {
   In Boolean continue;
+  InOut Boolean battery_temp_ok, battery_life_ok, battery_charge_ok, proceed;
 
+  // Thresholds (made up for now)
+  Real LowCharge = 0.10; // percentage
+  Real HighTemp  = 30;   // celsius
+  
   Repeat true;
   Exit !continue;
 
-  log_info ("Battery: state of charge: ", Lookup(Voltage));
+  log_info ("Battery: state of charge: ", Lookup(StateOfCharge));
   log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
   log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
-  Wait 60;
+
+  battery_charge_ok = Lookup(StateOfCharge) >= LowCharge;
+  battery_temp_ok   = Lookup(BatteryTemperature) < HighTemp;
+
+  if (!battery_charge_ok) log_warning ("Battery charge is low!");
+  if (!battery_temp_ok) log_warning ("Battery too hot!");
+
+  //  proceed = battery_charge_ok && battery_temp_ok;
+  proceed = abs(Lookup(time)) % 2 == 0;
+  
+  Wait 30;
 }

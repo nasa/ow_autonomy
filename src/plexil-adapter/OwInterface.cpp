@@ -407,14 +407,14 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = NAN;
+static double StateOfCharge       = NAN;
 static double RemainingUsefulLife = NAN;
 static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
-  Voltage = msg->data;
-  publish ("Voltage", Voltage);
+  StateOfCharge = msg->data;
+  publish ("StateOfCharge", StateOfCharge);
 }
 
 static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
@@ -897,9 +897,9 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetryMap[Joint::antenna_tilt].velocity;
 }
 
-double OwInterface::getVoltage () const
+double OwInterface::getStateOfCharge () const
 {
-  return Voltage;
+  return StateOfCharge;
 }
 
 double OwInterface::getRemainingUsefulLife () const
