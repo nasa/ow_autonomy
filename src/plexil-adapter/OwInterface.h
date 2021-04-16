@@ -84,6 +84,7 @@ class OwInterface
   double getTiltVelocity () const;
   double getVoltage () const;
   double getRemainingUsefulLife () const;
+  double getBatteryTemperature () const;
   bool   groundFound () const;
   double groundPosition () const;
 
@@ -142,6 +143,7 @@ class OwInterface
   // structure of all maps for faults is the following:
   // key = (string) fault name
   // value = (pair) ( (int) numberical fault value, booleon of if fault exists)
+
   std::map<std::string,std::pair<uint64_t, bool>> systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
@@ -184,7 +186,8 @@ class OwInterface
   ros::Subscriber* m_cameraSubscriber;
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
-
+  ros::Subscriber* m_batteryTempSubscriber;
+  ros::Subscriber* m_guardedMoveSubscriber;
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;

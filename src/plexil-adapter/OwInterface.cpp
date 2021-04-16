@@ -9,6 +9,7 @@
 
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
 
 // C++
@@ -373,8 +374,9 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = 4.15;  // faked
-static double RemainingUsefulLife = 28460; // faked
+static double Voltage             = NAN;
+static double RemainingUsefulLife = NAN;
+static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
@@ -382,10 +384,16 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
   publish ("Voltage", Voltage);
 }
 
-static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
+}
+
+static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  BatteryTemperature = msg->data;
+  publish ("BatteryTemperature", BatteryTemperature);
 }
 
 
@@ -466,6 +474,8 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
+    m_batteryTempSubscriber (nullptr),
+    m_guardedMoveSubscriber (nullptr),
     m_systemFaultMessagesSubscriber (nullptr),
     m_armFaultMessagesSubscriber (nullptr),
     m_powerFaultMessagesSubscriber (nullptr),
@@ -488,6 +498,8 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
+  if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
+  if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -534,6 +546,10 @@ void OwInterface::initialize()
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
+    m_batteryTempSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/battery_temperature", qsize,
+                 temperature_callback));
     m_rulSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
@@ -878,6 +894,11 @@ double OwInterface::getVoltage () const
 double OwInterface::getRemainingUsefulLife () const
 {
   return RemainingUsefulLife;
+}
+
+double OwInterface::getBatteryTemperature () const
+{
+  return BatteryTemperature;
 }
 
 bool OwInterface::operationRunning (const string& name) const
