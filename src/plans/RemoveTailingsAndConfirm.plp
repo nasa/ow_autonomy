@@ -1,0 +1,27 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Wrapper to RemoveTailings that adds a confirmation.
+
+#include "plan-interface.h"
+
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+
+RemoveTailingsAndConfirm:
+{
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
+  In Boolean Parallel;
+  InOut Boolean Confirm;
+
+  LibraryCall RemoveTailings (X = X,
+                              Y = Y,
+                              GroundPos = GroundPos,
+                              Parallel = Parallel);
+  Confirm = true;
+}

@@ -2,8 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Report battery values at regular interval and set health variables
-// appropriately.
+// Report battery values at regular interval, set health variables
+// appropriately, and fake a fault every so many iterations.
 
 #include "plan-interface.h"
 
@@ -17,22 +17,46 @@ MonitorPower:
   // Thresholds (made up for now)
   Real LowCharge = 0.10; // percentage
   Real HighTemp  = 30;   // celsius
-  
-  Repeat true;
+
+  Integer Iteration = 0;
+
   Exit !continue;
 
-  log_info ("Battery: state of charge: ", Lookup(StateOfCharge));
-  log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
-  log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
+  Iterate:
+  {
+    Repeat true;
 
-  battery_charge_ok = Lookup(StateOfCharge) >= LowCharge;
-  battery_temp_ok   = Lookup(BatteryTemperature) < HighTemp;
+    Iteration = Iteration + 1;
 
-  if (!battery_charge_ok) log_warning ("Battery charge is low!");
-  if (!battery_temp_ok) log_warning ("Battery too hot!");
+    battery_charge_ok = Lookup(StateOfCharge) >= LowCharge;
+    battery_temp_ok   = Lookup(BatteryTemperature) < HighTemp;
 
-  //  proceed = battery_charge_ok && battery_temp_ok;
-  proceed = abs(Lookup(time)) % 2 == 0;
-  
-  Wait 30;
+    // Report levels every 3 iterations, or if there's a problem, to reduce
+    // output clutter.
+    if (Iteration % 3 == 0 || !battery_charge_ok || !battery_temp_ok) {
+      log_info ("Battery: state of charge: ", Lookup(StateOfCharge));
+      log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
+      log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
+      if (!battery_charge_ok) log_warning ("Battery charge is low!");
+      if (!battery_temp_ok) log_warning ("Battery too hot!");
+    }
+    
+    // Actual means to indicate good battery status:
+    //  proceed = battery_charge_ok && battery_temp_ok;
+
+    // This alternative fakes a fault every 5th iteration starting with the first,
+    // and has it last for 3 iterations.  (Admittedly, these values were tweaked
+    // to produce an "interesting" simulation with the ReferenceMission2 plan).
+    if (Iteration % 5 == 1) {
+      log_warning ("Faked battery fault!");
+      proceed = false;
+    }
+    else {
+      proceed = true;
+      if (Iteration % 5 == 4) log_warning ("Faked battery fault resolved!");
+    }
+    endif;
+
+    Wait 30; // seconds
+  }
 }

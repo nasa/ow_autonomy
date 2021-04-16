@@ -1,0 +1,30 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Wrapper to CollectSample that adds a confirmation.
+
+#include "plan-interface.h"
+
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+
+CollectSampleAndConfirm:
+{
+  In Real X;
+  In Real Y;
+  In Real GroundPos;
+  In Real Depth;
+  In Real Length;
+  In Boolean Parallel;
+  InOut Boolean Confirm;
+
+  LibraryCall CollectSample (X = X, Y = Y,
+                             GroundPos = GroundPos, Depth = Depth,
+                             Length = Length, Parallel = Parallel);
+  Confirm = true;
+}
