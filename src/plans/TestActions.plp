@@ -36,7 +36,7 @@ TestActions:
                      Length = 0.5, Parallel = true,
                      GroundPos = GP);
 
-  LibraryCall DigLinear (X = 1.75, Y = 0.1, Depth = 0.045, Length = 0.5,
+  LibraryCall DigLinear (X = 1.75, Y = 0.1, Depth = 0.045, Length = 0.1,
                          GroundPos = GP);
 
   // // Receptacle coordinates
