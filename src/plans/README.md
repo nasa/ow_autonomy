@@ -22,8 +22,9 @@ declarations near the top.
 Descriptions of some key plans, and other files of interest, are as follows.
 See the comments inside all the plans for more information.
 
-1. ReferenceMission1 : models a portion of Sol 0 of the Europa Lander reference
-   mission defined by JPL.
+1. ReferenceMission1, ReferenceMission2 : models a portion of Sol 0 of the
+   Europa Lander reference mission defined by JPL.  The latter adds simple power
+   fault handling.
 
 2. EuropaMission: a variant of the above that includes _checkpointing_, a new
    PLEXIL feature that supports robust plan resumption after a reboot.
