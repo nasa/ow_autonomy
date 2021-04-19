@@ -98,8 +98,6 @@ ReferenceMission2: Concurrence
     // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
-    End !MissionInProgress;
-    
     log_info ("Starting ReferenceMission2 plan...");
 
     Image:
@@ -189,7 +187,7 @@ ReferenceMission2: Concurrence
      }
     }
     endif;
+    log_info ("ReferenceMission2 plan complete.");
     MissionInProgress = false;
   }
-  log_info ("ReferenceMission2 plan complete.");
 }
