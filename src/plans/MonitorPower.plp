@@ -12,7 +12,7 @@ Real Lookup time;
 MonitorPower:
 {
   In Boolean continue;
-  InOut Boolean battery_temp_ok, battery_life_ok, battery_charge_ok, proceed;
+  InOut Boolean battery_temp_ok, battery_life_ok, battery_charge_ok, all_ok;
 
   // Thresholds (made up for now)
   Real LowCharge = 0.10; // percentage
@@ -42,17 +42,16 @@ MonitorPower:
     }
     
     // Actual means to indicate good battery status:
-    //  proceed = battery_charge_ok && battery_temp_ok;
+    //  all_ok = battery_charge_ok && battery_temp_ok;
 
     // This alternative fakes a fault every 5th iteration starting with the first,
-    // and has it last for 3 iterations.  (Admittedly, these values were tweaked
-    // to produce an "interesting" simulation with the ReferenceMission2 plan).
+    // and has it last for 3 iterations.  This is an arbitrary choice.
     if (Iteration % 5 == 1) {
       log_warning ("Faked battery fault!");
-      proceed = false;
+      all_ok = false;
     }
     else {
-      proceed = true;
+      all_ok = true;
       if (Iteration % 5 == 4) log_warning ("Faked battery fault resolved!");
     }
     endif;

@@ -5,15 +5,12 @@
 // This illustrative and imperfect plan builds on ReferenceMission1 by adding
 // rudimentary power fault detection and handling.  The faults are currently
 // faked in MonitorPower, a plan that runs concurrently with this one.  The
-// handling is simply interrupting the mission sequence, and resuming it when
-// the fault clears.  The fault detection is done via explicit checks inserted
-// synchronously within the mission sequence.  In most cases this does not
-// actually halt the mission and freeze the lander as would be desired.  This is
-// because the fault handling is not currently propagated to lower levels of the
-// plan: child nodes (library calls), and the commands themselves, which are
-// implemented as (non-interruptable) ROS services at this time.  Note that when
-// a plan's Invariant condition is false (or Exit condition true), it waits for
-// any child nodes that are executing, to finish.
+// handling is simply pausing the mission sequence *at fixed points*, and
+// resuming it when the fault clears.  This is a simple, synchronous alternative
+// to asynchronous interruption and resumption, because the latter are not
+// supported in the lower levels of this plan: child plans (library nodes), and
+// the lander commands themselves, which are currently not interruptable or
+// preemptable in the ROS implementation.
 
 #include "plan-interface.h"
 
@@ -21,7 +18,7 @@ LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,
                             InOut Boolean battery_life_ok,
                             InOut Boolean battery_charge_ok,
-                            InOut Boolean proceed);
+                            InOut Boolean all_ok);
 
 LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 
@@ -54,10 +51,8 @@ LibraryAction StartSampleAnalysis;
 
 ReferenceMission2: Concurrence
 {
-  Integer MissionAttempts = 0;
-
-  // Guards
-  Boolean ProceedWithMission = true;
+  // Guards for mission continuation
+  Boolean Proceed = true;
   Boolean MissionInProgress = true;
 
   // Power monitoring
@@ -69,11 +64,11 @@ ReferenceMission2: Concurrence
                             battery_temp_ok = BatteryTempOK,
                             battery_life_ok = BatteryLifeOK,
                             battery_charge_ok = BatteryChargeOK,
-                            proceed = ProceedWithMission);
+                            all_ok = Proceed);
   WaitForPower:
   {
     Repeat MissionInProgress;
-    Start MissionInProgress && !ProceedWithMission;
+    Start MissionInProgress && !Proceed;
     Skip !MissionInProgress;
 
     log_warning
@@ -83,7 +78,7 @@ ReferenceMission2: Concurrence
 
   Mission:
   {
-    // Mission state
+    // One-shot guards for mission phases
     Boolean ImagingLandingSite = false;
     Boolean UnstowingArm = false;
     Boolean SearchingWorkspace = false;
@@ -103,125 +98,98 @@ ReferenceMission2: Concurrence
     // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
+    End !MissionInProgress;
+    
     log_info ("Starting ReferenceMission2 plan...");
 
-    MissionAttempt:
+    Image:
     {
-
-      // The workaround includes this synchonously checked flag.
-      Boolean Continue = true;
-
-      // The Invariant works to stop (and fail) this node when there's an issue,
-      // but there's a serious problem in that an ongoing command is not
-      // explicitly aborted (and this is not even possible with the ROS Service
-      // implementation used by this branch), and so the result is unspecified,
-      // and not mission-realistic.  The workaround for now is to let each
-      // command finish before handling an interruption of this plan, and check
-      // ProceedWithMission before each command.  Later, we need to add
-      // command-level fault/interruption handling.
-      //
-      Invariant ProceedWithMission;
-
-      // Note that even when false, an executing child node will be allowed to
-      // finish.
-      //      Invariant Continue;
-
-      Repeat MissionInProgress && !AnalyzingSample;
-      Start MissionInProgress && ProceedWithMission;
-      Skip !MissionInProgress;
-
-      MissionAttempts = MissionAttempts + 1;
-      log_info (">> Starting mission sequence, attempt ", MissionAttempts, "<<");
-
-      Continue = ProceedWithMission;
-      if (! ImagingLandingSite) {
-        ImagingLandingSite = true;
-        log_info ("** Imaging Landing Site **");
-        LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
-                                     IgnoreCrash = true);
-      }
-
-      Continue = ProceedWithMission;
-      if (! UnstowingArm) {
-        UnstowingArm = true;
-        log_info ("** Unstowing Arm **");
-        LibraryCall Unstow;
-      }
-
-      Continue = ProceedWithMission;
-      if (! SearchingWorkspace) {
-        SearchingWorkspace = true;
-        log_info ("** Identifying Sample Target **");
-        LibraryCall IdentifySampleTarget (X = trench_x,
-                                          Y = trench_y,
-                                          GroundPos = ground_pos,
-                                          Parallel = parallel);
-      }
-
-      if (Lookup(GroundFound)) {
-        Continue = ProceedWithMission;
-        if (! DiggingTrench) {
-          DiggingTrench = true;
-          log_info ("** Digging Trench **");
-          LibraryCall DigTrench (X = trench_x,
-                                 Y = trench_y,
-                                 GroundPos = ground_pos,
-                                 Length = trench_length,
-                                 BiteDepth = 0.05,
-                                 NumPasses = 2,
-                                 Parallel = parallel);
-        }
-
-        Continue = ProceedWithMission;
-        if (! RemovingTailings) {
-          RemovingTailings = true;
-          log_info ("** Removing Tailings **");
-          LibraryCall RemoveTailings (X = trench_x,
-                                      Y = trench_y,
-                                      GroundPos = ground_pos,
-                                      Parallel = parallel);
-        }
-
-        Continue = ProceedWithMission;
-        if (! CollectingSample) {
-          CollectingSample = true;
-          log_info ("** Collecting Sample **");
-          LibraryCall CollectSample (X = trench_x,
-                                     Y = trench_y,
-                                     GroundPos = ground_pos,
-                                     Depth = 0.11,
-                                     Length = trench_length,
-                                     Parallel = parallel);
-        }
-
-        Continue = ProceedWithMission;
-        if (! StowingArm) {
-          StowingArm = true;
-          log_info ("** Stowing Arm **");
-          LibraryCall Stow;
-        }
-
-        Continue = ProceedWithMission;
-        if (! AnalyzingSample) {
-          AnalyzingSample = true;
-          log_info ("** Analyzing Sample **");
-          LibraryCall StartSampleAnalysis;
-        }
-      }
-      else
-        {
-          log_error ("Failed to find ground, aborting.");
-          Continue = ProceedWithMission;
-          if (! StowingArm) {
-            StowingArm = true;
-            log_info ("** Stowing Arm **");
-            LibraryCall Stow;
-          }
-        }
-      endif;
-      log_info ("Mission attempt ", MissionAttempts, " completed!");
-      MissionInProgress = false;
+      Start Proceed && !ImagingLandingSite;
+      ImagingLandingSite = true;
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+                                   IgnoreCrash = true);
     }
-    log_info ("ReferenceMission2 plan complete.");
+    Unstow:
+    {
+      Start Proceed && !UnstowingArm;
+      UnstowingArm = true;
+      log_info ("** Unstowing Arm **");
+      LibraryCall Unstow;
+    }
+    Search:
+    {
+      Start Proceed && !SearchingWorkspace;
+      SearchingWorkspace = true;
+      log_info ("** Identifying Sample Target **");
+      LibraryCall IdentifySampleTarget (X = trench_x,
+                                        Y = trench_y,
+                                        GroundPos = ground_pos,
+                                        Parallel = parallel);
+    }
+    if (Lookup(GroundFound)) {
+      Dig:
+      {
+        Start Proceed && !DiggingTrench;
+        DiggingTrench = true;
+        log_info ("** Digging Trench **");
+        LibraryCall DigTrench (X = trench_x,
+                               Y = trench_y,
+                               GroundPos = ground_pos,
+                               Length = trench_length,
+                               BiteDepth = 0.05,
+                               NumPasses = 2,
+                               Parallel = parallel);
+      }
+      Clear:
+      {
+        Start Proceed && !RemovingTailings;
+        RemovingTailings = true;
+        log_info ("** Removing Tailings **");
+        LibraryCall RemoveTailings (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel);
+      }
+      Collect:
+      {
+        Start Proceed && !CollectingSample;
+        CollectingSample = true;
+        log_info ("** Collecting Sample **");
+        LibraryCall CollectSample (X = trench_x,
+                                   Y = trench_y,
+                                   GroundPos = ground_pos,
+                                   Depth = 0.11,
+                                   Length = trench_length,
+                                   Parallel = parallel);
+      }
+      Stow:
+      {
+        Start Proceed && !StowingArm;
+        StowingArm = true;
+        log_info ("** Stowing Arm **");
+        LibraryCall Stow;
+      }
+      Analyze:
+      {
+        Start Proceed && !AnalyzingSample;
+        AnalyzingSample = true;
+        log_info ("** Analyzing Sample **");
+        LibraryCall StartSampleAnalysis;
+      }
+    }
+    else {
+     log_error ("Failed to find ground, aborting.");
+     FailStow:
+     {
+       Start Proceed && !StowingArm;
+       StowingArm = true;
+       log_info ("** Stowing Arm **");
+       LibraryCall Stow;
+     }
+    }
+    endif;
+    MissionInProgress = false;
   }
+  log_info ("ReferenceMission2 plan complete.");
 }
