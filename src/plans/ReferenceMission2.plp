@@ -23,44 +23,34 @@ LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_charge_ok,
                             InOut Boolean proceed);
 
-LibraryAction UnstowAndConfirm (InOut Boolean Confirm);
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 
-LibraryAction StowAndConfirm (InOut Boolean Confirm);
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
 
-LibraryAction ImageLandingSiteAndConfirm (In String InstanceName,
-                                          In Boolean IgnoreCrash,
-                                          InOut Boolean Confirm);
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
 
-LibraryAction IdentifySampleTargetAndConfirm (InOut Real X,
-                                              InOut Real Y,
-                                              InOut Boolean Parallel,
-                                              InOut Real GroundPos,
-                                              InOut Boolean Confirm);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
 
-LibraryAction DigTrenchAndConfirm (In Real X,
-                                   In Real Y,
-                                   In Real GroundPos,
-                                   In Real Length,
-                                   In Real BiteDepth,
-                                   In Integer NumPasses,
-                                   In Boolean Parallel,
-                                   InOut Boolean Confirm);
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
 
-LibraryAction RemoveTailingsAndConfirm (In Real X,
-                                        In Real Y,
-                                        In Real GroundPos,
-                                        In Boolean Parallel,
-                                        InOut Boolean Confirm);
-
-LibraryAction CollectSampleAndConfirm (In Real X,
-                                       In Real Y,
-                                       In Real GroundPos,
-                                       In Real Depth,
-                                       In Real Length,
-                                       In Boolean Parallel,
-                                       InOut Boolean Confirm);
-
-LibraryAction StartSampleAnalysisAndConfirm (InOut Boolean Confirm);
+LibraryAction StartSampleAnalysis;
 
 ReferenceMission2: Concurrence
 {
@@ -94,14 +84,14 @@ ReferenceMission2: Concurrence
   Mission:
   {
     // Mission state
-    Boolean LandingSiteImaged = false;
-    Boolean ArmUnstowed = false;
-    Boolean WorkspaceSearched = false;
-    Boolean TrenchDug = false;
-    Boolean TailingsRemoved = false; // combine with trench dig?
-    Boolean SampleCollected = false;
-    Boolean ArmStowed = false;
-    Boolean SampleAnalysisFinished = false;
+    Boolean ImagingLandingSite = false;
+    Boolean UnstowingArm = false;
+    Boolean SearchingWorkspace = false;
+    Boolean DiggingTrench = false;
+    Boolean RemovingTailings = false;
+    Boolean CollectingSample = false;
+    Boolean StowingArm = false;
+    Boolean AnalyzingSample = false;
 
     // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
@@ -136,7 +126,7 @@ ReferenceMission2: Concurrence
       // finish.
       //      Invariant Continue;
 
-      Repeat MissionInProgress && !SampleAnalysisFinished;
+      Repeat MissionInProgress && !AnalyzingSample;
       Start MissionInProgress && ProceedWithMission;
       Skip !MissionInProgress;
 
@@ -144,85 +134,88 @@ ReferenceMission2: Concurrence
       log_info (">> Starting mission sequence, attempt ", MissionAttempts, "<<");
 
       Continue = ProceedWithMission;
-      if (! LandingSiteImaged) {
+      if (! ImagingLandingSite) {
+        ImagingLandingSite = true;
         log_info ("** Imaging Landing Site **");
-        LibraryCall ImageLandingSiteAndConfirm (InstanceName = "ReferenceMission2",
-                                                IgnoreCrash = true,
-                                                Confirm = LandingSiteImaged);
+        LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+                                     IgnoreCrash = true);
       }
 
       Continue = ProceedWithMission;
-      if (! ArmUnstowed) {
+      if (! UnstowingArm) {
+        UnstowingArm = true;
         log_info ("** Unstowing Arm **");
-        LibraryCall UnstowAndConfirm (Confirm = ArmUnstowed);
+        LibraryCall Unstow;
       }
 
       Continue = ProceedWithMission;
-      if (! WorkspaceSearched) {
+      if (! SearchingWorkspace) {
+        SearchingWorkspace = true;
         log_info ("** Identifying Sample Target **");
-        LibraryCall IdentifySampleTargetAndConfirm (X = trench_x,
-                                                    Y = trench_y,
-                                                    GroundPos = ground_pos,
-                                                    Parallel = parallel,
-                                                    Confirm = WorkspaceSearched);
+        LibraryCall IdentifySampleTarget (X = trench_x,
+                                          Y = trench_y,
+                                          GroundPos = ground_pos,
+                                          Parallel = parallel);
       }
 
       if (Lookup(GroundFound)) {
         Continue = ProceedWithMission;
-        if (! TrenchDug) {
+        if (! DiggingTrench) {
+          DiggingTrench = true;
           log_info ("** Digging Trench **");
-          LibraryCall DigTrenchAndConfirm (X = trench_x,
-                                           Y = trench_y,
-                                           GroundPos = ground_pos,
-                                           Length = trench_length,
-                                           BiteDepth = 0.05,
-                                           NumPasses = 2,
-                                           Parallel = parallel,
-                                           Confirm = TrenchDug);
+          LibraryCall DigTrench (X = trench_x,
+                                 Y = trench_y,
+                                 GroundPos = ground_pos,
+                                 Length = trench_length,
+                                 BiteDepth = 0.05,
+                                 NumPasses = 2,
+                                 Parallel = parallel);
         }
 
         Continue = ProceedWithMission;
-        if (! TailingsRemoved) {
+        if (! RemovingTailings) {
+          RemovingTailings = true;
           log_info ("** Removing Tailings **");
-          LibraryCall RemoveTailingsAndConfirm (X = trench_x,
-                                                Y = trench_y,
-                                                GroundPos = ground_pos,
-                                                Parallel = parallel,
-                                                Confirm = TailingsRemoved);
+          LibraryCall RemoveTailings (X = trench_x,
+                                      Y = trench_y,
+                                      GroundPos = ground_pos,
+                                      Parallel = parallel);
         }
 
         Continue = ProceedWithMission;
-        if (! SampleCollected) {
+        if (! CollectingSample) {
+          CollectingSample = true;
           log_info ("** Collecting Sample **");
-          LibraryCall CollectSampleAndConfirm (X = trench_x,
-                                               Y = trench_y,
-                                               GroundPos = ground_pos,
-                                               Depth = 0.11,
-                                               Length = trench_length,
-                                               Parallel = parallel,
-                                               Confirm = SampleCollected);
+          LibraryCall CollectSample (X = trench_x,
+                                     Y = trench_y,
+                                     GroundPos = ground_pos,
+                                     Depth = 0.11,
+                                     Length = trench_length,
+                                     Parallel = parallel);
         }
 
         Continue = ProceedWithMission;
-        if (! ArmStowed) {
+        if (! StowingArm) {
+          StowingArm = true;
           log_info ("** Stowing Arm **");
-          LibraryCall StowAndConfirm (Confirm = ArmStowed);
+          LibraryCall Stow;
         }
 
         Continue = ProceedWithMission;
-        if (! SampleAnalysisFinished) {
+        if (! AnalyzingSample) {
+          AnalyzingSample = true;
           log_info ("** Analyzing Sample **");
-          LibraryCall StartSampleAnalysisAndConfirm
-            (Confirm = SampleAnalysisFinished);
+          LibraryCall StartSampleAnalysis;
         }
       }
       else
         {
           log_error ("Failed to find ground, aborting.");
           Continue = ProceedWithMission;
-          if (! ArmStowed) {
+          if (! StowingArm) {
+            StowingArm = true;
             log_info ("** Stowing Arm **");
-            LibraryCall StowAndConfirm (Confirm = ArmStowed);
+            LibraryCall Stow;
           }
         }
       endif;
