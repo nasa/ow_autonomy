@@ -49,6 +49,9 @@ LibraryAction DeliverSample (In Real X,
 
 // Lander queries
 
+Real Lookup Voltage;
+Real Lookup RemainingUsefulLife;
+Real Lookup BatteryTemperature;
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
