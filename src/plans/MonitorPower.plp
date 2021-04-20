@@ -7,8 +7,6 @@
 
 #include "plan-interface.h"
 
-Real Lookup time;
-
 MonitorPower:
 {
   In Boolean continue;

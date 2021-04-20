@@ -244,13 +244,13 @@ void OwInterface::systemFaultMessageCallback
   // system-level fault messages.
   uint64_t msg_val = msg->value;
 
-  for (auto const& entry : systemErrors){
+  for (auto const& entry : m_systemErrors){
     string key = entry.first;
     uint64_t value = entry.second.first;
     bool b = entry.second.second;
 
     if (checkFaultMessages("SYSTEM", msg_val, key, value, b)) {
-      systemErrors[key].second = !systemErrors[key].second;
+      m_systemErrors[key].second = !m_systemErrors[key].second;
     }
 
   }
@@ -262,13 +262,13 @@ void OwInterface::armFaultCallback(const  ow_faults::ArmFaults::ConstPtr& msg)
   // system-level fault messages.
   uint32_t msg_val = msg->value;
 
-  for (auto const& entry : armErrors){
+  for (auto const& entry : m_armErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
     if (checkFaultMessages("ARM", msg_val, key, value, b)) {
-      armErrors[key].second = !armErrors[key].second;
+      m_armErrors[key].second = !m_armErrors[key].second;
     }
   }
 }
@@ -279,13 +279,13 @@ void OwInterface::powerFaultCallback(const  ow_faults::PowerFaults::ConstPtr& ms
   // system-level fault messages.
   uint32_t msg_val = msg->value;
 
-  for (auto const& entry : powerErrors){
+  for (auto const& entry : m_powerErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
     if (checkFaultMessages("POWER", msg_val, key, value, b)) {
-      powerErrors[key].second = !powerErrors[key].second;
+      m_powerErrors[key].second = !m_powerErrors[key].second;
     }
   }
 }
@@ -296,19 +296,20 @@ void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg
   // system-level fault messages.
   uint32_t msg_val = msg->value;
 
-  for (auto const& entry : ptErrors){
+  for (auto const& entry : m_panTiltErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
     bool b = entry.second.second;
 
     if (checkFaultMessages("ANTENNA", msg_val, key, value, b)) {
-      ptErrors[key].second = !ptErrors[key].second;
+      m_panTiltErrors[key].second = !m_panTiltErrors[key].second;
     }
   }
 }
 
 template <typename T>
-bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key, T value, bool b )
+bool OwInterface::checkFaultMessages(string fault_component, T msg_val,
+                                     string key, T value, bool b )
 {
   if (!b && ((msg_val & value) == value)){
     ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );

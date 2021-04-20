@@ -17,7 +17,6 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
-// #include <utility>
 
 #include <ow_faults/SystemFaults.h>
 #include <ow_faults/ArmFaults.h>
@@ -120,14 +119,14 @@ class OwInterface
 // structure of all maps for faults is the following:
 // key = (string) fault name
 // value = (pair) ( (int) numberical fault value, booleon of if fault exists)
-  std::map<std::string,std::pair<uint64_t, bool>> systemErrors =
+  std::map<std::string,std::pair<uint64_t, bool>> m_systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
     {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> armErrors = {
+  std::map<std::string,std::pair<uint32_t, bool>> m_armErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
     {"COLLISION_ERROR", std::make_pair(3, false)},
@@ -138,11 +137,11 @@ class OwInterface
     {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> powerErrors = {
+  std::map<std::string,std::pair<uint32_t, bool>> m_powerErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> ptErrors = {
+  std::map<std::string,std::pair<uint32_t, bool>> m_panTiltErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
