@@ -419,6 +419,7 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 
 static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
@@ -431,6 +432,10 @@ static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
 
 
 //////////////////// GuardedMove Service support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition within the GuardedMove
+// operation: it is not meaningful otherwise, and can be possibly misused given
+// the current plan interface.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound
