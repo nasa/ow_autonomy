@@ -239,7 +239,7 @@ static void handle_joint_fault (Joint joint, int joint_index,
 
 template <typename T1, typename T2>
 void OwInterface::faultCallback (T1 msg_val, T2& fmap,
-                                 const string& name)
+                                 const string& component)
 {
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
@@ -248,10 +248,14 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
     string key = entry.first;
     T1 value = entry.second.first;
     bool exists = entry.second.second;
-
-    if (checkFaultMessages (name, msg_val, key, value, exists)) {
-      fmap[key].second = !fmap[key].second;
+    bool faulty = msg_val & value == value;
+    if (!exists && faulty) {
+      ROS_ERROR("%s ERROR: %s", component.c_str(), key.c_str());
     }
+    else if (exists && !faulty) {
+      ROS_INFO("RESOLVED %s ERROR: %s", component.c_str(), key.c_str());
+    }
+    if (exists != faulty) fmap[key].second = !fmap[key].second;
   }
 }
 
@@ -274,21 +278,6 @@ void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& ms
 void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
 {
   faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
-}
-
-template <typename T>
-bool OwInterface::checkFaultMessages(string fault_component, T msg_val,
-                                     string key, T value, bool b )
-{
-  if (!b && ((msg_val & value) == value)){
-    ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
-    return true;
-  }
-  else if (b && ((msg_val & value) != value)){
-    ROS_INFO("RESOLVED %s ERROR: %s", fault_component.c_str(), key.c_str() );
-    return true;
-  }
-  return false;
 }
 
 void OwInterface::jointStatesCallback

@@ -111,13 +111,6 @@ class OwInterface
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
-  template <typename T>
-    bool checkFaultMessages(std::string fault_component,
-                            T msg_val,
-                            std::string key,
-                            T value,
-                            bool b);
-
   template <typename T1, typename T2>
     void faultCallback (T1 msg_val, T2&, const std::string& name);
 
