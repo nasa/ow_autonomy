@@ -237,74 +237,43 @@ static void handle_joint_fault (Joint joint, int joint_index,
   handle_overtorque (joint, msg->effort[joint_index]);
 }
 
-void OwInterface::systemFaultMessageCallback
-(const  ow_faults::SystemFaults::ConstPtr& msg)
-{
-  // Publish all joint information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint64_t msg_val = msg->value;
-
-  for (auto const& entry : m_systemErrors){
-    string key = entry.first;
-    uint64_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("SYSTEM", msg_val, key, value, b)) {
-      m_systemErrors[key].second = !m_systemErrors[key].second;
-    }
-
-  }
-}
-
-void OwInterface::armFaultCallback(const  ow_faults::ArmFaults::ConstPtr& msg)
+template <typename T1, typename T2>
+void OwInterface::faultCallback (T1 msg_val, T2& fmap,
+                                 const string& name)
 {
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
-  uint32_t msg_val = msg->value;
 
-  for (auto const& entry : m_armErrors){
+  for (auto const& entry : fmap){
     string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
+    T1 value = entry.second.first;
+    bool exists = entry.second.second;
 
-    if (checkFaultMessages("ARM", msg_val, key, value, b)) {
-      m_armErrors[key].second = !m_armErrors[key].second;
+    if (checkFaultMessages (name, msg_val, key, value, exists)) {
+      fmap[key].second = !fmap[key].second;
     }
   }
 }
 
-void OwInterface::powerFaultCallback(const  ow_faults::PowerFaults::ConstPtr& msg)
+void OwInterface::systemFaultMessageCallback
+(const  ow_faults::SystemFaults::ConstPtr& msg)
 {
-  // Publish all POWER FAULT information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint32_t msg_val = msg->value;
-
-  for (auto const& entry : m_powerErrors){
-    string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("POWER", msg_val, key, value, b)) {
-      m_powerErrors[key].second = !m_powerErrors[key].second;
-    }
-  }
+  faultCallback (msg->value, m_systemErrors, "SYSTEM");
 }
 
-void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
 {
-  // Publish all PANT TILT ANTENNA information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint32_t msg_val = msg->value;
+  faultCallback (msg->value, m_armErrors, "ARM");
+}
 
-  for (auto const& entry : m_panTiltErrors){
-    string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
+void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_powerErrors, "POWER");
+}
 
-    if (checkFaultMessages("ANTENNA", msg_val, key, value, b)) {
-      m_panTiltErrors[key].second = !m_panTiltErrors[key].second;
-    }
-  }
+void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
 }
 
 template <typename T>
@@ -612,7 +581,7 @@ void OwInterface::initialize()
     m_armFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/arm_faults_status", qsize,
-                &OwInterface::armFaultCallback, this)));
+                 &OwInterface::armFaultCallback, this)));
     m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_faults_status", qsize,

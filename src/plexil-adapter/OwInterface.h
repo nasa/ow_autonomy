@@ -26,6 +26,10 @@
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
+// Maps from fault name to (numerical fault value, does fault exist?)
+using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
+using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
+
 class OwInterface
 {
  public:
@@ -86,7 +90,6 @@ class OwInterface
 
 
  private:
-
   // Temporary, support for public version above
   void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
                                const geometry_msgs::Point& normal,
@@ -109,24 +112,25 @@ class OwInterface
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
   template <typename T>
-  bool checkFaultMessages(std::string fault_component,
-                                        T msg_val,
-                                        std::string key,
-                                        T value,
-                                        bool b );
+    bool checkFaultMessages(std::string fault_component,
+                            T msg_val,
+                            std::string key,
+                            T value,
+                            bool b);
 
-//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
-// structure of all maps for faults is the following:
-// key = (string) fault name
-// value = (pair) ( (int) numberical fault value, booleon of if fault exists)
-  std::map<std::string,std::pair<uint64_t, bool>> m_systemErrors =
+  template <typename T1, typename T2>
+    void faultCallback (T1 msg_val, T2&, const std::string& name);
+
+  // System level faults:
+
+  FaultMap64 m_systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
     {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> m_armErrors = {
+  FaultMap32 m_armErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
     {"COLLISION_ERROR", std::make_pair(3, false)},
@@ -137,13 +141,21 @@ class OwInterface
     {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> m_powerErrors = {
+  FaultMap32 m_powerErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> m_panTiltErrors = {
+  FaultMap32 m_panTiltErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  };
+
+
+  std::map<const char*, FaultMap32> m_faultMap =
+  {
+    {"ARM", m_armErrors},
+    {"POWER", m_powerErrors},
+    {"ANTENNA", m_panTiltErrors}
   };
 
   static OwInterface* m_instance;
