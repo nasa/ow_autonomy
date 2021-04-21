@@ -16,5 +16,6 @@ MonitorPower:
   log_info ("Battery: state of charge: ", Lookup(Voltage));
   log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
   log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
+  
   Wait 60;
 }

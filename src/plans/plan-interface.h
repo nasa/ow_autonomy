@@ -5,7 +5,7 @@
 #ifndef Ow_Plan_Interface_H
 #define Ow_Plan_Interface_H
 
-// PLEXIL interface: commands, lookups, library plans
+// PLEXIL interface to lander: commands, lookups, library plans, PLEXIL utilities
 
 #include "lander-commands.h"
 
@@ -17,6 +17,8 @@ Command log_error (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction Tilt (In Real Degrees);
+LibraryAction Pan  (In Real Degrees);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction GuardedMove (In Real X,
@@ -71,7 +73,27 @@ Real    Lookup GroundPosition;
 // fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
 
-// Does nothing, useful as placeholder for real plan.
-LibraryAction Stub (In String description);
+//////// PLEXIL Utilities
+
+// Predefined, unitless PLEXIL variable for current time.
+Real Lookup time;
+
+// String operations
+String Lookup ToString(...);
+Boolean Lookup StringToBoolean(String);
+Integer Lookup StringToInteger(String);
+Integer Lookup StringToReal(String);
+String Lookup substr(...);
+Integer Lookup find_first_of(...);
+Integer Lookup find_last_of(...);
+
+// Checkpointing interface
+Command set_checkpoint(...);
+Command flush_checkpoints;
+Command set_boot_ok();
+Integer Lookup CheckpointWhen(String);
+Integer Lookup NumberOfUnhandledBoots;
+Boolean Lookup IsBootOK(Integer);
+Boolean Lookup DidCrash;
 
 #endif

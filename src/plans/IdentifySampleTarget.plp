@@ -2,9 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This is a simplified version of a procedure that should "interrogate" the
-// terrain to find a good sampling location.
-// Instead, we choose an arbitrary location and probe for ground position there.
+// This is a simplified and stubbed version of a procedure that should
+// "interrogate" the terrain to find a good sampling location.  Instead, we
+// choose an arbitrary location and probe for ground position there.
 
 #include "plan-interface.h"
 
@@ -24,10 +24,9 @@ IdentifySampleTarget:
   else log_warning ("GuardedMove failed to find ground.");
   endif
 
-  // The chosen X/Y sampling location, as well as choice for Radial trench
+  // The chosen X/Y sampling location, as well as choice for Parallel trench
   // direction are stubbed here; these choices are arbitrary.
   X = 1.65;
   Y = 0;
-
   Parallel = true;
 }
