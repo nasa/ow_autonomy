@@ -424,6 +424,7 @@ static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const ow_lander::GuardedMoveResultConstPtr& result)
 {
+  ROS_INFO ("GuardedMove finished in state %s", state.toString().c_str());
   GroundFound = result->success;
   GroundPosition = result->final.z;
   publish ("GroundFound", GroundFound);
@@ -432,8 +433,8 @@ static void guarded_move_done_cb
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs = 120.0;  // TODO: make this action-specific
-const auto ActionServerTimeout = 10.0; // seconds
+const auto ActionTimeoutSecs   = 180.0; // TODO: make this action-specific
+const auto ActionServerTimeout = 10.0;  // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
 
@@ -665,7 +666,9 @@ void OwInterface::runAction (const string& opname,
 {
   thread fault_thread (monitor_for_faults, opname);
   if (ac) {
-    ac->sendGoal (goal, action_done_cb<OpIndex, ResultPtr>, active_cb<OpIndex>,
+    ac->sendGoal (goal,
+                  action_done_cb<OpIndex, ResultPtr>,
+                  active_cb<OpIndex>,
                   action_feedback_cb<FeedbackPtr>);
   }
   else {
@@ -850,7 +853,8 @@ void OwInterface::guardedMove1 (double x, double y, double z,
 
   if (m_guardedMoveClient) {
     m_guardedMoveClient->sendGoal
-      (goal, guarded_move_done_cb,
+      (goal,
+       guarded_move_done_cb,
        active_cb<GuardedMove>,
        action_feedback_cb<ow_lander::GuardedMoveFeedbackConstPtr>);
   }
