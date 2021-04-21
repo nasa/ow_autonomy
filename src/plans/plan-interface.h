@@ -55,6 +55,12 @@ Real Lookup BatteryTemperature;
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
+// Faults
+Boolean Lookup SystemFault;
+Boolean Lookup AntennaFault;
+Boolean Lookup ArmFault;
+Boolean Lookup PowerFault;
+
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;

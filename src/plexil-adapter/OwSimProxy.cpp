@@ -96,6 +96,19 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "GroundPosition") {
     value_out = OwInterface::instance()->groundPosition();
   }
+  // Faults
+  else if (state_name == "SystemFault") {
+    value_out = OwInterface::instance()->systemFault();
+  }
+  else if (state_name == "AntennaFault") {
+    value_out = OwInterface::instance()->antennaFault();
+  }
+  else if (state_name == "ArmFault") {
+    value_out = OwInterface::instance()->armFault();
+  }
+  else if (state_name == "PowerFault") {
+    value_out = OwInterface::instance()->powerFault();
+  }
   else retval = false;
 
   return retval;

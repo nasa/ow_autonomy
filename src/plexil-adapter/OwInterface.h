@@ -68,7 +68,7 @@ class OwInterface
                               double search_distance,
                               int id);
 
-  // State interface
+  // State/lookup interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
@@ -78,6 +78,10 @@ class OwInterface
   double getBatteryTemperature () const;
   bool   groundFound () const;
   double groundPosition () const;
+  bool   systemFault () const;
+  bool   antennaFault () const;
+  bool   armFault () const;
+  bool   powerFault () const;
 
   // Is the given operation (as named in .cpp file) running?
   bool running (const std::string& name) const;
@@ -114,6 +118,9 @@ class OwInterface
   template <typename T1, typename T2>
     void faultCallback (T1 msg_val, T2&, const std::string& name);
 
+  template <typename T>
+    bool faultExists (const T& fault_map) const;
+
   // System level faults:
 
   FaultMap64 m_systemErrors =
@@ -141,14 +148,6 @@ class OwInterface
   FaultMap32 m_panTiltErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
-  };
-
-
-  std::map<const char*, FaultMap32> m_faultMap =
-  {
-    {"ARM", m_armErrors},
-    {"POWER", m_powerErrors},
-    {"ANTENNA", m_panTiltErrors}
   };
 
   static OwInterface* m_instance;

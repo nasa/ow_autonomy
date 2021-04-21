@@ -244,16 +244,16 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
 
-  for (auto const& entry : fmap){
+  for (auto const& entry : fmap) {
     string key = entry.first;
     T1 value = entry.second.first;
     bool exists = entry.second.second;
     bool faulty = msg_val & value == value;
     if (!exists && faulty) {
-      ROS_ERROR("%s ERROR: %s", component.c_str(), key.c_str());
+      ROS_WARN ("%s ERROR: %s", component.c_str(), key.c_str());
     }
     else if (exists && !faulty) {
-      ROS_INFO("RESOLVED %s ERROR: %s", component.c_str(), key.c_str());
+      ROS_WARN ("RESOLVED %s ERROR: %s", component.c_str(), key.c_str());
     }
     if (exists != faulty) fmap[key].second = !fmap[key].second;
   }
@@ -408,6 +408,36 @@ double OwInterface::groundPosition () const
 {
   return GroundPosition;
 }
+
+template <typename T>
+bool OwInterface::faultExists (const T& fmap) const
+{
+  for (auto const& entry : fmap) {
+    if (entry.second.second) return true;
+  }
+  return false;
+}
+
+bool OwInterface::systemFault () const
+{
+  return faultExists (m_systemErrors);
+}
+
+bool OwInterface::antennaFault () const
+{
+  return faultExists (m_panTiltErrors);
+}
+
+bool OwInterface::armFault () const
+{
+  return faultExists (m_armErrors);
+}
+
+bool OwInterface::powerFault () const
+{
+  return faultExists (m_powerErrors);
+}
+
 
 static void guarded_move_callback
 (const ow_lander::GuardedMoveResult::ConstPtr& msg)

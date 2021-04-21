@@ -3,14 +3,13 @@
 // this repository.
 
 // This illustrative and imperfect plan builds on ReferenceMission1 by adding
-// rudimentary power fault detection and handling.  The faults are currently
-// faked in MonitorPower, a plan that runs concurrently with this one.  The
-// handling is simply pausing the mission sequence *at fixed points*, and
-// resuming it when the fault clears.  This is a simple, synchronous alternative
-// to asynchronous interruption and resumption, because the latter are not
-// supported in the lower levels of this plan: child plans (library nodes), and
-// the lander commands themselves, which are currently not interruptable or
-// preemptable in the ROS implementation.
+// rudimentary battery health monitoring, fault detection, and uniform handling
+// of each.  The handling is simply pausing the mission sequence at
+// predetermined points, and resuming it when system health returns.
+//
+// A higher fidelity approach would interrupt and resume the plan at finer
+// levels: child (library) node execution, and lander commands.  This would
+// require a fair amount of coding and refactoring of the plans.
 
 #include "plan-interface.h"
 
@@ -19,6 +18,9 @@ LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_life_ok,
                             InOut Boolean battery_charge_ok,
                             InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
 
 LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 
@@ -52,7 +54,8 @@ LibraryAction StartSampleAnalysis;
 ReferenceMission2: Concurrence
 {
   // Guards for mission continuation
-  Boolean Proceed = true;
+  Boolean BatteryOK = true;
+  Boolean NoFaults  = true;
   Boolean MissionInProgress = true;
 
   // Power monitoring
@@ -64,15 +67,19 @@ ReferenceMission2: Concurrence
                             battery_temp_ok = BatteryTempOK,
                             battery_life_ok = BatteryLifeOK,
                             battery_charge_ok = BatteryChargeOK,
-                            all_ok = Proceed);
-  WaitForPower:
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  WaitForHealth:
   {
     Repeat MissionInProgress;
-    Start MissionInProgress && !Proceed;
+    Start MissionInProgress && !(BatteryOK && NoFaults);
     Skip !MissionInProgress;
 
     log_warning
-      ("Battery issues, mission operations nominally paused...");
+      ("System health issues, mission operations nominally paused...");
     Wait 10;
   }
 
@@ -102,7 +109,7 @@ ReferenceMission2: Concurrence
 
     Image:
     {
-      Start Proceed && !ImagingLandingSite;
+      Start BatteryOK && NoFaults && !ImagingLandingSite;
       ImagingLandingSite = true;
       log_info ("** Imaging Landing Site **");
       LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
@@ -110,14 +117,14 @@ ReferenceMission2: Concurrence
     }
     Unstow:
     {
-      Start Proceed && !UnstowingArm;
+      Start BatteryOK && NoFaults && !UnstowingArm;
       UnstowingArm = true;
       log_info ("** Unstowing Arm **");
       LibraryCall Unstow;
     }
     Search:
     {
-      Start Proceed && !SearchingWorkspace;
+      Start BatteryOK && NoFaults && !SearchingWorkspace;
       SearchingWorkspace = true;
       log_info ("** Identifying Sample Target **");
       LibraryCall IdentifySampleTarget (X = trench_x,
@@ -128,7 +135,7 @@ ReferenceMission2: Concurrence
     if (Lookup(GroundFound)) {
       Dig:
       {
-        Start Proceed && !DiggingTrench;
+        Start BatteryOK && NoFaults && !DiggingTrench;
         DiggingTrench = true;
         log_info ("** Digging Trench **");
         LibraryCall DigTrench (X = trench_x,
@@ -141,7 +148,7 @@ ReferenceMission2: Concurrence
       }
       Clear:
       {
-        Start Proceed && !RemovingTailings;
+        Start BatteryOK && NoFaults && !RemovingTailings;
         RemovingTailings = true;
         log_info ("** Removing Tailings **");
         LibraryCall RemoveTailings (X = trench_x,
@@ -151,7 +158,7 @@ ReferenceMission2: Concurrence
       }
       Collect:
       {
-        Start Proceed && !CollectingSample;
+        Start BatteryOK && NoFaults && !CollectingSample;
         CollectingSample = true;
         log_info ("** Collecting Sample **");
         LibraryCall CollectSample (X = trench_x,
@@ -163,14 +170,14 @@ ReferenceMission2: Concurrence
       }
       Stow:
       {
-        Start Proceed && !StowingArm;
+        Start BatteryOK && NoFaults && !StowingArm;
         StowingArm = true;
         log_info ("** Stowing Arm **");
         LibraryCall Stow;
       }
       Analyze:
       {
-        Start Proceed && !AnalyzingSample;
+        Start BatteryOK && NoFaults && !AnalyzingSample;
         AnalyzingSample = true;
         log_info ("** Analyzing Sample **");
         LibraryCall StartSampleAnalysis;
@@ -180,7 +187,7 @@ ReferenceMission2: Concurrence
      log_error ("Failed to find ground, aborting.");
      FailStow:
      {
-       Start Proceed && !StowingArm;
+       Start BatteryOK && NoFaults && !StowingArm;
        StowingArm = true;
        log_info ("** Stowing Arm **");
        LibraryCall Stow;
