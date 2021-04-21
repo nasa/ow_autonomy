@@ -241,9 +241,6 @@ template <typename T1, typename T2>
 void OwInterface::faultCallback (T1 msg_val, T2& fmap,
                                  const string& component)
 {
-  // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-
   for (auto const& entry : fmap) {
     string key = entry.first;
     T1 value = entry.second.first;
