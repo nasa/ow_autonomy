@@ -104,18 +104,18 @@ class OwInterface
     void runAction (const std::string& opname,
                     std::unique_ptr<ActionClient>&,
                     const Goal&, int id);
-  void unstow1 (int id);
-  void stow1 (int id);
-  void grind1 (double x, double y, double depth, double length,
+  void unstowAction (int id);
+  void stowAction (int id);
+  void grindAction (double x, double y, double depth, double length,
                bool parallel, double ground_pos, int id);
-  void guardedMove1 (double x, double y, double z,
+  void guardedMoveAction (double x, double y, double z,
                      double direction_x, double direction_y, double direction_z,
                      double search_distance, int id);
-  void digCircular1 (double x, double y, double depth,
+  void digCircularAction (double x, double y, double depth,
                      double ground_pos, bool parallel, int id);
-  void digLinear1 (double x, double y, double depth, double length,
+  void digLinearAction (double x, double y, double depth, double length,
                    double ground_pos, int id);
-  void deliver1 (double x, double y, double z, int id);
+  void deliverAction (double x, double y, double z, int id);
 
   bool operationRunning (const std::string& name) const;
 
@@ -133,11 +133,11 @@ class OwInterface
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
   template <typename T>
-  bool checkFaultMessages(std::string fault_component,
-                          T msg_val,
-                          std::string key,
-                          T value,
-                          bool b );
+    bool checkFaultMessages (const std::string& fault_component,
+                             T msg_val,
+                             const std::string& key,
+                             T value,
+                             bool b );
 
   //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
   // structure of all maps for faults is the following:

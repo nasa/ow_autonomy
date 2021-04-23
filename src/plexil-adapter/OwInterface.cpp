@@ -274,8 +274,9 @@ void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg
 }
 
 template <typename T>
-bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key,
-                                     T value, bool b )
+bool OwInterface::checkFaultMessages (const string& fault_component,
+                                      T msg_val, const string& key,
+                                      T value, bool b )
 {
   if (!b && ((msg_val & value) == value)){
     ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
@@ -654,7 +655,7 @@ void OwInterface::takePicture (int id)
 void OwInterface::deliver (double x, double y, double z, int id)
 {
   if (! mark_operation_running (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliver1, this, x, y, z, id);
+  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
   action_thread.detach();
 }
 
@@ -688,7 +689,7 @@ void OwInterface::runAction (const string& opname,
   fault_thread.join();
 }
 
-void OwInterface::deliver1 (double x, double y, double z, int id)
+void OwInterface::deliverAction (double x, double y, double z, int id)
 {
   ow_lander::DeliverGoal goal;
   goal.delivery.x = x;
@@ -706,15 +707,15 @@ void OwInterface::digLinear (double x, double y,
                              int id)
 {
   if (! mark_operation_running (Op_DigLinear, id)) return;
-  thread action_thread (&OwInterface::digLinear1, this, x, y, depth,
+  thread action_thread (&OwInterface::digLinearAction, this, x, y, depth,
                         length, ground_pos, id);
   action_thread.detach();
 }
 
 
-void OwInterface::digLinear1 (double x, double y,
-                              double depth, double length, double ground_pos,
-                              int id)
+void OwInterface::digLinearAction (double x, double y,
+                                   double depth, double length,
+                                   double ground_pos, int id)
 {
   ow_lander::DigLinearGoal goal;
   goal.x_start = x;
@@ -735,13 +736,13 @@ void OwInterface::digCircular (double x, double y, double depth,
                                double ground_pos, bool parallel, int id)
 {
   if (! mark_operation_running (Op_DigCircular, id)) return;
-  thread action_thread (&OwInterface::digCircular1, this, x, y, depth,
+  thread action_thread (&OwInterface::digCircularAction, this, x, y, depth,
                         ground_pos, parallel, id);
   action_thread.detach();
 }
 
-void OwInterface::digCircular1 (double x, double y, double depth,
-                                double ground_pos, bool parallel, int id)
+void OwInterface::digCircularAction (double x, double y, double depth,
+                                     double ground_pos, bool parallel, int id)
 {
   ow_lander::DigCircularGoal goal;
   goal.x_start = x;
@@ -750,7 +751,8 @@ void OwInterface::digCircular1 (double x, double y, double depth,
   goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  runAction<DigCircular, actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
+  runAction<DigCircular,
+            actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
             ow_lander::DigCircularGoal,
             ow_lander::DigCircularResultConstPtr,
             ow_lander::DigCircularFeedbackConstPtr>
@@ -761,11 +763,11 @@ void OwInterface::digCircular1 (double x, double y, double depth,
 void OwInterface::unstow (int id)  // as action
 {
   if (! mark_operation_running (Op_Unstow, id)) return;
-  thread action_thread (&OwInterface::unstow1, this, id);
+  thread action_thread (&OwInterface::unstowAction, this, id);
   action_thread.detach();
 }
 
-void OwInterface::unstow1 (int id)
+void OwInterface::unstowAction (int id)
 {
   ow_lander::UnstowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
@@ -780,11 +782,11 @@ void OwInterface::unstow1 (int id)
 void OwInterface::stow (int id)  // as action
 {
   if (! mark_operation_running (Op_Stow, id)) return;
-  thread action_thread (&OwInterface::stow1, this, id);
+  thread action_thread (&OwInterface::stowAction, this, id);
   action_thread.detach();
 }
 
-void OwInterface::stow1 (int id)
+void OwInterface::stowAction (int id)
 {
   ow_lander::StowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
@@ -800,13 +802,13 @@ void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind, id)) return;
-  thread action_thread (&OwInterface::grind1, this, x, y, depth, length,
+  thread action_thread (&OwInterface::grindAction, this, x, y, depth, length,
                         parallel, ground_pos, id);
   action_thread.detach();
 }
 
-void OwInterface::grind1 (double x, double y, double depth, double length,
-                          bool parallel, double ground_pos, int id)
+void OwInterface::grindAction (double x, double y, double depth, double length,
+                               bool parallel, double ground_pos, int id)
 {
   ow_lander::GrindGoal goal;
   goal.x_start = x;
@@ -828,14 +830,14 @@ void OwInterface::guardedMove (double x, double y, double z,
                                double search_dist, int id)
 {
   if (! mark_operation_running (Op_GuardedMove, id)) return;
-  thread action_thread (&OwInterface::guardedMove1, this, x, y, z,
+  thread action_thread (&OwInterface::guardedMoveAction, this, x, y, z,
                         dir_x, dir_y, dir_z, search_dist, id);
   action_thread.detach();
 }
 
-void OwInterface::guardedMove1 (double x, double y, double z,
-                                double dir_x, double dir_y, double dir_z,
-                                double search_dist, int id)
+void OwInterface::guardedMoveAction (double x, double y, double z,
+                                     double dir_x, double dir_y, double dir_z,
+                                     double search_dist, int id)
 {
   ow_lander::GuardedMoveGoal goal;
   goal.start.x = x;
