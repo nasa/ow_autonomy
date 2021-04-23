@@ -247,10 +247,10 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
     bool exists = entry.second.second;
     bool faulty = msg_val & value == value;
     if (!exists && faulty) {
-      ROS_WARN ("%s ERROR: %s", component.c_str(), key.c_str());
+      ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
     }
     else if (exists && !faulty) {
-      ROS_WARN ("RESOLVED %s ERROR: %s", component.c_str(), key.c_str());
+      ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
     }
     if (exists != faulty) fmap[key].second = !fmap[key].second;
   }
@@ -600,7 +600,8 @@ void OwInterface::initialize()
                  &OwInterface::armFaultCallback, this)));
     m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/power_faults_status", qsize,
+       //       subscribe("/power_faults_status", qsize,
+       subscribe("/faults/jpl/power_faults_status", qsize,
                 &OwInterface::powerFaultCallback, this)));
     m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
