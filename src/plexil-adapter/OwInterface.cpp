@@ -15,7 +15,7 @@
 #include <ow_lander/Unstow.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
-#include <ow_lander/GuardedMoveResult.h>
+#include <ow_lander/GuardedMoveFinalResult.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -59,7 +59,6 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
 const string Op_GuardedMove       = "GuardedMove";
-const string Op_GuardedMoveAction = "GuardedMoveAction";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_DeliverSample     = "DeliverSample";
@@ -81,7 +80,6 @@ const string Op_TakePicture       = "TakePicture";
 static map<string, int> Running
 {
   { Op_GuardedMove, IDLE_ID },
-  { Op_GuardedMoveAction, IDLE_ID },
   { Op_DigCircular, IDLE_ID },
   { Op_DigLinear, IDLE_ID },
   { Op_DeliverSample, IDLE_ID },
@@ -451,14 +449,14 @@ double OwInterface::groundPosition () const
 }
 
 static void guarded_move_callback
-(const ow_lander::GuardedMoveResult::ConstPtr& msg)
+(const ow_lander::GuardedMoveFinalResult::ConstPtr& msg)
 {
   if (msg->success) {
     GroundFound = true;
     string frame = msg->frame;
     string valid = "base_link";
     if (frame != valid) {  // the only supported value
-      ROS_ERROR("GuardedMoveResult frame was not %s", valid.c_str());
+      ROS_ERROR("GuardedMoveFinalResult frame was not %s", valid.c_str());
       return;
     }
     GroundPosition = msg->position.z;
@@ -468,34 +466,6 @@ static void guarded_move_callback
   else {
     ROS_WARN("GuardedMove did not find ground!");
   }
-}
-
-
-//////////////////// GuardedMove Action support ////////////////////////////////
-
-// At present, this is a prototypical ROS action using a dummy server in this
-// directory, GuardedMoveServer.  It is NOT connected to the testbed.
-
-static void guarded_move_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const ow_autonomy::GuardedMoveResultConstPtr& result)
-{
-  ROS_INFO ("GuardedMove done callback: finished in state [%s]",
-            state.toString().c_str());
-  ROS_INFO("GuardedMove done callback: result (%f, %f, %f)",
-           result->final.x, result->final.y, result->final.z);
-}
-
-static void guarded_move_active_cb ()
-{
-  ROS_INFO ("GuardedMove active callback - goal active!");
-}
-
-static void guarded_move_feedback_cb
-(const ow_autonomy::GuardedMoveFeedbackConstPtr& feedback)
-{
-  ROS_INFO ("GuardedMove feedback callback: (%f, %f, %f)",
-            feedback->current.x, feedback->current.y, feedback->current.z);
 }
 
 
@@ -620,65 +590,12 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this)));
-
-    ROS_INFO ("Waiting for action servers...");
-    m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
-    m_guardedMoveClient->waitForServer();
-    ROS_INFO ("Action servers available.");
   }
 }
 
 void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 {
   CommandStatusCallback = callback;
-}
-
-void OwInterface::guardedMoveActionDemo (const geometry_msgs::Point& start,
-                                         const geometry_msgs::Point& normal,
-                                         double search_distance,
-                                         int id)
-{
-  if (! mark_operation_running (Op_GuardedMoveAction, id)) return;
-
-  thread action_thread (&OwInterface::guardedMoveActionDemo1, this, start,
-                        normal, search_distance, id);
-  action_thread.detach();
-}
-
-void OwInterface::guardedMoveActionDemo1 (const geometry_msgs::Point& start,
-                                          const geometry_msgs::Point& normal,
-                                          double search_distance,
-                                          int id)
-{
-  ow_autonomy::GuardedMoveGoal goal;
-  goal.start = start;
-  goal.normal = normal;
-  goal.search_distance = search_distance;
-
-  thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
-  m_guardedMoveClient->sendGoal (goal,
-                                guarded_move_done_cb,
-                                guarded_move_active_cb,
-                                guarded_move_feedback_cb);
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_guardedMoveClient->waitForResult (ros::Duration (30.0));
-
-  if (finished_before_timeout) {
-    actionlib::SimpleClientGoalState state = m_guardedMoveClient->getState();
-    ROS_INFO("GuardedMove action finished: %s", state.toString().c_str());
-    ow_autonomy::GuardedMoveResultConstPtr result =
-      m_guardedMoveClient->getResult();
-    ROS_INFO("GuardedMove action result: (%f, %f, %f)",
-             result->final.x, result->final.y, result->final.z);
-  }
-  else {
-    ROS_INFO("GuardedMove action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_GuardedMoveAction, id);
-  fault_thread.join();
 }
 
 void OwInterface::guardedMove (double x, double y, double z,
