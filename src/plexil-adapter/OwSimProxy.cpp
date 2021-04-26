@@ -87,6 +87,9 @@ bool OwSimProxy::lookup (const std::string& state_name,
   else if (state_name == "RemainingUsefulLife") {
     value_out = OwInterface::instance()->getRemainingUsefulLife();
   }
+  else if (state_name == "BatteryTemperature") {
+    value_out = OwInterface::instance()->getBatteryTemperature();
+  }
   else if (state_name == "GroundFound") {
     value_out = OwInterface::instance()->groundFound();
   }

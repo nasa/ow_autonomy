@@ -15,10 +15,11 @@
 #include <ow_lander/Unstow.h>
 #include <ow_lander/DeliverSample.h>
 #include <ow_lander/GuardedMove.h>
-#include <ow_lander/GuardedMoveResult.h>
+#include <ow_lander/GuardedMoveFinalResult.h>
 
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
 
 // C++
@@ -120,88 +121,17 @@ static void mark_operation_finished (const string& name, int id)
 
 //////////////////// Fault Support ////////////////////////
 
-// NOTE: the design goal is to map each lander operation to the set of faults
-// that should be monitored while it is running.  This direct inspection of ROS
-// parameters is just a simple first cut (stub really) for actual fault
-// detection which would look at telemetry.
-
-const map<string, string> AntennaFaults
-{
-  // Param name -> human-readable
-  { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
-  { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "/faults/ant_pan_torque_sensor_failure", "Antenna Pan Torque Sensor" },
-  { "/faults/ant_tilt_torque_sensor_failure", "Antenna Tilt Torque Sensor" }
-};
-
-const map<string, string> ArmFaults
-{
-  // Param name -> human-readable
-  { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
-  { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
-  { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
-  { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
-  { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
-  { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
-  { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
-};
-
-const map<string, string> PowerFaults
-{
-  // Param name -> human-readable
-  { "/faults/low_state_of_charge_power_failure", "State Of Charge" },
-  { "/faults/instantaneous_capacity_loss_power_failure", "State of Charge" },
-  { "/faults/thermal_power_failure", "Thermal Power" }
-};
-
-// Combines two maps together and returns the union. Only handles maps where there is no overlap in keys.
-static const map<string, string> combine_maps(const map<string, string>& map1, 
-                                            const map<string, string>& map2)
-{
-  map<string,string> unionMap = map1;
-  unionMap.insert(map2.begin(), map2.end());
-  return unionMap;
-}
-
-const map<string, map<string, string> > Faults
-{
-  // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DigCircular, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DigLinear, combine_maps(ArmFaults, PowerFaults) },
-  { Op_DeliverSample, combine_maps(ArmFaults, PowerFaults) },
-  { Op_PanAntenna, combine_maps(AntennaFaults, PowerFaults) },
-  { Op_TiltAntenna, combine_maps(AntennaFaults, PowerFaults) },
-  { Op_Grind, combine_maps(ArmFaults, PowerFaults) },
-  { Op_Stow, combine_maps(ArmFaults, PowerFaults) },
-  { Op_Unstow, combine_maps(ArmFaults, PowerFaults) },
-  { Op_TakePicture, combine_maps(AntennaFaults, PowerFaults) } // for now
-};
-
-static bool faulty (const string& fault)
-{
-  bool val;
-  ros::param::get (fault, val);
-  return val;
-}
-
 static void monitor_for_faults (const string& opname)
 {
-  using namespace std::chrono_literals;
-  while (Running.at (opname) != IDLE_ID) {
-    ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
-    for (auto fault : Faults.at (opname)) {
-      if (faulty (fault.first)) {
-        ROS_WARN("Fault in %s: %s failure.",
-                 opname.c_str(), fault.second.c_str());
-      }
-    }
-    std::this_thread::sleep_for (1s);
-  }
+  // This (threaded) function was formerly used for operation-specific fault
+  // monitoring, using a mechanism that has been removed, which was direct
+  // inspection of the fault injection ROS parameters.  TBD whether it will be
+  // used again, but leaving it here for now.
+
+  //  using namespace std::chrono_literals;
+  //  while (Running.at (opname) != IDLE_ID) {
+  //    std::this_thread::sleep_for (1s);
+  //  }
 }
 
 
@@ -320,7 +250,7 @@ void OwInterface::systemFaultMessageCallback
     if (checkFaultMessages("SYSTEM", msg_val, key, value, b)) {
       systemErrors[key].second = !systemErrors[key].second;
     }
-    
+
   }
 }
 
@@ -329,7 +259,7 @@ void OwInterface::armFaultCallback(const  ow_faults::ArmFaults::ConstPtr& msg)
   // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
   uint32_t msg_val = msg->value;
-  
+
   for (auto const& entry : armErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
@@ -346,7 +276,7 @@ void OwInterface::powerFaultCallback(const  ow_faults::PowerFaults::ConstPtr& ms
   // Publish all POWER FAULT information for visibility to PLEXIL and handle any
   // system-level fault messages.
   uint32_t msg_val = msg->value;
-  
+
   for (auto const& entry : powerErrors){
     string key = entry.first;
     uint32_t value = entry.second.first;
@@ -475,8 +405,9 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = 4.15;  // faked
-static double RemainingUsefulLife = 28460; // faked
+static double Voltage             = NAN;
+static double RemainingUsefulLife = NAN;
+static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
@@ -484,14 +415,25 @@ static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
   publish ("Voltage", Voltage);
 }
 
-static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
+static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  BatteryTemperature = msg->data;
+  publish ("BatteryTemperature", BatteryTemperature);
+}
+
 
 //////////////////// GuardedMove Service support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition within the GuardedMove
+// operation: it is not meaningful otherwise, and can be possibly misused given
+// the current plan interface.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound
@@ -507,14 +449,14 @@ double OwInterface::groundPosition () const
 }
 
 static void guarded_move_callback
-(const ow_lander::GuardedMoveResult::ConstPtr& msg)
+(const ow_lander::GuardedMoveFinalResult::ConstPtr& msg)
 {
   if (msg->success) {
     GroundFound = true;
     string frame = msg->frame;
     string valid = "base_link";
     if (frame != valid) {  // the only supported value
-      ROS_ERROR("GuardedMoveResult frame was not %s", valid.c_str());
+      ROS_ERROR("GuardedMoveFinalResult frame was not %s", valid.c_str());
       return;
     }
     GroundPosition = msg->position.z;
@@ -549,6 +491,7 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
+    m_batteryTempSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
     m_systemFaultMessagesSubscriber (nullptr),
     m_armFaultMessagesSubscriber (nullptr),
@@ -572,11 +515,8 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
+  if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
   if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
-  // if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
-  // if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
-  // if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
-  // if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -623,6 +563,10 @@ void OwInterface::initialize()
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
+    m_batteryTempSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/battery_temperature", qsize,
+                 temperature_callback));
     m_rulSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
@@ -632,11 +576,11 @@ void OwInterface::initialize()
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/system_faults_status", qsize,  
+       subscribe("/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this)));
     m_armFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/arm_faults_status", qsize,  
+       subscribe("/arm_faults_status", qsize,
                 &OwInterface::armFaultCallback, this)));
     m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
@@ -644,7 +588,7 @@ void OwInterface::initialize()
                 &OwInterface::powerFaultCallback, this)));
     m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/pt_faults_status", qsize, 
+       subscribe("/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this)));
   }
 }
@@ -883,6 +827,11 @@ double OwInterface::getVoltage () const
 double OwInterface::getRemainingUsefulLife () const
 {
   return RemainingUsefulLife;
+}
+
+double OwInterface::getBatteryTemperature () const
+{
+  return BatteryTemperature;
 }
 
 bool OwInterface::operationRunning (const string& name) const

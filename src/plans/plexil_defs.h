@@ -10,7 +10,7 @@
 // NOTE: Some of these are guessed/bogus values, and some intervals are very
 // short for now to reduce testing time.
 
-#define FILM_INTERVAL 3
+#define FILM_INTERVAL 6
 #define SENSE_DIG_INTERVAL 6
 #define DIG_TRENCH_TIMEOUT 10
 
@@ -37,7 +37,8 @@
 #define TILT_MIN  -45
 #define TILT_MAX  45
 
-// Maximum number of crashes before assuming something has gone very wrong and attempting to offload all data
+// Maximum number of crashes before assuming something has gone very wrong and
+// attempting to offload all data
 #define MAX_CRASHES 10
 
 #endif

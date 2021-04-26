@@ -62,6 +62,7 @@ class OwInterface
   double getTiltVelocity () const;
   double getVoltage () const;
   double getRemainingUsefulLife () const;
+  double getBatteryTemperature () const;
   bool   groundFound () const;
   double groundPosition () const;
 
@@ -90,19 +91,19 @@ class OwInterface
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
-  
+
   template <typename T>
-  bool checkFaultMessages(std::string fault_component, 
-                                        T msg_val, 
-                                        std::string key, 
-                                        T value, 
+  bool checkFaultMessages(std::string fault_component,
+                                        T msg_val,
+                                        std::string key,
+                                        T value,
                                         bool b );
 
 //////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
 // structure of all maps for faults is the following:
 // key = (string) fault name
 // value = (pair) ( (int) numberical fault value, booleon of if fault exists)
-  std::map<std::string,std::pair<uint64_t, bool>> systemErrors = 
+  std::map<std::string,std::pair<uint64_t, bool>> systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
@@ -144,6 +145,7 @@ class OwInterface
   ros::Subscriber* m_cameraSubscriber;
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
+  ros::Subscriber* m_batteryTempSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
 
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
