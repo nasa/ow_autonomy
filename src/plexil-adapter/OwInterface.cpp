@@ -596,7 +596,7 @@ void OwInterface::initialize()
                 &OwInterface::systemFaultMessageCallback, this)));
     m_armFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/arm_faults_status", qsize,
+       subscribe("/faults/jpl/arm_faults_status", qsize,
                  &OwInterface::armFaultCallback, this)));
     m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
