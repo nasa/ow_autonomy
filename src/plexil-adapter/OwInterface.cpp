@@ -452,7 +452,7 @@ static void active_cb ()
 }
 
 template<int OpIndex, typename T>
-static void action_done_cb
+static void default_action_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result_ignored)
 {
