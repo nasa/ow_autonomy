@@ -48,7 +48,8 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.
 // In some cases, these must match those used in PLEXIL and/or ow_lander
-const string Op_GuardedMove       = "Guarded_move";
+//const string Op_GuardedMove       = "Guarded_move";
+const string Op_GuardedMove       = "GuardedMove";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
@@ -482,7 +483,6 @@ OwInterface::OwInterface ()
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
     m_batteryTempSubscriber (nullptr),
-    m_guardedMoveSubscriber (nullptr),
     m_systemFaultMessagesSubscriber (nullptr),
     m_armFaultMessagesSubscriber (nullptr),
     m_powerFaultMessagesSubscriber (nullptr),
@@ -506,7 +506,6 @@ OwInterface::~OwInterface ()
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
   if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
-  if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -667,6 +666,7 @@ void OwInterface::runAction (const string& opname,
 {
   thread fault_thread (monitor_for_faults, opname);
   if (ac) {
+    ROS_INFO ("Sending goal to action %s", opname.c_str());
     ac->sendGoal (goal,
                   action_done_cb<OpIndex, ResultPtr>,
                   active_cb<OpIndex>,
