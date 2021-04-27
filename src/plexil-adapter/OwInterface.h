@@ -196,7 +196,6 @@ class OwInterface
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_batteryTempSubscriber;
-  ros::Subscriber* m_guardedMoveSubscriber;
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
