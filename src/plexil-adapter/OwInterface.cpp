@@ -46,10 +46,10 @@ static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 5.0; // seconds, made up
 
-// Lander operation names.
-// In some cases, these must match those used in PLEXIL and/or ow_lander
-//const string Op_GuardedMove       = "Guarded_move";
-const string Op_GuardedMove       = "GuardedMove";
+// Lander operation names.  In general these match those used in PLEXIL and
+// ow_lander.
+
+const string Op_GuardedMove       = "Guarded_move"; // known inconsistency
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
