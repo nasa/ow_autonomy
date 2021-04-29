@@ -46,10 +46,10 @@ static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 5.0; // seconds, made up
 
-// Lander operation names.
-// In some cases, these must match those used in PLEXIL and/or ow_lander
-//const string Op_GuardedMove       = "Guarded_move";
-const string Op_GuardedMove       = "GuardedMove";
+// Lander operation names.  In general these match those used in PLEXIL and
+// ow_lander.
+
+const string Op_GuardedMove       = "Guarded_move"; // known inconsistency
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
@@ -422,9 +422,10 @@ double OwInterface::groundPosition () const
   return GroundPosition;
 }
 
+template<int OpIndex, typename T>
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
- const ow_lander::GuardedMoveResultConstPtr& result)
+ const T& result)
 {
   ROS_INFO ("GuardedMove finished in state %s", state.toString().c_str());
   GroundFound = result->success;
@@ -452,7 +453,7 @@ static void active_cb ()
 }
 
 template<int OpIndex, typename T>
-static void action_done_cb
+static void default_action_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result_ignored)
 {
@@ -662,13 +663,14 @@ template <int OpIndex, class ActionClient, class Goal,
           class ResultPtr, class FeedbackPtr>
 void OwInterface::runAction (const string& opname,
                              std::unique_ptr<ActionClient>& ac,
-                             const Goal& goal, int id)
+                             const Goal& goal, int id,
+                             t_action_done_cb<OpIndex, ResultPtr> done_cb)
 {
   thread fault_thread (monitor_for_faults, opname);
   if (ac) {
     ROS_INFO ("Sending goal to action %s", opname.c_str());
     ac->sendGoal (goal,
-                  action_done_cb<OpIndex, ResultPtr>,
+                  done_cb,
                   active_cb<OpIndex>,
                   action_feedback_cb<FeedbackPtr>);
   }
@@ -848,33 +850,12 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.normal.z = dir_z;
   goal.search_distance = search_dist;
 
-  // NOTE: this function does not use runAction() typically called here, because
-  // of the specialized 'done' callback.
-
-  thread fault_thread (monitor_for_faults, Op_GuardedMove);
-
-  if (m_guardedMoveClient) {
-    m_guardedMoveClient->sendGoal
-      (goal,
-       guarded_move_done_cb,
-       active_cb<GuardedMove>,
-       action_feedback_cb<ow_lander::GuardedMoveFeedbackConstPtr>);
-  }
-  else {
-    ROS_ERROR ("m_guardedMoveClient was null!");
-    return;
-  }
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_guardedMoveClient->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("GuardedMove action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_GuardedMove, id);
-  fault_thread.join();
+  runAction<GuardedMove, actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>,
+            ow_lander::GuardedMoveGoal,
+            ow_lander::GuardedMoveResultConstPtr,
+            ow_lander::GuardedMoveFeedbackConstPtr>
+    (Op_GuardedMove, m_guardedMoveClient, goal, id,
+    guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
 double OwInterface::getTilt () const

@@ -47,6 +47,15 @@ using DigLinearActionClient =
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
 
+template<int OpIndex, typename T>
+  using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
+                                    const T& result_ignored);
+
+template<int OpIndex, typename T>
+void default_action_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result_ignored);
+
 class OwInterface
 {
  public:
@@ -100,10 +109,12 @@ class OwInterface
 
  private:
   template <int OpIndex, class ActionClient, class Goal,
-    class ResultPtr, class FeedbackPtr>
+            class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,
                     std::unique_ptr<ActionClient>&,
-                    const Goal&, int id);
+                    const Goal&, int id,
+                    t_action_done_cb<OpIndex, ResultPtr> done_cb =
+                    default_action_done_cb<OpIndex, ResultPtr>);
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
