@@ -26,7 +26,7 @@
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
 
-// Maps from fault name to (numerical fault value, does fault exist?)
+// Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
 using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 
@@ -119,7 +119,7 @@ class OwInterface
     void faultCallback (T1 msg_val, T2&, const std::string& name);
 
   template <typename T>
-    bool faultExists (const T& fault_map) const;
+    bool faultInProgress (const T& fault_map) const;
 
   // System level faults:
 
