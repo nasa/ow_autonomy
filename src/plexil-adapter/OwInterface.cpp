@@ -19,6 +19,7 @@
 
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
 
 // C++
@@ -236,88 +237,45 @@ static void handle_joint_fault (Joint joint, int joint_index,
   handle_overtorque (joint, msg->effort[joint_index]);
 }
 
+template <typename T1, typename T2>
+void OwInterface::faultCallback (T1 msg_val, T2& fmap,
+                                 const string& component)
+{
+  for (auto const& entry : fmap) {
+    string key = entry.first;
+    T1 value = entry.second.first;
+    bool fault_active = entry.second.second;
+    bool faulty = (msg_val & value) == value;
+    if (!fault_active && faulty) {
+      ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
+      fmap[key].second = true;
+    }
+    else if (fault_active && !faulty) {
+      ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
+      fmap[key].second = false;
+    }
+  }
+}
+
 void OwInterface::systemFaultMessageCallback
 (const  ow_faults::SystemFaults::ConstPtr& msg)
 {
-  // Publish all joint information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint64_t msg_val = msg->value;
-
-  for (auto const& entry : systemErrors){
-    string key = entry.first;
-    uint64_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("SYSTEM", msg_val, key, value, b)) {
-      systemErrors[key].second = !systemErrors[key].second;
-    }
-
-  }
+  faultCallback (msg->value, m_systemErrors, "SYSTEM");
 }
 
-void OwInterface::armFaultCallback(const  ow_faults::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
 {
-  // Publish all ARM COMPONENT FAULT information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint32_t msg_val = msg->value;
-
-  for (auto const& entry : armErrors){
-    string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("ARM", msg_val, key, value, b)) {
-      armErrors[key].second = !armErrors[key].second;
-    }
-  }
+  faultCallback (msg->value, m_armErrors, "ARM");
 }
 
-void OwInterface::powerFaultCallback(const  ow_faults::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
 {
-  // Publish all POWER FAULT information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint32_t msg_val = msg->value;
-
-  for (auto const& entry : powerErrors){
-    string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("POWER", msg_val, key, value, b)) {
-      powerErrors[key].second = !powerErrors[key].second;
-    }
-  }
+  faultCallback (msg->value, m_powerErrors, "POWER");
 }
 
-void OwInterface::antennaFaultCallback(const  ow_faults::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
 {
-  // Publish all PANT TILT ANTENNA information for visibility to PLEXIL and handle any
-  // system-level fault messages.
-  uint32_t msg_val = msg->value;
-
-  for (auto const& entry : ptErrors){
-    string key = entry.first;
-    uint32_t value = entry.second.first;
-    bool b = entry.second.second;
-
-    if (checkFaultMessages("ANTENNA", msg_val, key, value, b)) {
-      ptErrors[key].second = !ptErrors[key].second;
-    }
-  }
-}
-
-template <typename T>
-bool OwInterface::checkFaultMessages(string fault_component, T msg_val, string key, T value, bool b )
-{
-  if (!b && ((msg_val & value) == value)){
-    ROS_ERROR("%s ERROR: %s", fault_component.c_str(),  key.c_str() );
-    return true;
-  }
-  else if (b && ((msg_val & value) != value)){
-    ROS_INFO("RESOLVED %s ERROR: %s", fault_component.c_str(), key.c_str() );
-    return true;
-  }
-  return false;
+  faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
 }
 
 void OwInterface::jointStatesCallback
@@ -406,23 +364,35 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = 4.15;  // faked
-static double RemainingUsefulLife = 28460; // faked
+static double StateOfCharge       = NAN;
+static double RemainingUsefulLife = NAN;
+static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
-  Voltage = msg->data;
-  publish ("Voltage", Voltage);
+  StateOfCharge = msg->data;
+  publish ("StateOfCharge", StateOfCharge);
 }
 
-static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
+static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  BatteryTemperature = msg->data;
+  publish ("BatteryTemperature", BatteryTemperature);
+}
+
 
 //////////////////// GuardedMove Service support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition within the GuardedMove
+// operation: it is not meaningful otherwise, and can be possibly misused given
+// the current plan interface.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound
@@ -436,6 +406,36 @@ double OwInterface::groundPosition () const
 {
   return GroundPosition;
 }
+
+template <typename T>
+bool OwInterface::faultActive (const T& fmap) const
+{
+  for (auto const& entry : fmap) {
+    if (entry.second.second) return true;
+  }
+  return false;
+}
+
+bool OwInterface::systemFault () const
+{
+  return faultActive (m_systemErrors);
+}
+
+bool OwInterface::antennaFault () const
+{
+  return faultActive (m_panTiltErrors);
+}
+
+bool OwInterface::armFault () const
+{
+  return faultActive (m_armErrors);
+}
+
+bool OwInterface::powerFault () const
+{
+  return faultActive (m_powerErrors);
+}
+
 
 static void guarded_move_callback
 (const ow_lander::GuardedMoveResult::ConstPtr& msg)
@@ -508,6 +508,7 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
+    m_batteryTempSubscriber (nullptr),
     m_guardedMoveSubscriber (nullptr),
     m_systemFaultMessagesSubscriber (nullptr),
     m_armFaultMessagesSubscriber (nullptr),
@@ -531,11 +532,8 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
+  if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
   if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
-  // if (m_systemFaultMessagesSubscriber) delete m_systemFaultMessagesSubscriber;
-  // if (m_armFaultMessagesSubscriber) delete m_armFaultMessagesSubscriber;
-  // if (m_powerFaultMessagesSubscriber) delete m_powerFaultMessagesSubscriber;
-  // if (m_ptFaultMessagesSubscriber) delete m_ptFaultMessagesSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -582,6 +580,10 @@ void OwInterface::initialize()
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
+    m_batteryTempSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/battery_temperature", qsize,
+                 temperature_callback));
     m_rulSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
@@ -887,14 +889,19 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetryMap[Joint::antenna_tilt].velocity;
 }
 
-double OwInterface::getVoltage () const
+double OwInterface::getStateOfCharge () const
 {
-  return Voltage;
+  return StateOfCharge;
 }
 
 double OwInterface::getRemainingUsefulLife () const
 {
   return RemainingUsefulLife;
+}
+
+double OwInterface::getBatteryTemperature () const
+{
+  return BatteryTemperature;
 }
 
 bool OwInterface::operationRunning (const string& name) const

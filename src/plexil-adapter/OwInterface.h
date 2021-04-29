@@ -17,7 +17,6 @@
 #include <sensor_msgs/Image.h>
 #include <geometry_msgs/Point.h>
 #include <string>
-// #include <utility>
 
 #include <ow_faults/SystemFaults.h>
 #include <ow_faults/ArmFaults.h>
@@ -26,6 +25,10 @@
 
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+
+// Maps from fault name to the pair (fault value, is fault in progress?)
+using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
+using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 
 class OwInterface
 {
@@ -65,15 +68,20 @@ class OwInterface
                               double search_distance,
                               int id);
 
-  // State interface
+  // State/lookup interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getVoltage () const;
+  double getStateOfCharge () const;
   double getRemainingUsefulLife () const;
+  double getBatteryTemperature () const;
   bool   groundFound () const;
   double groundPosition () const;
+  bool   systemFault () const;
+  bool   antennaFault () const;
+  bool   armFault () const;
+  bool   powerFault () const;
 
   // Is the given operation (as named in .cpp file) running?
   bool running (const std::string& name) const;
@@ -86,7 +94,6 @@ class OwInterface
 
 
  private:
-                                           
   // Temporary, support for public version above
   void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
                                const geometry_msgs::Point& normal,
@@ -107,26 +114,23 @@ class OwInterface
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
-  
-  template <typename T>
-  bool checkFaultMessages(std::string fault_component, 
-                                        T msg_val, 
-                                        std::string key, 
-                                        T value, 
-                                        bool b );
 
-//////////////////// FAULTS FOR SYSTEM LEVEL ////////////////////////
-// structure of all maps for faults is the following:
-// key = (string) fault name
-// value = (pair) ( (int) numberical fault value, booleon of if fault exists)
-  std::map<std::string,std::pair<uint64_t, bool>> systemErrors = 
+  template <typename T1, typename T2>
+    void faultCallback (T1 msg_val, T2&, const std::string& name);
+
+  template <typename T>
+    bool faultActive (const T& fault_map) const;
+
+  // System level faults:
+
+  FaultMap64 m_systemErrors =
   {
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
     {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> armErrors = {
+  FaultMap32 m_armErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
     {"COLLISION_ERROR", std::make_pair(3, false)},
@@ -137,11 +141,11 @@ class OwInterface
     {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> powerErrors = {
+  FaultMap32 m_powerErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)}
   };
 
-  std::map<std::string,std::pair<uint32_t, bool>> ptErrors = {
+  FaultMap32 m_panTiltErrors = {
     {"HARDWARE_ERROR", std::make_pair(1, false)},
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
@@ -161,6 +165,7 @@ class OwInterface
   ros::Subscriber* m_cameraSubscriber;
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
+  ros::Subscriber* m_batteryTempSubscriber;
   ros::Subscriber* m_guardedMoveSubscriber;
 
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
