@@ -1,0 +1,32 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Check for a variety of faults at regular intervals, and set a general health
+// variable accordingly.
+
+
+// Note that the fault queries (lookups) are for categories of faults, but that
+// the exact faults (outlined in ../plexil-adapter/OwInterface.h) are not yet
+// detectable in PLEXIL.
+
+#include "plan-interface.h"
+
+MonitorFaults:
+{
+  In Boolean continue;
+  InOut Boolean all_ok;
+
+  Exit !continue;
+
+  Iterate:
+  {
+    Repeat true;
+    all_ok = !(Lookup(SystemFault) ||
+               Lookup(AntennaFault) ||
+               Lookup(ArmFault) ||
+               Lookup(PowerFault));
+
+    Wait 10; // seconds, arbitrary choice
+  }
+}
