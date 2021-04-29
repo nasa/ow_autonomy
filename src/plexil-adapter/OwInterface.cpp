@@ -244,13 +244,13 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
   for (auto const& entry : fmap) {
     string key = entry.first;
     T1 value = entry.second.first;
-    bool fault_in_progress = entry.second.second;
+    bool fault_active = entry.second.second;
     bool faulty = (msg_val & value) == value;
-    if (!fault_in_progress && faulty) {
+    if (!fault_active && faulty) {
       ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = true;
     }
-    else if (fault_in_progress && !faulty) {
+    else if (fault_active && !faulty) {
       ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = false;
     }
@@ -408,7 +408,7 @@ double OwInterface::groundPosition () const
 }
 
 template <typename T>
-bool OwInterface::faultInProgress (const T& fmap) const
+bool OwInterface::faultActive (const T& fmap) const
 {
   for (auto const& entry : fmap) {
     if (entry.second.second) return true;
@@ -418,22 +418,22 @@ bool OwInterface::faultInProgress (const T& fmap) const
 
 bool OwInterface::systemFault () const
 {
-  return faultInProgress (m_systemErrors);
+  return faultActive (m_systemErrors);
 }
 
 bool OwInterface::antennaFault () const
 {
-  return faultInProgress (m_panTiltErrors);
+  return faultActive (m_panTiltErrors);
 }
 
 bool OwInterface::armFault () const
 {
-  return faultInProgress (m_armErrors);
+  return faultActive (m_armErrors);
 }
 
 bool OwInterface::powerFault () const
 {
-  return faultInProgress (m_powerErrors);
+  return faultActive (m_powerErrors);
 }
 
 

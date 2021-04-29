@@ -119,7 +119,7 @@ class OwInterface
     void faultCallback (T1 msg_val, T2&, const std::string& name);
 
   template <typename T>
-    bool faultInProgress (const T& fault_map) const;
+    bool faultActive (const T& fault_map) const;
 
   // System level faults:
 
