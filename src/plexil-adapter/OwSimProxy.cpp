@@ -81,8 +81,8 @@ bool OwSimProxy::lookup (const std::string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
-  else if (state_name == "Voltage") {
-    value_out = OwInterface::instance()->getVoltage();
+  else if (state_name == "StateOfCharge") {
+    value_out = OwInterface::instance()->getStateOfCharge();
   }
   else if (state_name == "RemainingUsefulLife") {
     value_out = OwInterface::instance()->getRemainingUsefulLife();
@@ -95,6 +95,19 @@ bool OwSimProxy::lookup (const std::string& state_name,
   }
   else if (state_name == "GroundPosition") {
     value_out = OwInterface::instance()->groundPosition();
+  }
+  // Faults
+  else if (state_name == "SystemFault") {
+    value_out = OwInterface::instance()->systemFault();
+  }
+  else if (state_name == "AntennaFault") {
+    value_out = OwInterface::instance()->antennaFault();
+  }
+  else if (state_name == "ArmFault") {
+    value_out = OwInterface::instance()->armFault();
+  }
+  else if (state_name == "PowerFault") {
+    value_out = OwInterface::instance()->powerFault();
   }
   else retval = false;
 
