@@ -49,7 +49,7 @@ const double PanTiltTimeout = 5.0; // seconds, made up
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-const string Op_GuardedMove       = "Guarded_move"; // known inconsistency
+const string Op_GuardedMove       = "GuardedMove";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
