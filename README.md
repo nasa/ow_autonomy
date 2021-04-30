@@ -1,7 +1,8 @@
 Notices:
 --------
-Copyright © 2020 United States Government as represented by the Administrator of
-the National Aeronautics and Space Administration.  All Rights Reserved.
+Copyright © 2020-2021 United States Government as represented by the
+Administrator of the National Aeronautics and Space Administration.  All Rights
+Reserved.
 
 Disclaimers
 -----------
@@ -113,18 +114,6 @@ Start the autonomy node
    `<ow_workspace>/devel/etc/plexil`
    
    See `plans/README.md` for a description of the PLEXIL plans.
-
-
-Fault Detection
----------------
-
-A rudimentary version does nothing more than check relevant fault parameters for
-each lander operation.  Run any plan you like, while setting fault parameters as
-desired (see `ow_simulatyor/ow_faults/README.md` for instructions).  You can
-also use `scripts/set-faults.py` which by default sets every fault; edit it as
-needed.
-
-Faults are simply reported, as ROS warnings.
 
 
 Clean
