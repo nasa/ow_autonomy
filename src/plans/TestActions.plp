@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test plan for ROS Actions
+// A simple test for each and every ROS Action based lander operation.
 
 #include "plan-interface.h"
 
@@ -13,14 +13,8 @@ TestActions:
 
   LibraryCall Unstow();
 
-  // Note: default args are (X=2, Y=0, Z=0.3, DirX=0, DirY=0, DirZ=1,
-  //                          SearchDistance=0.5)
-
 	LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
                            SearchDistance=0.7);
-
-  // Note: default args are (X = 1.65, Y = 0, Depth = 0.05, Length = 0.6,
-  //                         Parallel = true, GroundPos = GP)
 
   LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
                      Length = 0.5, Parallel = false,
@@ -36,7 +30,7 @@ TestActions:
   LibraryCall DigLinear (X = 1.75, Y = 0.1, Depth = 0.045, Length = 0.1,
                          GroundPos = GP);
 
-  // // Receptacle coordinates
+  // Receptacle coordinates
   LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
 
   LibraryCall Stow();
