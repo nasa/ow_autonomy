@@ -406,9 +406,10 @@ bool OwInterface::powerFault () const
   return faultActive (m_powerErrors);
 }
 
-
-static void guarded_move_callback
-(const ow_lander::GuardedMoveResult::ConstPtr& msg)
+template<int OpIndex, typename T>
+static void guarded_move_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
 {
   ROS_INFO ("GuardedMove finished in state %s", state.toString().c_str());
   GroundFound = result->success;
