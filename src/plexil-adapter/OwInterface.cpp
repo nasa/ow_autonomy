@@ -420,7 +420,6 @@ static void guarded_move_done_cb
 
 //////////////////// General Action support ///////////////////////////////
 
-const auto ActionTimeoutSecs   = 180.0; // TODO: make this action-specific
 const auto ActionServerTimeout = 10.0;  // seconds
 
 //////////////////// ROS Action callbacks - generic //////////////////////
@@ -664,14 +663,8 @@ void OwInterface::runAction (const string& opname,
     return;
   }
 
-  // Wait for the action to return
-  bool finished_before_timeout =
-    ac->waitForResult (ros::Duration (ActionTimeoutSecs));
-
-  if (! finished_before_timeout) {
-    ROS_WARN ("%s action did not finish before the time out.", opname.c_str());
-  }
-
+  // Wait indefinitely for the action to complete.
+  bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
   mark_operation_finished (opname, id);
   fault_thread.join();
 }
