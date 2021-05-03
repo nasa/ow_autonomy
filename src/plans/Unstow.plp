@@ -5,7 +5,7 @@
 // Unstow the arm, which is moving it to a specified "ready" position from
 // wherever its current location.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 Unstow:
 {

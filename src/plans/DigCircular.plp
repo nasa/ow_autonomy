@@ -4,7 +4,7 @@
 
 // Perform one pass of a circular digging action.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 DigCircular:
 {

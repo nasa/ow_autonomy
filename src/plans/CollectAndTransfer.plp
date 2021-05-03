@@ -18,6 +18,7 @@ LibraryAction GetInfoIfCrash(In String CheckpointName,
                              InOut Boolean Crashed,
                              InOut String Info,
                              InOut Real CrashTime);
+LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
 CollectAndTransfer:
 {

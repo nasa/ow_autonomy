@@ -10,8 +10,17 @@
 // executive per lander.
 
 #include <ros/ros.h>
+
+// ROS Actions
 #include <actionlib/client/simple_action_client.h>
-#include <ow_autonomy/GuardedMoveAction.h>
+#include <ow_lander/UnstowAction.h>
+#include <ow_lander/StowAction.h>
+#include <ow_lander/GrindAction.h>
+#include <ow_lander/GuardedMoveAction.h>
+#include <ow_lander/DigCircularAction.h>
+#include <ow_lander/DigLinearAction.h>
+#include <ow_lander/DeliverAction.h>
+
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
@@ -23,8 +32,29 @@
 #include <ow_faults/PowerFaults.h>
 #include <ow_faults/PTFaults.h>
 
+using UnstowActionClient =
+  actionlib::SimpleActionClient<ow_lander::UnstowAction>;
+using StowActionClient =
+  actionlib::SimpleActionClient<ow_lander::StowAction>;
+using GrindActionClient =
+  actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
-  actionlib::SimpleActionClient<ow_autonomy::GuardedMoveAction>;
+  actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
+using DigCircularActionClient =
+  actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
+using DigLinearActionClient =
+  actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
+using DeliverActionClient =
+  actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+
+template<int OpIndex, typename T>
+  using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
+                                    const T& result_ignored);
+
+template<int OpIndex, typename T>
+void default_action_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result_ignored);
 
 // Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
@@ -42,8 +72,6 @@ class OwInterface
 
   // Operational interface
 
-  // The defaults currently match those of the activity.  When all are used,
-  // this function matches guardedMoveDemo above.
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
@@ -58,17 +86,11 @@ class OwInterface
               bool parallel, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
-  void deliverSample (double x, double y, double z, int id);
+  void deliver (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
 
-  // Temporary, proof of concept for ROS Actions
-  void guardedMoveActionDemo (const geometry_msgs::Point& start,
-                              const geometry_msgs::Point& normal,
-                              double search_distance,
-                              int id);
-
-  // State/lookup interface
+  // State/Lookup interface
   double getTilt () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
@@ -94,14 +116,26 @@ class OwInterface
 
 
  private:
-  // Temporary, support for public version above
-  void guardedMoveActionDemo1 (const geometry_msgs::Point& start,
-                               const geometry_msgs::Point& normal,
-                               double search_distance,
-                               int id);
-
+  template <int OpIndex, class ActionClient, class Goal,
+            class ResultPtr, class FeedbackPtr>
+    void runAction (const std::string& opname,
+                    std::unique_ptr<ActionClient>&,
+                    const Goal&, int id,
+                    t_action_done_cb<OpIndex, ResultPtr> done_cb =
+                    default_action_done_cb<OpIndex, ResultPtr>);
+  void unstowAction (int id);
+  void stowAction (int id);
+  void grindAction (double x, double y, double depth, double length,
+               bool parallel, double ground_pos, int id);
+  void guardedMoveAction (double x, double y, double z,
+                     double direction_x, double direction_y, double direction_z,
+                     double search_distance, int id);
+  void digCircularAction (double x, double y, double depth,
+                     double ground_pos, bool parallel, int id);
+  void digLinearAction (double x, double y, double depth, double length,
+                   double ground_pos, int id);
+  void deliverAction (double x, double y, double z, int id);
   bool operationRunning (const std::string& name) const;
-
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr&);
   void panCallback (const control_msgs::JointControllerState::ConstPtr&);
@@ -166,8 +200,6 @@ class OwInterface
   ros::Subscriber* m_socSubscriber;
   ros::Subscriber* m_rulSubscriber;
   ros::Subscriber* m_batteryTempSubscriber;
-  ros::Subscriber* m_guardedMoveSubscriber;
-
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
@@ -175,6 +207,12 @@ class OwInterface
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
+  std::unique_ptr<UnstowActionClient> m_unstowClient;
+  std::unique_ptr<StowActionClient> m_stowClient;
+  std::unique_ptr<GrindActionClient> m_grindClient;
+  std::unique_ptr<DigCircularActionClient> m_digCircularClient;
+  std::unique_ptr<DigLinearActionClient> m_digLinearClient;
+  std::unique_ptr<DeliverActionClient> m_deliverClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

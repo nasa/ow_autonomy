@@ -9,7 +9,12 @@
 
 #include "plan-interface.h"
 
-LibraryAction MonitorPower (In Boolean continue);
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
 LibraryAction IdentifySampleTarget (InOut Real X,
@@ -39,7 +44,22 @@ ReferenceMission1: Concurrence
 {
   Boolean MissionInProgress = true;
 
-  PowerMonitor: LibraryCall MonitorPower (continue = MissionInProgress);
+  // Not effectively used, but added for backwards-compatibility.  See
+  // ReferenceMission2.plp for example usage.
+  Boolean BatteryOK = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  // NOTE: The return status BatteryOK is not used in this plan, but is used in
+  // ReferenceMission2.plp.
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
 
   Mission:
   {
