@@ -26,6 +26,6 @@ RemoveTailings:
     // NOTE: the X/Y/Z values are known coordinates of a predetermined place to
     // dump debris.  A real mission procedure would need to find an appropriate
     // dump location.
-    LibraryCall DeliverSample (X = 1.5, Y = 0.8, Z = 0.65);
+    LibraryCall Deliver (X = 1.5, Y = 0.8, Z = 0.65);
   }
 }

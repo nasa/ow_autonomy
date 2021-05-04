@@ -6,13 +6,13 @@
 // delivering the sample to its receptacle (which has specific coordinates) and
 // dumping tailings from trench digging.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
-DeliverSample:
+Deliver:
 {
   In Real X;
   In Real Y;
   In Real Z;
 
-  SynchronousCommand deliver_sample (X, Y, Z);
+  SynchronousCommand deliver (X, Y, Z);
 }

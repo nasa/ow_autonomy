@@ -4,7 +4,7 @@
 
 // Pan the antenna to specified degrees.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 Pan:
 {
