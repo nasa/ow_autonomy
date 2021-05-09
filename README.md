@@ -67,7 +67,7 @@ Your ROS environment should also first be set up:
 ```
 
 Assumed is this directory filed properly within an OceanWATERS ROS workspace
-(see Conftluence for instructions).  Build the entire workspace with:
+(see Confluence for instructions).  Build the entire workspace with:
 
 ```bash
  catkin build
