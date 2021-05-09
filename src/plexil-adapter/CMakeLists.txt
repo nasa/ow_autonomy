@@ -4,7 +4,6 @@ set (HEADERS
   OwExecutive.h
   OwInterface.h
   OwAdapter.h
-  OwSimProxy.h
   joint_support.h
   subscriber.h
 )
@@ -13,7 +12,6 @@ set (SOURCES
   OwExecutive.cpp
   OwInterface.cpp
   OwAdapter.cpp
-  OwSimProxy.cpp
   subscriber.cpp
 )
 
