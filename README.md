@@ -41,12 +41,12 @@ executive.
 Contents
 --------
 
-src/plans directory contains the PLEXIL plans.
+`src/plans` directory contains the PLEXIL plans.
 
-src/plexil-adapter contains the supporting code needed to run the PLEXIL plans,
+`src/plexil-adapter` contains the supporting code needed to run the PLEXIL plans,
 and also the ROS node implementation.
 
-See the README.md files in each subdirectory for more information.
+See the `README.md` files in each subdirectory for more information.
 
 
 Build
@@ -99,16 +99,16 @@ Start the autonomy node
    NOTES:
     - to omit the Gazebo GUI for faster performance, add `gzclient:=false`
     - for alternate terrains, other launch files are available:
-      atacama_y1a.launch, europa_terminator_workspace.launch,
-      europa_test_dem.launch.
+      `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
+      `europa_test_dem.launch`.
 
 2. Next start the autonomy node.  Starting the autonomy node always runs a
    PLEXIL plan.  The simplest version is:
 
    `roslaunch ow_autonomy autonomy_node.launch`
 
-   This invocation loads the default PLEXIL plan, Demo.plx.  A specific plan may
-   be run by adding it to the command line, e.g.
+   This invocation loads the default PLEXIL plan, `Demo.plx`.  A specific plan
+   may be run by adding it to the command line, e.g.
 
    `roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission1.plx`
 
