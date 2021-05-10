@@ -52,10 +52,11 @@ See the README.md files in each subdirectory for more information.
 Build
 -----
 
-See the "Getting Started" section in the parent repository's README.md file,
-viewable at https://github.com/nasa/ow_simulator, for complete installation and
-build instructions as well as hardware/software requirements.  This file recaps
-a few key points and has some supplementary information.
+See [Getting
+Started](https://github.com/nasa/ow_simulator/blob/master/README.md) for
+complete installation and build instructions as well as hardware/software
+requirements.  This file recaps a few key points and has some supplementary
+information.
 
 A prerequisite for building and running this package is a working PLEXIL
 installation, which has its own prerequisites. The environment variable
@@ -68,7 +69,9 @@ Your ROS environment should also first be set up:
 ```
 
 Assumed is this directory filed properly within an OceanWATERS ROS workspace
-(see Conftluence for instructions).  Build the entire workspace with:
+(see
+<https://github.com/nasa/ow_simulator/blob/master/oceanwaters/doc/setup_oceanwaters.md>
+for instructions).  Build the entire workspace with:
 
 ```bash
  catkin build
@@ -80,9 +83,9 @@ Build just the ow_autonomy package with:
  catkin build ow_autonomy
 ```
 
-NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
+_NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
 last build, a clean rebuild of ow_autonomy is needed.  See bottom of this file
-for instructions.
+for instructions._
 
 
 Start the autonomy node
@@ -112,7 +115,7 @@ Start the autonomy node
    The argument given to the `plan` parameter must be a file found in :
 
    `<ow_workspace>/devel/etc/plexil`
-   
+
    See `plans/README.md` for a description of the PLEXIL plans.
 
 
