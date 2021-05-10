@@ -10,7 +10,7 @@
 
 TorqueTest:
 {
-  Boolean Digging = true;
+  Boolean Finding = true;
   String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
                                     "HandYaw"
                                     "ProximalPitch" "ScoopYaw"
@@ -19,30 +19,20 @@ TorqueTest:
   log_info ("Beginning over-torque test...");
   DigAndMonitor: Concurrence
   {
-    Dig:
+    FindGround:
     {
-      // This node attempts to dig too deep (grind depth), in an effort to
-      // overtorque one or more arm joints.
-
       LibraryCall Unstow();
 
-      // Find ground.
+      // Find ground, attempting to reach below surface.
       LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                                DirX = 0, DirY = 0, DirZ = 1,
                                SearchDistance = 0.5);
-      if (Lookup(GroundFound)) {
-        LibraryCall Unstow();
-        LibraryCall Grind (X=2, Y=0, Depth=0.5, Length=0.3, Parallel=true,
-                           GroundPos=Lookup(GroundPosition));
-      }
-      else log_error ("TorqueTest failed to find ground!");
-      endif
-      Digging = false;
+      Finding = false;
     }
 
     MonitorTorque:
     {
-      RepeatCondition Digging;
+      RepeatCondition Finding;
       for (Integer i = 0; i < NUM_JOINTS; i+1) {
         if (Lookup(HardTorqueLimitReached(JointNames[i]))) {
           log_error ("Joint ", JointNames[i], " exceeding its hard limit.");
