@@ -69,8 +69,8 @@ Your ROS environment should also first be set up:
 ```
 
 Assumed is this directory filed properly within an OceanWATERS ROS workspace
-(see
-<https://github.com/nasa/ow_simulator/blob/master/oceanwaters/doc/setup_oceanwaters.md>
+(see [`ow_simulator/oceanwaters/setup_oceanwaters.md`]
+(https://github.com/nasa/ow_simulator/blob/master/oceanwaters/doc/setup_oceanwaters.md)
 for instructions).  Build the entire workspace with:
 
 ```bash
