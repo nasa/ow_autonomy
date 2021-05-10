@@ -18,7 +18,6 @@ LibraryAction GetInfoIfCrash(In String CheckpointName,
                              InOut Boolean Crashed,
                              InOut String Info,
                              InOut Real CrashTime);
-LibraryAction DeliverSample (In Real X, In Real Y, In Real Z);
 
 CollectAndTransfer:
 {
@@ -113,7 +112,7 @@ CollectAndTransfer:
 
       // NOTE: the given coordinates are the predetermined location of the
       // receptacle into which the sample is dumped.
-      LibraryCall DeliverSample (X = 0.55, Y = -0.3, Z = 0.84);
+      LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
       Wait 1;
       set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();

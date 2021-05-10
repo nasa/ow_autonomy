@@ -2,8 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A test plan that detects joint overtorque.
-// NOTE: runs indefinitely.  Autonomy node must be killed to terminate plan.
+// A test plan that detects when arm joints exceed their soft or hard torque
+// limits.
 
 #include "plexil_defs.h"
 #include "plan-interface.h"
@@ -12,7 +12,7 @@ TorqueTest:
 {
   Boolean Digging = true;
   String JointNames[NUM_JOINTS] = #("AntennaPan" "AntennaTilt" "DistalPitch"
-                                    "HandYaw" 
+                                    "HandYaw"
                                     "ProximalPitch" "ScoopYaw"
                                     "ShoulderPitch" "ShoulderYaw" "Grinder");
 
@@ -24,12 +24,15 @@ TorqueTest:
       // This node attempts to dig too deep (grind depth), in an effort to
       // overtorque one or more arm joints.
 
-      // First, find ground.
+      LibraryCall Unstow();
+
+      // Find ground.
       LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                                DirX = 0, DirY = 0, DirZ = 1,
                                SearchDistance = 0.5);
       if (Lookup(GroundFound)) {
-        LibraryCall Grind (X=2, Y=0, Depth=3.0, Length=0.5, Parallel=false,
+        LibraryCall Unstow();
+        LibraryCall Grind (X=2, Y=0, Depth=0.5, Length=0.3, Parallel=true,
                            GroundPos=Lookup(GroundPosition));
       }
       else log_error ("TorqueTest failed to find ground!");
