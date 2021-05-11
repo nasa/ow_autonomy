@@ -41,3 +41,5 @@ See the comments inside all the plans for more information.
 5. TorqueTest: Overtorque detection.  This plan attempts to push the scoop into
    the ground, which creates joint over-torquing warnings and errors.
 
+6. Continuous: non-terminating plan that performs continuous operations, useful
+   as a stress/load test.
