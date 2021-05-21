@@ -4,32 +4,9 @@
 
 // Take a picture with the stereo camera.
 
-#include "plan-interface.h"
-Real Lookup time;
+#include "lander-commands.h"
 
 TakePicture:
 {
-  Real TimeOut = 5.0;  // unitless, made up
-  Boolean GotImage = false;
-
-  PostCondition GotImage;
-
-  // Command the operation
-  take_picture();
-
-  // Wait for result
-  WaitForPicture:
-  {
-    SkipCondition Lookup(time, 1) - WaitForPicture.WAITING.START > TimeOut;
-    StartCondition Lookup(ImageReceived);
-    log_info ("Raw image data received.");
-    GotImage = true;
-  }
-
-  // Report image failure if needed
-  ReportImageFailure:
-  {
-    SkipCondition GotImage;
-    log_error ("Did not receive raw image data.");
-  }
+  SynchronousCommand take_picture();
 }

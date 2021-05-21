@@ -4,7 +4,7 @@
 
 // Tilt antenna to specified degrees.
 
-#include "plan-interface.h"
+#include "lander-commands.h"
 
 Tilt:
 {

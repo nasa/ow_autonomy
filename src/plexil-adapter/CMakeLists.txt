@@ -4,7 +4,6 @@ set (HEADERS
   OwExecutive.h
   OwInterface.h
   OwAdapter.h
-  OwSimProxy.h
   joint_support.h
   subscriber.h
 )
@@ -13,7 +12,6 @@ set (SOURCES
   OwExecutive.cpp
   OwInterface.cpp
   OwAdapter.cpp
-  OwSimProxy.cpp
   subscriber.cpp
 )
 
@@ -38,27 +36,11 @@ add_dependencies(${LIB_NAME}
   ${catkin_EXPORTED_TARGETS})
 
 add_executable(autonomy_node autonomy_node.cpp)
-add_executable(GuardedMoveServer GuardedMoveServer.cpp)
-add_executable(GuardedMoveClient GuardedMoveClient.cpp)
 
 target_link_libraries(autonomy_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-target_link_libraries(GuardedMoveServer
-  ${catkin_LIBRARIES})
-
-add_dependencies(GuardedMoveServer
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS})
-
-target_link_libraries(GuardedMoveClient
-  ${catkin_LIBRARIES})
-
-add_dependencies(GuardedMoveClient
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS})
-
-install(TARGETS autonomy_node GuardedMoveServer GuardedMoveClient
+install(TARGETS autonomy_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

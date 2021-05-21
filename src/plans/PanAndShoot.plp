@@ -14,5 +14,5 @@ PanAndShoot:
   In Real PanAngle;
 
   LibraryCall Pan (Degrees = PanAngle);
-  LibraryCall TakePicture(); // can fail, failure ignored for now
+  LibraryCall TakePicture();
 }

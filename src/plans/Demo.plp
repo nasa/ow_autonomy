@@ -2,13 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Demo plan that showcases a variety of lander functions.
+// Simple demonstration plan that performs a panoramic image, a grind, and a dig.
 
 #include "plan-interface.h"
 
 LibraryAction TestAntennaCamera();
-LibraryAction TestPlanning();
-LibraryAction TestActions();
 
 Demo:
 {

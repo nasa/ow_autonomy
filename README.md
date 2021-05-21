@@ -1,7 +1,8 @@
 Notices:
 --------
-Copyright © 2020 United States Government as represented by the Administrator of
-the National Aeronautics and Space Administration.  All Rights Reserved.
+Copyright © 2020-2021 United States Government as represented by the
+Administrator of the National Aeronautics and Space Administration.  All Rights
+Reserved.
 
 Disclaimers
 -----------
@@ -40,21 +41,22 @@ executive.
 Contents
 --------
 
-src/plans directory contains the PLEXIL plans.
+`src/plans` directory contains the PLEXIL plans.
 
-src/plexil-adapter contains the supporting code needed to run the PLEXIL plans,
+`src/plexil-adapter` contains the supporting code needed to run the PLEXIL plans,
 and also the ROS node implementation.
 
-See the README.md files in each subdirectory for more information.
+See the `README.md` files in each subdirectory for more information.
 
 
 Build
 -----
 
-See the "Getting Started" section in the parent repository's README.md file,
-viewable at https://github.com/nasa/ow_simulator, for complete installation and
-build instructions as well as hardware/software requirements.  This file recaps
-a few key points and has some supplementary information.
+See [Getting
+Started](https://github.com/nasa/ow_simulator/blob/master/README.md) for
+complete installation and build instructions as well as hardware/software
+requirements.  This file recaps a few key points and has some supplementary
+information.
 
 A prerequisite for building and running this package is a working PLEXIL
 installation, which has its own prerequisites. The environment variable
@@ -67,7 +69,8 @@ Your ROS environment should also first be set up:
 ```
 
 Assumed is this directory filed properly within an OceanWATERS ROS workspace
-(see Conftluence for instructions).  Build the entire workspace with:
+(see `ow_simulator/oceanwaters/setup_oceanwaters.md` for instructions).  Build
+the entire workspace with:
 
 ```bash
  catkin build
@@ -79,9 +82,9 @@ Build just the ow_autonomy package with:
  catkin build ow_autonomy
 ```
 
-NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
+_NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
 last build, a clean rebuild of ow_autonomy is needed.  See bottom of this file
-for instructions.
+for instructions._
 
 
 Start the autonomy node
@@ -95,36 +98,24 @@ Start the autonomy node
    NOTES:
     - to omit the Gazebo GUI for faster performance, add `gzclient:=false`
     - for alternate terrains, other launch files are available:
-      atacama_y1a.launch, europa_terminator_workspace.launch,
-      europa_test_dem.launch.
+      `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
+      `europa_test_dem.launch`.
 
 2. Next start the autonomy node.  Starting the autonomy node always runs a
    PLEXIL plan.  The simplest version is:
 
    `roslaunch ow_autonomy autonomy_node.launch`
 
-   This invocation loads the default PLEXIL plan, Demo.plx.  A specific plan may
-   be run by adding it to the command line, e.g.
+   This invocation loads the default PLEXIL plan, `Demo.plx`.  A specific plan
+   may be run by adding it to the command line, e.g.
 
    `roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission1.plx`
 
    The argument given to the `plan` parameter must be a file found in :
 
    `<ow_workspace>/devel/etc/plexil`
-   
+
    See `plans/README.md` for a description of the PLEXIL plans.
-
-
-Fault Detection
----------------
-
-A rudimentary version does nothing more than check relevant fault parameters for
-each lander operation.  Run any plan you like, while setting fault parameters as
-desired (see `ow_simulatyor/ow_faults/README.md` for instructions).  You can
-also use `scripts/set-faults.py` which by default sets every fault; edit it as
-needed.
-
-Faults are simply reported, as ROS warnings.
 
 
 Clean

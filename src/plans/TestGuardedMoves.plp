@@ -9,11 +9,13 @@
 
 TestGuardedMoves:
 {
+  LibraryCall Unstow();
   LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
                            DirX = 0, DirY = 0, DirZ = 1,
                            SearchDistance = 0.5);
   if (Lookup(GroundFound)) {
     log_info ("Found ground (first attempt) at ", Lookup(GroundPosition));
+    LibraryCall Unstow();
     LibraryCall GuardedMove (X = 1.8, Y = 0, Z = 0.3,
                              DirX = 0, DirY = 0, DirZ = 1,
                              SearchDistance = 0.5);

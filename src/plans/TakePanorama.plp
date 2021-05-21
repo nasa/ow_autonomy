@@ -6,20 +6,7 @@
 // vertical/horizonal image overlaps.
 
 #include "plexil_defs.h"
-
-Command log_info (...);
-Command log_error (...);
-
-Command set_checkpoint(...);
-Command flush_checkpoints();
-
-String Lookup ToString(...);
-Real Lookup StringToReal(String);
-Boolean Lookup StringToBoolean(String);
-Integer Lookup find_first_of(...);
-Integer Lookup find_last_of(...);
-String Lookup substr(...);
-
+#include "plan-interface.h"
 
 LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 InOut Real PanAngle,
@@ -29,9 +16,6 @@ LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 In String CheckpointName,
                                 InOut Boolean ReversePan);
 
-
-LibraryAction Tilt (In Real Degrees);
-LibraryAction Pan  (In Real Degrees);
 
 LibraryAction GetInfoIfCrash(In String CheckpointName,
                              In Boolean IgnoreCrash,

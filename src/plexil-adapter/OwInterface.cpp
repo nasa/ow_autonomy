@@ -7,21 +7,10 @@
 #include "subscriber.h"
 #include "joint_support.h"
 
-// OW - other
-#include <ow_lander/DigCircular.h>
-#include <ow_lander/DigLinear.h>
-#include <ow_lander/Grind.h>
-#include <ow_lander/Stow.h>
-#include <ow_lander/Unstow.h>
-#include <ow_lander/DeliverSample.h>
-#include <ow_lander/GuardedMove.h>
-#include <ow_lander/GuardedMoveResult.h>
-#include <ow_lander/PublishTrajectory.h>
-
 // ROS
 #include <std_msgs/Float64.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
-#include <sensor_msgs/Image.h>
 
 // C++
 #include <set>
@@ -35,7 +24,6 @@ using std::ref;
 
 // C
 #include <cmath>  // for M_PI and fabs
-
 
 //////////////////// Utilities ////////////////////////
 
@@ -58,19 +46,37 @@ static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 5.0; // seconds, made up
 
-// Lander operation names.
-// In some cases, these must match those used in PLEXIL and/or ow_lander
+// Lander operation names.  In general these match those used in PLEXIL and
+// ow_lander.
+
 const string Op_GuardedMove       = "GuardedMove";
-const string Op_GuardedMoveAction = "GuardedMoveAction";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
-const string Op_DeliverSample     = "DeliverSample";
-const string Op_PublishTrajectory = "PublishTrajectory";
+const string Op_Deliver           = "Deliver";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
+const string Op_TakePicture       = "TakePicture";
+
+enum LanderOps {
+  GuardedMove,
+  DigCircular,
+  DigLinear,
+  Deliver,
+  Pan,
+  Tilt,
+  Grind,
+  Stow,
+  Unstow,
+  TakePicture
+};
+
+static std::vector<string> LanderOpNames =
+  { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
+  };
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
 // in particular because map entries are never added or deleted, and the code
@@ -83,16 +89,15 @@ const string Op_Unstow            = "Unstow";
 static map<string, int> Running
 {
   { Op_GuardedMove, IDLE_ID },
-  { Op_GuardedMoveAction, IDLE_ID },
   { Op_DigCircular, IDLE_ID },
   { Op_DigLinear, IDLE_ID },
-  { Op_DeliverSample, IDLE_ID },
-  { Op_PublishTrajectory, IDLE_ID },
+  { Op_Deliver, IDLE_ID },
   { Op_PanAntenna, IDLE_ID },
   { Op_TiltAntenna, IDLE_ID },
   { Op_Grind, IDLE_ID },
   { Op_Stow, IDLE_ID },
-  { Op_Unstow, IDLE_ID }
+  { Op_Unstow, IDLE_ID },
+  { Op_TakePicture, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -125,114 +130,18 @@ static void mark_operation_finished (const string& name, int id)
 
 //////////////////// Fault Support ////////////////////////
 
-// NOTE: the design goal is to map each lander operation to the set of faults
-// that should be monitored while it is running.  This direct inspection of ROS
-// parameters is just a simple first cut (stub really) for actual fault
-// detection which would look at telemetry.
-
-const map<string, string> AntennaFaults
-{
-  // Param name -> human-readable
-  { "/faults/ant_pan_encoder_failure", "Antenna Pan Encoder" },
-  { "/faults/ant_tilt_encoder_failure", "Antenna Tilt Encoder" },
-  { "/faults/ant_pan_torque_sensor_failure", "Antenna Pan Torque Sensor" },
-  { "/faults/ant_tilt_torque_sensor_failure", "Antenna Tilt Torque Sensor" }
-};
-
-const map<string, string> ArmFaults
-{
-  // Param name -> human-readable
-  { "/faults/shou_yaw_encoder_failure", "Shoulder Yaw Encoder" },
-  { "/faults/shou_pitch_encoder_failure", "Shoulder Pitch Encoder" },
-  { "/faults/shou_pitch_torque_sensor_failure", "Shoulder Pitch Torque Sensor" },
-  { "/faults/prox_pitch_encoder_failure", "Proximal Pitch Encoder" },
-  { "/faults/prox_pitch_torque_sensor_failure", "Proximal Pitch Torque Sensor" },
-  { "/faults/dist_pitch_encoder_failure", "Distal Pitch Encoder" },
-  { "/faults/dist_pitch_torque_sensor_failure", "Distal Pitch Torque Sensor" },
-  { "/faults/hand_yaw_encoder_failure", "Hand Yaw Encoder" },
-  { "/faults/hand_yaw_torque_sensor_failure", "Hand Yaw Torque Sensor" },
-  { "/faults/scoop_yaw_encoder_failure", "Scoop Yaw Encoder" },
-  { "/faults/scoop_yaw_torque_sensor_failure", "Scoop Yaw Torque Sensor" }
-};
-
-const map<string, map<string, string> > Faults
-{
-  // Map each lander operation to its relevant fault set.
-  { Op_GuardedMove, ArmFaults },
-  { Op_GuardedMoveAction, ArmFaults },
-  { Op_DigCircular, ArmFaults },
-  { Op_DigLinear, ArmFaults },
-  { Op_DeliverSample, ArmFaults },
-  { Op_PublishTrajectory, ArmFaults },
-  { Op_PanAntenna, AntennaFaults },
-  { Op_TiltAntenna, AntennaFaults },
-  { Op_Grind, ArmFaults },
-  { Op_Stow, ArmFaults },
-  { Op_Unstow, ArmFaults }
-};
-
-static bool faulty (const string& fault)
-{
-  bool val;
-  ros::param::get (fault, val);
-  return val;
-}
-
 static void monitor_for_faults (const string& opname)
 {
-  using namespace std::chrono_literals;
-  while (Running.at (opname) != IDLE_ID) {
-    ROS_DEBUG ("Monitoring for faults in %s", opname.c_str());
-    for (auto fault : Faults.at (opname)) {
-      if (faulty (fault.first)) {
-        ROS_WARN("Fault in %s: %s failure.",
-                 opname.c_str(), fault.second.c_str());
-      }
-    }
-    std::this_thread::sleep_for (1s);
-  }
+  // This (threaded) function was formerly used for operation-specific fault
+  // monitoring, using a mechanism that has been removed, which was direct
+  // inspection of the fault injection ROS parameters.  TBD whether it will be
+  // used again, but leaving it here for now.
+
+  //  using namespace std::chrono_literals;
+  //  while (Running.at (opname) != IDLE_ID) {
+  //    std::this_thread::sleep_for (1s);
+  //  }
 }
-
-
-/////////////////// ROS Service support //////////////////////
-
-template<class Service>
-static void call_ros_service (ros::ServiceClient client, Service srv,
-                              string name, int id)
-{
-  // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.  Assumes that service is not already running; this is
-  // checked upstream.
-
-  ROS_INFO("  Starting ROS service %s", name.c_str());
-  thread fault_thread (monitor_for_faults, name);
-  if (client.call (srv)) { // blocks
-    ROS_INFO("  %s returned: %d, %s", name.c_str(), srv.response.success,
-             srv.response.message.c_str());  // make DEBUG later
-  }
-  else {
-    ROS_ERROR("Failed to call service %s", name.c_str());
-  }
-  mark_operation_finished (name, id);
-  fault_thread.join();
-}
-
-static bool check_service_client (ros::ServiceClient& client,
-                                  const string& name)
-{
-  if (! client.exists()) {
-    ROS_ERROR("Service client for %s does not exist!", name.c_str());
-    return false;
-  }
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client for %s is invalid!", name.c_str());
-    return false;
-  }
-
-  return true;
-}
-
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -295,6 +204,47 @@ static void handle_joint_fault (Joint joint, int joint_index,
   handle_overtorque (joint, msg->effort[joint_index]);
 }
 
+template <typename T1, typename T2>
+void OwInterface::faultCallback (T1 msg_val, T2& fmap,
+                                 const string& component)
+{
+  for (auto const& entry : fmap) {
+    string key = entry.first;
+    T1 value = entry.second.first;
+    bool fault_active = entry.second.second;
+    bool faulty = (msg_val & value) == value;
+    if (!fault_active && faulty) {
+      ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
+      fmap[key].second = true;
+    }
+    else if (fault_active && !faulty) {
+      ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
+      fmap[key].second = false;
+    }
+  }
+}
+
+void OwInterface::systemFaultMessageCallback
+(const  ow_faults::SystemFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_systemErrors, "SYSTEM");
+}
+
+void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_armErrors, "ARM");
+}
+
+void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_powerErrors, "POWER");
+}
+
+void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
+{
+  faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -353,9 +303,7 @@ void OwInterface::managePanTilt (const string& opname,
 }
 
 
-////////////////////////////// Image Support ///////////////////////////////////
-
-static bool   ImageReceived       = false;
+///////////////////////// Antenna/Camera Support ///////////////////////////////
 
 void OwInterface::panCallback
 (const control_msgs::JointControllerState::ConstPtr& msg)
@@ -371,33 +319,50 @@ void OwInterface::tiltCallback
   publish ("TiltDegrees", m_currentTilt);
 }
 
-static void camera_callback (const sensor_msgs::Image::ConstPtr& msg)
+void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
-  // Assuming that receipt of this message is success itself.
-  ImageReceived = true;
-  publish ("ImageReceived", ImageReceived);
+  // NOTE: the received image is ignored for now.
+
+  if (operationRunning (Op_TakePicture)) {
+    mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
+  }
 }
 
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double Voltage             = 4.15;  // faked
-static double RemainingUsefulLife = 28460; // faked
+static double StateOfCharge       = NAN;
+static double RemainingUsefulLife = NAN;
+static double BatteryTemperature  = NAN;
 
 static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
 {
-  Voltage = msg->data;
-  publish ("Voltage", Voltage);
+  StateOfCharge = msg->data;
+  publish ("StateOfCharge", StateOfCharge);
 }
 
-static void rul_callback (const std_msgs::Float64::ConstPtr& msg)
+static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
 {
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RemainingUsefulLife = msg->data;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
+static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
+{
+  BatteryTemperature = msg->data;
+  publish ("BatteryTemperature", BatteryTemperature);
+}
 
-//////////////////// GuardedMove Service support ////////////////////////////////
+
+//////////////////// GuardedMove Action support ////////////////////////////////
+
+// TODO: encapsulate GroundFound and GroundPosition in the PLEXIL command.  They
+// are not accurate outside the context of a single GuardedMove command.
+
+// TODO: encapsulate GroundFound and GroundPosition within the GuardedMove
+// operation: it is not meaningful otherwise, and can be possibly misused given
+// the current plan interface.
 
 static bool GroundFound = false;
 static double GroundPosition = 0; // should not be queried unless GroundFound
@@ -412,54 +377,72 @@ double OwInterface::groundPosition () const
   return GroundPosition;
 }
 
-static void guarded_move_callback
-(const ow_lander::GuardedMoveResult::ConstPtr& msg)
+template <typename T>
+bool OwInterface::faultActive (const T& fmap) const
 {
-  if (msg->success) {
-    GroundFound = true;
-    string frame = msg->frame;
-    string valid = "base_link";
-    if (frame != valid) {  // the only supported value
-      ROS_ERROR("GuardedMoveResult frame was not %s", valid.c_str());
-      return;
-    }
-    GroundPosition = msg->position.z;
-    publish ("GroundFound", true);
-    publish ("GroundPosition", GroundPosition);
+  for (auto const& entry : fmap) {
+    if (entry.second.second) return true;
   }
-  else {
-    ROS_WARN("GuardedMove did not find ground!");
-  }
+  return false;
 }
 
+bool OwInterface::systemFault () const
+{
+  return faultActive (m_systemErrors);
+}
 
-//////////////////// GuardedMove Action support ////////////////////////////////
+bool OwInterface::antennaFault () const
+{
+  return faultActive (m_panTiltErrors);
+}
 
-// At present, this is a prototypical ROS action using a dummy server in this
-// directory, GuardedMoveServer.  It is NOT connected to the testbed.
+bool OwInterface::armFault () const
+{
+  return faultActive (m_armErrors);
+}
 
+bool OwInterface::powerFault () const
+{
+  return faultActive (m_powerErrors);
+}
+
+template<int OpIndex, typename T>
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
- const ow_autonomy::GuardedMoveResultConstPtr& result)
+ const T& result)
 {
-  ROS_INFO ("GuardedMove done callback: finished in state [%s]",
+  ROS_INFO ("GuardedMove finished in state %s", state.toString().c_str());
+  GroundFound = result->success;
+  GroundPosition = result->final.z;
+  publish ("GroundFound", GroundFound);
+  publish ("GroundPosition", GroundPosition);
+}
+
+//////////////////// General Action support ///////////////////////////////
+
+const auto ActionServerTimeout = 10.0;  // seconds
+
+//////////////////// ROS Action callbacks - generic //////////////////////
+
+template<typename T>
+static void action_feedback_cb (const T& feedback)
+{
+}
+
+template<int OpIndex>
+static void active_cb ()
+{
+  ROS_INFO ("%s started...", LanderOpNames[OpIndex].c_str());
+}
+
+template<int OpIndex, typename T>
+static void default_action_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result_ignored)
+{
+  ROS_INFO ("%s finished in state %s", LanderOpNames[OpIndex].c_str(),
             state.toString().c_str());
-  ROS_INFO("GuardedMove done callback: result (%f, %f, %f)",
-           result->final.x, result->final.y, result->final.z);
 }
-
-static void guarded_move_active_cb ()
-{
-  ROS_INFO ("GuardedMove active callback - goal active!");
-}
-
-static void guarded_move_feedback_cb
-(const ow_autonomy::GuardedMoveFeedbackConstPtr& feedback)
-{
-  ROS_INFO ("GuardedMove feedback callback: (%f, %f, %f)",
-            feedback->current.x, feedback->current.y, feedback->current.z);
-}
-
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
@@ -483,10 +466,15 @@ OwInterface::OwInterface ()
     m_cameraSubscriber (nullptr),
     m_socSubscriber (nullptr),
     m_rulSubscriber (nullptr),
-    m_guardedMoveSubscriber (nullptr),
+    m_batteryTempSubscriber (nullptr),
+    m_systemFaultMessagesSubscriber (nullptr),
+    m_armFaultMessagesSubscriber (nullptr),
+    m_powerFaultMessagesSubscriber (nullptr),
+    m_ptFaultMessagesSubscriber (nullptr),
+
     m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
-    // m_panStart, m_tiltStart left uninitialized
+    // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
 
@@ -501,7 +489,7 @@ OwInterface::~OwInterface ()
   if (m_cameraSubscriber) delete m_cameraSubscriber;
   if (m_socSubscriber) delete m_socSubscriber;
   if (m_rulSubscriber) delete m_rulSubscriber;
-  if (m_guardedMoveSubscriber) delete m_guardedMoveSubscriber;
+  if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
   if (m_instance) delete m_instance;
 }
 
@@ -543,106 +531,68 @@ void OwInterface::initialize()
                  &OwInterface::jointStatesCallback, this));
     m_cameraSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/StereoCamera/left/image_raw", qsize, camera_callback));
+       subscribe("/StereoCamera/left/image_raw", qsize,
+                 &OwInterface::cameraCallback, this));
     m_socSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
+    m_batteryTempSubscriber = new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/power_system_node/battery_temperature", qsize,
+                 temperature_callback));
     m_rulSubscriber = new ros::Subscriber
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
-    m_guardedMoveSubscriber = new ros::Subscriber
+    // subscribers for fault messages
+    m_systemFaultMessagesSubscriber.reset(new ros::Subscriber
       (m_genericNodeHandle ->
-       subscribe("/guarded_move_result", qsize, guarded_move_callback));
+       subscribe("/faults/system_faults_status", qsize,
+                &OwInterface::systemFaultMessageCallback, this)));
+    m_armFaultMessagesSubscriber.reset(new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/faults/arm_faults_status", qsize,
+                &OwInterface::armFaultCallback, this)));
+    m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/faults/power_faults_status", qsize,
+                &OwInterface::powerFaultCallback, this)));
+    m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
+      (m_genericNodeHandle ->
+       subscribe("/faults/pt_faults_status", qsize,
+                &OwInterface::antennaFaultCallback, this)));
 
-    ROS_INFO ("Waiting for action servers...");
-    m_guardedMoveClient.reset(new GuardedMoveActionClient("GuardedMove", true));
-    m_guardedMoveClient->waitForServer();
-    ROS_INFO ("Action servers available.");
+    m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
+    m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
+    m_stowClient.reset(new StowActionClient(Op_Stow, true));
+    m_grindClient.reset(new GrindActionClient(Op_Grind, true));
+    m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
+    m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
+    m_deliverClient.reset(new DeliverActionClient(Op_Deliver, true));
+
+    if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Unstow action server did not connect!");
+    }
+    if (! m_stowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Stow action server did not connect!");
+    }
+    if (! m_digCircularClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("DigCircular action server did not connect!");
+    }
+    if (! m_digLinearClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("DigLinear action server did not connect!");
+    }
+    if (! m_deliverClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("Deliver action server did not connect!");
+    }
+    if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("GuardedMove action server did not connect!");
+    }
   }
 }
 
 void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 {
   CommandStatusCallback = callback;
-}
-
-void OwInterface::guardedMoveActionDemo (const geometry_msgs::Point& start,
-                                         const geometry_msgs::Point& normal,
-                                         double search_distance,
-                                         int id)
-{
-  if (! mark_operation_running (Op_GuardedMoveAction, id)) return;
-
-  thread action_thread (&OwInterface::guardedMoveActionDemo1, this, start,
-                        normal, search_distance, id);
-  action_thread.detach();
-}
-
-void OwInterface::guardedMoveActionDemo1 (const geometry_msgs::Point& start,
-                                          const geometry_msgs::Point& normal,
-                                          double search_distance,
-                                          int id)
-{
-  ow_autonomy::GuardedMoveGoal goal;
-  goal.start = start;
-  goal.normal = normal;
-  goal.search_distance = search_distance;
-
-  thread fault_thread (monitor_for_faults, Op_GuardedMoveAction);
-  m_guardedMoveClient->sendGoal (goal,
-                                guarded_move_done_cb,
-                                guarded_move_active_cb,
-                                guarded_move_feedback_cb);
-
-  // Wait for the action to return
-  bool finished_before_timeout =
-    m_guardedMoveClient->waitForResult (ros::Duration (30.0));
-
-  if (finished_before_timeout) {
-    actionlib::SimpleClientGoalState state = m_guardedMoveClient->getState();
-    ROS_INFO("GuardedMove action finished: %s", state.toString().c_str());
-    ow_autonomy::GuardedMoveResultConstPtr result =
-      m_guardedMoveClient->getResult();
-    ROS_INFO("GuardedMove action result: (%f, %f, %f)",
-             result->final.x, result->final.y, result->final.z);
-  }
-  else {
-    ROS_INFO("GuardedMove action did not finish before the time out.");
-  }
-
-  mark_operation_finished (Op_GuardedMoveAction, id);
-  fault_thread.join();
-}
-
-void OwInterface::guardedMove (double x, double y, double z,
-                               double direction_x,
-                               double direction_y,
-                               double direction_z,
-                               double search_distance,
-                               int id)
-{
-  if (! mark_operation_running (Op_GuardedMove, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::GuardedMove>("/arm/guarded_move");
-
-  if (check_service_client (client, Op_GuardedMove)) {
-    ow_lander::GuardedMove srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.z = z;
-    srv.request.direction_x = direction_x;
-    srv.request.direction_y = direction_y;
-    srv.request.direction_z = direction_z;
-    srv.request.search_distance = search_distance;
-    GroundFound = false;
-    thread service_thread (call_ros_service<ow_lander::GuardedMove>,
-                           client, srv, Op_GuardedMove, id);
-    service_thread.detach();
-  }
 }
 
 static void antenna_op (const string& opname, double degrees,
@@ -654,7 +604,7 @@ static void antenna_op (const string& opname, double degrees,
 
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
-  ROS_INFO ("  Starting %s: %f degrees (%f radians)", opname.c_str(),
+  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
   thread fault_thread (monitor_for_faults, opname);
   fault_thread.detach();
@@ -675,142 +625,214 @@ void OwInterface::panAntenna (double degrees, int id)
   antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
-void OwInterface::takePicture ()
+void OwInterface::takePicture (int id)
 {
+  if (! mark_operation_running (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
-  ImageReceived = false;
-  publish ("ImageReceived", ImageReceived);
+  ROS_INFO ("Capturing stereo image using left image trigger.");
+  thread fault_thread (monitor_for_faults, Op_TakePicture);
+  fault_thread.detach();
   m_leftImageTriggerPublisher->publish (msg);
 }
 
+void OwInterface::deliver (double x, double y, double z, int id)
+{
+  if (! mark_operation_running (Op_Deliver, id)) return;
+  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
+  action_thread.detach();
+}
+
+template <int OpIndex, class ActionClient, class Goal,
+          class ResultPtr, class FeedbackPtr>
+void OwInterface::runAction (const string& opname,
+                             std::unique_ptr<ActionClient>& ac,
+                             const Goal& goal, int id,
+                             t_action_done_cb<OpIndex, ResultPtr> done_cb)
+{
+  thread fault_thread (monitor_for_faults, opname);
+  if (ac) {
+    ROS_INFO ("Sending goal to action %s", opname.c_str());
+    ac->sendGoal (goal,
+                  done_cb,
+                  active_cb<OpIndex>,
+                  action_feedback_cb<FeedbackPtr>);
+  }
+  else {
+    ROS_ERROR ("%s action client was null!", opname.c_str());
+    return;
+  }
+
+  // Wait indefinitely for the action to complete.
+  bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
+  mark_operation_finished (opname, id);
+  fault_thread.join();
+}
+
+void OwInterface::deliverAction (double x, double y, double z, int id)
+{
+  ow_lander::DeliverGoal goal;
+  goal.delivery.x = x;
+  goal.delivery.y = y;
+  goal.delivery.z = z;
+  runAction<Deliver, actionlib::SimpleActionClient<ow_lander::DeliverAction>,
+            ow_lander::DeliverGoal,
+            ow_lander::DeliverResultConstPtr,
+            ow_lander::DeliverFeedbackConstPtr>
+    (Op_Deliver, m_deliverClient, goal, id);
+}
+
 void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double ground_position,
+                             double depth, double length, double ground_pos,
                              int id)
 {
   if (! mark_operation_running (Op_DigLinear, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigLinear>("/arm/dig_linear");
-
-  if (check_service_client (client, Op_DigLinear)) {
-    ow_lander::DigLinear srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.length = length;
-    srv.request.ground_position = ground_position;
-    thread service_thread (call_ros_service<ow_lander::DigLinear>,
-                           client, srv, Op_DigLinear, id);
-    service_thread.detach();
-  }
+  thread action_thread (&OwInterface::digLinearAction, this, x, y, depth,
+                        length, ground_pos, id);
+  action_thread.detach();
 }
 
+
+void OwInterface::digLinearAction (double x, double y,
+                                   double depth, double length,
+                                   double ground_pos, int id)
+{
+  ow_lander::DigLinearGoal goal;
+  goal.x_start = x;
+  goal.y_start = y;
+  goal.depth = depth;
+  goal.length = length;
+  goal.ground_position = ground_pos;
+
+  runAction<DigLinear, actionlib::SimpleActionClient<ow_lander::DigLinearAction>,
+            ow_lander::DigLinearGoal,
+            ow_lander::DigLinearResultConstPtr,
+            ow_lander::DigLinearFeedbackConstPtr>
+    (Op_DigLinear, m_digLinearClient, goal, id);
+}
+
+
 void OwInterface::digCircular (double x, double y, double depth,
-                               double ground_position, bool parallel, int id)
+                               double ground_pos, bool parallel, int id)
 {
   if (! mark_operation_running (Op_DigCircular, id)) return;
+  thread action_thread (&OwInterface::digCircularAction, this, x, y, depth,
+                        ground_pos, parallel, id);
+  action_thread.detach();
+}
 
-  ros::NodeHandle nhandle ("planning");
+void OwInterface::digCircularAction (double x, double y, double depth,
+                                     double ground_pos, bool parallel, int id)
+{
+  ow_lander::DigCircularGoal goal;
+  goal.x_start = x;
+  goal.y_start = y;
+  goal.depth = depth;
+  goal.ground_position = ground_pos;
+  goal.parallel = parallel;
 
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DigCircular>("/arm/dig_circular");
+  runAction<DigCircular,
+            actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
+            ow_lander::DigCircularGoal,
+            ow_lander::DigCircularResultConstPtr,
+            ow_lander::DigCircularFeedbackConstPtr>
+    (Op_DigCircular, m_digCircularClient, goal, id);
+}
 
-  if (check_service_client (client, Op_DigCircular)) {
-    ow_lander::DigCircular srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.ground_position = ground_position;
-    srv.request.parallel = parallel;
-    thread service_thread (call_ros_service<ow_lander::DigCircular>,
-                           client, srv, Op_DigCircular, id);
-    service_thread.detach();
-  }
+
+void OwInterface::unstow (int id)  // as action
+{
+  if (! mark_operation_running (Op_Unstow, id)) return;
+  thread action_thread (&OwInterface::unstowAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::unstowAction (int id)
+{
+  ow_lander::UnstowGoal goal;
+  goal.goal = 0;  // Arbitrary, meaningless value
+
+  runAction<Unstow, actionlib::SimpleActionClient<ow_lander::UnstowAction>,
+            ow_lander::UnstowGoal,
+            ow_lander::UnstowResultConstPtr,
+            ow_lander::UnstowFeedbackConstPtr>
+    (Op_Unstow, m_unstowClient, goal, id);
+}
+
+void OwInterface::stow (int id)  // as action
+{
+  if (! mark_operation_running (Op_Stow, id)) return;
+  thread action_thread (&OwInterface::stowAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::stowAction (int id)
+{
+  ow_lander::StowGoal goal;
+  goal.goal = 0;  // Arbitrary, meaningless value
+
+  runAction<Stow, actionlib::SimpleActionClient<ow_lander::StowAction>,
+            ow_lander::StowGoal,
+            ow_lander::StowResultConstPtr,
+            ow_lander::StowFeedbackConstPtr>
+    (Op_Stow, m_stowClient, goal, id);
 }
 
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
   if (! mark_operation_running (Op_Grind, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Grind>("/arm/grind");
-
-  if (check_service_client (client, Op_Grind)) {
-    ow_lander::Grind srv;
-    srv.request.use_defaults = false;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.depth = depth;
-    srv.request.length = length;
-    srv.request.parallel = parallel;
-    srv.request.ground_position = ground_pos;
-    thread service_thread (call_ros_service<ow_lander::Grind>,
-                           client, srv, Op_Grind, id);
-    service_thread.detach();
-  }
+  thread action_thread (&OwInterface::grindAction, this, x, y, depth, length,
+                        parallel, ground_pos, id);
+  action_thread.detach();
 }
 
-void OwInterface::stow (int id)
+void OwInterface::grindAction (double x, double y, double depth, double length,
+                               bool parallel, double ground_pos, int id)
 {
-  if (! mark_operation_running (Op_Stow, id)) return;
+  ow_lander::GrindGoal goal;
+  goal.x_start = x;
+  goal.y_start = y;
+  goal.depth = depth;
+  goal.length = length;
+  goal.parallel = parallel;
+  goal.ground_position = ground_pos;
 
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Stow>("/arm/stow");
-
-  if (check_service_client (client, Op_Stow)) {
-    ow_lander::Stow srv;
-    thread service_thread (call_ros_service<ow_lander::Stow>,
-                           client, srv, Op_Stow, id);
-    service_thread.detach();
-  }
+  runAction<Grind, actionlib::SimpleActionClient<ow_lander::GrindAction>,
+            ow_lander::GrindGoal,
+            ow_lander::GrindResultConstPtr,
+            ow_lander::GrindFeedbackConstPtr>
+    (Op_Grind, m_grindClient, goal, id);
 }
 
-void OwInterface::unstow (int id)
+void OwInterface::guardedMove (double x, double y, double z,
+                               double dir_x, double dir_y, double dir_z,
+                               double search_dist, int id)
 {
-  if (! mark_operation_running (Op_Unstow, id)) return;
-
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::Unstow>("/arm/unstow");
-
-
-  if (check_service_client (client, Op_Unstow)) {
-    ow_lander::Unstow srv;
-    thread service_thread (call_ros_service<ow_lander::Unstow>,
-                           client, srv, Op_Unstow, id);
-    service_thread.detach();
-  }
+  if (! mark_operation_running (Op_GuardedMove, id)) return;
+  thread action_thread (&OwInterface::guardedMoveAction, this, x, y, z,
+                        dir_x, dir_y, dir_z, search_dist, id);
+  action_thread.detach();
 }
 
-void OwInterface::deliverSample (double x, double y, double z, int id)
+void OwInterface::guardedMoveAction (double x, double y, double z,
+                                     double dir_x, double dir_y, double dir_z,
+                                     double search_dist, int id)
 {
-  if (! mark_operation_running (Op_DeliverSample, id)) return;
+  ow_lander::GuardedMoveGoal goal;
+  goal.start.x = x;
+  goal.start.y = y;
+  goal.start.z = z;
+  goal.normal.x = dir_x;
+  goal.normal.y = dir_y;
+  goal.normal.z = dir_z;
+  goal.search_distance = search_dist;
 
-  ros::NodeHandle nhandle ("planning");
-
-  ros::ServiceClient client =
-    nhandle.serviceClient<ow_lander::DeliverSample>("/arm/deliver_sample");
-
-
-  if (check_service_client (client, Op_DeliverSample)) {
-    ow_lander::DeliverSample srv;
-    srv.request.x = x;
-    srv.request.y = y;
-    srv.request.z = z;
-    thread service_thread (call_ros_service<ow_lander::DeliverSample>,
-                           client, srv, Op_DeliverSample, id);
-    service_thread.detach();
-  }
+  runAction<GuardedMove, actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>,
+            ow_lander::GuardedMoveGoal,
+            ow_lander::GuardedMoveResultConstPtr,
+            ow_lander::GuardedMoveFeedbackConstPtr>
+    (Op_GuardedMove, m_guardedMoveClient, goal, id,
+    guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
 double OwInterface::getTilt () const
@@ -833,19 +855,19 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetryMap[Joint::antenna_tilt].velocity;
 }
 
-bool OwInterface::imageReceived () const
+double OwInterface::getStateOfCharge () const
 {
-  return ImageReceived;
-}
-
-double OwInterface::getVoltage () const
-{
-  return Voltage;
+  return StateOfCharge;
 }
 
 double OwInterface::getRemainingUsefulLife () const
 {
   return RemainingUsefulLife;
+}
+
+double OwInterface::getBatteryTemperature () const
+{
+  return BatteryTemperature;
 }
 
 bool OwInterface::operationRunning (const string& name) const
@@ -854,24 +876,11 @@ bool OwInterface::operationRunning (const string& name) const
   return Running.at (name) != IDLE_ID;
 }
 
-bool OwInterface::operationFinished (const string& name) const
-{
-  return !operationRunning (name);
-}
-
 bool OwInterface::running (const string& name) const
 {
   if (is_lander_operation (name)) return operationRunning (name);
 
   ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
-  return false;
-}
-
-bool OwInterface::finished (const string& name) const
-{
-  if (is_lander_operation (name)) return operationFinished (name);
-
-  ROS_ERROR("OwInterface::finished: unsupported operation: %s", name.c_str());
   return false;
 }
 

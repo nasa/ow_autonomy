@@ -2,70 +2,89 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Sample mission plan based on Sol 0 of the Europa Lander study.  This plan
-// uses a checkpoint facility for plan persistence added to PLEXIL in 2020.
+// Simplified version of the Europa Lander reference mission, Sol 0.  Performs
+// the same operation sequence as ReferenceMission1.plp, adding stubbed
+// operations that are found in the mission description, as well as partial
+// support for crash recovery and plan persistence using PLEXIL's checkpointing
+// facility.
 
 #include "plexil_defs.h"
+#include "plan-interface.h"
 
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
 LibraryAction ImageLandingSite(In String InstanceName,
                                In Boolean IgnoreCrash);
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
 LibraryAction Downlink;
-LibraryAction CollectAndTransfer(In String InstanceName,
-                                 In Boolean IgnoreCrash);
+LibraryAction Image (In String desc);
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+LibraryAction CollectAndTransfer(In Boolean IgnoreCrash,
+                                 In String InstanceName,
+                                 In Real X, In Real Y,
+                                 In Real GroundPos,
+                                 In Real Depth, In Real Length,
+                                 In Boolean Parallel);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
 LibraryAction StartSampleAnalysis;
 LibraryAction Stub(In String desc);
-LibraryAction MonitorBattery (In Boolean continue, InOut Boolean status);
 LibraryAction DumpSamples;
-LibraryAction MonitorSamplesIntegrity(InOut Boolean status);
-LibraryAction MonitorSamplesComplete(InOut Boolean status);
-
-Command log_info (...);
-Command set_checkpoint(...);
-Command flush_checkpoints();
-Command set_boot_ok();
-
-Integer Lookup CheckpointWhen(String);
-Integer Lookup NumberOfUnhandledBoots;
-Boolean Lookup IsBootOK(Integer);
-Boolean Lookup DidCrash;
 
 EuropaMission: Concurrence
 {
-  // Assumption: checkout is complete.
-
   Boolean MissionInProgress = true;
+  Boolean DidCrash; // Unknown
+  Boolean BatteryOK = true;
 
-  // Health variables - expand/refine as needed
-  Boolean BatteryOK, TemperatureOK, SamplesOK, SamplesComplete;
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
 
-  ContingencyMonitors: Concurrence
-  {
-    BatteryMonitor: LibraryCall MonitorBattery (continue = MissionInProgress,
-                                                status = BatteryOK);
-    ThermalMonitor: LibraryCall Stub(desc="Monitoring thermal");
-    UplinkMonitor: LibraryCall Stub(desc="Monitoring for uplinks");
-  }
-
-  ScienceMonitor: Concurrence
-  {
-    SampleMonitor: LibraryCall MonitorSamplesIntegrity(status = SamplesOK);
-    SamplesCompleteMonitor:
-      LibraryCall MonitorSamplesComplete(status = SamplesComplete);
-  }
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
 
   Mission:
   {
-    Boolean did_crash;
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    Invariant MissionInProgress;
 
     log_info ("Starting Europa Mission, Sol 0 ...");
-    did_crash = Lookup(DidCrash);
+    DidCrash = Lookup(DidCrash);
 
     CrashHandle: UncheckedSequence
     {
-      SkipCondition !did_crash;
+      SkipCondition !DidCrash;
 
       OffloadData:
       {
@@ -91,103 +110,127 @@ EuropaMission: Concurrence
       RestArm: LibraryCall Stub(desc="Moving arm to safe position");
     }
 
+    // Brief summary of checkpoint interface:
+    //  - CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
+    //    found.
+    //  - IsBootOK returns true if that boot was OK, UNKNOWN if not found.
+    //
+    // Thus the SkipCondition in the following nodes is true if and only if the
+    // executive crashed and the last time the checkpoint was set, the executive
+    // crashed.  This handles the case of multiple crashes.
 
-    ImageLandingSite: {
-      // CheckpointWhen returns most recent boot with checkpoint, UNKNOWN if not
-      // found IsBootOK returns true if that boot was OK, UNKNOWN if not found
-      // Thus SkipCondition is true if and only if the executive crashed and the
-      // last time the checkpoint was set, the executive crashed.  This handles
-      // the case of multiple crashes.
-
+    ImageLandingSite:
+    {
       // TakePanorama__NAME__End is set by ImageLandingSite
       SkipCondition
-        (did_crash &&
+        (DidCrash &&
          !Lookup(IsBootOK
-                 (Lookup
-                  (CheckpointWhen("TakePanorama__MissionSol1__End")))));
-      LibraryCall ImageLandingSite(InstanceName="MissionSol1",IgnoreCrash=false);
+                 (Lookup (CheckpointWhen ("TakePanorama__MissionSol1__End")))));
+      LibraryCall ImageLandingSite (InstanceName = "MissionSol1",
+                                    IgnoreCrash = false);
       SynchronousCommand flush_checkpoints();
     }
 
-    InterrogateSurface:{
+    UnstowArm:
+    {
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK
-                 (Lookup(CheckpointWhen("InterrogateSurfaceComplete")))));
-      LibraryCall InterogateSurface;
-      set_checkpoint("InterrogateSurfaceComplete");
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
+      LibraryCall Unstow();
+      set_checkpoint("ArmUnstowed");
       SynchronousCommand flush_checkpoints();
     }
 
-    GetTrenchTarget:{
+    SampleCollection:
+    {
+      // This node includes all phases of sample collection, beginning with
+      // finding sampling location and ending with delivering the sample to its
+      // destination.
+
+      // Note that this node is checkpointed as a single step, because data
+      // needed to checkpoint the indivual steps (trench_x, trench_y,
+      // ground_pos, parallel, and the GroundFound lookup) is not persistent.
+      // In other words, there is no checkpointing within this node -- the
+      // entire node would be repeated if a crash occurred during its execution.
+      // Jira OW-657 is for making this plan fully interruptable.
+
       SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("GetTrenchTargetComplete")))));
-      LibraryCall GetTrenchTarget;
-      set_checkpoint("GetTrenchTargetComplete");
-      SynchronousCommand flush_checkpoints();
-    }
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
 
-    Excavation:{
-      SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("ExcavationComplete")))));
-      LibraryCall Excavation;
-      set_checkpoint("ExcavationComplete");
-      SynchronousCommand flush_checkpoints();
-    }
+      // NOTE: this call has the side effect of setting the GroundFound external
+      // variable, as well as the four variables passed in.
+      LibraryCall IdentifySampleTarget (X = trench_x,
+                                        Y = trench_y,
+                                        GroundPos = ground_pos,
+                                        Parallel = parallel);
 
-    Downlink:{
-      SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("DownlinkComplete")))));
-      LibraryCall Downlink;
-      set_checkpoint("DownlinkComplete");
-      SynchronousCommand flush_checkpoints();
-    }
-
-    Samples:{
-      Boolean first_collection = true;
-      SkipCondition
-        (did_crash &&
-         !Lookup(IsBootOK(Lookup(CheckpointWhen("SamplesComplete")))));
-
-      // Repeat until samples correctly processed
-      // If samples don't exist, they are by definition OK
-      // MonitorSamples controls SamplesOK
-      DumpCollectAnalyze:{
-        RepeatCondition SamplesOK == false;
-
-        DumpSamples:{
-          SkipCondition SamplesOK == true;
-          LibraryCall DumpSamples;
-        }
-
-        // Stop the moment we need to dump samples
-        CollectAnalyze:{
-          Boolean ignore_crash;
-          PreCondition       SamplesOK == true;
-          InvariantCondition SamplesOK == true;
-
-          LibraryCall CollectAndTransfer(InstanceName="MissionSol1",
-                                         IgnoreCrash = !first_collection);
-          LibraryCall StartSampleAnalysis;
-        }
-
-        // If we are going to repeat, we need to know to start fresh
-        first_collection = false;
+      if (! Lookup(GroundFound)) {
+        // Note that the default value of GroundFound is false, so
+        log_error ("Failed to find ground. Stowing arm and stopping.");
+        LibraryCall Stow();
+        MissionInProgress = false;
       }
-    }
 
-    // Don't finish europa mission until samples have been processed
-    WaitForSamples:{
-      StartCondition SamplesComplete;
-      set_checkpoint("SamplesComplete");
+      DigAndImage: Concurrence {
+        Boolean DiggingSafe = true;
+        Dig:
+        {
+          InvariantCondition DiggingSafe;
+          LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                                 Length = trench_length, BiteDepth = 0.05,
+                                 NumPasses = 2, Parallel = parallel);
+        }
+        ImageDig:
+        {
+          Repeat Dig.state == EXECUTING;
+          LibraryCall Image(desc="trench");
+          Wait FILM_INTERVAL;
+        }
+
+        SenseDig:
+        {
+          Repeat Dig.state == EXECUTING;
+          LibraryCall Stub (desc="Sensing dig");
+          DiggingSafe = STUB_TRUE;
+          Wait SENSE_DIG_INTERVAL;
+        }
+      }
+
+      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                  GroundPos = ground_pos, Parallel = parallel);
+      LibraryCall Image(desc="trench");
+      LibraryCall Downlink;
+
+      LibraryCall CollectAndTransfer(IgnoreCrash = false,
+                                     InstanceName="MissionSol1",
+                                     X = trench_x, Y = trench_y,
+                                     GroundPos = ground_pos,
+                                     Depth = 0.11, Length = trench_length,
+                                     Parallel = parallel);
+      set_checkpoint ("SampleCollected");
       SynchronousCommand flush_checkpoints();
     }
+
+    SampleAnalysis:
+    {
+      SkipCondition
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+      LibraryCall StartSampleAnalysis;
+      set_checkpoint("SampleAnalyzed");
+      SynchronousCommand flush_checkpoints();
+    }
+
+    StowArm:
+    {
+      SkipCondition
+        (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
+      LibraryCall Stow();
+      set_checkpoint("ArmStowed");
+      SynchronousCommand flush_checkpoints();
+    }
+
     log_info ("Europa Mission, Sol 0 finished.");
     set_boot_ok();
     SynchronousCommand flush_checkpoints();
+    MissionInProgress = false;
   }
-  MissionInProgress = false;
 }

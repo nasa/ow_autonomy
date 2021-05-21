@@ -5,63 +5,20 @@
 #ifndef Ow_Plan_Interface_H
 #define Ow_Plan_Interface_H
 
-// PLEXIL interface: commands, lookups, library plans
+// PLEXIL interface to lander: commands, lookups, library plans, PLEXIL utilities
 
-// Lander commands
-
-Command tilt_antenna (Real);
-Command pan_antenna (Real);
-Command take_picture();
-
-// The following commands perform only the path planning for the given activity.
-
-Command dig_circular (Real x,
-                      Real y,
-                      Real depth,
-                      Real ground_pos,
-                      Boolean parallel); // true means parallel to lander arm
-
-Command dig_linear (Real x,
-                    Real y,
-                    Real depth,
-                    Real length,
-                    Real ground_pos);
-
-// This dumps the scoop at the given location; can be used for removing tailings
-// as well as delivering a sample to the receptacle.
-Command deliver_sample (Real x,
-                        Real y,
-                        Real z);
-
-Command grind (Real x,
-               Real y,
-               Real depth,
-               Real length,
-               Boolean parallel,
-               Real ground_pos);
-
-Command guarded_move (Real x,
-                      Real y,
-                      Real z,
-                      Real dir_x,
-                      Real dir_y,
-                      Real dir_z,
-                      Real search_distance);
-
-// Move from stowed position to a "ready" position
-Command unstow();
-
-// Move from "ready" position to stowed position; REQUIRES unstow() first
-Command stow();
+#include "lander-commands.h"
 
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
 
-// PLEXIL library versions of lander operations.  These are preferable to the
-// raw commands above, and include the final publish_trajectory.
 
+// PLEXIL library for lander operations.
+
+LibraryAction Tilt (In Real Degrees);
+LibraryAction Pan  (In Real Degrees);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction GuardedMove (In Real X,
@@ -85,24 +42,64 @@ LibraryAction DigCircular (In Real X,
                            In Real GroundPos,
                            In Boolean Parallel);
 
-LibraryAction DeliverSample (In Real X,
-                             In Real Y,
-                             In Real Z);
+LibraryAction DigLinear (In Real X,
+                         In Real Y,
+                         In Real Depth,
+                         In Real Length,
+                         In Real GroundPos);
 
-// Does nothing
-LibraryAction Stub (In String desc);
+LibraryAction Deliver (In Real X,
+                       In Real Y,
+                       In Real Z);
 
 
-// Lookups
+// Lander queries
 
-// Can be used for fine-grain process control, but generally not needed.
-Boolean Lookup Running (String operation_name);
-Boolean Lookup Finished (String operation_name);
-
+Real Lookup StateOfCharge;
+Real Lookup RemainingUsefulLife;
+Real Lookup BatteryTemperature;
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
+
+// Faults
+Boolean Lookup SystemFault;
+Boolean Lookup AntennaFault;
+Boolean Lookup ArmFault;
+Boolean Lookup PowerFault;
+
+// Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
-Boolean Lookup ImageReceived;
+
+
+// Misc
+
+// Query whether a given operation is running.  Uses the operation names as
+// defined in OwInterface.cpp.  Generally not needed, but supports more
+// fine-grained control of concurrency.
+Boolean Lookup Running (String operation_name);
+
+//////// PLEXIL Utilities
+
+// Predefined, unitless PLEXIL variable for current time.
+Real Lookup time;
+
+// String operations
+String Lookup ToString(...);
+Boolean Lookup StringToBoolean(String);
+Integer Lookup StringToInteger(String);
+Integer Lookup StringToReal(String);
+String Lookup substr(...);
+Integer Lookup find_first_of(...);
+Integer Lookup find_last_of(...);
+
+// Checkpointing interface
+Command set_checkpoint(...);
+Command flush_checkpoints;
+Command set_boot_ok();
+Integer Lookup CheckpointWhen(String);
+Integer Lookup NumberOfUnhandledBoots;
+Boolean Lookup IsBootOK(Integer);
+Boolean Lookup DidCrash;
 
 #endif

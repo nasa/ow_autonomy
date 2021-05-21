@@ -22,29 +22,24 @@ declarations near the top.
 Descriptions of some key plans, and other files of interest, are as follows.
 See the comments inside all the plans for more information.
 
-1. ReferenceMission1 : models a portion of Sol 0 of the Europa Lander reference
-   mission defined by JPL.
+1. ReferenceMission1, ReferenceMission2 : both plans model a portion of Sol 0 of
+   the Europa Lander reference mission defined by JPL.  The second plan is the
+   same as the first one except it adds simple checks for the battery and
+   implements basic fault detection and handling.
 
-2. EuropaMission: a variant of the above that includes _checkpointing_, a new
-   PLEXIL feature that supports robust plan resumption after a reboot.
-   Checkpoint filers are saved to ~/.ros by default; the location can be
-   customized in `ow-config.xml`.  You should be able to kill the autonomy node
-   at arbitrary points during this plan's execution, restart the node, and see
-   the correct behavior.
+2. EuropaMission: a variant of the above that includes some additional stubbed
+   mission operations, as well as _checkpointing_, a new and experimental PLEXIL
+   feature that supports robust plan resumption after a reboot.  Checkpoint
+   filers are saved to ~/.ros by default; the location can be customized in
+   `ow-config.xml`.
 
-3. Demo: Default plan for the autonomy node.  Exercises a few short sequences of
-   arm and antenna operations.
+3. Demo: Default plan for the autonomy node.  Exercises a short sequence of arm
+   and antenna operations.
 
 4. TestAntennaCamera: A short panoramic imaging demo.
 
 5. TorqueTest: Overtorque detection.  This plan attempts to push the scoop into
    the ground, which creates joint over-torquing warnings and errors.
 
-6. TestPlanning: Concurrency demo.  This runs the arm planning ROS service,
-   while concurrently printing an "in progress" message.  Note that ROS services
-   are typically blocking, but the PLEXIL interface threads them to allow
-   concurrency.
-
-7. TestActions: ROS Action demo.  This plan runs a dummy GuardedMove action (not
-   connected to simulator) concurrently with the real GuardedMove service.
-
+6. Continuous: non-terminating plan that performs continuous operations, useful
+   as a stress/load test.

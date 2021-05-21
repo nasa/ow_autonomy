@@ -2,34 +2,38 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test plan for ROS actions.  Content will evolve as new actions are added.
+// A simple test for each and every ROS Action based lander operation.
 
 #include "plan-interface.h"
-Command guarded_move_action_demo (Real x, Real y, Real z,
-                                  Real dir_x, Real dir_y, Real dir_z,
-                                  Real search_distance);
 
 TestActions:
 {
-  log_info ("Beginning GuardedMove concurrence demo...");
+  Real GP = -0.155;  // Ground position
+  log_info ("Beginning action test...");
 
-  StartOperations: Concurrence
-  {
-    // Start an action (dummy for now)
-    guarded_move_action_demo (2, 0, 0.3, 0, 0, 1, 0.5);
+  LibraryCall Unstow();
 
-    // Start a service
-    guarded_move (2, 0, 0.3, 0, 0, 1, 0.5);
-  }
+	LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
+                           SearchDistance=0.7);
 
-  WaitForFinish:
-  {
-    StartCondition (Lookup (Running ("GuardedMove")) &&
-                    Lookup (Running ("GuardedMoveAction")));
-    EndCondition (Lookup (Finished ("GuardedMove")) &&
-                  Lookup (Finished ("GuardedMoveAction")));
-    log_info ("Waiting for operations to finish...");
-  }
+  LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
+                     Length = 0.5, Parallel = false,
+                     GroundPos = GP);
 
-  log_info ("GuardedMove concurrence demo finished");
+  LibraryCall DigCircular (X = 1.75, Y = 0.1, Depth = 0.045,
+                           GroundPos = GP, Parallel = false);
+
+  LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
+                     Length = 0.5, Parallel = true,
+                     GroundPos = GP);
+
+  LibraryCall DigLinear (X = 1.75, Y = 0.1, Depth = 0.045, Length = 0.1,
+                         GroundPos = GP);
+
+  // Receptacle coordinates
+  LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
+
+  LibraryCall Stow();
+
+  log_info ("Action test finished.");
 }
