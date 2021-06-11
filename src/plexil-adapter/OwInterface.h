@@ -11,7 +11,7 @@
 
 #include <ros/ros.h>
 
-// ROS Actions
+// ROS Actions - OceanWATERS
 #include <actionlib/client/simple_action_client.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
@@ -20,6 +20,9 @@
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
+
+// ROS Actions - OWLAT
+#include <owlat_sim_msgs/ARM_UNSTOWAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -46,6 +49,9 @@ using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+
+using OwlatUnstowActionClient =
+  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
 
 template<int OpIndex, typename T>
   using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
@@ -86,6 +92,7 @@ class OwInterface
               bool parallel, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
+  void owlatUnstow (int id);
   void deliver (double x, double y, double z, int id);
   void takePanorama (double elev_lo, double elev_hi,
                      double lat_overlap, double vert_overlap);
@@ -124,6 +131,7 @@ class OwInterface
                     t_action_done_cb<OpIndex, ResultPtr> done_cb =
                     default_action_done_cb<OpIndex, ResultPtr>);
   void unstowAction (int id);
+  void owlatUnstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
                bool parallel, double ground_pos, int id);
@@ -213,6 +221,8 @@ class OwInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+
+  std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;

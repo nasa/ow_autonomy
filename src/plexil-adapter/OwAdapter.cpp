@@ -270,6 +270,13 @@ static void unstow (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
+{
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->owlatUnstow (CommandId);
+  send_ack_once(*cr);
+}
+
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -471,6 +478,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_debug", log_debug);
   g_configuration->registerCommandHandler("stow", stow);
   g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);

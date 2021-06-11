@@ -59,6 +59,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
+const string Op_OwlatUnstow       = "OwlatUnstow";
 
 enum LanderOps {
   GuardedMove,
@@ -70,12 +71,14 @@ enum LanderOps {
   Grind,
   Stow,
   Unstow,
-  TakePicture
+  TakePicture,
+  OwlatUnstow
 };
 
 static std::vector<string> LanderOpNames =
   { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
+    Op_OwlatUnstow
   };
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
@@ -97,7 +100,8 @@ static map<string, int> Running
   { Op_Grind, IDLE_ID },
   { Op_Stow, IDLE_ID },
   { Op_Unstow, IDLE_ID },
-  { Op_TakePicture, IDLE_ID }
+  { Op_TakePicture, IDLE_ID },
+  { Op_OwlatUnstow, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -563,6 +567,7 @@ void OwInterface::initialize()
 
     m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
     m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
+    m_owlatUnstowClient.reset(new OwlatUnstowActionClient(Op_OwlatUnstow, true));
     m_stowClient.reset(new StowActionClient(Op_Stow, true));
     m_grindClient.reset(new GrindActionClient(Op_Grind, true));
     m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
@@ -586,6 +591,10 @@ void OwInterface::initialize()
     }
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("OWLAT Unstow action server did not connect!");
+    }
+
     }
   }
 }
@@ -894,4 +903,25 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
+}
+
+/////////////////////////////// OWLAT Interface ////////////////////////////////
+
+void OwInterface::owlatUnstow (int id)
+{
+  if (! mark_operation_running (Op_OwlatUnstow, id)) return;
+  thread action_thread (&OwInterface::owlatUnstowAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::owlatUnstowAction (int id)
+{
+  owlat_sim_msgs::ARM_UNSTOWGoal goal;
+
+  runAction<OwlatUnstow,
+            actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
+            owlat_sim_msgs::ARM_UNSTOWGoal,
+            owlat_sim_msgs::ARM_UNSTOWResultConstPtr,
+            owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>
+    (Op_OwlatUnstow, m_owlatUnstowClient, goal, id);
 }
