@@ -59,7 +59,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
-const string Op_OwlatUnstow       = "OwlatUnstow";
+const string Op_OwlatUnstow       = "/owlat_sim/ARM_UNSTOW";
 
 enum LanderOps {
   GuardedMove,
@@ -665,6 +665,7 @@ void OwInterface::runAction (const string& opname,
                   done_cb,
                   active_cb<OpIndex>,
                   action_feedback_cb<FeedbackPtr>);
+    ROS_INFO ("Sent goal to action %s", opname.c_str());
   }
   else {
     ROS_ERROR ("%s action client was null!", opname.c_str());
