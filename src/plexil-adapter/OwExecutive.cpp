@@ -78,7 +78,9 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+	// updates Exec so that multiple plans can be run even after first plan finishes 
+    PlexilApp->notifyExec();
+	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
     PlexilApp->run();
   }
   catch (const Error& e) {
