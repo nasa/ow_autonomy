@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// OW autonomy ROS node.
+// ROS node wrapping a PLEXIL executive.
 
 // ROS
 #include <ros/ros.h>
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 {
   // Initializations
 
-  ros::init(argc, argv, "autonomy_node");
+  ros::init(argc, argv, "plexil_node");
 
   if (! OwExecutive::instance()->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     OwExecutive::instance()->runPlan (argv[1]); // asynchronous
   }
   else {
-    ROS_ERROR("autonomy_node got %i args, expected 2", argc);
+    ROS_ERROR("plexil_node got %i args, expected 2", argc);
     return 1;
   }
 

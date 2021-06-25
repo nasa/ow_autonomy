@@ -30,11 +30,11 @@ RECIPIENT, TO THE EXTENT PERMITTED BY LAW.  RECIPIENT'S SOLE REMEDY FOR ANY SUCH
 MATTER SHALL BE THE IMMEDIATE, UNILATERAL TERMINATION OF THIS AGREEMENT.
 
 
-ow_autonomy
-===========
+ow_plexil
+=========
 
 This package contains a candidate onboard autonomy component for an Ocean
-Worlds lander, namely a ROS node (named `autonomy node`) embedding a PLEXIL plan
+Worlds lander, namely a ROS node (named `plexil_node`) embedding a PLEXIL plan
 executive.
 
 
@@ -76,14 +76,14 @@ the entire workspace with:
  catkin build
 ```
 
-Build just the ow_autonomy package with:
+Build just the ow_plexil package with:
 
 ```bash
- catkin build ow_autonomy
+ catkin build ow_plexil
 ```
 
 _NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
-last build, a clean rebuild of ow_autonomy is needed.  See bottom of this file
+last build, a clean rebuild of ow_plexil is needed.  See bottom of this file
 for instructions._
 
 
@@ -104,12 +104,12 @@ Start the autonomy node
 2. Next start the autonomy node.  Starting the autonomy node always runs a
    PLEXIL plan.  The simplest version is:
 
-   `roslaunch ow_autonomy autonomy_node.launch`
+   `roslaunch ow_plexil plexil_node.launch`
 
    This invocation loads the default PLEXIL plan, `Demo.plx`.  A specific plan
    may be run by adding it to the command line, e.g.
 
-   `roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission1.plx`
+   `roslaunch ow_plexil plexil_node.launch plan:=ReferenceMission1.plx`
 
    The argument given to the `plan` parameter must be a file found in :
 
@@ -121,12 +121,12 @@ Start the autonomy node
 Clean
 -----
 
-To clean (remove all build products from) just the ow_autonomy package:
+To clean (remove all build products from) just the ow_plexil package:
 
  `cd <ow_workspace>/build`
- `rm -rf ow_autonomy`
+ `rm -rf ow_plexil`
 
 To clean the entire ROS workspace (not needed if you only want to rebuild
-ow_autonomy):
+ow_plexil):
 
   `catkin clean`
