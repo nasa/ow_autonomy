@@ -6,12 +6,14 @@ project(ow_autonomy)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+	rospy
   roslib
   actionlib
   actionlib_msgs
   geometry_msgs
   ow_lander
   ow_faults
+	rqt_gui_py
 )
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -49,3 +51,24 @@ include_directories(
 )
 
 add_subdirectory(src)
+
+#############
+## INSTALL ##
+#############
+
+## Mark executable python script for installation
+install(PROGRAMS
+	scripts/rqt_plexil_planner
+	DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+## Mark resource package for installation
+install(DIRECTORY
+  resource
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+## Mark plugin.xml file for installation
+install(FILES
+  plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
