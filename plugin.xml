@@ -1,5 +1,5 @@
 <library path="src">
-  <class name="PLEXIL Planner" type="rqt_plexil_planner.rqt_planner.Planner" base_class_type="rqt_gui_py::Plugin">
+  <class name="PLEXIL Planner" type="rqt_plexil_planner.rqt_planner.MyPlugin" base_class_type="rqt_gui_py::Plugin">
     <description>
       A simple GUI that selects PLEXIL plans to be run on the ow_simulator.
     </description>

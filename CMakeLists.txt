@@ -39,6 +39,8 @@ catkin_package(
 catkin_add_env_hooks(60.ow_autonomy
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 
+## for GUI
+catkin_python_setup()
 
 ###########
 ## Build ##
