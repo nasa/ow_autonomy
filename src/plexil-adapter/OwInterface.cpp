@@ -462,6 +462,7 @@ OwInterface::OwInterface ()
 {
 }
 
+OwInterface::~OwInterface (){}
 
 void OwInterface::initialize()
 {
