@@ -456,29 +456,12 @@ std::shared_ptr<OwInterface> OwInterface::instance ()
 }
 
 OwInterface::OwInterface ()
-  : m_genericNodeHandle (nullptr),
-    m_antennaTiltPublisher (nullptr),
-    m_antennaPanPublisher (nullptr),
-    m_leftImageTriggerPublisher (nullptr),
-    m_antennaTiltSubscriber (nullptr),
-    m_antennaPanSubscriber (nullptr),
-    m_jointStatesSubscriber (nullptr),
-    m_cameraSubscriber (nullptr),
-    m_socSubscriber (nullptr),
-    m_rulSubscriber (nullptr),
-    m_batteryTempSubscriber (nullptr),
-    m_systemFaultMessagesSubscriber (nullptr),
-    m_armFaultMessagesSubscriber (nullptr),
-    m_powerFaultMessagesSubscriber (nullptr),
-    m_ptFaultMessagesSubscriber (nullptr),
-
-    m_currentPan (0), m_currentTilt (0),
+  : m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
 
-OwInterface::~OwInterface (){}
 
 void OwInterface::initialize()
 {

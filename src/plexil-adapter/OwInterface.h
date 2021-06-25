@@ -66,9 +66,6 @@ class OwInterface
  public:
   static std::shared_ptr<OwInterface> instance();
   OwInterface ();
-  ~OwInterface ();
-  OwInterface (const OwInterface&) = delete;
-  OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Operational interface
