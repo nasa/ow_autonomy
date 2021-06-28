@@ -54,7 +54,8 @@ The following represent the success criteria of the Reference Mission 2 plan:
 	- Upon completion, the plan will print "ReferenceMission2 plan 
 	complete."
 	- To more easily view this message when it occurs, add the following
- 	after the launch command: `grep -i "ReferenceMission2 plan complete."`
+ 	after the launch command:__
+	 ` | grep -i "ReferenceMission2 plan complete."`
 - The plan is interruptable through fault injection, i.e. pauses in 
 response to a fault
 	- Faults can be injected via rqt, a python script, or the command line
