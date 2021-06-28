@@ -30,17 +30,17 @@ find_package(PLEXIL REQUIRED)
 ## catkin specific configuration ##
 ###################################
 
+## for GUI
+catkin_python_setup()
+
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp roslib ow_lander actionlib_msgs geometry_msgs ow_faults
+  CATKIN_DEPENDS roscpp rospy roslib ow_lander actionlib_msgs geometry_msgs ow_faults
   CFG_EXTRAS ow_autonomy-extras.cmake
 )
 
 catkin_add_env_hooks(60.ow_autonomy
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
-
-## for GUI
-catkin_python_setup()
 
 ###########
 ## Build ##
