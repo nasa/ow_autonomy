@@ -36,6 +36,7 @@ static string PlexilDir = "";
 
 // The embedded PLEXIL application
 static PLEXIL::ExecApplication* PlexilApp = NULL;
+static PLEXIL::PlexilExec* PlexilEx = NULL;
 
 OwExecutive* OwExecutive::m_instance = NULL;
 
@@ -49,7 +50,16 @@ OwExecutive* OwExecutive::instance ()
 OwExecutive::~OwExecutive()
 {
   if (m_instance) delete m_instance;
+	delete PlexilEx;
 }
+
+bool OwExecutive::getState()
+{
+  //auto a = PlexilExec::allPlansFinished();
+	auto current_state = PlexilEx->allPlansFinished();
+	std::cout << current_state << std::endl;
+}
+
 
 bool OwExecutive::runPlan (const string& filename)
 {
@@ -79,9 +89,9 @@ bool OwExecutive::runPlan (const string& filename)
 
   try {
 	// updates Exec so that multiple plans can be run even after first plan finishes 
-    PlexilApp->notifyExec();
+  PlexilApp->notifyExec();
 	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
-    PlexilApp->run();
+  PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;
@@ -169,6 +179,7 @@ bool OwExecutive::initialize ()
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
     PlexilApp = new PLEXIL::ExecApplication();
+    PlexilEx = PLEXIL::makePlexilExec();
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;

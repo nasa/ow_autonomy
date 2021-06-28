@@ -44,8 +44,16 @@ int main(int argc, char* argv[])
     return 1;
   }
 
+  ros::Rate rate(1); // 1 Hz seems appropriate, for now.
+  while (ros::ok()) {
+    ros::spinOnce();
+		OwExecutive::instance()->getState();
+    rate.sleep();
+  }
+
 	// loops until terminated by user, prompts them to enter any additional plans and
 	// runs them asynchronously. Error checking for plans already handled in other classes.
+/*
   while (ros::ok()) {	
 		ROS_INFO("Enter additional plans to be asynchronously run: \n\n");
 		std::string input;
@@ -53,7 +61,8 @@ int main(int argc, char* argv[])
 		std::cout << std::endl;
 		ROS_INFO ("Running plan %s", input.c_str());
 		OwExecutive::instance()->runPlan (input.c_str()); // asynchronous
+		OwExecutive::instance()->getState();
 	}
-	
+*/	
   return 0;  // We never actually get here!
 }
