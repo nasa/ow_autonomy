@@ -53,11 +53,11 @@ Testing plans
 	- Launch OceanWATERS ([Launch Tutorial](https://github.com/nasa/ow_simulator/wiki/Tutorials))
 	- Source your OceanWATERS workspace
 	- Run the autonomy node with this plan as the argument:
-	  'roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission2.plx'
+	  `roslaunch ow_autonomy autonomy_node.launch plan:=ReferenceMission2.plx`
 
 - Success criteria: 
 	- Left running the plan completes
 		- Upon completion, the plan will print "ReferenceMission2 plan complete."
-		- To more easily view this message when it occurs, run the above roslaunch command followed by 'grep -i "ReferenceMission2 plan complete."'
+		- To more easily view this message when it occurs, run the above roslaunch command followed by `grep -i "ReferenceMission2 plan complete."`
 	- The plan is interruptable through fault injection, i.e. pauses in response to a fault
 		- Faults can be injected via rqt, a python script, or the command line ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults/README.md))
