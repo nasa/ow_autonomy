@@ -16,7 +16,6 @@
 #include "AdapterExecInterface.hh"
 #include "Debug.hh"
 #include "Error.hh"
-#include "PlexilExec.hh"
 #include "ExecApplication.hh"
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
@@ -36,7 +35,6 @@ static string PlexilDir = "";
 
 // The embedded PLEXIL application
 static PLEXIL::ExecApplication* PlexilApp = NULL;
-static PLEXIL::PlexilExec* PlexilEx = NULL;
 
 OwExecutive* OwExecutive::m_instance = NULL;
 
@@ -50,14 +48,13 @@ OwExecutive* OwExecutive::instance ()
 OwExecutive::~OwExecutive()
 {
   if (m_instance) delete m_instance;
-	delete PlexilEx;
 }
 
-bool OwExecutive::getState()
+//returns true if current plan is finished executing
+bool OwExecutive::getPlanState()
 {
-  //auto a = PlexilExec::allPlansFinished();
-	auto current_state = PlexilEx->allPlansFinished();
-	std::cout << current_state << std::endl;
+	bool current_state = PlexilApp->allPlansFinished();
+	return current_state;
 }
 
 
@@ -179,7 +176,6 @@ bool OwExecutive::initialize ()
   try {
     REGISTER_ADAPTER(OwAdapter, "Ow");
     PlexilApp = new PLEXIL::ExecApplication();
-    PlexilEx = PLEXIL::makePlexilExec();
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
