@@ -2,9 +2,9 @@
 
 <launch>
   <arg name="plan" default="Demo.plx"/>
-  <node pkg="ow_autonomy"
-        name="autonomy_node"
-        type="autonomy_node"
+  <node pkg="ow_plexil"
+        name="plexil_node"
+        type="plexil_node"
         args="$(arg plan)"
         output="screen" >
   </node>
