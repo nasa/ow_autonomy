@@ -5,7 +5,7 @@ import rospkg
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding import QtGui, QtCore
-from python_qt_binding.QtWidgets import QWidget, QAbstractItemView
+from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem
 
 class MyPlugin(Plugin):
 
@@ -44,12 +44,25 @@ class MyPlugin(Plugin):
 		# Add widget to the user interface
 		context.add_widget(self._widget)
 
-		
+		rowPosition = self._widget.tableWidget.rowCount()
+		colPosition = self._widget.tableWidget.columnCount()
+		self._widget.tableWidget.insertRow(rowPosition)
+		self._widget.tableWidget.insertColumn(colPosition)
+		self._widget.tableWidget.setItem(rowPosition-1, 1, QTableWidgetItem("text3"))
+		self._widget.tableWidget.insertRow(rowPosition+1)
+		self._widget.tableWidget.setItem(rowPosition, 1, QTableWidgetItem("text4"))
+
+		#self._widget.tableWidget.insertRow(rowPosition+1)
+		#self._widget.tableWidget.setItem(rowPosition, 0, QTableWidgetItem("text4"))
+		#self._widget.tableWidget.setItem(rowPosition, 1, QTableWidgetItem("text5"))
+
+		#self._widget.tableWidget.setRowCount(3)
+				
 		self._widget.listWidget.setDragDropMode(QAbstractItemView.InternalMove)
 		entry = ["Apple", "Orange", "Peach"]
 		self._widget.listWidget.addItems(entry)
 
-		self._widget.pushButton.clicked[bool].connect(self._handle_pushButton_clicked)
+		self._widget.removeButton.clicked[bool].connect(self._handle_pushButton_clicked)
 
 
 	def _handle_pushButton_clicked(self, checked):
