@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// ow_autonomy
+// ow_plexil
 #include "OwInterface.h"
 #include "subscriber.h"
 #include "joint_support.h"

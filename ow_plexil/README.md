@@ -87,8 +87,8 @@ last build, a clean rebuild of ow_plexil is needed.  See bottom of this file
 for instructions._
 
 
-Start the autonomy node
------------------------
+Start the Plexil node
+---------------------
 
 1. First you must start the simulator, e.g.
 
@@ -101,7 +101,7 @@ Start the autonomy node
       `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
       `europa_test_dem.launch`.
 
-2. Next start the autonomy node.  Starting the autonomy node always runs a
+2. Next start the Plexil node.  Starting the Plexil node always runs a
    PLEXIL plan.  The simplest version is:
 
    `roslaunch ow_plexil plexil_node.launch`
