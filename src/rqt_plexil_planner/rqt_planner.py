@@ -44,26 +44,58 @@ class MyPlugin(Plugin):
 		# Add widget to the user interface
 		context.add_widget(self._widget)
 
-		rowPosition = self._widget.tableWidget.rowCount()
-		colPosition = self._widget.tableWidget.columnCount()
-		self._widget.tableWidget.insertRow(rowPosition)
-		self._widget.tableWidget.insertColumn(colPosition)
-		self._widget.tableWidget.setItem(rowPosition-1, 1, QTableWidgetItem("text3"))
-		self._widget.tableWidget.insertRow(rowPosition+1)
-		self._widget.tableWidget.setItem(rowPosition, 1, QTableWidgetItem("text4"))
+		rowPosition = self._widget.sentPlansTable.rowCount()
+		colPosition = self._widget.sentPlansTable.columnCount()
+		self._widget.sentPlansTable.insertRow(rowPosition)
+		self._widget.sentPlansTable.insertColumn(colPosition)
+		self._widget.sentPlansTable.setItem(rowPosition-1, 1, QTableWidgetItem("text3"))
+		self._widget.sentPlansTable.insertRow(rowPosition+1)
+		self._widget.sentPlansTable.setItem(rowPosition, 1, QTableWidgetItem("text4"))
 
-		#self._widget.tableWidget.insertRow(rowPosition+1)
-		#self._widget.tableWidget.setItem(rowPosition, 0, QTableWidgetItem("text4"))
-		#self._widget.tableWidget.setItem(rowPosition, 1, QTableWidgetItem("text5"))
+		rowPosition = self._widget.planQueueTable.rowCount()
+		colPosition = self._widget.planQueueTable.columnCount()
+		self._widget.planQueueTable.insertRow(rowPosition)
+		self._widget.planQueueTable.insertColumn(colPosition)
+		self._widget.planQueueTable.setItem(rowPosition-1, 1, QTableWidgetItem("text3"))
+		self._widget.planQueueTable.insertRow(rowPosition+1)
+		self._widget.planQueueTable.setItem(rowPosition, 1, QTableWidgetItem("text4"))
 
-		#self._widget.tableWidget.setRowCount(3)
+
+		#self._widget.sentPlansTable.insertRow(rowPosition+1)
+		#self._widget.sentPlansTable.setItem(rowPosition, 0, QTableWidgetItem("text4"))
+		#self._widget.sentPlansTable.setItem(rowPosition, 1, QTableWidgetItem("text5"))
+
+		#self._widget.sentPlansTable.setRowCount(3)
 				
-		self._widget.listWidget.setDragDropMode(QAbstractItemView.InternalMove)
+		self._widget.planList.setDragDropMode(QAbstractItemView.InternalMove)
 		entry = ["Apple", "Orange", "Peach"]
-		self._widget.listWidget.addItems(entry)
+		self._widget.planList.addItems(entry)
 
 		self._widget.removeButton.clicked[bool].connect(self._handle_pushButton_clicked)
+		self._widget.upButton.clicked[bool].connect(self._handle_upButton_clicked)
 
+	def _handle_upButton_clicked(self, checked):
+		selectedRow = self._widget.planQueueTable.currentRow()
+		numRows = self._widget.planQueueTable.rowCount()
+
+		if(selectedRow == 0):
+			print("NOPE")
+			return
+		else:
+			belowTxt = self._widget.planQueueTable.item(selectedRow,0).text()
+			aboveTxt = self._widget.planQueueTable.item(selectedRow-1,0).text()
+			print(belowTxt)
+			print(aboveTxt)
+			self._widget.planQueueTable.item(selectedRow, 0).setText(aboveTxt)
+			self._widget.planQueueTable.item(selectedRow-1, 0).setText(belowTxt)
+			return
+
+
+			
+			
+		
+		
+		
 
 	def _handle_pushButton_clicked(self, checked):
 		if checked:
