@@ -188,7 +188,7 @@ bool OwExecutive::initialize ()
       ROS_ERROR("Stepping exec failed");
       return false;
     }
-		PlexilApp->addLibraryPath (PlexilDir);
+    PlexilApp->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {
     ostringstream s;
