@@ -1,0 +1,107 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+
+LibraryAction StartSampleAnalysis;
+
+ReferenceMission2: Concurrence
+{
+  // Guards for mission continuation
+  Boolean BatteryOK = true;
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  WaitForHealth:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !(BatteryOK && NoFaults);
+    Skip !MissionInProgress;
+
+    log_warning
+      ("System health issues, mission operations nominally paused...");
+    Wait 10;
+  }
+
+  HandleFaults:
+  {
+  // Testing with just one fault response for now...
+  Repeat MissionInProgress;
+  Start MissionInProgress && !(BatteryOK && NoFaults);
+  Skip !MissionInProgress;
+
+  if () {
+
+  }
+  endif;
+  }
+
+  Mission:
+  {
+
+    log_info ("Starting FaultHandlingExample plan...");
+
+    Image:
+    {
+      Start BatteryOK && NoFaults;
+      ImagingLandingSite = true;
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "FaultHandlingExample",
+                                   IgnoreCrash = true);
+    }
+    
+    log_info ("FaultHandlingExample plan complete.");
+    MissionInProgress = false;
+  }
+}

@@ -101,7 +101,6 @@ ReferenceMission2: Concurrence
     Image:
     {
       Start BatteryOK && NoFaults;
-      ImagingLandingSite = true;
       log_info ("** Imaging Landing Site **");
       LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
                                    IgnoreCrash = true);
@@ -109,14 +108,12 @@ ReferenceMission2: Concurrence
     Unstow:
     {
       Start BatteryOK && NoFaults;
-      UnstowingArm = true;
       log_info ("** Unstowing Arm **");
       LibraryCall Unstow;
     }
     Search:
     {
       Start BatteryOK && NoFaults;
-      SearchingWorkspace = true;
       log_info ("** Identifying Sample Target **");
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
@@ -127,7 +124,6 @@ ReferenceMission2: Concurrence
       Dig:
       {
         Start BatteryOK && NoFaults;
-        DiggingTrench = true;
         log_info ("** Digging Trench **");
         LibraryCall DigTrench (X = trench_x,
                                Y = trench_y,
@@ -140,7 +136,6 @@ ReferenceMission2: Concurrence
       Clear:
       {
         Start BatteryOK && NoFaults;
-        RemovingTailings = true;
         log_info ("** Removing Tailings **");
         LibraryCall RemoveTailings (X = trench_x,
                                     Y = trench_y,
@@ -150,7 +145,6 @@ ReferenceMission2: Concurrence
       Collect:
       {
         Start BatteryOK && NoFaults;
-        CollectingSample = true;
         log_info ("** Collecting Sample **");
         LibraryCall CollectSample (X = trench_x,
                                    Y = trench_y,
@@ -162,14 +156,12 @@ ReferenceMission2: Concurrence
       Stow:
       {
         Start BatteryOK && NoFaults;
-        StowingArm = true;
         log_info ("** Stowing Arm **");
         LibraryCall Stow;
       }
       Analyze:
       {
         Start BatteryOK && NoFaults;
-        AnalyzingSample = true;
         log_info ("** Analyzing Sample **");
         LibraryCall StartSampleAnalysis;
       }
@@ -179,7 +171,6 @@ ReferenceMission2: Concurrence
      FailStow:
      {
        Start BatteryOK && NoFaults;
-       StowingArm = true;
        log_info ("** Stowing Arm **");
        LibraryCall Stow;
      }
