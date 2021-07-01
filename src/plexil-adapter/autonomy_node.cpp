@@ -57,7 +57,22 @@ int main(int argc, char* argv[])
 			// or doesnt exist then error message prints before looping again.
 			if(input != "" && OwExecutive::instance()->runPlan(input.c_str())){
 					ROS_INFO ("Running plan %s", input.c_str());
-    			rate.sleep();
+  				ros::Rate rate2(10); // 10 Hz seems appropriate, for now.
+					int timeout = 0;
+					// handles edge case where getPlanState will not register that plan is running
+					// and attempts to run another plan when an ABORT state is recieved. Times out
+					// after 5 seconds or the plan is registered as running.
+					while(OwExecutive::instance()->getPlanState() && timeout < 50){
+						ros::spinOnce();
+						rate2.sleep();
+						timeout+=1;
+						if(timeout % 10 == 0){
+							ROS_INFO ("Plan not responding, timing out in %i seconds", (5 - timeout/10));
+						}
+					}
+					if(timeout == 49){
+						ROS_INFO ("Plan timed out, try again.");
+					}
 			}
 		}
 		else{
