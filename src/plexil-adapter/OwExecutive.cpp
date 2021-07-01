@@ -53,8 +53,7 @@ OwExecutive::~OwExecutive()
 //returns true if current plan is finished executing
 bool OwExecutive::getPlanState()
 {
-	bool current_state = PlexilApp->allPlansFinished();
-	return current_state;
+	return PlexilApp->allPlansFinished();
 }
 
 
