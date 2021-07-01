@@ -9,6 +9,7 @@
 // ever be needed in the current autonomy scheme, which has one autonomy
 // executive per lander.
 
+#include <memory>
 #include <ros/ros.h>
 
 // ROS Actions
@@ -63,11 +64,11 @@ using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 class OwInterface
 {
  public:
-  static OwInterface* instance();
+  static std::shared_ptr<OwInterface> instance();
   OwInterface ();
   ~OwInterface ();
   OwInterface (const OwInterface&) = delete;
-  OwInterface& operator= (const OwInterface&) = delete;
+	OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Operational interface
@@ -184,22 +185,22 @@ class OwInterface
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
 
-  static OwInterface* m_instance;
-  ros::NodeHandle* m_genericNodeHandle;
+  static std::shared_ptr<OwInterface> m_instance;
+  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Publishers and subscribers
 
-  ros::Publisher*  m_antennaTiltPublisher;
-  ros::Publisher*  m_antennaPanPublisher;
-  ros::Publisher*  m_leftImageTriggerPublisher;
+  std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
+  std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
+  std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
 
-  ros::Subscriber* m_antennaPanSubscriber;
-  ros::Subscriber* m_antennaTiltSubscriber;
-  ros::Subscriber* m_jointStatesSubscriber;
-  ros::Subscriber* m_cameraSubscriber;
-  ros::Subscriber* m_socSubscriber;
-  ros::Subscriber* m_rulSubscriber;
-  ros::Subscriber* m_batteryTempSubscriber;
+  std::unique_ptr<ros::Subscriber> m_antennaPanSubscriber;
+  std::unique_ptr<ros::Subscriber> m_antennaTiltSubscriber;
+  std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
+  std::unique_ptr<ros::Subscriber> m_socSubscriber;
+  std::unique_ptr<ros::Subscriber> m_rulSubscriber;
+  std::unique_ptr<ros::Subscriber> m_batteryTempSubscriber;
   std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;

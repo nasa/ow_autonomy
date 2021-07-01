@@ -11,7 +11,7 @@ World landers, as supported by the OceanWATERS software testbed.
 Plans are executed by starting the autonomy node, which takes as an argument the
 name of the compiled plan, which is the same name as the `.plp` files here,
 except with extension `.plx`.  The default plan, when not supplied, is Demo.plx,
-which is he compilation of Demo.plp.  Compiled files are found only in the
+which is the compilation of Demo.plp.  Compiled files are found only in the
 `devel/etc/plexil` directory of your workspace.
 
 Not all of these plans may be executed directly by the autonomy node, because of
@@ -43,3 +43,20 @@ See the comments inside all the plans for more information.
 
 6. Continuous: non-terminating plan that performs continuous operations, useful
    as a stress/load test.
+
+Testing plans
+-------------
+
+### ReferenceMission2 ###
+
+The following represent the success criteria of the Reference Mission 2 plan: 
+- Left running the plan completes
+	- Upon completion, the plan will print "ReferenceMission2 plan 
+	complete."
+	- To more easily view this message when it occurs, add the following
+ 	after the launch command:<br/>
+	` | grep -i "ReferenceMission2 plan complete."`
+- The plan is interruptable through fault injection, i.e. pauses in 
+response to a fault
+	- Faults can be injected via rqt, a python script, or the command line
+ ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults/README.md))

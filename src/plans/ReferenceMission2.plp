@@ -85,15 +85,6 @@ ReferenceMission2: Concurrence
 
   Mission:
   {
-    // One-shot guards for mission phases
-    Boolean ImagingLandingSite = false;
-    Boolean UnstowingArm = false;
-    Boolean SearchingWorkspace = false;
-    Boolean DiggingTrench = false;
-    Boolean RemovingTailings = false;
-    Boolean CollectingSample = false;
-    Boolean StowingArm = false;
-    Boolean AnalyzingSample = false;
 
     // These 4 variables are assigned in the call to IdentifySampleTarget.
     Real trench_x, trench_y, ground_pos;
@@ -109,23 +100,20 @@ ReferenceMission2: Concurrence
 
     Image:
     {
-      Start BatteryOK && NoFaults && !ImagingLandingSite;
-      ImagingLandingSite = true;
+      Start BatteryOK && NoFaults;
       log_info ("** Imaging Landing Site **");
       LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
                                    IgnoreCrash = true);
     }
     Unstow:
     {
-      Start BatteryOK && NoFaults && !UnstowingArm;
-      UnstowingArm = true;
+      Start BatteryOK && NoFaults;
       log_info ("** Unstowing Arm **");
       LibraryCall Unstow;
     }
     Search:
     {
-      Start BatteryOK && NoFaults && !SearchingWorkspace;
-      SearchingWorkspace = true;
+      Start BatteryOK && NoFaults;
       log_info ("** Identifying Sample Target **");
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
@@ -135,8 +123,7 @@ ReferenceMission2: Concurrence
     if (Lookup(GroundFound)) {
       Dig:
       {
-        Start BatteryOK && NoFaults && !DiggingTrench;
-        DiggingTrench = true;
+        Start BatteryOK && NoFaults;
         log_info ("** Digging Trench **");
         LibraryCall DigTrench (X = trench_x,
                                Y = trench_y,
@@ -148,8 +135,7 @@ ReferenceMission2: Concurrence
       }
       Clear:
       {
-        Start BatteryOK && NoFaults && !RemovingTailings;
-        RemovingTailings = true;
+        Start BatteryOK && NoFaults;
         log_info ("** Removing Tailings **");
         LibraryCall RemoveTailings (X = trench_x,
                                     Y = trench_y,
@@ -158,8 +144,7 @@ ReferenceMission2: Concurrence
       }
       Collect:
       {
-        Start BatteryOK && NoFaults && !CollectingSample;
-        CollectingSample = true;
+        Start BatteryOK && NoFaults;
         log_info ("** Collecting Sample **");
         LibraryCall CollectSample (X = trench_x,
                                    Y = trench_y,
@@ -170,15 +155,13 @@ ReferenceMission2: Concurrence
       }
       Stow:
       {
-        Start BatteryOK && NoFaults && !StowingArm;
-        StowingArm = true;
+        Start BatteryOK && NoFaults;
         log_info ("** Stowing Arm **");
         LibraryCall Stow;
       }
       Analyze:
       {
-        Start BatteryOK && NoFaults && !AnalyzingSample;
-        AnalyzingSample = true;
+        Start BatteryOK && NoFaults;
         log_info ("** Analyzing Sample **");
         LibraryCall StartSampleAnalysis;
       }
@@ -187,8 +170,7 @@ ReferenceMission2: Concurrence
      log_error ("Failed to find ground, aborting.");
      FailStow:
      {
-       Start BatteryOK && NoFaults && !StowingArm;
-       StowingArm = true;
+       Start BatteryOK && NoFaults;
        log_info ("** Stowing Arm **");
        LibraryCall Stow;
      }
