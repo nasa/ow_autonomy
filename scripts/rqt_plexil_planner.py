@@ -2,7 +2,7 @@
 
 import sys
 
-from rqt_plexil_planner.rqt_planner import MyPlugin
+from rqt_plexil_planner.rqt_plexil_planner import PlexilPlanner
 from rqt_gui.main import Main
 
 plugin = 'rqt_plexil_planner'
