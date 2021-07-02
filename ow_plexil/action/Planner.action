@@ -1,0 +1,9 @@
+#goal 
+string command
+string[] plans
+---
+#result
+string result
+---
+# feedback
+string progress

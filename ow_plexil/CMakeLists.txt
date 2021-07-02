@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   ow_lander
   ow_faults
   rqt_gui_py
+  message_generation
+  std_msgs
 )
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -21,17 +23,25 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-#generate_messages(
-#  DEPENDENCIES actionlib_msgs geometry_msgs
-#)
+add_action_files(
+  FILES
+  Planner.action
+)
+
+## for GUI
+catkin_python_setup()
+
+generate_messages(
+  DEPENDENCIES 
+  actionlib_msgs 
+  geometry_msgs
+  std_msgs
+)
 
 
 ###################################
 ## catkin specific configuration ##
 ###################################
-
-## for GUI
-catkin_python_setup()
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}

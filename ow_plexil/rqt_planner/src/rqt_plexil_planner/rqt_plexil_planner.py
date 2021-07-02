@@ -1,12 +1,15 @@
 import os
 import rospy
+import actionlib
 import rospkg
 
+from argparse import ArgumentParser
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding import QtGui, QtCore
 from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea
-from argparse import ArgumentParser
+
+from ow_plexil.msg import PlannerAction, PlannerGoal, PlannerResult
 
 class PlexilPlanner(Plugin):
 
@@ -19,8 +22,8 @@ class PlexilPlanner(Plugin):
     parser.add_argument("-q", "--quiet", action="store_true", dest="quiet", help="Put plugin in silent mode")
     args, unknowns = parser.parse_known_args(context.argv())
     if not args.quiet:
-      print 'arguments: ', args
-      print 'unknowns: ', unknowns
+      print('arguments: ', args)
+      print('unknowns: ', unknowns)
 
     # Find resources and Create QWidget
     self._widget = QWidget()
@@ -30,6 +33,11 @@ class PlexilPlanner(Plugin):
     if context.serial_number() > 1:
       self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
     context.add_widget(self._widget)
+
+    #action client setup
+    self.planner_client = actionlib.SimpleActionClient("selected_plans", PlannerAction)
+    #self.planner_client.wait_for_server()
+
     
     #populates the plan list
     self.populate_plan_list()
@@ -60,6 +68,12 @@ class PlexilPlanner(Plugin):
     #add to list
     self._widget.planList.addItems(plan_list)
 
+  def done_callback(self, result):
+    print(result)
+
+  def feedback_callback(self, feedback):
+    print(feedback)
+    
   def _handle_addButton_clicked(self, checked):
     #get selected items
     selected_plans = self._widget.planList.selectedItems()
@@ -114,15 +128,21 @@ class PlexilPlanner(Plugin):
 
   def _handle_sendButton_clicked(self, checked):
     num_rows = self._widget.planQueueTable.rowCount()
+    plans_sent = []
     #creates a new row in the sent table for each item in the queue table and inserts it
     for i in range(num_rows):
       plan_name = self._widget.planQueueTable.item(0,0).text()
+      plans_sent.append(str(plan_name + ".plx"))
       self._widget.planQueueTable.removeRow(0)
       row_position = self._widget.sentPlansTable.rowCount()
       self._widget.sentPlansTable.insertRow(row_position)
       self._widget.sentPlansTable.setItem(row_position, 0, QTableWidgetItem(plan_name))
       self._widget.sentPlansTable.setItem(row_position, 1, QTableWidgetItem("Pending..."))
       self._widget.sentPlansTable.resizeColumnsToContents()
+    
+    # Create goal and send to action server for plan execution
+    goal = PlannerGoal(command="ADD", plans=plans_sent)
+    self.planner_client.send_goal(goal, done_cb=self.done_callback, active_cb=None, feedback_cb=self.feedback_callback)
     return
 
   def _handle_resetButton_clicked(self, checked):
