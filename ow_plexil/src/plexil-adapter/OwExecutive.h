@@ -23,6 +23,7 @@ class OwExecutive
   static OwExecutive* instance();
 
   bool initialize ();
+  bool getPlanState();
   bool runPlan (const std::string& filename);
 
  private:

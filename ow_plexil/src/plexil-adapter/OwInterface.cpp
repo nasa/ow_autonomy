@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// ow_autonomy
+// ow_plexil
 #include "OwInterface.h"
 #include "subscriber.h"
 #include "joint_support.h"
@@ -450,129 +450,99 @@ static void default_action_done_cb
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
-OwInterface* OwInterface::m_instance = nullptr;
+std::shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
 
-OwInterface* OwInterface::instance ()
+std::shared_ptr<OwInterface> OwInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == nullptr) m_instance = new OwInterface();
+  if (m_instance == nullptr) m_instance = std::make_shared<OwInterface>();
   return m_instance;
 }
 
 OwInterface::OwInterface ()
-  : m_genericNodeHandle (nullptr),
-    m_antennaTiltPublisher (nullptr),
-    m_antennaPanPublisher (nullptr),
-    m_leftImageTriggerPublisher (nullptr),
-    m_antennaTiltSubscriber (nullptr),
-    m_antennaPanSubscriber (nullptr),
-    m_jointStatesSubscriber (nullptr),
-    m_cameraSubscriber (nullptr),
-    m_socSubscriber (nullptr),
-    m_rulSubscriber (nullptr),
-    m_batteryTempSubscriber (nullptr),
-    m_systemFaultMessagesSubscriber (nullptr),
-    m_armFaultMessagesSubscriber (nullptr),
-    m_powerFaultMessagesSubscriber (nullptr),
-    m_ptFaultMessagesSubscriber (nullptr),
-
-    m_currentPan (0), m_currentTilt (0),
+  : m_currentPan (0), m_currentTilt (0),
     m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
 
-OwInterface::~OwInterface ()
-{
-  if (m_genericNodeHandle) delete m_genericNodeHandle;
-  if (m_antennaTiltPublisher) delete m_antennaTiltPublisher;
-  if (m_leftImageTriggerPublisher) delete m_leftImageTriggerPublisher;
-  if (m_antennaTiltSubscriber) delete m_antennaTiltSubscriber;
-  if (m_antennaPanSubscriber) delete m_antennaPanSubscriber;
-  if (m_jointStatesSubscriber) delete m_jointStatesSubscriber;
-  if (m_cameraSubscriber) delete m_cameraSubscriber;
-  if (m_socSubscriber) delete m_socSubscriber;
-  if (m_rulSubscriber) delete m_rulSubscriber;
-  if (m_batteryTempSubscriber) delete m_batteryTempSubscriber;
-  if (m_instance) delete m_instance;
-}
+OwInterface::~OwInterface (){}
 
 void OwInterface::initialize()
 {
   static bool initialized = false;
 
   if (not initialized) {
-    m_genericNodeHandle = new ros::NodeHandle();
+    m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
     // Initialize publishers.  Queue size is a guess at adequacy.  For now,
     // latching in lieu of waiting for publishers.
 
     const int qsize = 3;
     const bool latch = true;
-    m_antennaTiltPublisher = new ros::Publisher
+    m_antennaTiltPublisher = std::make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_tilt_position_controller/command", qsize, latch));
-    m_antennaPanPublisher = new ros::Publisher
+    m_antennaPanPublisher = std::make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_pan_position_controller/command", qsize, latch));
-    m_leftImageTriggerPublisher = new ros::Publisher
+    m_leftImageTriggerPublisher = std::make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
 
     // Initialize subscribers
 
-    m_antennaTiltSubscriber = new ros::Subscriber
+    m_antennaTiltSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/ant_tilt_position_controller/state", qsize,
                  &OwInterface::tiltCallback, this));
-    m_antennaPanSubscriber = new ros::Subscriber
+    m_antennaPanSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/ant_pan_position_controller/state", qsize,
                  &OwInterface::panCallback, this));
-    m_jointStatesSubscriber = new ros::Subscriber
+    m_jointStatesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
-    m_cameraSubscriber = new ros::Subscriber
+    m_cameraSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
-    m_socSubscriber = new ros::Subscriber
+    m_socSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
-    m_batteryTempSubscriber = new ros::Subscriber
+    m_batteryTempSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/battery_temperature", qsize,
                  temperature_callback));
-    m_rulSubscriber = new ros::Subscriber
+    m_rulSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     // subscribers for fault messages
-    m_systemFaultMessagesSubscriber.reset(new ros::Subscriber
+    m_systemFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/system_faults_status", qsize,
-                &OwInterface::systemFaultMessageCallback, this)));
-    m_armFaultMessagesSubscriber.reset(new ros::Subscriber
+                &OwInterface::systemFaultMessageCallback, this));
+    m_armFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/arm_faults_status", qsize,
-                &OwInterface::armFaultCallback, this)));
-    m_powerFaultMessagesSubscriber.reset(new ros::Subscriber
+                &OwInterface::armFaultCallback, this));
+    m_powerFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/power_faults_status", qsize,
-                &OwInterface::powerFaultCallback, this)));
-    m_ptFaultMessagesSubscriber.reset(new ros::Subscriber
+                &OwInterface::powerFaultCallback, this));
+    m_ptFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/pt_faults_status", qsize,
-                &OwInterface::antennaFaultCallback, this)));
+                &OwInterface::antennaFaultCallback, this));
 
-    m_guardedMoveClient.reset(new GuardedMoveActionClient(Op_GuardedMove, true));
-    m_unstowClient.reset(new UnstowActionClient(Op_Unstow, true));
-    m_owlatUnstowClient.reset(new OwlatUnstowActionClient(Op_OwlatUnstow, true));
-    m_stowClient.reset(new StowActionClient(Op_Stow, true));
-    m_grindClient.reset(new GrindActionClient(Op_Grind, true));
-    m_digCircularClient.reset(new DigCircularActionClient(Op_DigCircular, true));
-    m_digLinearClient.reset(new DigLinearActionClient(Op_DigLinear, true));
-    m_deliverClient.reset(new DeliverActionClient(Op_Deliver, true));
+    m_guardedMoveClient = std::make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
+    m_unstowClient = std::make_unique<UnstowActionClient>(Op_Unstow, true);
+    m_stowClient = std::make_unique<StowActionClient>(Op_Stow, true);
+    m_grindClient = std::make_unique<GrindActionClient>(Op_Grind, true);
+    m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
+    m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
+    m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -605,7 +575,7 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 }
 
 static void antenna_op (const string& opname, double degrees,
-                        ros::Publisher* pub, int id)
+                        std::unique_ptr<ros::Publisher>& pub, int id)
 {
   if (! mark_operation_running (opname, id)) {
     return;
