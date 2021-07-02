@@ -16,7 +16,6 @@
 #include "AdapterExecInterface.hh"
 #include "Debug.hh"
 #include "Error.hh"
-#include "PlexilExec.hh"
 #include "ExecApplication.hh"
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
@@ -51,6 +50,13 @@ OwExecutive::~OwExecutive()
   if (m_instance) delete m_instance;
 }
 
+//returns true if current plan is finished executing
+bool OwExecutive::getPlanState()
+{
+	return PlexilApp->allPlansFinished();
+}
+
+
 bool OwExecutive::runPlan (const string& filename)
 {
   string plan = (PlexilDir + filename);
@@ -78,8 +84,10 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
-    PlexilApp->run();
+	// updates Exec so that multiple plans can be run even after first plan finishes 
+  PlexilApp->notifyExec();
+	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+  PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;
@@ -179,7 +187,7 @@ bool OwExecutive::initialize ()
       ROS_ERROR("Stepping exec failed");
       return false;
     }
-		PlexilApp->addLibraryPath (PlexilDir);
+    PlexilApp->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {
     ostringstream s;
