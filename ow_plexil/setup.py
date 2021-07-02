@@ -6,7 +6,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 # fetch values from package.xml
 setup_args = generate_distutils_setup(
   packages=['rqt_plexil_planner'],
-  package_dir={'': 'src'},
+  package_dir={'': 'rqt_planner/src'},
   requires=['std_msgs', 'rospy']
 )
 

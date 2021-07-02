@@ -24,7 +24,7 @@ class PlexilPlanner(Plugin):
 
     # Find resources and Create QWidget
     self._widget = QWidget()
-    ui_file = os.path.join(rospkg.RosPack().get_path('ow_autonomy'), 'resource', 'plexilplanner.ui')
+    ui_file = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_planner', 'resource', 'plexilplanner.ui')
     loadUi(ui_file, self._widget)
     self._widget.setObjectName('PlexilPlannerUI')
     if context.serial_number() > 1:
@@ -52,7 +52,7 @@ class PlexilPlanner(Plugin):
   def populate_plan_list(self):
     plan_list = []
     #get directory
-    plan_dir = os.path.join(rospkg.RosPack().get_path('ow_autonomy'), 'src', 'plans')
+    plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
     #get all plans with extension .ple
     for i in os.listdir(plan_dir):
       if(i.endswith(".ple")):

@@ -60,12 +60,12 @@ add_subdirectory(src)
 
 ## Mark executable python script for installation
 install(PROGRAMS
-  scripts/rqt_plexil_planner
+  rqt_planner/scripts/rqt_plexil_planner
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 ## Mark resource package for installation
 install(DIRECTORY
-  resource
+  rqt_planner/resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 ## Mark plugin.xml file for installation
