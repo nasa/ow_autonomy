@@ -165,7 +165,7 @@ bool OwExecutive::initialize ()
 {
   // NOTE: this is the best we can do for now.
   // ROS provides no API to locate the 'devel' directory.
-  PlexilDir = ros::package::getPath("ow_autonomy") + "/../../devel/etc/plexil/";
+  PlexilDir = ros::package::getPath("ow_plexil") + "/../../../devel/etc/plexil/";
 
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();

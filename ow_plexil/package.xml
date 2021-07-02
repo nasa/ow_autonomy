@@ -1,14 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ow_autonomy</name>
+  <name>ow_plexil</name>
   <version>0.1.0</version>
-  <description>Autonomy Baseline of the OceanWORLD Simulator</description>
+  <description>PLEXIL-based plan executive</description>
   <maintainer email="michael.dalal@nasa.gov">Mike Dalal</maintainer>
-  <license>NASA Internal - OpenSoucing is TODO</license>
+  <license>NASA OPEN SOURCE AGREEMENT VERSION 1.3</license>
   <author email="michael.dalal@nasa.gov">Mike Dalal</author>
-
   <buildtool_depend>catkin</buildtool_depend>
-
   <depend>roscpp</depend>
   <depend>rospy</depend>
   <depend>roslib</depend>

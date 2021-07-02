@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ow_autonomy)
+project(ow_plexil)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -35,11 +35,11 @@ catkin_python_setup()
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rospy roslib ow_lander actionlib_msgs geometry_msgs ow_faults
-  CFG_EXTRAS ow_autonomy-extras.cmake
+  CATKIN_DEPENDS roscpp roslib rospy ow_lander actionlib_msgs geometry_msgs ow_faults
+  CFG_EXTRAS ow_plexil-extras.cmake
 )
 
-catkin_add_env_hooks(60.ow_autonomy
+catkin_add_env_hooks(60.ow_plexil
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
 
 ###########
