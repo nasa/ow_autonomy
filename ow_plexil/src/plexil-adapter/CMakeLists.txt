@@ -6,6 +6,7 @@ set (HEADERS
   OwAdapter.h
   joint_support.h
   subscriber.h
+  plexil_planner.h
 )
 
 set (SOURCES
@@ -13,6 +14,7 @@ set (SOURCES
   OwInterface.cpp
   OwAdapter.cpp
   subscriber.cpp
+  plexil_planner.cpp
 )
 
 add_definitions(-DUSING_ROS)

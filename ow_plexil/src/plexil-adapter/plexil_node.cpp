@@ -12,12 +12,17 @@
 #include "OwExecutive.h"
 #include "OwInterface.h"
 
+//new
+#include "plexil_planner.h"
+
 int main(int argc, char* argv[])
 {
   // Initializations
-
   ros::init(argc, argv, "plexil_node");
-
+  PlexilPlanner test();
+  ROS_INFO("SSTUCK COMPLETE");
+  ros::spin();
+/*
   if (! OwExecutive::instance()->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
     return 1;
@@ -79,6 +84,6 @@ int main(int argc, char* argv[])
       rate.sleep();
     }
   }
-
+*/
   return 0;  // We never actually get here!
 }

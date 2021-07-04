@@ -3,7 +3,7 @@ string command
 string[] plans
 ---
 #result
-string result
+bool result
 ---
 # feedback
 string progress
