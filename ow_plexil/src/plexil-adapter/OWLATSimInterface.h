@@ -7,14 +7,19 @@
 
 // Interface to JPL's OWLAT simulator.
 
+// C++
 #include <memory>
 #include <ros/ros.h>
 
-// ROS Actions - OWLAT
+// ow_plexil
+#include "PlexilInterface.h"
+
+// OWLAT Sim (installation required)
 #include <owlat_sim_msgs/ARM_UNSTOWAction.h>
 
 using OwlatUnstowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
+
 
 class OWLATSimInterface : public PlexilInterface
 {

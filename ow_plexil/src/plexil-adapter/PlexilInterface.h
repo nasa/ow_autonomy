@@ -59,6 +59,7 @@ class PlexilInterface
   void setCommandStatusCallback (void (*callback) (int, bool));
 
 private:
+  void registerLanderOperation (const std::string& name);
   bool operationRunning (const std::string& name) const;
   template <int OpIndex, class ActionClient, class Goal,
             class ResultPtr, class FeedbackPtr>
@@ -69,6 +70,11 @@ private:
                   t_action_done_cb<OpIndex,ResultPtr> done_cb =
                     default_action_done_cb<OpIndex, ResultPtr>);
 
+  // Callback function in PLEXIL adapter for success/failure of given command.
   std::unique_ptr<void*(int,bool)> m_CommandStatusCallback;
+
+  // Map from operation name to its instance ID if it is running, or to IDLE_ID
+  // otherwise.  This map stays the same size after initialization, thus storing
+  // all the valid lander operation names.
   std::map<std::string, int> m_runningOperations;
 };
