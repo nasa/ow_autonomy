@@ -42,8 +42,6 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 //////////////////// Lander Operation Support ////////////////////////
 
-static void (* CommandStatusCallback) (int,bool);
-
 const double PanTiltTimeout = 5.0; // seconds, made up
 
 // Lander operation names.  In general these match those used in PLEXIL and
@@ -59,7 +57,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
-const string Op_OwlatUnstow       = "/owlat_sim/ARM_UNSTOW";
+
 
 enum LanderOps {
   GuardedMove,
@@ -72,13 +70,11 @@ enum LanderOps {
   Stow,
   Unstow,
   TakePicture,
-  OwlatUnstow
 };
 
 static std::vector<string> LanderOpNames =
   { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
-    Op_OwlatUnstow
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
   };
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
@@ -86,9 +82,7 @@ static std::vector<string> LanderOpNames =
 // insures that each entry can be read/written by only one thread.  (The map
 // itself can be read/written by multiple threads concurrently).
 
-// Unused operation ID that signifies idle lander operation.
-#define IDLE_ID (-1)
-
+/* Moved to NewClass.  These values need initializing.
 static map<string, int> Running
 {
   { Op_GuardedMove, IDLE_ID },
@@ -103,49 +97,8 @@ static map<string, int> Running
   { Op_TakePicture, IDLE_ID },
   { Op_OwlatUnstow, IDLE_ID }
 };
+*/
 
-static bool is_lander_operation (const string& name)
-{
-  return Running.find (name) != Running.end();
-}
-
-static bool mark_operation_running (const string& name, int id)
-{
-  if (Running.at (name) != IDLE_ID) {
-    ROS_WARN ("%s already running, ignoring duplicate request.", name.c_str());
-    return false;
-  }
-  Running.at (name) = id;
-  publish ("Running", true, name);
-  return true;
-}
-
-static void mark_operation_finished (const string& name, int id)
-{
-  if (! Running.at (name) == IDLE_ID) {
-    ROS_WARN ("%s was not running. Should never happen.", name.c_str());
-  }
-  Running.at (name) = IDLE_ID;
-  publish ("Running", false, name);
-  publish ("Finished", true, name);
-  if (id != IDLE_ID) CommandStatusCallback (id, true);
-}
-
-
-//////////////////// Fault Support ////////////////////////
-
-static void monitor_for_faults (const string& opname)
-{
-  // This (threaded) function was formerly used for operation-specific fault
-  // monitoring, using a mechanism that has been removed, which was direct
-  // inspection of the fault injection ROS parameters.  TBD whether it will be
-  // used again, but leaving it here for now.
-
-  //  using namespace std::chrono_literals;
-  //  while (Running.at (opname) != IDLE_ID) {
-  //    std::this_thread::sleep_for (1s);
-  //  }
-}
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -422,31 +375,6 @@ static void guarded_move_done_cb
   publish ("GroundPosition", GroundPosition);
 }
 
-//////////////////// General Action support ///////////////////////////////
-
-const auto ActionServerTimeout = 10.0;  // seconds
-
-//////////////////// ROS Action callbacks - generic //////////////////////
-
-template<typename T>
-static void action_feedback_cb (const T& feedback)
-{
-}
-
-template<int OpIndex>
-static void active_cb ()
-{
-  ROS_INFO ("%s started...", LanderOpNames[OpIndex].c_str());
-}
-
-template<int OpIndex, typename T>
-static void default_action_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const T& result_ignored)
-{
-  ROS_INFO ("%s finished in state %s", LanderOpNames[OpIndex].c_str(),
-            state.toString().c_str());
-}
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
@@ -465,8 +393,6 @@ OwInterface::OwInterface ()
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
-
-OwInterface::~OwInterface (){}
 
 void OwInterface::initialize()
 {
@@ -561,17 +487,8 @@ void OwInterface::initialize()
     }
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
-    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
-      ROS_ERROR ("OWLAT Unstow action server did not connect!");
-    }
-
     }
   }
-}
-
-void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
-{
-  CommandStatusCallback = callback;
 }
 
 static void antenna_op (const string& opname, double degrees,
@@ -580,13 +497,10 @@ static void antenna_op (const string& opname, double degrees,
   if (! mark_operation_running (opname, id)) {
     return;
   }
-
   std_msgs::Float64 radians;
   radians.data = degrees * D2R;
   ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
             degrees, radians.data);
-  thread fault_thread (monitor_for_faults, opname);
-  fault_thread.detach();
   pub->publish (radians);
 }
 
@@ -609,8 +523,6 @@ void OwInterface::takePicture (int id)
   if (! mark_operation_running (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
   ROS_INFO ("Capturing stereo image using left image trigger.");
-  thread fault_thread (monitor_for_faults, Op_TakePicture);
-  fault_thread.detach();
   m_leftImageTriggerPublisher->publish (msg);
 }
 
@@ -628,7 +540,6 @@ void OwInterface::runAction (const string& opname,
                              const Goal& goal, int id,
                              t_action_done_cb<OpIndex, ResultPtr> done_cb)
 {
-  thread fault_thread (monitor_for_faults, opname);
   if (ac) {
     ROS_INFO ("Sending goal to action %s", opname.c_str());
     ac->sendGoal (goal,
@@ -645,7 +556,6 @@ void OwInterface::runAction (const string& opname,
   // Wait indefinitely for the action to complete.
   bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
   mark_operation_finished (opname, id);
-  fault_thread.join();
 }
 
 void OwInterface::deliverAction (double x, double y, double z, int id)
@@ -850,20 +760,6 @@ double OwInterface::getBatteryTemperature () const
   return BatteryTemperature;
 }
 
-bool OwInterface::operationRunning (const string& name) const
-{
-  // Note: check in caller guarantees 'at' to return a valid value.
-  return Running.at (name) != IDLE_ID;
-}
-
-bool OwInterface::running (const string& name) const
-{
-  if (is_lander_operation (name)) return operationRunning (name);
-
-  ROS_ERROR("OwInterface::running: unsupported operation: %s", name.c_str());
-  return false;
-}
-
 bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
 {
   return (JointsAtHardTorqueLimit.find (joint_name) !=
@@ -876,23 +772,3 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-/////////////////////////////// OWLAT Interface ////////////////////////////////
-
-void OwInterface::owlatUnstow (int id)
-{
-  if (! mark_operation_running (Op_OwlatUnstow, id)) return;
-  thread action_thread (&OwInterface::owlatUnstowAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::owlatUnstowAction (int id)
-{
-  owlat_sim_msgs::ARM_UNSTOWGoal goal;
-
-  runAction<OwlatUnstow,
-            actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
-            owlat_sim_msgs::ARM_UNSTOWGoal,
-            owlat_sim_msgs::ARM_UNSTOWResultConstPtr,
-            owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>
-    (Op_OwlatUnstow, m_owlatUnstowClient, goal, id);
-}

@@ -1,16 +1,20 @@
 set(LIB_NAME ow_adapter)
 
 set (HEADERS
+  PlexilInterface.h
   OwExecutive.h
   OwInterface.h
+  OWLATSimInterface.h
   OwAdapter.h
   joint_support.h
   subscriber.h
 )
 
 set (SOURCES
+  PlexilInterface.cpp
   OwExecutive.cpp
   OwInterface.cpp
+  OWLATSimInterface.cpp
   OwAdapter.cpp
   subscriber.cpp
 )
