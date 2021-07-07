@@ -7,6 +7,9 @@
 
 using std::string;
 
+// Unused operation ID that signifies idle lander operation.
+#define IDLE_ID (-1)
+
 template<typename T>
 void action_feedback_cb (const T& feedback)
 {

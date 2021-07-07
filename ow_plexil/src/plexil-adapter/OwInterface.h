@@ -33,6 +33,8 @@
 #include <ow_faults/PowerFaults.h>
 #include <ow_faults/PTFaults.h>
 
+#include "PlexilInterface.h"
+
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
 using StowActionClient =
@@ -52,7 +54,7 @@ using DeliverActionClient =
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
 using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 
-class OwInterface
+class OwInterface : public PlexilInterface
 {
  public:
   static std::shared_ptr<OwInterface> instance();

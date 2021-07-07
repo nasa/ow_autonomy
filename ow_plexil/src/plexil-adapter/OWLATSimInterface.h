@@ -20,7 +20,6 @@
 using OwlatUnstowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
 
-
 class OWLATSimInterface : public PlexilInterface
 {
  public:

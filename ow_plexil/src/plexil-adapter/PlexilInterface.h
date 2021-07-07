@@ -9,8 +9,9 @@
 // simulators and testbeds.
 
 #include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
 
-# ROS Action support
+// ROS Action support
 
 const auto ActionServerTimeout = 10.0;  // seconds
 
@@ -32,12 +33,6 @@ template<int OpIndex, typename T>
 void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
                              const T& result_ignored);
 
-
-# PLEXIL adapter support
-
-// Unused operation ID that signifies idle lander operation.
-#define IDLE_ID (-1)
-
 class PlexilInterface
 {
  public:
@@ -58,8 +53,10 @@ class PlexilInterface
   // Command feedback
   void setCommandStatusCallback (void (*callback) (int, bool));
 
-private:
+ protected:
   void registerLanderOperation (const std::string& name);
+
+ private:
   bool operationRunning (const std::string& name) const;
   template <int OpIndex, class ActionClient, class Goal,
             class ResultPtr, class FeedbackPtr>
@@ -78,3 +75,5 @@ private:
   // all the valid lander operation names.
   std::map<std::string, int> m_runningOperations;
 };
+
+#endif
