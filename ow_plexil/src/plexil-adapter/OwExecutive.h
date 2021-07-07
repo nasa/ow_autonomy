@@ -24,6 +24,7 @@ class OwExecutive
 
   bool initialize ();
   bool getPlanState();
+  bool reset();
   bool runPlan (const std::string& filename);
 
  private:

@@ -26,7 +26,6 @@ class PlexilPlanner{
     ow_plexil::PlannerFeedback m_feedback;
     ow_plexil::PlannerResult m_result;
     std::vector<std::string> planArray;
-    bool firstPlan;
  
 };
 

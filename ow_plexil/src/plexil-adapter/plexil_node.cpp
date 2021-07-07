@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 {
   // Initializations
   ros::init(argc, argv, "plexil_node");
-  PlexilPlanner test();
+  PlexilPlanner test;
   ROS_INFO("SSTUCK COMPLETE");
   ros::spin();
 /*

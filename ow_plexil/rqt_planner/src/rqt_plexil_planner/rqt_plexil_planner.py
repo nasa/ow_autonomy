@@ -7,8 +7,8 @@ from argparse import ArgumentParser
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding import QtGui, QtCore
-from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea
-
+from python_qt_binding.QtGui import QBrush, QColor
+from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QApplication
 from ow_plexil.msg import PlannerAction, PlannerGoal, PlannerResult
 
 class PlexilPlanner(Plugin):
@@ -37,6 +37,7 @@ class PlexilPlanner(Plugin):
     #action client setup
     self.planner_client = actionlib.SimpleActionClient("selected_plans", PlannerAction)
     #self.planner_client.wait_for_server()
+    self._widget.connect(self, SIGNAL("updateStatus(PyQt_PyObject)"), self.monitor_status)
 
     
     #populates the plan list
@@ -68,12 +69,39 @@ class PlexilPlanner(Plugin):
     #add to list
     self._widget.planList.addItems(plan_list)
 
-  def done_callback(self, result):
+  def done_callback(self,status, result):
     print(result)
 
-  def feedback_callback(self, feedback):
+  def monitor_status(self, feedback):
+    print(feedback.progress)
     print(feedback)
+    status = feedback.progress.rsplit(":")[0]
+    running_plan = feedback.progress.rsplit(":")[1].rsplit(".")[0]
     
+    print(running_plan)
+    print(status)
+    
+    num_rows = self._widget.sentPlansTable.rowCount()
+    for i in range(num_rows):
+      plan_name = self._widget.sentPlansTable.item(i,0).text()
+      if(plan_name == running_plan):
+        if(status == "SUCCESS"):
+          self._widget.sentPlansTable.item(i, 1).setText("Running...")
+        else:
+          self._widget.sentPlansTable.item(i, 1).setText("Failed")
+          self._widget.sentPlansTable.item(i, 1).setBackground(QColor(0,128,0))
+        if(i > 0):
+          if(self._widget.sentPlansTable.item(i-1,1).text() != "Failed"):
+            self._widget.sentPlansTable.item(i-1, 1).setText("Finished")
+            self._widget.sentPlansTable.item(i-1, 1).setBackground(QColor(0,128,0))
+        break
+
+    QWidget.update(self._widget)
+    return
+   
+  def feedback_callback(self, feedback):
+    self._widget.emit(SIGNAL("updateStatus(PyQt_PyObject)"), feedback)
+
   def _handle_addButton_clicked(self, checked):
     #get selected items
     selected_plans = self._widget.planList.selectedItems()
@@ -150,6 +178,8 @@ class PlexilPlanner(Plugin):
     #deletes each row pressent in sentplanstable
     for i in range(num_rows):
       self._widget.sentPlansTable.removeRow(0)
+    goal = PlannerGoal(command="RESET", plans=[])
+    self.planner_client.send_goal(goal, done_cb=self.done_callback, active_cb=None, feedback_cb=self.feedback_callback)
     return
 
   def shutdown_plugin(self):
