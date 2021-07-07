@@ -6,12 +6,14 @@ import rospkg
 from argparse import ArgumentParser
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
-from python_qt_binding import QtGui, QtCore
+from python_qt_binding.QtCore import pyqtSignal
 from python_qt_binding.QtGui import QBrush, QColor
 from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QApplication
 from ow_plexil.msg import PlannerAction, PlannerGoal, PlannerResult
 
 class PlexilPlanner(Plugin):
+
+  monitor_signal = pyqtSignal(['QString']) 
 
   def __init__(self, context):
     super(PlexilPlanner, self).__init__(context)
@@ -36,9 +38,9 @@ class PlexilPlanner(Plugin):
 
     #action client setup
     self.planner_client = actionlib.SimpleActionClient("selected_plans", PlannerAction)
-    #self.planner_client.wait_for_server()
-    self._widget.connect(self, SIGNAL("updateStatus(PyQt_PyObject)"), self.monitor_status)
 
+
+    self.monitor_signal[str].connect(self.monitor_status)
     
     #populates the plan list
     self.populate_plan_list()
@@ -73,34 +75,33 @@ class PlexilPlanner(Plugin):
     print(result)
 
   def monitor_status(self, feedback):
-    print(feedback.progress)
-    print(feedback)
-    status = feedback.progress.rsplit(":")[0]
-    running_plan = feedback.progress.rsplit(":")[1].rsplit(".")[0]
-    
-    print(running_plan)
-    print(status)
-    
     num_rows = self._widget.sentPlansTable.rowCount()
-    for i in range(num_rows):
-      plan_name = self._widget.sentPlansTable.item(i,0).text()
-      if(plan_name == running_plan):
-        if(status == "SUCCESS"):
-          self._widget.sentPlansTable.item(i, 1).setText("Running...")
-        else:
-          self._widget.sentPlansTable.item(i, 1).setText("Failed")
+    if(feedback == "COMPLETE"):
+      for i in range(num_rows):
+        current_status = self._widget.sentPlansTable.item(i,1).text()
+        if(current_status == "Running..."):
+          self._widget.sentPlansTable.item(i, 1).setText("Finished")
           self._widget.sentPlansTable.item(i, 1).setBackground(QColor(0,128,0))
-        if(i > 0):
-          if(self._widget.sentPlansTable.item(i-1,1).text() != "Failed"):
-            self._widget.sentPlansTable.item(i-1, 1).setText("Finished")
-            self._widget.sentPlansTable.item(i-1, 1).setBackground(QColor(0,128,0))
-        break
-
-    QWidget.update(self._widget)
+          break
+    else:
+      status = feedback.rsplit(":")[0]
+      running_plan = feedback.rsplit(":")[1].rsplit(".")[0]
+      for i in range(num_rows):
+        plan_name = self._widget.sentPlansTable.item(i,0).text()
+        current_status = self._widget.sentPlansTable.item(i,1).text()
+        if(plan_name == running_plan and current_status == "Pending..."):
+          if(status == "SUCCESS"):
+            self._widget.sentPlansTable.item(i, 1).setText("Running...")
+            break 
+          else:
+            self._widget.sentPlansTable.item(i, 1).setText("Failed")
+            self._widget.sentPlansTable.item(i, 1).setBackground(QColor(255,0,0))
+            break 
     return
    
   def feedback_callback(self, feedback):
-    self._widget.emit(SIGNAL("updateStatus(PyQt_PyObject)"), feedback)
+    feedback_string = str(feedback.progress)
+    self.monitor_signal.emit(feedback_string)
 
   def _handle_addButton_clicked(self, checked):
     #get selected items
@@ -170,6 +171,7 @@ class PlexilPlanner(Plugin):
     
     # Create goal and send to action server for plan execution
     goal = PlannerGoal(command="ADD", plans=plans_sent)
+    self.planner_client.wait_for_server()
     self.planner_client.send_goal(goal, done_cb=self.done_callback, active_cb=None, feedback_cb=self.feedback_callback)
     return
 

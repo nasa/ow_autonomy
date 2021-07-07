@@ -56,25 +56,6 @@ bool OwExecutive::getPlanState()
 	return PlexilApp->allPlansFinished();
 }
 
-// stops and resets the exec in case user wants to stop current plan
-bool OwExecutive::reset()
-{
-  if(PlexilApp->stop() == false){ // stop the exec
-    ROS_ERROR("Failed to stop the Exec");
-    return false; 
-  }
-  if(PlexilApp->reset() == false){ // reset the exec
-    ROS_ERROR("Failed to reset the Exec");
-    return false; 
-  }
-  if (!PlexilApp->step()) {
-      ROS_ERROR("Stepping exec failed");
-      return false;
-  }
-
-  return true; // returns true if both were succesful
-}
-
 bool OwExecutive::runPlan (const string& filename)
 {
   string plan = (PlexilDir + filename);
