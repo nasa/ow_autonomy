@@ -1,9 +1,0 @@
-#goal 
-string command
-string[] plans
----
-#result
-bool result
----
-# feedback
-string progress

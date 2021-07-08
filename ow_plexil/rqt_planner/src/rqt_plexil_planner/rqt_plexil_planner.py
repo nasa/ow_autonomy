@@ -7,14 +7,14 @@ from argparse import ArgumentParser
 from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import pyqtSignal
-from python_qt_binding.QtGui import QBrush, QColor
-from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QApplication
-from ow_plexil.msg import PlannerAction, PlannerGoal, PlannerResult
+from python_qt_binding.QtGui import QBrush, QColor, QIcon
+from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QMessageBox, QApplication
 from ow_plexil.msg import PlannerCommand
 from std_msgs.msg import String
 
 class PlexilPlanner(Plugin):
 
+  #sets up our signal for the sub callback
   monitor_signal = pyqtSignal(['QString']) 
 
   def __init__(self, context):
@@ -38,14 +38,15 @@ class PlexilPlanner(Plugin):
       self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
     context.add_widget(self._widget)
 
+    #set window icon
+    icon = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_planner', 'resource', 'icon.png')
+    self._widget.setWindowIcon(QIcon(icon))
     #pub and sub setup
     self.command_publisher = rospy.Publisher('plexil_gui_commands', PlannerCommand, queue_size=20)
     self.status_subscriber = rospy.Subscriber('plexil_gui_plan_status', String, self.status_callback)
-    
 
-
+    #Qt signal to modify GUI from callback
     self.monitor_signal[str].connect(self.monitor_status)
-    
     #populates the plan list
     self.populate_plan_list()
         
@@ -55,7 +56,6 @@ class PlexilPlanner(Plugin):
     self._widget.sentPlansTable.insertColumn(0)
     self._widget.sentPlansTable.insertColumn(1)
     self._widget.planQueueTable.insertColumn(0)
-    
     #sets up event listeners
     self._widget.addButton.clicked[bool].connect(self._handle_addButton_clicked)
     self._widget.removeButton.clicked[bool].connect(self._handle_removeButton_clicked)
@@ -74,11 +74,12 @@ class PlexilPlanner(Plugin):
         plan_list.append(i.rsplit(".")[0])
     #add to list
     self._widget.planList.addItems(plan_list)
+    self._widget.planList.sortItems()
 
   def monitor_status(self, feedback):
-    print(feedback)
     num_rows = self._widget.sentPlansTable.rowCount()
-    if(feedback == "COMPLETE"):
+    #if completed and previously running we set status as finished
+    if(feedback == "COMPLETE"): 
       for i in range(num_rows):
         current_status = self._widget.sentPlansTable.item(i,1).text()
         if(current_status == "Running..."):
@@ -86,8 +87,10 @@ class PlexilPlanner(Plugin):
           self._widget.sentPlansTable.item(i, 1).setBackground(QColor(0,128,0))
           break
     else:
+      #splitting into plan name and status
       status = feedback.rsplit(":")[0]
       running_plan = feedback.rsplit(":")[1].rsplit(".")[0]
+      #we set status to running or Failed depending on status 
       for i in range(num_rows):
         plan_name = self._widget.sentPlansTable.item(i,0).text()
         current_status = self._widget.sentPlansTable.item(i,1).text()
@@ -97,11 +100,12 @@ class PlexilPlanner(Plugin):
             break 
           else:
             self._widget.sentPlansTable.item(i, 1).setText("Failed")
-            self._widget.sentPlansTable.item(i, 1).setBackground(QColor(255,0,0))
+            self._widget.sentPlansTable.item(i, 1).setBackground(QColor(230,38,0))
             break 
     return
    
   def status_callback(self, msg):
+    #have to use a signal here or else GUI wont update
     feedback_string = str(msg.data)
     self.monitor_signal.emit(feedback_string)
 
@@ -158,6 +162,14 @@ class PlexilPlanner(Plugin):
       return
 
   def _handle_sendButton_clicked(self, checked):
+    #checks sub is connected before sending 
+    if(self.command_publisher.get_num_connections() == 0):
+      popup = QMessageBox()
+      popup.setWindowTitle("ow_plexil subscriber not connected")
+      popup.setText("ow_plexil command subscriber not connected yet, please make sure the ow_plexil node is running.")
+      send_popup = popup.exec_()
+      return
+
     num_rows = self._widget.planQueueTable.rowCount()
     plans_sent = []
     #creates a new row in the sent table for each item in the queue table and inserts it
@@ -172,8 +184,7 @@ class PlexilPlanner(Plugin):
       self._widget.sentPlansTable.setItem(row_position, 1, QTableWidgetItem("Pending..."))
       self._widget.sentPlansTable.resizeColumnsToContents()
     
-    # Create goal and send to action server for plan execution
-
+    # Create msg and send to subscriber for plan execution
     msg = PlannerCommand()
     msg.command = "ADD"
     msg.plans = plans_sent

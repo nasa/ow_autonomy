@@ -23,22 +23,15 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-add_action_files(
-  FILES
-  Planner.action
-)
-
 add_message_files(
   FILES
   PlannerCommand.msg
-  PlanStatus.msg
 )
 ## for GUI
 catkin_python_setup()
 
 generate_messages(
   DEPENDENCIES 
-  actionlib_msgs 
   geometry_msgs
   std_msgs
 )

@@ -1,9 +1,5 @@
-#include "plexil_planner.h"
+#include "PlexilPlanner.h"
 #include <string>
-#include <ow_plexil/PlannerAction.h>
-#include <actionlib/server/simple_action_server.h>
-#include "OwExecutive.h"
-#include "OwInterface.h"
 #include <std_msgs/String.h>
 
 PlexilPlanner::PlexilPlanner(){}
@@ -11,12 +7,14 @@ PlexilPlanner::PlexilPlanner(){}
 void PlexilPlanner::initialize()
 {
   ROS_INFO("Starting planning node...");
+  //initialzing the Executive
   m_executive.reset(OwExecutive::instance());
   if (! m_executive->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
   }
-  OwInterface::instance()->initialize();
 
+  //initialize the OwInterface
+  OwInterface::instance()->initialize();
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
   // wait for the first proper clock message before running the plan
@@ -28,17 +26,17 @@ void PlexilPlanner::initialize()
     warmup_rate.sleep();
   }
 
-  firstPlan = true;
+  //workaround for the getPlanState not returning correctly for first plan
+  first_plan = true;
   
+  //initialize subscriber and publisher
   m_plannerCommandSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle->
        subscribe("/plexil_gui_commands", 20,
                  &PlexilPlanner::plannerCommandsCallback, this));
-
   m_planStatusPublisher = std::make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::String>
        ("/plexil_gui_plan_status", 20));
-
 
   ROS_INFO("Planning node started, ready for PLEXIL plans.");
 }
@@ -46,20 +44,19 @@ void PlexilPlanner::initialize()
 
 void PlexilPlanner::start()
 {
-  ros::Rate rate(10); // 1 Hz seems appropriate, for now.
-  ros::Rate rate2(1); // 1 Hz seems appropriate, for now.
+  ros::Rate rate(10); // 10 Hz for overall rate we are spinning
+  ros::Rate rate2(1); // 1 Hz for timeout sleep
   std_msgs::String status;
   while(ros::ok()){
-    if(callback_array.size() > 0){
-      plan_array.insert(plan_array.end(), callback_array.begin(), callback_array.end());
-      callback_array.clear();
-    }
+    //if we have plans in our plan array we begin the control loop
     if(plan_array.size() > 0){
       int length = plan_array.size();
       for(int i = 0; i < length; i++){
+        //try to run the plan
         if(m_executive->runPlan(plan_array[0].c_str())){
-          if(firstPlan == true){
-            firstPlan = false; 
+          //workaround for getPlanState not working on first plan
+          if(first_plan == true){
+            first_plan = false; 
           }
           int timeout = 0;
           // Times out after 3 seconds or the plan is registered as running.
@@ -71,30 +68,40 @@ void PlexilPlanner::start()
               ROS_ERROR("Plan not responding, timing out in %i seconds", (3 - timeout/10));
             }
           }
+            //if timed out we set plan as failed for GUI
             if(timeout == 30){
               ROS_INFO ("Plan timed out, try again.");
               status.data = "FAILED:" + plan_array[0];
               m_planStatusPublisher->publish(status);
             }
+            //otherwise we set it as running
             else{
                 status.data = "SUCCESS:" + plan_array[0];
                 m_planStatusPublisher->publish(status);
             }
         }
+        //if error from run() we set as failed for GUI
         else{
             status.data = "FAILED:" + plan_array[0];
             m_planStatusPublisher->publish(status);
         }
-
+        //delete the plan we just ran from plan array
         plan_array.erase(plan_array.begin());
-        while(!m_executive->getPlanState() && firstPlan == false){
+        //wait for current plan to finish before running next plan
+        while(!m_executive->getPlanState() && first_plan == false){
           ros::spinOnce();
           rate.sleep();
         }
-          status.data = "COMPLETE";
-          m_planStatusPublisher->publish(status);
+        //checks if plan_array has been cleared
+        if(plan_array.size() == 0){
+          break; 
+        }
+        //Once plan is finished set status to complete for GUI
+        status.data = "COMPLETE";
+        m_planStatusPublisher->publish(status);
       }
     }
+    //if no plans we spinonce and sleep before checking again 
     ros::spinOnce();
     rate2.sleep();
   }
@@ -102,10 +109,11 @@ void PlexilPlanner::start()
 
 void PlexilPlanner::plannerCommandsCallback(const ow_plexil::PlannerCommand::ConstPtr &msg)
 {
-  
+  //if command is ADD we add given plans to the plan_array 
   if(msg->command.compare("ADD") == 0){
     plan_array.insert(plan_array.end(), msg->plans.begin(), msg->plans.end());
   }
+  //if command is RESET  delete all plans in the plan_array 
   else if(msg->command.compare("RESET") == 0){
     plan_array.clear();
     ROS_INFO ("Plan list reset, current plan will finish execution before stopping");
