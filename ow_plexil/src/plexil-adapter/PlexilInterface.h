@@ -38,7 +38,7 @@ class PlexilInterface
  public:
   PlexilInterface () = default;
   ~PlexilInterface () = default;
-  PlexilInterface (const PlexilInterfac&) = delete;
+  PlexilInterface (const PlexilInterface&) = delete;
   PlexilInterface& operator= (const PlexilInterface&) = delete;
 
   // Is the given operation (as named in the subclass) running?

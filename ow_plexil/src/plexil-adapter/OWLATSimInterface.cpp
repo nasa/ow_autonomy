@@ -2,19 +2,31 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include <functional>
+#include <thread>
+#include <vector>
 #include "OWLATSimInterface.h"
 
 using std::hash;
 using std::string;
 
 const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
-constexpr auto Id_OwlatUnstow = hash<string>(Name_OwlatUnstow);
+
+// Used as indices into the subsequent vector.
+enum LanderOps {
+  Unstow
+};
+
+static std::vector<string> LanderOpNames =
+  { Name_OwlatUnstow
+  };
+
 
 void OWLATSimInterface::initialize()
 {
-  registerLanderOperation (Name_OwlatUnstow);
-    
+  for (auto name : LanderOpNames) {
+    registerLanderOperation (name);
+  }
+
   if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
     ROS_ERROR ("OWLAT Unstow action server did not connect!");
   }

@@ -77,28 +77,6 @@ static std::vector<string> LanderOpNames =
     Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
   };
 
-// NOTE: The following map *should* be thread-safe, according to C++11 docs and
-// in particular because map entries are never added or deleted, and the code
-// insures that each entry can be read/written by only one thread.  (The map
-// itself can be read/written by multiple threads concurrently).
-
-/* Moved to NewClass.  These values need initializing.
-static map<string, int> Running
-{
-  { Op_GuardedMove, IDLE_ID },
-  { Op_DigCircular, IDLE_ID },
-  { Op_DigLinear, IDLE_ID },
-  { Op_Deliver, IDLE_ID },
-  { Op_PanAntenna, IDLE_ID },
-  { Op_TiltAntenna, IDLE_ID },
-  { Op_Grind, IDLE_ID },
-  { Op_Stow, IDLE_ID },
-  { Op_Unstow, IDLE_ID },
-  { Op_TakePicture, IDLE_ID },
-  { Op_OwlatUnstow, IDLE_ID }
-};
-*/
-
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -399,6 +377,11 @@ void OwInterface::initialize()
   static bool initialized = false;
 
   if (not initialized) {
+
+    for (auto name : LanderOpNames) {
+      registerLanderOperation (name);
+    }
+
     m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
     // Initialize publishers.  Queue size is a guess at adequacy.  For now,
@@ -771,4 +754,3 @@ bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
 }
-
