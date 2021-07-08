@@ -10,6 +10,8 @@ from python_qt_binding.QtCore import pyqtSignal
 from python_qt_binding.QtGui import QBrush, QColor
 from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QApplication
 from ow_plexil.msg import PlannerAction, PlannerGoal, PlannerResult
+from ow_plexil.msg import PlannerCommand
+from std_msgs.msg import String
 
 class PlexilPlanner(Plugin):
 
@@ -36,8 +38,10 @@ class PlexilPlanner(Plugin):
       self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
     context.add_widget(self._widget)
 
-    #action client setup
-    self.planner_client = actionlib.SimpleActionClient("selected_plans", PlannerAction)
+    #pub and sub setup
+    self.command_publisher = rospy.Publisher('plexil_gui_commands', PlannerCommand, queue_size=20)
+    self.status_subscriber = rospy.Subscriber('plexil_gui_plan_status', String, self.status_callback)
+    
 
 
     self.monitor_signal[str].connect(self.monitor_status)
@@ -71,9 +75,6 @@ class PlexilPlanner(Plugin):
     #add to list
     self._widget.planList.addItems(plan_list)
 
-  def done_callback(self,status, result):
-    print(result)
-
   def monitor_status(self, feedback):
     print(feedback)
     num_rows = self._widget.sentPlansTable.rowCount()
@@ -100,8 +101,8 @@ class PlexilPlanner(Plugin):
             break 
     return
    
-  def feedback_callback(self, feedback):
-    feedback_string = str(feedback.progress)
+  def status_callback(self, msg):
+    feedback_string = str(msg.data)
     self.monitor_signal.emit(feedback_string)
 
   def _handle_addButton_clicked(self, checked):
@@ -164,6 +165,7 @@ class PlexilPlanner(Plugin):
       plan_name = self._widget.planQueueTable.item(0,0).text()
       plans_sent.append(str(plan_name + ".plx"))
       self._widget.planQueueTable.removeRow(0)
+      
       row_position = self._widget.sentPlansTable.rowCount()
       self._widget.sentPlansTable.insertRow(row_position)
       self._widget.sentPlansTable.setItem(row_position, 0, QTableWidgetItem(plan_name))
@@ -171,9 +173,11 @@ class PlexilPlanner(Plugin):
       self._widget.sentPlansTable.resizeColumnsToContents()
     
     # Create goal and send to action server for plan execution
-    goal = PlannerGoal(command="ADD", plans=plans_sent)
-    self.planner_client.wait_for_server()
-    self.planner_client.send_goal(goal, done_cb=self.done_callback, active_cb=None, feedback_cb=self.feedback_callback)
+
+    msg = PlannerCommand()
+    msg.command = "ADD"
+    msg.plans = plans_sent
+    self.command_publisher.publish(msg)
     return
 
   def _handle_resetButton_clicked(self, checked):
@@ -181,8 +185,10 @@ class PlexilPlanner(Plugin):
     #deletes each row pressent in sentplanstable
     for i in range(num_rows):
       self._widget.sentPlansTable.removeRow(0)
-    goal = PlannerGoal(command="RESET", plans=[])
-    self.planner_client.send_goal(goal, done_cb=self.done_callback, active_cb=None, feedback_cb=self.feedback_callback)
+    msg = PlannerCommand()
+    msg.command = "RESET"
+    msg.plans = []
+    self.command_publisher.publish(msg)
     return
 
   def shutdown_plugin(self):

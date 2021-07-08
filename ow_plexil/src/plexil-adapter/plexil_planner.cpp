@@ -4,21 +4,21 @@
 #include <actionlib/server/simple_action_server.h>
 #include "OwExecutive.h"
 #include "OwInterface.h"
+#include <std_msgs/String.h>
 
-PlexilPlanner::PlexilPlanner() :
-  m_plannerActionServer(m_genericNodeHandle,"selected_plans",boost::bind(&PlexilPlanner::executeCallback, this, _1), false)
-{
-}
+PlexilPlanner::PlexilPlanner(){}
 
-void PlexilPlanner::start()
+void PlexilPlanner::initialize()
 {
-  ROS_INFO("Starting planning action server...");
+  ROS_INFO("Starting planning node...");
   m_executive.reset(OwExecutive::instance());
   if (! m_executive->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
   }
-
   OwInterface::instance()->initialize();
+
+  m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
+
   // wait for the first proper clock message before running the plan
   ros::Rate warmup_rate(0.1);
   ros::Time begin = ros::Time::now();
@@ -30,17 +30,31 @@ void PlexilPlanner::start()
 
   firstPlan = true;
   
-  m_plannerActionServer.start();
-  ROS_INFO("Planning action server started, ready for PLEXIL plans.");
+  m_plannerCommandSubscriber = std::make_unique<ros::Subscriber>
+      (m_genericNodeHandle->
+       subscribe("/plexil_gui_commands", 20,
+                 &PlexilPlanner::plannerCommandsCallback, this));
 
+  m_planStatusPublisher = std::make_unique<ros::Publisher>
+      (m_genericNodeHandle->advertise<std_msgs::String>
+       ("/plexil_gui_plan_status", 20));
+
+
+  ROS_INFO("Planning node started, ready for PLEXIL plans.");
+}
+
+
+void PlexilPlanner::start()
+{
+  ros::Rate rate(10); // 1 Hz seems appropriate, for now.
   ros::Rate rate2(1); // 1 Hz seems appropriate, for now.
+  std_msgs::String status;
   while(ros::ok()){
     if(callback_array.size() > 0){
       plan_array.insert(plan_array.end(), callback_array.begin(), callback_array.end());
       callback_array.clear();
     }
     if(plan_array.size() > 0){
-      ros::Rate rate(10); // 1 Hz seems appropriate, for now.
       int length = plan_array.size();
       for(int i = 0; i < length; i++){
         if(m_executive->runPlan(plan_array[0].c_str())){
@@ -59,28 +73,26 @@ void PlexilPlanner::start()
           }
             if(timeout == 30){
               ROS_INFO ("Plan timed out, try again.");
-  //            m_feedback.progress = "FAILED:" + plan_array[0];
-    //          m_plannerActionServer.publishFeedback(m_feedback);
+              status.data = "FAILED:" + plan_array[0];
+              m_planStatusPublisher->publish(status);
             }
             else{
-      //        m_feedback.progress = "SUCCESS:" + plan_array[0];
-        //      m_plannerActionServer.publishFeedback(m_feedback);
+                status.data = "SUCCESS:" + plan_array[0];
+                m_planStatusPublisher->publish(status);
             }
         }
         else{
-         // m_feedback.progress = "FAILED:" + plan_array[0];
-         // m_plannerActionServer.publishFeedback(m_feedback);
+            status.data = "FAILED:" + plan_array[0];
+            m_planStatusPublisher->publish(status);
         }
 
         plan_array.erase(plan_array.begin());
         while(!m_executive->getPlanState() && firstPlan == false){
-          std::cout << "HERE" << std::endl;
           ros::spinOnce();
-          rate2.sleep();
+          rate.sleep();
         }
-        std::cout << "HERE2" << std::endl;
-      //  m_feedback.progress = "COMPLETE";
-       // m_plannerActionServer.publishFeedback(m_feedback);
+          status.data = "COMPLETE";
+          m_planStatusPublisher->publish(status);
       }
     }
     ros::spinOnce();
@@ -88,21 +100,18 @@ void PlexilPlanner::start()
   }
 }
 
-void PlexilPlanner::executeCallback(const ow_plexil::PlannerGoalConstPtr &goal)
+void PlexilPlanner::plannerCommandsCallback(const ow_plexil::PlannerCommand::ConstPtr &msg)
 {
   
-  if(goal->command.compare("ADD") == 0){
-    plan_array.insert(plan_array.end(), goal->plans.begin(), goal->plans.end());
+  if(msg->command.compare("ADD") == 0){
+    plan_array.insert(plan_array.end(), msg->plans.begin(), msg->plans.end());
   }
-  else if(goal->command.compare("RESET") == 0){
+  else if(msg->command.compare("RESET") == 0){
     plan_array.clear();
     ROS_INFO ("Plan list reset, current plan will finish execution before stopping");
   }
   else{
-    ROS_ERROR("Command %s not recognized", goal->command.c_str());
+    ROS_ERROR("Command %s not recognized", msg->command.c_str());
   }
-
-  m_result.result = true;
-  m_plannerActionServer.setSucceeded(m_result);
 }
 

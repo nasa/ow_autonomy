@@ -28,6 +28,11 @@ add_action_files(
   Planner.action
 )
 
+add_message_files(
+  FILES
+  PlannerCommand.msg
+  PlanStatus.msg
+)
 ## for GUI
 catkin_python_setup()
 
