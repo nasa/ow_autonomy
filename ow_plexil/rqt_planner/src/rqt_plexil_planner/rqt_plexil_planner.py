@@ -75,6 +75,7 @@ class PlexilPlanner(Plugin):
     print(result)
 
   def monitor_status(self, feedback):
+    print(feedback)
     num_rows = self._widget.sentPlansTable.rowCount()
     if(feedback == "COMPLETE"):
       for i in range(num_rows):

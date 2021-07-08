@@ -16,16 +16,17 @@ class PlexilPlanner{
   public:
     PlexilPlanner();
     void executeCallback(const ow_plexil::PlannerGoalConstPtr&);
+    void start();
 
   
   private:
     ros::NodeHandle m_genericNodeHandle;
-    std::unique_ptr<OwInterface> m_interface;
     std::unique_ptr<OwExecutive> m_executive;
     actionlib::SimpleActionServer<ow_plexil::PlannerAction> m_plannerActionServer;
     ow_plexil::PlannerFeedback m_feedback;
     ow_plexil::PlannerResult m_result;
-    std::vector<std::string> planArray;
+    std::vector<std::string> plan_array;
+    std::vector<std::string> callback_array;
     bool firstPlan;
  
 };

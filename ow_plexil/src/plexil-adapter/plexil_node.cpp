@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
   // Initializations
   ros::init(argc, argv, "plexil_node");
   PlexilPlanner test;
+  test.start();
   ros::spin();
 /*
   if (! OwExecutive::instance()->initialize()) {
