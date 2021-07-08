@@ -1,0 +1,123 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+Command pprint(...);
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+
+LibraryAction StartSampleAnalysis;
+
+ReferenceMission2: Concurrence
+{
+  // Guards to track current behavior
+  Boolean ImagingLandingSite = false;
+  Boolean CameraFault = false;
+
+  // Guards for mission continuation
+  Boolean BatteryOK = true;
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
+
+  // Post-test addition (1 line below)
+  Boolean NoAntennaFaults = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  HandleFaults:
+  {
+    // Testing with just one unrealistic, basic fault response for now...
+    Repeat MissionInProgress;
+    Start MissionInProgress && !NoFaults;
+    Skip !MissionInProgress;
+
+    // Post-test addition (2 lines below)
+    pprint("** Current Fault Statuses **");
+    pprint("NoAntennaFaults: ", NoAntennaFaults);
+    NoAntennaFaults = !Lookup(AntennaFault);
+
+    if (ImagingLandingSite) {
+      CameraFault = true;
+      pprint("Fault halting imaging", CameraFault);
+      log_info ("** Imaging Landing Site - ABORTED **");
+      
+    }
+    endif;
+  }
+
+  Mission:
+  {
+
+    log_info ("Starting FaultHandlingExample plan...");
+    pprint("printing test");
+    log_info ("testing...");
+
+    Image:
+    {
+      
+      Start BatteryOK; //Start iff battery is okay
+      //ExitCondition CameraFault; //Exit if/when the camera fails
+      ExitCondition !(BatteryOK && NoAntennaFaults);
+      ImagingLandingSite = true;
+      log_info ("** Imaging Landing Site **");
+      log_info ("** THIS IS A TEST **");
+      LibraryCall ImageLandingSite(InstanceName = "FaultHandlingExample",
+                                   IgnoreCrash = true);
+    }
+    
+    log_info ("FaultHandlingExample plan complete.");
+    MissionInProgress = false;
+  }
+
+}
+
