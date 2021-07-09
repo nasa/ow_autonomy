@@ -4,8 +4,6 @@
 
 #include "plan-interface.h"
 
-Command pprint(...);
-
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,
                             InOut Boolean battery_life_ok,
@@ -44,7 +42,7 @@ LibraryAction CollectSample (In Real X,
 
 LibraryAction StartSampleAnalysis;
 
-ReferenceMission2: Concurrence
+FaultTestLoopDebugging: Concurrence
 {
   // Guards to track current behavior
   Boolean ImagingLandingSite = false;
@@ -89,21 +87,16 @@ ReferenceMission2: Concurrence
     NoAntennaFaults = !Lookup(AntennaFault);
     NoPowerFaults = !Lookup(PowerFault); 
 
-    pprint("** Current Fault Statuses **");
-    pprint("NoArmFaults: ", NoArmFaults);
-    pprint("NoAntennaFaults: ", NoAntennaFaults);
-    pprint("NoPowerFaults: ", NoPowerFaults);
+    log_info ("** Current Fault Statuses **");
+    log_info ("NoArmFaults: ", NoArmFaults);
+    log_info ("NoAntennaFaults: ", NoAntennaFaults);
+    log_info ("NoPowerFaults: ", NoPowerFaults);
 
-    /*if (ImagingLandingSite) {
-      CameraFault = true;
-      pprint("Fault halting imaging", CameraFault);
-      log_info ("** Imaging Landing Site - ABORTED **");
-      
-    }
-    endif;*/
+    Wait 10;
+
   }
 
-  Mission:
+  Mission: UncheckedSequence
   {
 
     // These 4 variables are assigned in the call to IdentifySampleTarget.
@@ -116,24 +109,22 @@ ReferenceMission2: Concurrence
     // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
-    log_info ("Starting FaultHandlingExample plan...");
-    pprint("printing test");
-    log_info ("testing...");
+    log_info ("Starting FaultTestLoopDebugging plan...");
 
     Image:
     {
       
       Start BatteryOK; //Start iff battery is okay
-      //ExitCondition CameraFault; //Exit if/when the camera fails
       ExitCondition !(BatteryOK && NoAntennaFaults);
       ImagingLandingSite = true;
       log_info ("** Imaging Landing Site **");
-      log_info ("** THIS IS A TEST **");
-      LibraryCall ImageLandingSite(InstanceName = "FaultHandlingExample",
+      LibraryCall ImageLandingSite(InstanceName = "FaultTestLoopDebugging",
                                    IgnoreCrash = true);
     }
 
-    /*Unstow:
+    // Currently, including nodes below Image results in an infinite loop
+    // if a fault is injected while Image is running (i.e. an AntennaFault)
+    Unstow:
     {
       Start BatteryOK && NoArmFaults && NoPowerFaults;
       ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
@@ -150,9 +141,9 @@ ReferenceMission2: Concurrence
                                         Y = trench_y,
                                         GroundPos = ground_pos,
                                         Parallel = parallel);
-    }*/
+    }
     
-    log_info ("FaultHandlingExample plan complete.");
+    log_info ("FaultTestLoopDebugging plan complete.");
     MissionInProgress = false;
   }
 

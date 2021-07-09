@@ -42,20 +42,26 @@ LibraryAction CollectSample (In Real X,
 
 LibraryAction StartSampleAnalysis;
 
-ReferenceMission2: Concurrence
+FaultTest: Concurrence
 {
   // Guards to track current behavior
   Boolean ImagingLandingSite = false;
+  Boolean CameraFault = false;
 
   // Guards for mission continuation
   Boolean BatteryOK = true;
   Boolean NoFaults  = true;
   Boolean MissionInProgress = true;
 
+  // Post-test addition (1 line below)
+  Boolean NoAntennaFaults = true;
+
   // Power monitoring
   Boolean BatteryTempOK = true;
   Boolean BatteryLifeOK = true;
   Boolean BatteryChargeOK = true;
+
+
 
   LibraryCall MonitorPower (continue = MissionInProgress,
                             battery_temp_ok = BatteryTempOK,
@@ -68,13 +74,19 @@ ReferenceMission2: Concurrence
 
   HandleFaults:
   {
-    // Testing with just one fault response for now...
+    // Testing with just one unrealistic, basic fault response for now...
     Repeat MissionInProgress;
     Start MissionInProgress && !NoFaults;
     Skip !MissionInProgress;
 
+    // Post-test addition (2 lines below)
+    log_info ("** Current Fault Statuses **");
+    NoAntennaFaults = !Lookup(AntennaFault);
+    log_info ("NoAntennaFaults: ", NoAntennaFaults);
+
     if (ImagingLandingSite) {
-      ImagingLandingSite = false;
+      CameraFault = true;
+      log_info ("Fault halting imaging", CameraFault);
       log_info ("** Imaging Landing Site - ABORTED **");
       
     }
@@ -84,19 +96,23 @@ ReferenceMission2: Concurrence
   Mission:
   {
 
-    log_info ("Starting FaultHandlingExample plan...");
+    log_info ("Starting FaultTest plan...");
 
     Image:
     {
-      Start BatteryOK && NoFaults && !ImagingLandingSite;
+      
+      Start BatteryOK; //Start iff battery is okay
+      //ExitCondition CameraFault; //Exit if/when the camera fails
+      ExitCondition !(BatteryOK && NoAntennaFaults);
       ImagingLandingSite = true;
-      //ExitCondition !ImagingLandingSite;
       log_info ("** Imaging Landing Site **");
-      LibraryCall ImageLandingSite(InstanceName = "FaultHandlingExample",
+      LibraryCall ImageLandingSite(InstanceName = "FaultTest",
                                    IgnoreCrash = true);
     }
     
-    log_info ("FaultHandlingExample plan complete.");
+    log_info ("FaultTest plan complete.");
     MissionInProgress = false;
   }
+
 }
+

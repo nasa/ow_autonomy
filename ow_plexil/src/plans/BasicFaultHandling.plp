@@ -14,8 +14,6 @@
 
 #include "plan-interface.h"
 
-Command pprint(...);
-
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,
                             InOut Boolean battery_life_ok,
@@ -54,7 +52,7 @@ LibraryAction CollectSample (In Real X,
 
 LibraryAction StartSampleAnalysis;
 
-ReferenceMission2: Concurrence
+BasicFaultHandling: Concurrence
 {
   // Guards to track current behavior #TODO: not sure if this type of guard is needed
   Boolean ImagingLandingSite = false;
@@ -82,6 +80,7 @@ ReferenceMission2: Concurrence
   LibraryCall MonitorFaults (continue = MissionInProgress,
                              all_ok = NoFaults);
 
+  // Commented out for debugging infinite loop
   /*WaitForBatteryHealth:
   {
     Repeat MissionInProgress;
@@ -107,11 +106,11 @@ ReferenceMission2: Concurrence
     //NoSystemFaults = !Lookup(SystemFault); // #TODO How should these come into play?
     // #TODO What about force torque system faults?
 
-    //pprint("** Current Fault Statuses **");
-    //pprint("NoArmFaults: ", NoArmFaults);
-    //pprint("NoAntennaFaults: ", NoAntennaFaults);
-    //pprint("NoPowerFaults: ", NoPowerFaults);
-    //pprint("NoSystemFaults: ", NoSystemFaults);
+    //log_info ("** Current Fault Statuses **");
+    //log_info ("NoArmFaults: ", NoArmFaults);
+    //log_info ("NoAntennaFaults: ", NoAntennaFaults);
+    //log_info ("NoPowerFaults: ", NoPowerFaults);
+    //log_info ("NoSystemFaults: ", NoSystemFaults);
     
   }
 
@@ -129,8 +128,6 @@ ReferenceMission2: Concurrence
     Real trench_length = 0.6;
 
     log_info ("Starting BasicFaultHandling plan...");
-    pprint("printing test");
-    log_info ("testing...");
 
     Image:
     {
@@ -139,7 +136,6 @@ ReferenceMission2: Concurrence
       Start BatteryOK; //&& NoAntennaFaults;
       ExitCondition !(BatteryOK && NoAntennaFaults);
       log_info ("** Imaging Landing Site **");
-      log_info ("** THIS IS A TEST **");
       LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
     }
