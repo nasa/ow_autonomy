@@ -1,11 +1,17 @@
 <!-- Launch the Autonomy module, which is a single node. -->
 
 <launch>
-  <arg name="plan" default="Demo.plx"/>
+  <arg name="plan" default="None"/>
   <node pkg="ow_plexil"
         name="plexil_node"
         type="plexil_node"
         args="$(arg plan)"
-        output="screen" >
+        output="screen">
+  </node>
+  <node pkg="ow_plexil"
+        name="plexil_plan_selection_node"
+        type="plexil_plan_selection_node"
+        args="$(arg plan)"
+        output="screen">
   </node>
 </launch>

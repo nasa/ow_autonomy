@@ -25,7 +25,7 @@ find_package(PLEXIL REQUIRED)
 
 add_message_files(
   FILES
-  PlannerCommand.msg
+  PlanSelectionCommand.msg
 )
 ## for GUI
 catkin_python_setup()
@@ -68,12 +68,12 @@ add_subdirectory(src)
 
 ## Mark executable python script for installation
 install(PROGRAMS
-  rqt_planner/scripts/rqt_plexil_planner
+  rqt_plexil_plan_selection/scripts/rqt_plexil_plan_selection.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 ## Mark resource package for installation
 install(DIRECTORY
-  rqt_planner/resource
+  rqt_plexil_plan_selection/resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 ## Mark plugin.xml file for installation

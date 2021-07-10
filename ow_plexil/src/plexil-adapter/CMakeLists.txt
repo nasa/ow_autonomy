@@ -6,7 +6,8 @@ set (HEADERS
   OwAdapter.h
   joint_support.h
   subscriber.h
-  PlexilPlanner.h
+  PlexilPlanSelection.h
+  TerminalPlanSelection.h
 )
 
 set (SOURCES
@@ -14,7 +15,8 @@ set (SOURCES
   OwInterface.cpp
   OwAdapter.cpp
   subscriber.cpp
-  PlexilPlanner.cpp
+  PlexilPlanSelection.cpp
+  TerminalPlanSelection.cpp
 )
 
 add_definitions(-DUSING_ROS)
@@ -38,11 +40,18 @@ add_dependencies(${LIB_NAME}
   ${catkin_EXPORTED_TARGETS})
 
 add_executable(plexil_node plexil_node.cpp)
+add_executable(plexil_plan_selection_node plexil_plan_selection_node.cpp)
 
 target_link_libraries(plexil_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-install(TARGETS plexil_node
+target_link_libraries(plexil_plan_selection_node
+  ${catkin_LIBRARIES}
+  ${PLEXIL_LIBRARIES}
+  ${LIB_NAME})
+
+install(TARGETS plexil_node plexil_plan_selection_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+

@@ -1,13 +1,14 @@
 <library path="src">
-  <class name="PLEXIL Planner" type="rqt_plexil_planner.rqt_plexil_planner.PlexilPlanner" base_class_type="rqt_gui_py::Plugin">
+  <class name="PLEXIL Plan Selection" type="rqt_plexil_plan_selection.rqt_plexil_plan_selection.PlexilPlanSelection" 
+  base_class_type="rqt_gui_py::Plugin">
     <description>
-      A simple GUI that selects PLEXIL plans to be run on the ow_simulator.
+      A simple GUI that selects PLEXIL plans to be run by the ow_plexil node.
     </description>
     <qtgui>
-      <label>PLEXIL Planner</label>
+      <label>PLEXIL Plan Selection</label>
       <icon type="theme">system-help</icon>
       <statustip>
-      A simple GUI that selects PLEXIL plans to be run on the ow_simulator.
+      A simple GUI that selects PLEXIL plans to be run by the ow_plexil node.
 			</statustip>
     </qtgui>
   </class>

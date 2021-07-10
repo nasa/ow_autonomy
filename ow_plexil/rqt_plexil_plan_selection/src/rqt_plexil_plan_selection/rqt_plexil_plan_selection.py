@@ -1,3 +1,7 @@
+#The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+#Research and Simulation can be found in README.md in the root directory of
+#this repository.
+
 import os
 import rospy
 import actionlib
@@ -9,41 +13,39 @@ from python_qt_binding import loadUi
 from python_qt_binding.QtCore import pyqtSignal
 from python_qt_binding.QtGui import QBrush, QColor, QIcon
 from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QMessageBox, QApplication
-from ow_plexil.msg import PlannerCommand
+from ow_plexil.msg import PlanSelectionCommand
 from std_msgs.msg import String
 
-class PlexilPlanner(Plugin):
+class PlexilPlanSelection(Plugin):
 
   #sets up our signal for the sub callback
   monitor_signal = pyqtSignal(['QString']) 
 
   def __init__(self, context):
-    super(PlexilPlanner, self).__init__(context)
-    self.setObjectName('PlexilPlanner')
+    '''init initializes the widget and sets up our subscriber, publisher and event handlers'''
+    super(PlexilPlanSelection, self).__init__(context)
+    self.setObjectName('PlexilPlanSelection')
 
     # Process standalone plugin command-line arguments
     parser = ArgumentParser()
     parser.add_argument("-q", "--quiet", action="store_true", dest="quiet", help="Put plugin in silent mode")
     args, unknowns = parser.parse_known_args(context.argv())
-    if not args.quiet:
-      print('arguments: ', args)
-      print('unknowns: ', unknowns)
 
     # Find resources and Create QWidget
     self._widget = QWidget()
-    ui_file = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_planner', 'resource', 'plexilplanner.ui')
+    ui_file = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_plexil_plan_selection', 'resource', 'plexil_plan_selection.ui')
     loadUi(ui_file, self._widget)
-    self._widget.setObjectName('PlexilPlannerUI')
+    self._widget.setObjectName('PlexilPlanSelectionUI')
     if context.serial_number() > 1:
       self._widget.setWindowTitle(self._widget.windowTitle() + (' (%d)' % context.serial_number()))
     context.add_widget(self._widget)
 
     #set window icon
-    icon = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_planner', 'resource', 'icon.png')
+    icon = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'rqt_plexil_plan_selection', 'resource', 'icon.png')
     self._widget.setWindowIcon(QIcon(icon))
     #pub and sub setup
-    self.command_publisher = rospy.Publisher('plexil_gui_commands', PlannerCommand, queue_size=20)
-    self.status_subscriber = rospy.Subscriber('plexil_gui_plan_status', String, self.status_callback)
+    self.command_publisher = rospy.Publisher('plexil_plan_selection_commands', PlanSelectionCommand, queue_size=20)
+    self.status_subscriber = rospy.Subscriber('plexil_plan_selection_status', String, self.status_callback)
 
     #Qt signal to modify GUI from callback
     self.monitor_signal[str].connect(self.monitor_status)
@@ -57,14 +59,15 @@ class PlexilPlanner(Plugin):
     self._widget.sentPlansTable.insertColumn(1)
     self._widget.planQueueTable.insertColumn(0)
     #sets up event listeners
-    self._widget.addButton.clicked[bool].connect(self._handle_addButton_clicked)
-    self._widget.removeButton.clicked[bool].connect(self._handle_removeButton_clicked)
-    self._widget.upButton.clicked[bool].connect(self._handle_upButton_clicked)
-    self._widget.downButton.clicked[bool].connect(self._handle_downButton_clicked)
-    self._widget.sendButton.clicked[bool].connect(self._handle_sendButton_clicked)
-    self._widget.resetButton.clicked[bool].connect(self._handle_resetButton_clicked)
+    self._widget.addButton.clicked[bool].connect(self.handle_add_button_clicked)
+    self._widget.removeButton.clicked[bool].connect(self.handle_remove_button_clicked)
+    self._widget.upButton.clicked[bool].connect(self.handle_up_button_clicked)
+    self._widget.downButton.clicked[bool].connect(self.handle_down_button_clicked)
+    self._widget.sendButton.clicked[bool].connect(self.handle_send_button_clicked)
+    self._widget.resetButton.clicked[bool].connect(self.handle_reset_button_clicked)
 
   def populate_plan_list(self):
+    '''Finds all .ple plexil plans in the plans directory and stores them in the widget list.'''
     plan_list = []
     #get directory
     plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
@@ -77,6 +80,9 @@ class PlexilPlanner(Plugin):
     self._widget.planList.sortItems()
 
   def monitor_status(self, feedback):
+    '''Signal from callback calls this function to do the work to avoid threading issued with the GUI,
+     changes the status on the sent plans table to match the current plan status. Plan can be Pending,
+     Running, Finished or Failed.'''
     num_rows = self._widget.sentPlansTable.rowCount()
     #if completed and previously running we set status as finished
     if(feedback == "COMPLETE"): 
@@ -105,11 +111,14 @@ class PlexilPlanner(Plugin):
     return
    
   def status_callback(self, msg):
+    '''Callback from status subscriber. Sends the msg to the function monitor_signal for further 
+     processing in order to prevent threading issues in the GUI.'''
     #have to use a signal here or else GUI wont update
     feedback_string = str(msg.data)
     self.monitor_signal.emit(feedback_string)
 
-  def _handle_addButton_clicked(self, checked):
+  def handle_add_button_clicked(self, checked):
+    '''When the add button is clicked this function moves any selected items to the plan queue table.'''
     #get selected items
     selected_plans = self._widget.planList.selectedItems()
     #create a new row in the queue table for each selection and insert it
@@ -121,16 +130,17 @@ class PlexilPlanner(Plugin):
     self._widget.planQueueTable.resizeColumnsToContents()
     return
 
-  def _handle_removeButton_clicked(self, checked):
+  def handle_remove_button_clicked(self, checked):
+    '''When the remove button is clicked this function deletes any selected items from the plan queue table.'''
     selected_rows = self._widget.planQueueTable.selectedItems()
     for i in selected_rows:
       self._widget.planQueueTable.removeRow(self._widget.planQueueTable.row(i))
     self._widget.planQueueTable.selectionModel().clear()
     return
 
-  def _handle_upButton_clicked(self, checked):
+  def handle_up_button_clicked(self, checked):
+    '''When up button is clicked this function moves the selected item up in the queue table.'''
     selected_row = self._widget.planQueueTable.currentRow()
-
     #checks we are not at top of list
     if(selected_row <= 0):
       return
@@ -144,7 +154,8 @@ class PlexilPlanner(Plugin):
       self._widget.planQueueTable.setCurrentItem(self._widget.planQueueTable.item(selected_row-1,0))
       return
 
-  def _handle_downButton_clicked(self, checked):
+  def handle_down_button_clicked(self, checked):
+    '''When down button is clicked this function moves the selected item down in the queue table.'''
     selected_row = self._widget.planQueueTable.currentRow()
     num_rows = self._widget.planQueueTable.rowCount()
 
@@ -161,12 +172,15 @@ class PlexilPlanner(Plugin):
       self._widget.planQueueTable.setCurrentItem(self._widget.planQueueTable.item(selected_row+1,0))
       return
 
-  def _handle_sendButton_clicked(self, checked):
+  def handle_send_button_clicked(self, checked):
+    '''When send button is clicked any items in the plan queue table are sent (in order) to the sent plans table.
+     It then publishes a string array of these plans so that the ow_plexil_plan_selection node can run them 
+     sequentially. If the subscriber is not connected a popup box reminding the user to run the ow_plexil node will show up.'''
     #checks sub is connected before sending 
     if(self.command_publisher.get_num_connections() == 0):
       popup = QMessageBox()
       popup.setWindowTitle("ow_plexil subscriber not connected")
-      popup.setText("ow_plexil command subscriber not connected yet, please make sure the ow_plexil node is running.")
+      popup.setText("ow_plexil plan selection subscriber not connected yet, please make sure the ow_plexil node is running.")
       send_popup = popup.exec_()
       return
 
@@ -185,24 +199,28 @@ class PlexilPlanner(Plugin):
       self._widget.sentPlansTable.resizeColumnsToContents()
     
     # Create msg and send to subscriber for plan execution
-    msg = PlannerCommand()
+    msg = PlanSelectionCommand()
     msg.command = "ADD"
     msg.plans = plans_sent
     self.command_publisher.publish(msg)
     return
 
-  def _handle_resetButton_clicked(self, checked):
+  def handle_reset_button_clicked(self, checked):
+    '''When reset button is clicked all plans in the sent plans table are deleted. It also publishes a string command 
+     RESET letting the ow_plexil_plan_selection node know that any plans in its queue should also be deleted.'''
     num_rows = self._widget.sentPlansTable.rowCount()
     #deletes each row pressent in sentplanstable
     for i in range(num_rows):
       self._widget.sentPlansTable.removeRow(0)
-    msg = PlannerCommand()
+    msg = PlanSelectionCommand()
     msg.command = "RESET"
     msg.plans = []
     self.command_publisher.publish(msg)
     return
 
   def shutdown_plugin(self):
-    # TODO unregister all publishers here
+    '''handles shutdown procedures for the plugin, unregisters the publisher and subscriber.'''
+    self.command_publisher.unregister()
+    self.status_subscriber.unregister()
     pass
 

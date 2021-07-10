@@ -5,23 +5,22 @@
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>
-// Terminal plan selection class
-#include "TerminalPlanSelection.h"
+//Plan selection 
+#include "PlexilPlanSelection.h"
 
 int main(int argc, char* argv[])
 {
   // Initializations
-  ros::init(argc, argv, "plexil_node");
-
-  bool plan_given = false;
+  ros::init(argc, argv, "plexil_plan_selection_node");
+  std::string initial_plan = "None";
   std::string plan(argv[1]);
   //checking if there is a plan given
   if(argc == 2 && plan.compare("None") != 0) {
-    plan_given = true;
+    initial_plan = plan;
   }
-  TerminalPlanSelection terminal_interface;
-  terminal_interface.initialize();
-  terminal_interface.start(plan_given);
+  PlexilPlanSelection plan_selection; 
+  plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
+  plan_selection.start(); //begin control loop
   ros::spin();
   return 0;  // We never actually get here!
 }
