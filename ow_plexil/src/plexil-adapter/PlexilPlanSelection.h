@@ -13,6 +13,7 @@
 class PlexilPlanSelection{
   public:
     PlexilPlanSelection() = default;
+    ~PlexilPlanSelection() = default;
     PlexilPlanSelection(const PlexilPlanSelection&) = delete;
     PlexilPlanSelection& operator = (const PlexilPlanSelection&) = delete;
     void planSelectionCommandsCallback(const ow_plexil::PlanSelectionCommand::ConstPtr&);

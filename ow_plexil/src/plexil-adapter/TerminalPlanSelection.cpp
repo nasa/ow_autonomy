@@ -9,7 +9,7 @@ void TerminalPlanSelection::initialize()
 {
   //create nodehandle
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
-  plan_running = false;
+  m_plan_running = false;
   //initialize subscriber and publisher
   m_planSelectionStatusSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle->
@@ -31,7 +31,7 @@ void TerminalPlanSelection::initialize()
 void TerminalPlanSelection::start(bool initial_plan)
 {
   if(initial_plan == true){
-    plan_running = true;
+    m_plan_running = true;
   }
   std::vector<std::string> plan_array;
 
@@ -40,7 +40,7 @@ void TerminalPlanSelection::start(bool initial_plan)
   // loops until terminated by user, prompts them to enter any additional plans after the
   // previous plan has been run to completion.
   while (ros::ok()) {
-    if(plan_running == false){ // checks to see if previous plan finished
+    if(m_plan_running == false){ // checks to see if previous plan finished
       std::cout << "\nEnter any additional plan to be run (or use the GUI): " << std::endl;
       std::getline(std::cin, input); 
       // if input is not empty we send the plan to the plan selection node for execution
@@ -49,7 +49,7 @@ void TerminalPlanSelection::start(bool initial_plan)
         instruction.command = "ADD";
         plan_array.push_back(input);
         instruction.plans = plan_array;
-        plan_running = true;
+        m_plan_running = true;
         m_planSelectionCommandPublisher->publish(instruction);
         plan_array.clear();
       }
@@ -65,6 +65,6 @@ void TerminalPlanSelection::planSelectionStatusCallback(const std_msgs::String::
 {
   // if plan is set as complete or failed we know that no plan is currently running
   if(msg->data.compare("COMPLETE") == 0 || msg->data.find("FAILED") != std::string::npos){
-    plan_running = false; 
+    m_plan_running = false; 
   }
 }

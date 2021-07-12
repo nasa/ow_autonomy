@@ -24,7 +24,7 @@ class TerminalPlanSelection{
     std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
     std::unique_ptr<ros::Subscriber> m_planSelectionStatusSubscriber;
     std::unique_ptr<ros::Publisher> m_planSelectionCommandPublisher;
-    bool plan_running;
+    bool m_plan_running;
 };
 
 #endif

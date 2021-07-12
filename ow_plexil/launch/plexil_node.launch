@@ -9,8 +9,8 @@
         output="screen">
   </node>
   <node pkg="ow_plexil"
-        name="plexil_plan_selection_node"
-        type="plexil_plan_selection_node"
+        name="terminal_selection_node"
+        type="terminal_selection_node"
         args="$(arg plan)"
         output="screen">
   </node>

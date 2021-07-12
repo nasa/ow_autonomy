@@ -9,7 +9,7 @@
 
 void PlexilPlanSelection::initialize(std::string initial_plan)
 {
-  ROS_INFO("Starting plan selection node...");
+  ROS_INFO("Starting plexil node...");
   //initialzing the Executive
   m_executive.reset(OwExecutive::instance());
   if (! m_executive->initialize()) {
@@ -45,7 +45,7 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
       (m_genericNodeHandle->advertise<std_msgs::String>
        ("/plexil_plan_selection_status", 20));
 
-  ROS_INFO("Plan selection node started, ready for PLEXIL plans.");
+  ROS_INFO("Plexil node started, ready for PLEXIL plans.");
 }
 
 
@@ -123,7 +123,7 @@ void PlexilPlanSelection::planSelectionCommandsCallback(const ow_plexil::PlanSel
   //if command is RESET  delete all plans in the plan_array 
   else if(msg->command.compare("RESET") == 0){
     plan_array.clear();
-    ROS_INFO ("Plan list reset, current plan will finish execution before stopping");
+    ROS_INFO ("Plan list cleared, current plan will finish execution before stopping");
   }
   else{
     ROS_ERROR("Command %s not recognized", msg->command.c_str());
