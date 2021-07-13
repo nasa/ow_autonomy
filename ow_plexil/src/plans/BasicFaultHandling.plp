@@ -71,6 +71,14 @@ BasicFaultHandling: Concurrence
   Boolean BatteryLifeOK = true;
   Boolean BatteryChargeOK = true;
 
+  // Temporary guard for fault response while loops
+  Boolean FinitePlease = false;
+
+  // Guards to ensure re-attempt of interrupted nodes
+  Boolean ImageInterrupted = false;
+  Boolean UnstowInterrupted = false;
+  Boolean SearchInterrupted = false;
+
   LibraryCall MonitorPower (continue = MissionInProgress,
                             battery_temp_ok = BatteryTempOK,
                             battery_life_ok = BatteryLifeOK,
@@ -102,9 +110,11 @@ BasicFaultHandling: Concurrence
     // Look up fault guard variables based on current state of faults in system
     //NoArmFaults = !Lookup(ArmFault);
     NoAntennaFaults = !Lookup(AntennaFault);
-    //NoPowerFaults = !Lookup(PowerFault);
-    //NoSystemFaults = !Lookup(SystemFault); // #TODO How should these come into play?
+    NoPowerFaults = !Lookup(PowerFault);
+    NoSystemFaults = !Lookup(SystemFault); // #TODO How should these come into play?
     // #TODO What about force torque system faults?
+
+    Wait 10;
 
     //log_info ("** Current Fault Statuses **");
     //log_info ("NoArmFaults: ", NoArmFaults);
@@ -114,7 +124,7 @@ BasicFaultHandling: Concurrence
     
   }
 
-  Mission:
+  Mission: UncheckedSequence
   {
 
     // These 4 variables are assigned in the call to IdentifySampleTarget.
@@ -133,14 +143,80 @@ BasicFaultHandling: Concurrence
     {
       // Start iff battery is okay and there are no relevant faults
       // Ignore power faults, monitoring tasks prioritized
-      Start BatteryOK; //&& NoAntennaFaults;
+      Start BatteryOK && NoAntennaFaults;
       ExitCondition !(BatteryOK && NoAntennaFaults);
       log_info ("** Imaging Landing Site **");
       LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
     }
 
-    /*Unstow:
+    // Fault response plan for Image
+    if (Image.outcome == INTERRUPTED) 
+    {
+      // Image was interrupted due to a fault
+      log_info ("Image was interrupted");
+
+      // If the issue is power, continue after a pause
+      // Reason: Imaging is a crucial mission task
+      if (!NoPowerFaults) 
+      {
+      log_warning
+      ("System power issues, mission operations nominally paused...");
+      Wait 10;
+      }
+      else
+      {
+        log_warning
+        ("Waiting for fault resolution before continuing mission operations...");
+        while (!BatteryOK || !NoAntennaFaults)
+        {
+          // Wait 1 second before rechecking, continue when faults resolved
+          Wait 3;
+        }
+        // Resuming operations
+        log_info ("Resuming mission operations...");
+      }
+      endif;
+      
+    }
+    else if (Image.outcome == SUCCESS)
+    {
+      log_info ("Image succeeded");
+    }
+    else if (Image.outcome == FAILURE)
+    {
+      log_info ("Image failed");
+    }
+    else if (Image.outcome == SKIPPED)
+    {
+      log_info ("Image was skipped");
+    }
+    else
+    {
+      log_info ("Image did not start or other issue occurred...");
+    }
+    endif;
+
+    // Before continuing the plan
+    // re-attempt previous task if it was interrupted
+    if (ImageInterrupted) 
+    {
+      // #TODO Is there a more compact way to call Image again?
+      // This may bring up issues
+      // because it does not pick up where it left off specifically
+      Image:
+      {
+        // Start iff battery is okay and there are no relevant faults
+        // Ignore power faults, monitoring tasks prioritized
+        Start BatteryOK && NoAntennaFaults;
+        ExitCondition !(BatteryOK && NoAntennaFaults);
+        log_info ("** Imaging Landing Site **");
+        LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
+                                   IgnoreCrash = true);
+      }
+    }
+
+    Unstow:
     {
       Start BatteryOK && NoArmFaults && NoPowerFaults;
       ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
@@ -148,16 +224,130 @@ BasicFaultHandling: Concurrence
       LibraryCall Unstow;
     }
 
+    // Fault response plan for Unstow
+    if (Unstow.outcome == INTERRUPTED) 
+    {
+      log_info ("Unstow was interrupted");
+      while (!BatteryOK || !NoArmFaults || !NoPowerFaults) // # TODO Add timeout to prevent infinite loop
+      {
+        // Revert to more mission critical task to save energy (monitoring)
+        // until faults are resolved
+        log_info ("Reverting to imaging from unstowing...");
+        Image:
+        {
+          // Start iff battery is okay and there are no relevant faults
+          // Ignore power faults, monitoring tasks prioritized
+          Start BatteryOK && NoAntennaFaults;
+          ExitCondition !(BatteryOK && NoAntennaFaults);
+          log_info ("** Imaging Landing Site **");
+          LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
+                                   IgnoreCrash = true);
+        }
+        Wait 1;
+      }
+        
+    }
+    else if (Unstow.outcome == SUCCESS)
+    {
+      log_info ("Unstow succeeded");
+    }
+    else if (Unstow.outcome == FAILURE)
+    {
+      log_info ("Unstow failed");
+    }
+    else if (Image.outcome == SKIPPED)
+    {
+      log_info ("Unstow was skipped");
+    }
+    else
+    {
+      log_info ("Unstow did not start or other issue occurred...");
+    }
+    endif;
+
+    // Before continuing the plan
+    // re-attempt previous task if it was interrupted
+    if (UnstowInterrupted)
+    {
+      // # TODO Is there a more compact way to do this?
+      // This may bring up issues
+      // because it does not pick up where it left off specifically
+      Unstow:
+      {
+        Start BatteryOK && NoArmFaults && NoPowerFaults;
+        ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
+        log_info ("** Unstowing Arm **");
+        LibraryCall Unstow;
+      }
+    }
+
+
     Search:
     {
-      Start BatteryOK && NoArmFaults && NoPowerFaults;
-      ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
+      Start BatteryOK && NoArmFaults && NoPowerFaults; //&& NoFTFaults
+      ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults); // && NoFTFaults
       log_info ("** Identifying Sample Target **");
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
                                         GroundPos = ground_pos,
                                         Parallel = parallel);
-    }*/
+    }
+
+    if (Search.outcome == INTERRUPTED) 
+    {
+      log_info ("Search was interrupted");
+      // #TODO
+      while (!BatteryOK || !NoArmFaults || !NoPowerFaults) // # TODO Add timeout to prevent infinite loop // Add || !NoFTFaults  
+      {
+        // Revert to more mission critical task to save energy (monitoring)
+        // until faults are resolved
+        log_info ("Reverting to imaging from unstowing...");
+        Image:
+        {
+          // Start iff battery is okay and there are no relevant faults
+          // Ignore power faults, monitoring tasks prioritized
+          Start BatteryOK && NoAntennaFaults;
+          ExitCondition !(BatteryOK && NoAntennaFaults);
+          log_info ("** Imaging Landing Site **");
+          LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
+                                   IgnoreCrash = true);
+        }
+        Wait 1; 
+      }
+
+    }
+    else if (Search.outcome == SUCCESS)
+    {
+      log_info ("Search succeeded");
+    }
+    else if (Search.outcome == FAILURE)
+    {
+      log_info ("Search failed");
+    }
+    else
+    {
+      log_info ("Search was skipped");
+    }
+    endif;
+
+    // Before continuing the plan
+    // re-attempt previous task if it was interrupted
+    if (SearchInterrupted)
+    {
+      // # TODO Is there a more compact way to do this?
+      // This may bring up issues
+      // because it does not pick up where it left off specifically
+      Search:
+      {
+        Start BatteryOK && NoArmFaults && NoPowerFaults; //&& NoFTFaults
+        ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults); // && NoFTFaults
+        log_info ("** Identifying Sample Target **");
+        LibraryCall IdentifySampleTarget (X = trench_x,
+                                        Y = trench_y,
+                                        GroundPos = ground_pos,
+                                        Parallel = parallel);
+      }
+    }
     
     log_info ("BasicFaultHandling plan complete.");
     MissionInProgress = false;
