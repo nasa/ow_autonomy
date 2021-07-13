@@ -13,9 +13,10 @@ int main(int argc, char* argv[])
   // Initializations
   ros::init(argc, argv, "plexil_node");
   std::string initial_plan = "None";
-  std::string plan(argv[1]);
+
   //checking if there is a plan given
-  if(argc == 2 && plan.compare("None") != 0) {
+  if(argc == 2 && std::string(argv[1]).compare("None") != 0) {
+    std::string plan(argv[1]);
     initial_plan = plan;
   }
   PlexilPlanSelection plan_selection; 

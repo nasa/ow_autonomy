@@ -10,22 +10,23 @@ void TerminalPlanSelection::initialize()
   //create nodehandle
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
   m_plan_running = false;
-  //initialize subscriber and publisher
+
+  //wait for server
+  ros::Rate rate(10); // 10 Hz seems appropriate, for now.
+  while(ros::ok() && ros::service::exists("/plexil_plan_selection", false) == false){
+    ros::spinOnce();
+    rate.sleep();
+  }
+
+  m_planSelectionServiceClient = std::make_unique<ros::ServiceClient>
+      (m_genericNodeHandle->serviceClient<ow_plexil::PlanSelection>
+      ("/plexil_plan_selection", this));
+
+  //initialize subscriber
   m_planSelectionStatusSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle->
        subscribe("/plexil_plan_selection_status", 20,
                  &TerminalPlanSelection::planSelectionStatusCallback, this));
-
-  m_planSelectionCommandPublisher = std::make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<ow_plexil::PlanSelectionCommand>
-       ("/plexil_plan_selection_commands", 20));
-
-  //wait for subscriber
-  ros::Rate rate(10); // 10 Hz seems appropriate, for now.
-  while(ros::ok() && m_planSelectionCommandPublisher->getNumSubscribers() == 0){
-    ros::spinOnce();
-    rate.sleep();
-  }
 }
 
 void TerminalPlanSelection::start(bool initial_plan)
@@ -45,13 +46,17 @@ void TerminalPlanSelection::start(bool initial_plan)
       std::getline(std::cin, input); 
       // if input is not empty we send the plan to the plan selection node for execution
       if(input != ""){
-        ow_plexil::PlanSelectionCommand instruction;
-        instruction.command = "ADD";
+        ow_plexil::PlanSelection instruction;
+        instruction.request.command = "ADD";
         plan_array.push_back(input);
-        instruction.plans = plan_array;
-        m_plan_running = true;
-        m_planSelectionCommandPublisher->publish(instruction);
-        plan_array.clear();
+        instruction.request.plans = plan_array;
+        if(m_planSelectionServiceClient->call(instruction)){
+          m_plan_running = true;
+          plan_array.clear();
+        }
+        else{
+          ROS_ERROR("Unable to contact plan_selection_server...");
+        }
       }
     }
     else{

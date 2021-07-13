@@ -6,24 +6,24 @@
 #define Terminal_Plan_Selection_H
 
 #include <ros/ros.h>
-#include <ow_plexil/PlanSelectionCommand.h>
+#include <ow_plexil/PlanSelection.h>
 #include <std_msgs/String.h>
 
 class TerminalPlanSelection{
   public:
     TerminalPlanSelection() = default;
     ~TerminalPlanSelection() = default;
+    void initialize();
+    void start(bool initial_plan);
+
+  private:
     TerminalPlanSelection(const TerminalPlanSelection&) = delete;
     TerminalPlanSelection& operator = (const TerminalPlanSelection&) = delete;
-    void planSelectionStatusCallback(const std_msgs::String::ConstPtr&);
-    void initialize();
-    void start(bool);
-
-  
-  private:
+    void planSelectionStatusCallback(const std_msgs::String::ConstPtr &msg);
+    
     std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
     std::unique_ptr<ros::Subscriber> m_planSelectionStatusSubscriber;
-    std::unique_ptr<ros::Publisher> m_planSelectionCommandPublisher;
+    std::unique_ptr<ros::ServiceClient> m_planSelectionServiceClient;
     bool m_plan_running;
 };
 

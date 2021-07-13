@@ -1,7 +1,8 @@
-<!-- Launch the Autonomy module, which is a single node. -->
+<!-- Launch the plexil_node and terminal selection node. -->
 
 <launch>
   <arg name="plan" default="None"/>
+
   <node pkg="ow_plexil"
         name="plexil_node"
         type="plexil_node"

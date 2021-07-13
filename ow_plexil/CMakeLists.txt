@@ -23,9 +23,9 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-add_message_files(
+add_service_files(
   FILES
-  PlanSelectionCommand.msg
+  PlanSelection.srv
 )
 ## for GUI
 catkin_python_setup()

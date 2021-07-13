@@ -1,0 +1,6 @@
+#input
+string command
+string[] plans
+---
+#output
+bool success
