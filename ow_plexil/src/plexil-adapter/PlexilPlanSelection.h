@@ -21,7 +21,8 @@ class PlexilPlanSelection{
   private:
     PlexilPlanSelection(const PlexilPlanSelection&) = delete;
     PlexilPlanSelection& operator = (const PlexilPlanSelection&) = delete;
-    bool planSelectionServiceCallback(ow_plexil::PlanSelection::Request&, ow_plexil::PlanSelection::Response&);
+    bool planSelectionServiceCallback(ow_plexil::PlanSelection::Request&,
+                                      ow_plexil::PlanSelection::Response&);
     void runCurrentPlan();
     void waitForPlan();
 
