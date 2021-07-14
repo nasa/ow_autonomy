@@ -61,10 +61,12 @@ BasicFaultHandling: Concurrence
   Boolean BatteryOK = true;
   Boolean NoFaults  = true;
   Boolean MissionInProgress = true;
-  Boolean NoArmFaults = true; // Affects manipulator tasks
-  Boolean NoAntennaFaults = true; // Affects panning and tilting
-  Boolean NoPowerFaults = true; // Affects entire system, stop non-critical tasks
-  Boolean NoSystemFaults = true; // #TODO What do these affect? What about force torque faults?
+  Boolean ArmOK = true; // Affects manipulator tasks
+  Boolean AntennaOK = true; // Affects panning and tilting
+  Boolean PowerOK = true; // Affects entire system, stop non-critical tasks
+  Boolean SystemOK = true; // #TODO What do these affect? What about force torque faults?
+  Boolean ForceTorqueOK = true;
+  
 
   // Power monitoring
   Boolean BatteryTempOK = true;
@@ -108,19 +110,13 @@ BasicFaultHandling: Concurrence
     Skip !MissionInProgress;
 
     // Look up fault guard variables based on current state of faults in system
-    //NoArmFaults = !Lookup(ArmFault);
-    NoAntennaFaults = !Lookup(AntennaFault);
-    NoPowerFaults = !Lookup(PowerFault);
-    NoSystemFaults = !Lookup(SystemFault); // #TODO How should these come into play?
+    ArmOK = !Lookup(ArmFault);
+    AntennaOK = !Lookup(AntennaFault);
+    PowerOK = !Lookup(PowerFault);
+    SystemOK = !Lookup(SystemFault); // #TODO How should these come into play?
     // #TODO What about force torque system faults?
 
     Wait 10;
-
-    //log_info ("** Current Fault Statuses **");
-    //log_info ("NoArmFaults: ", NoArmFaults);
-    //log_info ("NoAntennaFaults: ", NoAntennaFaults);
-    //log_info ("NoPowerFaults: ", NoPowerFaults);
-    //log_info ("NoSystemFaults: ", NoSystemFaults);
     
   }
 
@@ -143,8 +139,8 @@ BasicFaultHandling: Concurrence
     {
       // Start iff battery is okay and there are no relevant faults
       // Ignore power faults, monitoring tasks prioritized
-      Start BatteryOK && NoAntennaFaults;
-      ExitCondition !(BatteryOK && NoAntennaFaults);
+      Start BatteryOK && AntennaOK;
+      ExitCondition !(BatteryOK && AntennaOK);
       log_info ("** Imaging Landing Site **");
       LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
@@ -153,12 +149,13 @@ BasicFaultHandling: Concurrence
     // Fault response plan for Image
     if (Image.outcome == INTERRUPTED) 
     {
-      // Image was interrupted due to a fault
+      // Image was interrupted due to a fault or battery issue
       log_info ("Image was interrupted");
+      ImageInterrupted = true;
 
       // If the issue is power, continue after a pause
       // Reason: Imaging is a crucial mission task
-      if (!NoPowerFaults) 
+      if (!PowerOK) 
       {
       log_warning
       ("System power issues, mission operations nominally paused...");
@@ -166,9 +163,19 @@ BasicFaultHandling: Concurrence
       }
       else
       {
-        log_warning
-        ("Waiting for fault resolution before continuing mission operations...");
-        while (!BatteryOK || !NoAntennaFaults)
+        //log_warning
+        //("Waiting for fault resolution before continuing mission operations...");
+        if !BatteryOK
+        {
+          log_warning("Waiting for battery to be okay...");
+        }
+        endif;
+        if !AntennaOK
+        {
+          log_warning("Waiting for antenna to be okay...");
+        }
+        endif;
+        while (!BatteryOK || !AntennaOK)
         {
           // Wait 1 second before rechecking, continue when faults resolved
           Wait 3;
@@ -190,6 +197,11 @@ BasicFaultHandling: Concurrence
     else if (Image.outcome == SKIPPED)
     {
       log_info ("Image was skipped");
+      log_info ("** Current Fault Statuses **");
+      log_info ("ArmOK: ", ArmOK);
+      log_info ("AntennaOK: ", AntennaOK);
+      log_info ("PowerOK: ", PowerOK);
+      log_info ("SystemOK: ", SystemOK);
     }
     else
     {
@@ -208,8 +220,8 @@ BasicFaultHandling: Concurrence
       {
         // Start iff battery is okay and there are no relevant faults
         // Ignore power faults, monitoring tasks prioritized
-        Start BatteryOK && NoAntennaFaults;
-        ExitCondition !(BatteryOK && NoAntennaFaults);
+        Start BatteryOK && AntennaOK;
+        ExitCondition !(BatteryOK && AntennaOK);
         log_info ("** Imaging Landing Site **");
         LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
@@ -218,8 +230,8 @@ BasicFaultHandling: Concurrence
 
     Unstow:
     {
-      Start BatteryOK && NoArmFaults && NoPowerFaults;
-      ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
+      Start BatteryOK && ArmOK && PowerOK;
+      ExitCondition !(BatteryOK && ArmOK && PowerOK);
       log_info ("** Unstowing Arm **");
       LibraryCall Unstow;
     }
@@ -228,7 +240,8 @@ BasicFaultHandling: Concurrence
     if (Unstow.outcome == INTERRUPTED) 
     {
       log_info ("Unstow was interrupted");
-      while (!BatteryOK || !NoArmFaults || !NoPowerFaults) // # TODO Add timeout to prevent infinite loop
+      UnstowInterrupted = true;
+      while (!BatteryOK || !ArmOK || !PowerOK) // # TODO Add timeout to prevent infinite loop
       {
         // Revert to more mission critical task to save energy (monitoring)
         // until faults are resolved
@@ -237,8 +250,8 @@ BasicFaultHandling: Concurrence
         {
           // Start iff battery is okay and there are no relevant faults
           // Ignore power faults, monitoring tasks prioritized
-          Start BatteryOK && NoAntennaFaults;
-          ExitCondition !(BatteryOK && NoAntennaFaults);
+          Start BatteryOK && AntennaOK;
+          ExitCondition !(BatteryOK && AntennaOK);
           log_info ("** Imaging Landing Site **");
           LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
@@ -258,6 +271,12 @@ BasicFaultHandling: Concurrence
     else if (Image.outcome == SKIPPED)
     {
       log_info ("Unstow was skipped");
+      log_info ("** Current Fault Statuses **");
+      log_info ("ArmOK: ", ArmOK);
+      log_info ("AntennaOK: ", AntennaOK);
+      log_info ("PowerOK: ", PowerOK);
+      log_info ("SystemOK: ", SystemOK);
+    }
     }
     else
     {
@@ -274,8 +293,8 @@ BasicFaultHandling: Concurrence
       // because it does not pick up where it left off specifically
       Unstow:
       {
-        Start BatteryOK && NoArmFaults && NoPowerFaults;
-        ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults);
+        Start BatteryOK && ArmOK && PowerOK;
+        ExitCondition !(BatteryOK && ArmOK && PowerOK);
         log_info ("** Unstowing Arm **");
         LibraryCall Unstow;
       }
@@ -284,8 +303,8 @@ BasicFaultHandling: Concurrence
 
     Search:
     {
-      Start BatteryOK && NoArmFaults && NoPowerFaults; //&& NoFTFaults
-      ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults); // && NoFTFaults
+      Start BatteryOK && ArmOK && PowerOK; //&& ForceTorqueOK
+      ExitCondition !(BatteryOK && ArmOK && PowerOK); // && ForceTorqueOK
       log_info ("** Identifying Sample Target **");
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
@@ -296,8 +315,9 @@ BasicFaultHandling: Concurrence
     if (Search.outcome == INTERRUPTED) 
     {
       log_info ("Search was interrupted");
-      // #TODO
-      while (!BatteryOK || !NoArmFaults || !NoPowerFaults) // # TODO Add timeout to prevent infinite loop // Add || !NoFTFaults  
+      SearchInterrupted = true;      
+
+      while (!BatteryOK || !ArmOK || !PowerOK) // # TODO Add timeout to prevent infinite loop // Add || !ForceTorqueOK  
       {
         // Revert to more mission critical task to save energy (monitoring)
         // until faults are resolved
@@ -306,8 +326,8 @@ BasicFaultHandling: Concurrence
         {
           // Start iff battery is okay and there are no relevant faults
           // Ignore power faults, monitoring tasks prioritized
-          Start BatteryOK && NoAntennaFaults;
-          ExitCondition !(BatteryOK && NoAntennaFaults);
+          Start BatteryOK && AntennaOK;
+          ExitCondition !(BatteryOK && AntennaOK);
           log_info ("** Imaging Landing Site **");
           LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                                    IgnoreCrash = true);
@@ -327,6 +347,11 @@ BasicFaultHandling: Concurrence
     else
     {
       log_info ("Search was skipped");
+      log_info ("** Current Fault Statuses **");
+      log_info ("ArmOK: ", ArmOK);
+      log_info ("AntennaOK: ", AntennaOK);
+      log_info ("PowerOK: ", PowerOK);
+      log_info ("SystemOK: ", SystemOK);
     }
     endif;
 
@@ -339,8 +364,8 @@ BasicFaultHandling: Concurrence
       // because it does not pick up where it left off specifically
       Search:
       {
-        Start BatteryOK && NoArmFaults && NoPowerFaults; //&& NoFTFaults
-        ExitCondition !(BatteryOK && NoArmFaults && NoPowerFaults); // && NoFTFaults
+        Start BatteryOK && ArmOK && PowerOK; //&& ForceTorqueOK
+        ExitCondition !(BatteryOK && ArmOK && PowerOK); // && ForceTorqueOK
         log_info ("** Identifying Sample Target **");
         LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
