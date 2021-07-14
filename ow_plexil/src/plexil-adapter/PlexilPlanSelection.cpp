@@ -131,7 +131,7 @@ void PlexilPlanSelection::runCurrentPlan(){
 }
 
 bool PlexilPlanSelection::planSelectionServiceCallback(ow_plexil::PlanSelection::Request &req,
-                                               ow_plexil::PlanSelection::Response &res)
+                                                       ow_plexil::PlanSelection::Response &res)
 {
   //if command is ADD we add given plans to the plan_array 
   if(req.command.compare("ADD") == 0){

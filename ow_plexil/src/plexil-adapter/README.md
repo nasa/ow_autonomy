@@ -5,6 +5,9 @@ this repository.
 Contents
 ========
 
-This directory contains C++ classes and code implementing the interface between
-the PLEXIL plans (found in ../plans) and the external world (lander,
-environment), as well as the ROS node plexil_node.
+This directory contains C++ classes and code implementing:
+
+ - the interface between the PLEXIL plans (found in ../plans) and the lander
+ - the ROS node plexil_node that embodies the PLEXIL executive
+ - the ROS node terminal_selection_node that provides command-line plan selection
+ 
