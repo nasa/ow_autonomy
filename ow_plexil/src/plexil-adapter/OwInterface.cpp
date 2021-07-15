@@ -59,6 +59,9 @@ const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
 
 
+// 1. Indices into subsequent vector
+// 2. Template argument of runAction
+//
 enum LanderOps {
   GuardedMove,
   DigCircular,
@@ -221,14 +224,14 @@ void OwInterface::managePanTilt (const string& opname,
   // We are only concerned when there is a pan/tilt in progress.
   if (! operationRunning (opname)) return;
 
-  int id = Running.at (opname);
+  int id = m_runningOperations.at (opname);
 
   // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
-    mark_operation_finished (opname, id);
+    markOperationFinished (opname, id);
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
@@ -259,7 +262,8 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
   // NOTE: the received image is ignored for now.
 
   if (operationRunning (Op_TakePicture)) {
-    mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
+    markOperationFinished (Op_TakePicture,
+                           m_runningOperations.at (Op_TakePicture));
   }
 }
 
@@ -445,7 +449,8 @@ void OwInterface::initialize()
        subscribe("/faults/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this));
 
-    m_guardedMoveClient = std::make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
+    m_guardedMoveClient =
+      std::make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_unstowClient = std::make_unique<UnstowActionClient>(Op_Unstow, true);
     m_stowClient = std::make_unique<StowActionClient>(Op_Stow, true);
     m_grindClient = std::make_unique<GrindActionClient>(Op_Grind, true);
@@ -477,7 +482,7 @@ void OwInterface::initialize()
 static void antenna_op (const string& opname, double degrees,
                         std::unique_ptr<ros::Publisher>& pub, int id)
 {
-  if (! mark_operation_running (opname, id)) {
+  if (! markOperationRunning (opname, id)) {
     return;
   }
   std_msgs::Float64 radians;
@@ -503,7 +508,7 @@ void OwInterface::panAntenna (double degrees, int id)
 
 void OwInterface::takePicture (int id)
 {
-  if (! mark_operation_running (Op_TakePicture, id)) return;
+  if (! markOperationRunning (Op_TakePicture, id)) return;
   std_msgs::Empty msg;
   ROS_INFO ("Capturing stereo image using left image trigger.");
   m_leftImageTriggerPublisher->publish (msg);
@@ -511,7 +516,7 @@ void OwInterface::takePicture (int id)
 
 void OwInterface::deliver (double x, double y, double z, int id)
 {
-  if (! mark_operation_running (Op_Deliver, id)) return;
+  if (! markOperationRunning (Op_Deliver, id)) return;
   thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
   action_thread.detach();
 }
@@ -538,7 +543,7 @@ void OwInterface::runAction (const string& opname,
 
   // Wait indefinitely for the action to complete.
   bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
-  mark_operation_finished (opname, id);
+  markOperationFinished (opname, id);
 }
 
 void OwInterface::deliverAction (double x, double y, double z, int id)
@@ -558,7 +563,7 @@ void OwInterface::digLinear (double x, double y,
                              double depth, double length, double ground_pos,
                              int id)
 {
-  if (! mark_operation_running (Op_DigLinear, id)) return;
+  if (! markOperationRunning (Op_DigLinear, id)) return;
   thread action_thread (&OwInterface::digLinearAction, this, x, y, depth,
                         length, ground_pos, id);
   action_thread.detach();
@@ -587,7 +592,7 @@ void OwInterface::digLinearAction (double x, double y,
 void OwInterface::digCircular (double x, double y, double depth,
                                double ground_pos, bool parallel, int id)
 {
-  if (! mark_operation_running (Op_DigCircular, id)) return;
+  if (! markOperationRunning (Op_DigCircular, id)) return;
   thread action_thread (&OwInterface::digCircularAction, this, x, y, depth,
                         ground_pos, parallel, id);
   action_thread.detach();
@@ -614,7 +619,7 @@ void OwInterface::digCircularAction (double x, double y, double depth,
 
 void OwInterface::unstow (int id)  // as action
 {
-  if (! mark_operation_running (Op_Unstow, id)) return;
+  if (! markOperationRunning (Op_Unstow, id)) return;
   thread action_thread (&OwInterface::unstowAction, this, id);
   action_thread.detach();
 }
@@ -633,7 +638,7 @@ void OwInterface::unstowAction (int id)
 
 void OwInterface::stow (int id)  // as action
 {
-  if (! mark_operation_running (Op_Stow, id)) return;
+  if (! markOperationRunning (Op_Stow, id)) return;
   thread action_thread (&OwInterface::stowAction, this, id);
   action_thread.detach();
 }
@@ -653,7 +658,7 @@ void OwInterface::stowAction (int id)
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
-  if (! mark_operation_running (Op_Grind, id)) return;
+  if (! markOperationRunning (Op_Grind, id)) return;
   thread action_thread (&OwInterface::grindAction, this, x, y, depth, length,
                         parallel, ground_pos, id);
   action_thread.detach();
@@ -681,7 +686,7 @@ void OwInterface::guardedMove (double x, double y, double z,
                                double dir_x, double dir_y, double dir_z,
                                double search_dist, int id)
 {
-  if (! mark_operation_running (Op_GuardedMove, id)) return;
+  if (! markOperationRunning (Op_GuardedMove, id)) return;
   thread action_thread (&OwInterface::guardedMoveAction, this, x, y, z,
                         dir_x, dir_y, dir_z, search_dist, id);
   action_thread.detach();

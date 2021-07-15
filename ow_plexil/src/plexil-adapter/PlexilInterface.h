@@ -37,7 +37,7 @@ class PlexilInterface
 {
  public:
   PlexilInterface () = default;
-  ~PlexilInterface () = default;
+  ~PlexilInterface ();
   PlexilInterface (const PlexilInterface&) = delete;
   PlexilInterface& operator= (const PlexilInterface&) = delete;
 
@@ -56,6 +56,11 @@ class PlexilInterface
  protected:
   void registerLanderOperation (const std::string& name);
 
+  // Map from operation name to its instance ID if it is running, or to IDLE_ID
+  // otherwise.  The keys of this map do not change after initialization, and
+  // comprise all the valid lander operation names.
+  std::map<std::string, int> m_runningOperations;
+
  private:
   bool operationRunning (const std::string& name) const;
   template <int OpIndex, class ActionClient, class Goal,
@@ -68,12 +73,9 @@ class PlexilInterface
                     default_action_done_cb<OpIndex, ResultPtr>);
 
   // Callback function in PLEXIL adapter for success/failure of given command.
-  std::unique_ptr<void*(int,bool)> m_CommandStatusCallback;
-
-  // Map from operation name to its instance ID if it is running, or to IDLE_ID
-  // otherwise.  This map stays the same size after initialization, thus storing
-  // all the valid lander operation names.
-  std::map<std::string, int> m_runningOperations;
+  // This didn't work, so using conventional pointer.
+  //  std::unique_ptr<void*(int,bool)> m_CommandStatusCallback;
+  void* m_CommandStatusCallback (int,bool) = nullptr;
 };
 
 #endif

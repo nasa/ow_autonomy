@@ -13,7 +13,7 @@ const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
 
 // Used as indices into the subsequent vector.
 enum LanderOps {
-  Unstow
+  OwlatUnstow
 };
 
 static std::vector<string> LanderOpNames =

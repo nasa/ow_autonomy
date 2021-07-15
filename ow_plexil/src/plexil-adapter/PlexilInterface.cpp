@@ -29,6 +29,12 @@ void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
             state.toString().c_str());
 }
 
+PlexilInterface::~PlexilInterface ()
+{
+  // No memory leak, since memory wasn't allocated.
+  m_commandStatusCallback = nullptr;
+}
+
 bool PlexilInterface::isLanderOperation (const string& name)
 {
   return m_runningOperations.find(name) != m_runningOperations.end();
