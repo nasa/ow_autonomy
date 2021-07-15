@@ -6,12 +6,16 @@ project(ow_plexil)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   roslib
   actionlib
   actionlib_msgs
   geometry_msgs
   ow_lander
   ow_faults
+  rqt_gui_py
+  message_generation
+  std_msgs
 )
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -19,9 +23,18 @@ list(INSERT CMAKE_MODULE_PATH 0
 
 find_package(PLEXIL REQUIRED)
 
-#generate_messages(
-#  DEPENDENCIES actionlib_msgs geometry_msgs
-#)
+add_service_files(
+  FILES
+  PlanSelection.srv
+)
+## for GUI
+catkin_python_setup()
+
+generate_messages(
+  DEPENDENCIES 
+  geometry_msgs
+  std_msgs
+)
 
 
 ###################################
@@ -30,13 +43,12 @@ find_package(PLEXIL REQUIRED)
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp roslib ow_lander actionlib_msgs geometry_msgs ow_faults
+  CATKIN_DEPENDS roscpp roslib rospy ow_lander actionlib_msgs geometry_msgs ow_faults
   CFG_EXTRAS ow_plexil-extras.cmake
 )
 
 catkin_add_env_hooks(60.ow_plexil
   SHELLS sh DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
-
 
 ###########
 ## Build ##
@@ -49,3 +61,24 @@ include_directories(
 )
 
 add_subdirectory(src)
+
+#############
+## INSTALL ##
+#############
+
+## Mark executable python script for installation
+install(PROGRAMS
+  rqt_plexil_plan_selection/scripts/rqt_plexil_plan_selection.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+## Mark resource package for installation
+install(DIRECTORY
+  rqt_plexil_plan_selection/resource
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+## Mark plugin.xml file for installation
+install(FILES
+  plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
