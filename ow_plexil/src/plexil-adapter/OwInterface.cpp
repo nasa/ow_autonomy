@@ -521,30 +521,6 @@ void OwInterface::deliver (double x, double y, double z, int id)
   action_thread.detach();
 }
 
-template <int OpIndex, class ActionClient, class Goal,
-          class ResultPtr, class FeedbackPtr>
-void OwInterface::runAction (const string& opname,
-                             std::unique_ptr<ActionClient>& ac,
-                             const Goal& goal, int id,
-                             t_action_done_cb<OpIndex, ResultPtr> done_cb)
-{
-  if (ac) {
-    ROS_INFO ("Sending goal to action %s", opname.c_str());
-    ac->sendGoal (goal,
-                  done_cb,
-                  active_cb<OpIndex>,
-                  action_feedback_cb<FeedbackPtr>);
-    ROS_INFO ("Sent goal to action %s", opname.c_str());
-  }
-  else {
-    ROS_ERROR ("%s action client was null!", opname.c_str());
-    return;
-  }
-
-  // Wait indefinitely for the action to complete.
-  bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
-  markOperationFinished (opname, id);
-}
 
 void OwInterface::deliverAction (double x, double y, double z, int id)
 {

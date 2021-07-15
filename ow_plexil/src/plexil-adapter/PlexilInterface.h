@@ -8,40 +8,12 @@
 // Interfacing support between the PLEXIL executive and various Ocean World
 // simulators and testbeds.
 
-#include <ros/ros.h>
-#include <actionlib/client/simple_action_client.h>
-#include <string>
-
-//// Generic ROS Action support ////
-
-const auto ActionServerTimeout = 10.0;  // seconds
-
-// The following callbacks do little or nothing besides issuing information.
-
-template<typename T>
-using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
-                                  const T& result_ignored,
-                                  const std::string& operation_name);
-
-template<typename T>
-void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored,
-                             const std::string& operation_name);
-
-template<typename T>
-void action_feedback_cb (const T& feedback);
-
-void active_cb (const std::string& operation_name);
-
-template<typename T>
-void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored,
-                             const std::string& operation_name);
+#include "action_support.h"
 
 class PlexilInterface
 {
  public:
-  PlexilInterface () = default;
+  PlexilInterface ();
   virtual ~PlexilInterface () = 0;
   PlexilInterface (const PlexilInterface&) = delete;
   PlexilInterface& operator= (const PlexilInterface&) = delete;
@@ -68,19 +40,18 @@ class PlexilInterface
 
  private:
   bool operationRunning (const std::string& name) const;
-  template <int OpIndex, class ActionClient, class Goal,
-            class ResultPtr, class FeedbackPtr>
-  void runAction (const std::string& opname,
-                  std::unique_ptr<ActionClient>&,
-                  const Goal&,
-                  int id,
-                  t_action_done_cb<OpIndex,ResultPtr> done_cb =
-                    default_action_done_cb<OpIndex, ResultPtr>);
+  template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
+    void runAction (const std::string& opname,
+                    std::unique_ptr<ActionClient>&,
+                    const Goal&,
+                    int id,
+                    t_action_done_cb<ResultPtr> done_cb =
+                      default_action_done_cb<ResultPtr>);
 
   // Callback function in PLEXIL adapter for success/failure of given command.
   // This didn't work, so using conventional pointer.
-  //  std::unique_ptr<void*(int,bool)> m_CommandStatusCallback;
-  void* m_CommandStatusCallback (int,bool) = nullptr;
+  //  std::unique_ptr<void*(int,bool)> m_commandStatusCallback;
+  void* (int,bool) m_commandStatusCallback;
 };
 
 #endif

@@ -8,6 +8,7 @@
 
 using std::hash;
 using std::string;
+using std::thread;
 
 const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
 
@@ -45,8 +46,7 @@ void OWLATSimInterface::owlatUnstowAction (int id)
 {
   owlat_sim_msgs::ARM_UNSTOWGoal goal;
 
-  runAction<OwlatUnstow,
-            actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
+  runAction<actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
             owlat_sim_msgs::ARM_UNSTOWGoal,
             owlat_sim_msgs::ARM_UNSTOWResultConstPtr,
             owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>

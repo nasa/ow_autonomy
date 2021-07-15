@@ -1,22 +1,24 @@
 set(LIB_NAME ow_adapter)
 
 set (HEADERS
+  joint_support.h
+  subscriber.h
+  action_support.h
   PlexilInterface.h
   OwExecutive.h
   OwInterface.h
   OWLATSimInterface.h
   OwAdapter.h
-  joint_support.h
-  subscriber.h
 )
 
 set (SOURCES
+  subscriber.cpp
+	action_support.cpp
   PlexilInterface.cpp
   OwExecutive.cpp
   OwInterface.cpp
   OWLATSimInterface.cpp
   OwAdapter.cpp
-  subscriber.cpp
 )
 
 add_definitions(-DUSING_ROS)

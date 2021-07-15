@@ -10,24 +10,9 @@ using std::string;
 // Dummy operation ID that signifies idle lander operation.
 #define IDLE_ID (-1)
 
-template<typename T>
-void action_feedback_cb (const T& feedback)
-{
-}
-
-void active_cb (const string& operation_name)
-{
-  ROS_INFO ("%s started...", operation_name.c_str());
-}
-
-template<typename T>
-void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored,
-                             const string& operation_name)
-{
-  ROS_INFO ("%s finished in state %s", operation_name.c_str(),
-            state.toString().c_str());
-}
+PlexilInterface::PlexilInterface ()
+  : m_commandStatusCallback (nullptr)
+{ }
 
 PlexilInterface::~PlexilInterface ()
 {
@@ -59,16 +44,17 @@ bool PlexilInterface::markOperationFinished (const string& name, int id)
   m_runningOperations.at (name) = IDLE_ID;
   publish ("Running", false, name);
   publish ("Finished", true, name);
-  if (id != IDLE_ID) m_CommandStatusCallback (id, true);
+  if (id != IDLE_ID) m_commandStatusCallback (id, true);
 
 }
 
 bool PlexilInterface::running (const string& name) const
 {
-  if (is_lander_operation (name)) return operationRunning (name);
+  // TODO: add check for valid operation name
+  return operationRunning (name);
 
-  ROS_ERROR("PlexilInterface::running: unsupported operation: %s", name.c_str());
-  return false;
+  //  ROS_ERROR("PlexilInterface::running: unsupported operation: %s", name.c_str());
+  //  return false;
 }
 
 bool PlexilInterface::operationRunning (const string& name) const
@@ -79,10 +65,35 @@ bool PlexilInterface::operationRunning (const string& name) const
 
 void PlexilInterface::setCommandStatusCallback (void (*callback) (int, bool))
 {
-  m_CommandStatusCallback = callback;
+  m_commandStatusCallback = callback;
 }
 
 void PlexilInterface::registerLanderOperation (const string& name)
 {
   m_runningOperations[name] = IDLE_ID;
+}
+
+template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
+void PlexilInterface::runAction (const string& opname,
+                                 std::unique_ptr<ActionClient>& ac,
+                                 const Goal& goal,
+                                 int id,
+                                 t_action_done_cb<ResultPtr> done_cb)
+{
+  if (ac) {
+    ROS_INFO ("Sending goal to action %s", opname.c_str());
+    ac->sendGoal (goal,
+                  done_cb,
+                  [&](){ active_cb (opname); },
+                  action_feedback_cb<FeedbackPtr>);
+    ROS_INFO ("Sent goal to action %s", opname.c_str());
+  }
+  else {
+    ROS_ERROR ("%s action client was null!", opname.c_str());
+    return;
+  }
+
+  // Wait indefinitely for the action to complete.
+  bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
+  markOperationFinished (opname, id);
 }
