@@ -76,7 +76,7 @@ class PlexilPlanSelection(Plugin):
     plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
     #get all plans with extension .ple
     for p in os.listdir(plan_dir):
-      if(p.endswith(".ple")):
+      if p.endswith(".ple"):
         plan_list.append(p.rsplit(".")[0])
     #add to list
     self._widget.planList.addItems(plan_list)
@@ -88,10 +88,10 @@ class PlexilPlanSelection(Plugin):
      Running, Finished or Failed.'''
     num_rows = self._widget.sentPlansTable.rowCount()
     #if completed and previously running we set status as finished
-    if(feedback == "COMPLETE"): 
+    if feedback == "COMPLETE": 
       for i in range(num_rows):
         current_status = self._widget.sentPlansTable.item(i,1).text()
-        if(current_status == "Running..."):
+        if current_status == "Running...":
           self._widget.sentPlansTable.item(i, 1).setText("Finished")
           self._widget.sentPlansTable.item(i, 1).setBackground(QColor(0,128,0))
           break
@@ -103,8 +103,8 @@ class PlexilPlanSelection(Plugin):
       for i in range(num_rows):
         plan_name = self._widget.sentPlansTable.item(i,0).text()
         current_status = self._widget.sentPlansTable.item(i,1).text()
-        if(plan_name == running_plan and current_status == "Pending..."):
-          if(status == "SUCCESS"):
+        if plan_name == running_plan and current_status == "Pending...":
+          if status == "SUCCESS":
             self._widget.sentPlansTable.item(i, 1).setText("Running...")
             break 
           else:
@@ -145,7 +145,7 @@ class PlexilPlanSelection(Plugin):
     '''When up button is clicked this function moves the selected item up in the queue table.'''
     selected_row = self._widget.planQueueTable.currentRow()
     #checks we are not at top of list
-    if(selected_row <= 0):
+    if selected_row <= 0:
       return
     #switches the two rows and puts selection on previously selected row
     else:
@@ -160,11 +160,10 @@ class PlexilPlanSelection(Plugin):
   def handle_down_button_clicked(self, checked):
     '''When down button is clicked this function moves the selected item down in the queue table.'''
     selected_row = self._widget.planQueueTable.currentRow()
-    print(selected_row)
     num_rows = self._widget.planQueueTable.rowCount()
 
     #checks we are not at bottom of list
-    if(selected_row >= num_rows-1 or selected_row < 0):
+    if selected_row >= num_rows-1 or selected_row < 0:
       return
     #switches the two rows and puts selection on previously selected row
     else:
@@ -180,7 +179,7 @@ class PlexilPlanSelection(Plugin):
     '''When send button is clicked any items in the plan queue table are sent (in order) to the sent plans table.
      It then publishes a string array of these plans so that the ow_plexil_plan_selection node can run them 
      sequentially. If the subscriber is not connected a popup box reminding the user to run the ow_plexil node will show up.'''
-    if(self.check_client_set_up() == False):
+    if self.check_client_set_up() == False:
       return
 
     num_rows = self._widget.planQueueTable.rowCount()
@@ -204,7 +203,7 @@ class PlexilPlanSelection(Plugin):
   def handle_reset_button_clicked(self, checked):
     '''When reset button is clicked all plans in the sent plans table are deleted. It also publishes a string command 
      RESET letting the ow_plexil_plan_selection node know that any plans in its queue should also be deleted.'''
-    if(self.check_client_set_up() == False):
+    if self.check_client_set_up() == False:
       return
     num_rows = self._widget.sentPlansTable.rowCount()
     #deletes each row pressent in sentplanstable
@@ -217,12 +216,12 @@ class PlexilPlanSelection(Plugin):
     '''Checks to see if the client is initialized, if not we check if the server is running before initializing the client.
     If server is not yet running we send a popup informing the user and return False.'''
     #checks to see if we have connected to service yet
-    if(self.plan_select_client == None):
+    if self.plan_select_client == None:
       #we get list of services and see if any match plexil_plan_selection
       services = rosservice.get_service_list()
       service_running = [i for i in services if "plexil_plan_selection" in i]
       #if none exist we send a popup and return
-      if(len(service_running) == 0):
+      if len(service_running) == 0:
         popup = QMessageBox()
         popup.setWindowTitle("ow_plexil service not yet connected")
         popup.setText("ow_plexil plan selection service not connected yet, please make sure the ow_plexil launch file is running.")
