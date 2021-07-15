@@ -1,0 +1,38 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#ifndef Action_Support_H
+#define Action_Support_H
+
+// Generic ROS Action support
+
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h>
+#include <string>
+
+const auto ActionServerTimeout = 10.0;  // seconds
+
+// The following callbacks do little or nothing besides issue information.
+
+template<typename T>
+using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
+                                  const T& result_ignored,
+                                  const std::string& operation_name);
+
+template<typename T>
+void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
+                             const T& result_ignored,
+                             const std::string& operation_name);
+
+template<typename T>
+void action_feedback_cb (const T& feedback_unused);
+
+void active_cb (const std::string& operation_name);
+
+template<typename T>
+void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
+                             const T& result_ignored,
+                             const std::string& operation_name);
+
+#endif
