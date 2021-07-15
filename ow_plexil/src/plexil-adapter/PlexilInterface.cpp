@@ -7,7 +7,7 @@
 
 using std::string;
 
-// Unused operation ID that signifies idle lander operation.
+// Dummy operation ID that signifies idle lander operation.
 #define IDLE_ID (-1)
 
 template<typename T>
@@ -15,17 +15,17 @@ void action_feedback_cb (const T& feedback)
 {
 }
 
-template<int OpIndex>
-void active_cb ()
+void active_cb (const string& operation_name)
 {
-  ROS_INFO ("%s started...", LanderOpNames[OpIndex].c_str());
+  ROS_INFO ("%s started...", operation_name.c_str());
 }
 
-template<int OpIndex, typename T>
+template<typename T>
 void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored)
+                             const T& result_ignored,
+                             const string& operation_name)
 {
-  ROS_INFO ("%s finished in state %s", LanderOpNames[OpIndex].c_str(),
+  ROS_INFO ("%s finished in state %s", operation_name.c_str(),
             state.toString().c_str());
 }
 

@@ -10,34 +10,39 @@
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
+#include <string>
 
-// ROS Action support
+//// Generic ROS Action support ////
 
 const auto ActionServerTimeout = 10.0;  // seconds
 
-template<int OpIndex, typename T>
-using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
-                                  const T& result_ignored);
+// The following callbacks do little or nothing besides issuing information.
 
-template<int OpIndex, typename T>
+template<typename T>
+using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
+                                  const T& result_ignored,
+                                  const std::string& operation_name);
+
+template<typename T>
 void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored);
+                             const T& result_ignored,
+                             const std::string& operation_name);
 
 template<typename T>
 void action_feedback_cb (const T& feedback);
 
-template<int OpIndex>
-void active_cb ();
+void active_cb (const std::string& operation_name);
 
-template<int OpIndex, typename T>
+template<typename T>
 void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored);
+                             const T& result_ignored,
+                             const std::string& operation_name);
 
 class PlexilInterface
 {
  public:
   PlexilInterface () = default;
-  ~PlexilInterface ();
+  virtual ~PlexilInterface () = 0;
   PlexilInterface (const PlexilInterface&) = delete;
   PlexilInterface& operator= (const PlexilInterface&) = delete;
 
