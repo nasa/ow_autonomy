@@ -72,12 +72,3 @@ void PlexilInterface::registerLanderOperation (const string& name)
 {
   m_runningOperations[name] = IDLE_ID;
 }
-
-/*
-template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
-void PlexilInterface::runAction (const string& opname,
-                                 std::unique_ptr<ActionClient>& ac,
-                                 const Goal& goal,
-                                 int id,
-                                 t_action_done_cb<ResultPtr> done_cb)
-*/

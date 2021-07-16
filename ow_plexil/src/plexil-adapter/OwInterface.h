@@ -115,7 +115,6 @@ class OwInterface : public PlexilInterface
   void digLinearAction (double x, double y, double depth, double length,
                    double ground_pos, int id);
   void deliverAction (double x, double y, double z, int id);
-  bool operationRunning (const std::string& name) const;
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void tiltCallback (const control_msgs::JointControllerState::ConstPtr&);
   void panCallback (const control_msgs::JointControllerState::ConstPtr&);

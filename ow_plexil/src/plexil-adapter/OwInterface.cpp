@@ -344,6 +344,7 @@ bool OwInterface::powerFault () const
   return faultActive (m_powerErrors);
 }
 
+/*
 template<typename T>
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
@@ -355,6 +356,20 @@ static void guarded_move_done_cb
   GroundPosition = result->final.z;
   publish ("GroundFound", GroundFound);
   publish ("GroundPosition", GroundPosition);
+}
+*/
+
+template<typename T>
+static auto guarded_move_done_cb (const string& opname)
+{
+  return [&] (const actionlib::SimpleClientGoalState& state,
+              const T& result) {
+    ROS_INFO ("%s finished in state %s", opname.c_str(), state.toString().c_str());
+    GroundFound = result->success;
+    GroundPosition = result->final.z;
+    publish ("GroundFound", GroundFound);
+    publish ("GroundPosition", GroundPosition);
+  };
 }
 
 
@@ -684,8 +699,8 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
             ow_lander::GuardedMoveGoal,
             ow_lander::GuardedMoveResultConstPtr,
             ow_lander::GuardedMoveFeedbackConstPtr>
-    (Op_GuardedMove, m_guardedMoveClient, goal, id,
-     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr>);
+    (Op_GuardedMove, m_guardedMoveClient, goal, id);
+     //     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 
 double OwInterface::getTilt () const

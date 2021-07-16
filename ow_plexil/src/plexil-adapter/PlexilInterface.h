@@ -31,6 +31,7 @@ class PlexilInterface
   void setCommandStatusCallback (void (*callback) (int, bool));
 
  protected:
+  bool operationRunning (const std::string& name) const;
   void registerLanderOperation (const std::string& name);
 
   // Map from operation name to its instance ID if it is running, or to IDLE_ID
@@ -42,15 +43,17 @@ class PlexilInterface
     void runAction (const std::string& opname,
                     std::unique_ptr<ActionClient>& ac,
                     const Goal& goal,
-                    int id,
-                    t_action_done_cb<ResultPtr> done_cb =
-                      default_action_done_cb<ResultPtr>)
+                    int id)
+                    //                   t_action_done_cb<ResultPtr> done_cb =
+                    //                      default_action_done_cb<ResultPtr> (opname))
   {
     if (ac) {
       ROS_INFO ("Sending goal to action %s", opname.c_str());
       ac->sendGoal (goal,
-                    done_cb,
-                    [&](){ active_cb (opname); },
+                    //                    done_cb,
+                    default_action_done_cb<ResultPtr> (opname),
+                    //                    [&](){ active_cb (opname); },
+                    active_cb (opname),
                     action_feedback_cb<FeedbackPtr>);
       ROS_INFO ("Sent goal to action %s", opname.c_str());
     }
@@ -64,10 +67,7 @@ class PlexilInterface
     markOperationFinished (opname, id);
   }
 
-
  private:
-  bool operationRunning (const std::string& name) const;
-
   // Callback function in PLEXIL adapter for success/failure of given command.
   // This didn't work, so using conventional pointer.
   //  std::unique_ptr<void*(int,bool)> m_commandStatusCallback;
