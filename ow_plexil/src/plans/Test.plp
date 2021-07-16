@@ -1,0 +1,41 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+Test: Concurrence
+{
+  Boolean BatteryOK = true;
+  Boolean ArmOK = true; // Affects manipulator tasks
+  Boolean AntennaOK = true; // Affects panning and tilting
+  Boolean PowerOK = true; // Affects entire system, stop non-critical tasks (fault-related)
+  Boolean SystemOK = true; // #TODO What do these affect? What about force torque faults?
+
+  Image:
+  {
+    // Start iff battery is okay and there are no relevant faults
+    // Ignore power faults, monitoring tasks prioritized
+    Start BatteryOK && AntennaOK && PowerOK;
+    ExitCondition !(AntennaOK && PowerOK);
+    log_info ("** Imaging Landing Site **");
+    LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
+                                   IgnoreCrash = true);
+  }
+
+  log_info (Image.outcome); // This works
+
+  CheckOutcome:
+  {
+
+    Repeat true;
+    // log_info (Image.outcome); // This does not work
+    log_info ("Testing", SUCCESS);
+    Wait 5;
+  }
+
+
+
+}
