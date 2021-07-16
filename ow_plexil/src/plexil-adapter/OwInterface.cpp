@@ -60,7 +60,6 @@ const string Op_TakePicture       = "TakePicture";
 
 
 // 1. Indices into subsequent vector
-// 2. Template argument of runAction
 //
 enum LanderOps {
   GuardedMove,
@@ -345,12 +344,13 @@ bool OwInterface::powerFault () const
   return faultActive (m_powerErrors);
 }
 
-template<int OpIndex, typename T>
+template<typename T>
 static void guarded_move_done_cb
 (const actionlib::SimpleClientGoalState& state,
- const T& result)
+ const T& result,
+ const string& opname)
 {
-  ROS_INFO ("GuardedMove finished in state %s", state.toString().c_str());
+  ROS_INFO ("%s finished in state %s", opname.c_str(), state.toString().c_str());
   GroundFound = result->success;
   GroundPosition = result->final.z;
   publish ("GroundFound", GroundFound);
@@ -479,8 +479,8 @@ void OwInterface::initialize()
   }
 }
 
-static void antenna_op (const string& opname, double degrees,
-                        std::unique_ptr<ros::Publisher>& pub, int id)
+void OwInterface::antennaOp (const string& opname, double degrees,
+                             std::unique_ptr<ros::Publisher>& pub, int id)
 {
   if (! markOperationRunning (opname, id)) {
     return;
@@ -496,14 +496,14 @@ void OwInterface::tiltAntenna (double degrees, int id)
 {
   m_goalTilt = degrees;
   m_tiltStart = ros::Time::now();
-  antenna_op (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
+  antennaOp (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
 }
 
 void OwInterface::panAntenna (double degrees, int id)
 {
   m_goalPan = degrees;
   m_panStart = ros::Time::now();
-  antenna_op (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
+  antennaOp (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
 void OwInterface::takePicture (int id)
@@ -528,7 +528,7 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
   goal.delivery.x = x;
   goal.delivery.y = y;
   goal.delivery.z = z;
-  runAction<Deliver, actionlib::SimpleActionClient<ow_lander::DeliverAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::DeliverAction>,
             ow_lander::DeliverGoal,
             ow_lander::DeliverResultConstPtr,
             ow_lander::DeliverFeedbackConstPtr>
@@ -557,7 +557,7 @@ void OwInterface::digLinearAction (double x, double y,
   goal.length = length;
   goal.ground_position = ground_pos;
 
-  runAction<DigLinear, actionlib::SimpleActionClient<ow_lander::DigLinearAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::DigLinearAction>,
             ow_lander::DigLinearGoal,
             ow_lander::DigLinearResultConstPtr,
             ow_lander::DigLinearFeedbackConstPtr>
@@ -584,8 +584,7 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  runAction<DigCircular,
-            actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
             ow_lander::DigCircularGoal,
             ow_lander::DigCircularResultConstPtr,
             ow_lander::DigCircularFeedbackConstPtr>
@@ -605,7 +604,7 @@ void OwInterface::unstowAction (int id)
   ow_lander::UnstowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  runAction<Unstow, actionlib::SimpleActionClient<ow_lander::UnstowAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::UnstowAction>,
             ow_lander::UnstowGoal,
             ow_lander::UnstowResultConstPtr,
             ow_lander::UnstowFeedbackConstPtr>
@@ -624,7 +623,7 @@ void OwInterface::stowAction (int id)
   ow_lander::StowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  runAction<Stow, actionlib::SimpleActionClient<ow_lander::StowAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::StowAction>,
             ow_lander::StowGoal,
             ow_lander::StowResultConstPtr,
             ow_lander::StowFeedbackConstPtr>
@@ -651,7 +650,7 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.parallel = parallel;
   goal.ground_position = ground_pos;
 
-  runAction<Grind, actionlib::SimpleActionClient<ow_lander::GrindAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::GrindAction>,
             ow_lander::GrindGoal,
             ow_lander::GrindResultConstPtr,
             ow_lander::GrindFeedbackConstPtr>
@@ -681,12 +680,12 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.normal.z = dir_z;
   goal.search_distance = search_dist;
 
-  runAction<GuardedMove, actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>,
+  runAction<actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>,
             ow_lander::GuardedMoveGoal,
             ow_lander::GuardedMoveResultConstPtr,
             ow_lander::GuardedMoveFeedbackConstPtr>
     (Op_GuardedMove, m_guardedMoveClient, goal, id,
-    guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
+     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr>);
 }
 
 double OwInterface::getTilt () const

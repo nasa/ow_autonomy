@@ -124,6 +124,8 @@ class OwInterface : public PlexilInterface
                       double position, double velocity,
                       double current, double goal,
                       const ros::Time& start);
+  void antennaOp (const std::string& opname, double degrees,
+                  std::unique_ptr<ros::Publisher>&, int id);
   void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);

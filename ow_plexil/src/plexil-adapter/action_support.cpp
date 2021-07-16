@@ -3,7 +3,7 @@
 // this repository.
 
 #include "action_support.h"
-
+/*
 using std::string;
 
 template<typename T>
@@ -24,3 +24,4 @@ void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
   ROS_INFO ("%s finished in state %s", operation_name.c_str(),
             state.toString().c_str());
 }
+*/

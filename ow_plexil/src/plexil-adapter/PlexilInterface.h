@@ -38,20 +38,40 @@ class PlexilInterface
   // comprise all the valid lander operation names.
   std::map<std::string, int> m_runningOperations;
 
- private:
-  bool operationRunning (const std::string& name) const;
   template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,
-                    std::unique_ptr<ActionClient>&,
-                    const Goal&,
+                    std::unique_ptr<ActionClient>& ac,
+                    const Goal& goal,
                     int id,
                     t_action_done_cb<ResultPtr> done_cb =
-                      default_action_done_cb<ResultPtr>);
+                      default_action_done_cb<ResultPtr>)
+  {
+    if (ac) {
+      ROS_INFO ("Sending goal to action %s", opname.c_str());
+      ac->sendGoal (goal,
+                    done_cb,
+                    [&](){ active_cb (opname); },
+                    action_feedback_cb<FeedbackPtr>);
+      ROS_INFO ("Sent goal to action %s", opname.c_str());
+    }
+    else {
+      ROS_ERROR ("%s action client was null!", opname.c_str());
+      return;
+    }
+
+    // Wait indefinitely for the action to complete.
+    bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
+    markOperationFinished (opname, id);
+  }
+
+
+ private:
+  bool operationRunning (const std::string& name) const;
 
   // Callback function in PLEXIL adapter for success/failure of given command.
   // This didn't work, so using conventional pointer.
   //  std::unique_ptr<void*(int,bool)> m_commandStatusCallback;
-  void* (int,bool) m_commandStatusCallback;
+  void (*m_commandStatusCallback)(int,bool);
 };
 
 #endif

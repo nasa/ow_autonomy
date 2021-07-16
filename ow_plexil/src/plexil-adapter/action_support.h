@@ -23,16 +23,20 @@ using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
 template<typename T>
 void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
                              const T& result_ignored,
-                             const std::string& operation_name);
+                             const std::string& operation_name)
+{
+  ROS_INFO ("%s finished in state %s", operation_name.c_str(),
+            state.toString().c_str());
+}
 
 template<typename T>
-void action_feedback_cb (const T& feedback_unused);
+void action_feedback_cb (const T& feedback_unused)
+{
+}
 
-void active_cb (const std::string& operation_name);
-
-template<typename T>
-void default_action_done_cb (const actionlib::SimpleClientGoalState& state,
-                             const T& result_ignored,
-                             const std::string& operation_name);
+void active_cb (const std::string& operation_name)
+{
+  ROS_INFO ("%s started...", operation_name.c_str());
+}
 
 #endif

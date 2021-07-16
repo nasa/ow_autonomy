@@ -73,27 +73,11 @@ void PlexilInterface::registerLanderOperation (const string& name)
   m_runningOperations[name] = IDLE_ID;
 }
 
+/*
 template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
 void PlexilInterface::runAction (const string& opname,
                                  std::unique_ptr<ActionClient>& ac,
                                  const Goal& goal,
                                  int id,
                                  t_action_done_cb<ResultPtr> done_cb)
-{
-  if (ac) {
-    ROS_INFO ("Sending goal to action %s", opname.c_str());
-    ac->sendGoal (goal,
-                  done_cb,
-                  [&](){ active_cb (opname); },
-                  action_feedback_cb<FeedbackPtr>);
-    ROS_INFO ("Sent goal to action %s", opname.c_str());
-  }
-  else {
-    ROS_ERROR ("%s action client was null!", opname.c_str());
-    return;
-  }
-
-  // Wait indefinitely for the action to complete.
-  bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
-  markOperationFinished (opname, id);
-}
+*/
