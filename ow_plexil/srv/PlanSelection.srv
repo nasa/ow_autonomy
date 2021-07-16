@@ -1,0 +1,7 @@
+#input command takes either ADD or RESET 
+#plans takes an array of plan names 
+string command
+string[] plans
+---
+#output whether or not call was succesful
+bool success

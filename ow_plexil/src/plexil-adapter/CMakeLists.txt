@@ -9,6 +9,8 @@ set (HEADERS
   OwInterface.h
   OWLATSimInterface.h
   OwAdapter.h
+  PlexilPlanSelection.h
+  TerminalPlanSelection.h
 )
 
 set (SOURCES
@@ -19,6 +21,8 @@ set (SOURCES
   OwInterface.cpp
   OWLATSimInterface.cpp
   OwAdapter.cpp
+  PlexilPlanSelection.cpp
+  TerminalPlanSelection.cpp
 )
 
 add_definitions(-DUSING_ROS)
@@ -42,11 +46,18 @@ add_dependencies(${LIB_NAME}
   ${catkin_EXPORTED_TARGETS})
 
 add_executable(plexil_node plexil_node.cpp)
+add_executable(terminal_selection_node terminal_selection_node.cpp)
 
 target_link_libraries(plexil_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-install(TARGETS plexil_node
+target_link_libraries(terminal_selection_node
+  ${catkin_LIBRARIES}
+  ${PLEXIL_LIBRARIES}
+  ${LIB_NAME})
+
+install(TARGETS plexil_node terminal_selection_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+

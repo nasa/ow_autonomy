@@ -56,7 +56,6 @@ bool OwExecutive::getPlanState()
 	return PlexilApp->allPlansFinished();
 }
 
-
 bool OwExecutive::runPlan (const string& filename)
 {
   string plan = (PlexilDir + filename);
