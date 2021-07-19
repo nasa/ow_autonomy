@@ -14,14 +14,13 @@
 
 const auto ActionServerTimeout = 10.0;  // seconds
 
-// The following callbacks do little or nothing besides issue information.
+template<typename T>
+using t_action_done_cb =
+  std::function<void (const actionlib::SimpleClientGoalState&,
+                      const T& result_ignored)>;
 
 template<typename T>
-using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
-                                  const T& result_ignored);
-
-template<typename T>
-auto default_action_done_cb (const std::string& operation_name)
+t_action_done_cb<T> default_action_done_cb (const std::string& operation_name)
 {
   return [&](const actionlib::SimpleClientGoalState& state,
              const T& result_ignored) {

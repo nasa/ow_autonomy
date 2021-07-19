@@ -50,5 +50,7 @@ void OWLATSimInterface::owlatUnstowAction (int id)
             owlat_sim_msgs::ARM_UNSTOWGoal,
             owlat_sim_msgs::ARM_UNSTOWResultConstPtr,
             owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>
-    (Name_OwlatUnstow, m_owlatUnstowClient, goal, id);
+    (Name_OwlatUnstow, m_owlatUnstowClient, goal, id,
+     default_action_done_cb<owlat_sim_msgs::ARM_UNSTOWResultConstPtr>
+     (Name_OwlatUnstow));
 }

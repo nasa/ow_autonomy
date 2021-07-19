@@ -360,7 +360,7 @@ static void guarded_move_done_cb
 */
 
 template<typename T>
-static auto guarded_move_done_cb (const string& opname)
+static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 {
   return [&] (const actionlib::SimpleClientGoalState& state,
               const T& result) {
@@ -547,7 +547,8 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
             ow_lander::DeliverGoal,
             ow_lander::DeliverResultConstPtr,
             ow_lander::DeliverFeedbackConstPtr>
-    (Op_Deliver, m_deliverClient, goal, id);
+    (Op_Deliver, m_deliverClient, goal, id,
+     default_action_done_cb<ow_lander::DeliverResultConstPtr> (Op_Deliver));
 }
 
 void OwInterface::digLinear (double x, double y,
@@ -576,7 +577,8 @@ void OwInterface::digLinearAction (double x, double y,
             ow_lander::DigLinearGoal,
             ow_lander::DigLinearResultConstPtr,
             ow_lander::DigLinearFeedbackConstPtr>
-    (Op_DigLinear, m_digLinearClient, goal, id);
+    (Op_DigLinear, m_digLinearClient, goal, id,
+     default_action_done_cb<ow_lander::DigLinearResultConstPtr> (Op_DigLinear));
 }
 
 
@@ -603,7 +605,8 @@ void OwInterface::digCircularAction (double x, double y, double depth,
             ow_lander::DigCircularGoal,
             ow_lander::DigCircularResultConstPtr,
             ow_lander::DigCircularFeedbackConstPtr>
-    (Op_DigCircular, m_digCircularClient, goal, id);
+    (Op_DigCircular, m_digCircularClient, goal, id,
+     default_action_done_cb<ow_lander::DigCircularResultConstPtr> (Op_DigCircular));
 }
 
 
@@ -623,7 +626,8 @@ void OwInterface::unstowAction (int id)
             ow_lander::UnstowGoal,
             ow_lander::UnstowResultConstPtr,
             ow_lander::UnstowFeedbackConstPtr>
-    (Op_Unstow, m_unstowClient, goal, id);
+    (Op_Unstow, m_unstowClient, goal, id,
+     default_action_done_cb<ow_lander::UnstowResultConstPtr> (Op_Unstow));
 }
 
 void OwInterface::stow (int id)  // as action
@@ -642,7 +646,8 @@ void OwInterface::stowAction (int id)
             ow_lander::StowGoal,
             ow_lander::StowResultConstPtr,
             ow_lander::StowFeedbackConstPtr>
-    (Op_Stow, m_stowClient, goal, id);
+    (Op_Stow, m_stowClient, goal, id,
+     default_action_done_cb<ow_lander::StowResultConstPtr> (Op_Stow));
 }
 
 void OwInterface::grind (double x, double y, double depth, double length,
@@ -669,7 +674,8 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
             ow_lander::GrindGoal,
             ow_lander::GrindResultConstPtr,
             ow_lander::GrindFeedbackConstPtr>
-    (Op_Grind, m_grindClient, goal, id);
+    (Op_Grind, m_grindClient, goal, id,
+     default_action_done_cb<ow_lander::GrindResultConstPtr> (Op_Grind));
 }
 
 void OwInterface::guardedMove (double x, double y, double z,
@@ -699,8 +705,8 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
             ow_lander::GuardedMoveGoal,
             ow_lander::GuardedMoveResultConstPtr,
             ow_lander::GuardedMoveFeedbackConstPtr>
-    (Op_GuardedMove, m_guardedMoveClient, goal, id);
-     //     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr> (Op_GuardedMove));
+    (Op_GuardedMove, m_guardedMoveClient, goal, id,
+     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 
 double OwInterface::getTilt () const
