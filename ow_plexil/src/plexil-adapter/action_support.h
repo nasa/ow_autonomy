@@ -22,6 +22,10 @@ const auto ActionServerTimeout = 10.0;  // seconds
 // than print a short status.  They are used as defaults; any action invocation
 // can substitute another callback.
 
+using t_action_active_cb = std::function<void ()>;
+
+t_action_active_cb default_action_active_cb (const std::string& operation_name);
+
 template<typename T>
 using t_action_done_cb =
   std::function<void (const actionlib::SimpleClientGoalState&,
@@ -41,7 +45,5 @@ template<typename T>
 void default_action_feedback_cb (const T& feedback_unused)
 {
 }
-
-std::function<void()> default_action_active_cb (const std::string& operation_name);
 
 #endif

@@ -548,6 +548,7 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
             ow_lander::DeliverResultConstPtr,
             ow_lander::DeliverFeedbackConstPtr>
     (Op_Deliver, m_deliverClient, goal, id,
+     default_action_active_cb (Op_Deliver),
      default_action_done_cb<ow_lander::DeliverResultConstPtr> (Op_Deliver));
 }
 
@@ -578,6 +579,7 @@ void OwInterface::digLinearAction (double x, double y,
             ow_lander::DigLinearResultConstPtr,
             ow_lander::DigLinearFeedbackConstPtr>
     (Op_DigLinear, m_digLinearClient, goal, id,
+     default_action_active_cb (Op_DigLinear),
      default_action_done_cb<ow_lander::DigLinearResultConstPtr> (Op_DigLinear));
 }
 
@@ -606,6 +608,7 @@ void OwInterface::digCircularAction (double x, double y, double depth,
             ow_lander::DigCircularResultConstPtr,
             ow_lander::DigCircularFeedbackConstPtr>
     (Op_DigCircular, m_digCircularClient, goal, id,
+     default_action_active_cb (Op_DigCircular),
      default_action_done_cb<ow_lander::DigCircularResultConstPtr> (Op_DigCircular));
 }
 
@@ -627,6 +630,7 @@ void OwInterface::unstowAction (int id)
             ow_lander::UnstowResultConstPtr,
             ow_lander::UnstowFeedbackConstPtr>
     (Op_Unstow, m_unstowClient, goal, id,
+     default_action_active_cb (Op_Unstow),
      default_action_done_cb<ow_lander::UnstowResultConstPtr> (Op_Unstow));
 }
 
@@ -647,6 +651,7 @@ void OwInterface::stowAction (int id)
             ow_lander::StowResultConstPtr,
             ow_lander::StowFeedbackConstPtr>
     (Op_Stow, m_stowClient, goal, id,
+     default_action_active_cb (Op_Stow),
      default_action_done_cb<ow_lander::StowResultConstPtr> (Op_Stow));
 }
 
@@ -675,6 +680,7 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
             ow_lander::GrindResultConstPtr,
             ow_lander::GrindFeedbackConstPtr>
     (Op_Grind, m_grindClient, goal, id,
+     default_action_active_cb (Op_Grind),
      default_action_done_cb<ow_lander::GrindResultConstPtr> (Op_Grind));
 }
 
@@ -706,6 +712,7 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
             ow_lander::GuardedMoveResultConstPtr,
             ow_lander::GuardedMoveFeedbackConstPtr>
     (Op_GuardedMove, m_guardedMoveClient, goal, id,
+     default_action_active_cb (Op_GuardedMove),
      guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 

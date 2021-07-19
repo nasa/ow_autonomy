@@ -44,13 +44,14 @@ class PlexilInterface
                     std::unique_ptr<ActionClient>& ac,
                     const Goal& goal,
                     int id,
+                    t_action_active_cb active_cb,
                     t_action_done_cb<ResultPtr> done_cb)
   {
     if (ac) {
       ROS_INFO ("Sending goal to action %s", opname.c_str());
       ac->sendGoal (goal,
                     done_cb,
-                    default_action_active_cb (opname),
+                    active_cb,
                     default_action_feedback_cb<FeedbackPtr>);
       ROS_INFO ("Sent goal to action %s", opname.c_str());
     }
