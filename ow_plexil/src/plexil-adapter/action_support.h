@@ -5,14 +5,22 @@
 #ifndef Action_Support_H
 #define Action_Support_H
 
-// Generic ROS Action support
+// Generic ROS Action support.
 
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <string>
 #include <functional>
 
+// Time that the Plexil node waits for each action server to be detected.  It
+// typically happens very fast, so this timeout is only to prevent indifinite
+// wait when an action server is down for some reason.
+//
 const auto ActionServerTimeout = 10.0;  // seconds
+
+// The following action callbacks are essentially stubs that do nothing more
+// than print a short status.  They are used as defaults; any action invocation
+// can substitute another callback.
 
 template<typename T>
 using t_action_done_cb =
@@ -30,10 +38,10 @@ t_action_done_cb<T> default_action_done_cb (const std::string& operation_name)
 }
 
 template<typename T>
-void action_feedback_cb (const T& feedback_unused)
+void default_action_feedback_cb (const T& feedback_unused)
 {
 }
 
-std::function<void()> active_cb (const std::string& operation_name);
+std::function<void()> default_action_active_cb (const std::string& operation_name);
 
 #endif

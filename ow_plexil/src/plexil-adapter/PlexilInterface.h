@@ -50,8 +50,8 @@ class PlexilInterface
       ROS_INFO ("Sending goal to action %s", opname.c_str());
       ac->sendGoal (goal,
                     done_cb,
-                    active_cb (opname),
-                    action_feedback_cb<FeedbackPtr>);
+                    default_action_active_cb (opname),
+                    default_action_feedback_cb<FeedbackPtr>);
       ROS_INFO ("Sent goal to action %s", opname.c_str());
     }
     else {
