@@ -25,6 +25,8 @@ using std::ref;
 // C
 #include <cmath>  // for M_PI and fabs
 
+using namespace ow_lander;
+
 //////////////////// Utilities ////////////////////////
 
 // Degree/Radian
@@ -539,18 +541,18 @@ void OwInterface::deliver (double x, double y, double z, int id)
 
 void OwInterface::deliverAction (double x, double y, double z, int id)
 {
-  ow_lander::DeliverGoal goal;
+  DeliverGoal goal;
   goal.delivery.x = x;
   goal.delivery.y = y;
   goal.delivery.z = z;
-  runAction<actionlib::SimpleActionClient<ow_lander::DeliverAction>,
-            ow_lander::DeliverGoal,
-            ow_lander::DeliverResultConstPtr,
-            ow_lander::DeliverFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<DeliverAction>,
+            DeliverGoal,
+            DeliverResultConstPtr,
+            DeliverFeedbackConstPtr>
     (Op_Deliver, m_deliverClient, goal, id,
      default_action_active_cb (Op_Deliver),
-     default_action_feedback_cb<ow_lander::DeliverFeedbackConstPtr> (Op_Deliver),
-     default_action_done_cb<ow_lander::DeliverResultConstPtr> (Op_Deliver));
+     default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
+     default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
 }
 
 void OwInterface::digLinear (double x, double y,
@@ -568,21 +570,21 @@ void OwInterface::digLinearAction (double x, double y,
                                    double depth, double length,
                                    double ground_pos, int id)
 {
-  ow_lander::DigLinearGoal goal;
+  DigLinearGoal goal;
   goal.x_start = x;
   goal.y_start = y;
   goal.depth = depth;
   goal.length = length;
   goal.ground_position = ground_pos;
 
-  runAction<actionlib::SimpleActionClient<ow_lander::DigLinearAction>,
-            ow_lander::DigLinearGoal,
-            ow_lander::DigLinearResultConstPtr,
-            ow_lander::DigLinearFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<DigLinearAction>,
+            DigLinearGoal,
+            DigLinearResultConstPtr,
+            DigLinearFeedbackConstPtr>
     (Op_DigLinear, m_digLinearClient, goal, id,
      default_action_active_cb (Op_DigLinear),
-     default_action_feedback_cb<ow_lander::DigLinearFeedbackConstPtr> (Op_DigLinear),
-     default_action_done_cb<ow_lander::DigLinearResultConstPtr> (Op_DigLinear));
+     default_action_feedback_cb<DigLinearFeedbackConstPtr> (Op_DigLinear),
+     default_action_done_cb<DigLinearResultConstPtr> (Op_DigLinear));
 }
 
 
@@ -598,21 +600,21 @@ void OwInterface::digCircular (double x, double y, double depth,
 void OwInterface::digCircularAction (double x, double y, double depth,
                                      double ground_pos, bool parallel, int id)
 {
-  ow_lander::DigCircularGoal goal;
+  DigCircularGoal goal;
   goal.x_start = x;
   goal.y_start = y;
   goal.depth = depth;
   goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  runAction<actionlib::SimpleActionClient<ow_lander::DigCircularAction>,
-            ow_lander::DigCircularGoal,
-            ow_lander::DigCircularResultConstPtr,
-            ow_lander::DigCircularFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<DigCircularAction>,
+            DigCircularGoal,
+            DigCircularResultConstPtr,
+            DigCircularFeedbackConstPtr>
     (Op_DigCircular, m_digCircularClient, goal, id,
      default_action_active_cb (Op_DigCircular),
-     default_action_feedback_cb<ow_lander::DigCircularFeedbackConstPtr> (Op_DigCircular),
-     default_action_done_cb<ow_lander::DigCircularResultConstPtr> (Op_DigCircular));
+     default_action_feedback_cb<DigCircularFeedbackConstPtr> (Op_DigCircular),
+     default_action_done_cb<DigCircularResultConstPtr> (Op_DigCircular));
 }
 
 
@@ -625,17 +627,17 @@ void OwInterface::unstow (int id)  // as action
 
 void OwInterface::unstowAction (int id)
 {
-  ow_lander::UnstowGoal goal;
+  UnstowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  runAction<actionlib::SimpleActionClient<ow_lander::UnstowAction>,
-            ow_lander::UnstowGoal,
-            ow_lander::UnstowResultConstPtr,
-            ow_lander::UnstowFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<UnstowAction>,
+            UnstowGoal,
+            UnstowResultConstPtr,
+            UnstowFeedbackConstPtr>
     (Op_Unstow, m_unstowClient, goal, id,
      default_action_active_cb (Op_Unstow),
-     default_action_feedback_cb<ow_lander::UnstowFeedbackConstPtr> (Op_Unstow),
-     default_action_done_cb<ow_lander::UnstowResultConstPtr> (Op_Unstow));
+     default_action_feedback_cb<UnstowFeedbackConstPtr> (Op_Unstow),
+     default_action_done_cb<UnstowResultConstPtr> (Op_Unstow));
 }
 
 void OwInterface::stow (int id)  // as action
@@ -647,17 +649,17 @@ void OwInterface::stow (int id)  // as action
 
 void OwInterface::stowAction (int id)
 {
-  ow_lander::StowGoal goal;
+  StowGoal goal;
   goal.goal = 0;  // Arbitrary, meaningless value
 
-  runAction<actionlib::SimpleActionClient<ow_lander::StowAction>,
-            ow_lander::StowGoal,
-            ow_lander::StowResultConstPtr,
-            ow_lander::StowFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<StowAction>,
+            StowGoal,
+            StowResultConstPtr,
+            StowFeedbackConstPtr>
     (Op_Stow, m_stowClient, goal, id,
      default_action_active_cb (Op_Stow),
-     default_action_feedback_cb<ow_lander::StowFeedbackConstPtr> (Op_Stow),
-     default_action_done_cb<ow_lander::StowResultConstPtr> (Op_Stow));
+     default_action_feedback_cb<StowFeedbackConstPtr> (Op_Stow),
+     default_action_done_cb<StowResultConstPtr> (Op_Stow));
 }
 
 void OwInterface::grind (double x, double y, double depth, double length,
@@ -672,7 +674,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
 void OwInterface::grindAction (double x, double y, double depth, double length,
                                bool parallel, double ground_pos, int id)
 {
-  ow_lander::GrindGoal goal;
+  GrindGoal goal;
   goal.x_start = x;
   goal.y_start = y;
   goal.depth = depth;
@@ -680,14 +682,14 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.parallel = parallel;
   goal.ground_position = ground_pos;
 
-  runAction<actionlib::SimpleActionClient<ow_lander::GrindAction>,
-            ow_lander::GrindGoal,
-            ow_lander::GrindResultConstPtr,
-            ow_lander::GrindFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<GrindAction>,
+            GrindGoal,
+            GrindResultConstPtr,
+            GrindFeedbackConstPtr>
     (Op_Grind, m_grindClient, goal, id,
      default_action_active_cb (Op_Grind),
-     default_action_feedback_cb<ow_lander::GrindFeedbackConstPtr> (Op_Grind),
-     default_action_done_cb<ow_lander::GrindResultConstPtr> (Op_Grind));
+     default_action_feedback_cb<GrindFeedbackConstPtr> (Op_Grind),
+     default_action_done_cb<GrindResultConstPtr> (Op_Grind));
 }
 
 void OwInterface::guardedMove (double x, double y, double z,
@@ -704,7 +706,7 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
                                      double dir_x, double dir_y, double dir_z,
                                      double search_dist, int id)
 {
-  ow_lander::GuardedMoveGoal goal;
+  GuardedMoveGoal goal;
   goal.start.x = x;
   goal.start.y = y;
   goal.start.z = z;
@@ -713,14 +715,14 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.normal.z = dir_z;
   goal.search_distance = search_dist;
 
-  runAction<actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>,
-            ow_lander::GuardedMoveGoal,
-            ow_lander::GuardedMoveResultConstPtr,
-            ow_lander::GuardedMoveFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
+            GuardedMoveGoal,
+            GuardedMoveResultConstPtr,
+            GuardedMoveFeedbackConstPtr>
     (Op_GuardedMove, m_guardedMoveClient, goal, id,
      default_action_active_cb (Op_GuardedMove),
-     default_action_feedback_cb<ow_lander::GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
-     guarded_move_done_cb<ow_lander::GuardedMoveResultConstPtr> (Op_GuardedMove));
+     default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
+     guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 
 double OwInterface::getTilt () const

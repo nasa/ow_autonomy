@@ -6,6 +6,7 @@
 #include <vector>
 #include "OWLATSimInterface.h"
 
+using namespace owlat_sim_msgs;
 using std::hash;
 using std::string;
 using std::thread;
@@ -46,15 +47,15 @@ void OWLATSimInterface::owlatUnstow (int id)
 
 void OWLATSimInterface::owlatUnstowAction (int id)
 {
-  owlat_sim_msgs::ARM_UNSTOWGoal goal;
+  ARM_UNSTOWGoal goal;
   string opname = Name_OwlatUnstow;  // shorter version
 
-  runAction<actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
-            owlat_sim_msgs::ARM_UNSTOWGoal,
-            owlat_sim_msgs::ARM_UNSTOWResultConstPtr,
-            owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<ARM_UNSTOWAction>,
+            ARM_UNSTOWGoal,
+            ARM_UNSTOWResultConstPtr,
+            ARM_UNSTOWFeedbackConstPtr>
     (opname, m_owlatUnstowClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr> (opname),
-     default_action_done_cb<owlat_sim_msgs::ARM_UNSTOWResultConstPtr> (opname));
+     default_action_feedback_cb<ARM_UNSTOWFeedbackConstPtr> (opname),
+     default_action_done_cb<ARM_UNSTOWResultConstPtr> (opname));
 }
