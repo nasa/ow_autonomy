@@ -27,6 +27,17 @@ using t_action_active_cb = std::function<void ()>;
 t_action_active_cb default_action_active_cb (const std::string& operation_name);
 
 template<typename T>
+using t_action_feedback_cb = std::function<void (const T& feedback)>;
+
+template<typename T>
+t_action_feedback_cb<T>
+default_action_feedback_cb (const std::string& operation_name_unused)
+{
+  // Since feedback is verbose, do nothing by default.
+  return [&] (const T& feedback_unused) { };
+}
+
+template<typename T>
 using t_action_done_cb =
   std::function<void (const actionlib::SimpleClientGoalState&,
                       const T& result_ignored)>;
@@ -34,16 +45,12 @@ using t_action_done_cb =
 template<typename T>
 t_action_done_cb<T> default_action_done_cb (const std::string& operation_name)
 {
-  return [&](const actionlib::SimpleClientGoalState& state,
-             const T& result_ignored) {
+  return [&] (const actionlib::SimpleClientGoalState& state,
+              const T& result_ignored) {
     ROS_INFO ("%s finished in state %s", operation_name.c_str(),
               state.toString().c_str());
   };
 }
 
-template<typename T>
-void default_action_feedback_cb (const T& feedback_unused)
-{
-}
 
 #endif

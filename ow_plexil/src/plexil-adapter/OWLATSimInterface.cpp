@@ -47,7 +47,7 @@ void OWLATSimInterface::owlatUnstow (int id)
 void OWLATSimInterface::owlatUnstowAction (int id)
 {
   owlat_sim_msgs::ARM_UNSTOWGoal goal;
-  string opname = Name_OwlatUnstow;
+  string opname = Name_OwlatUnstow;  // shorter version
 
   runAction<actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>,
             owlat_sim_msgs::ARM_UNSTOWGoal,
@@ -55,5 +55,6 @@ void OWLATSimInterface::owlatUnstowAction (int id)
             owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr>
     (opname, m_owlatUnstowClient, goal, id,
      default_action_active_cb (opname),
+     default_action_feedback_cb<owlat_sim_msgs::ARM_UNSTOWFeedbackConstPtr> (opname),
      default_action_done_cb<owlat_sim_msgs::ARM_UNSTOWResultConstPtr> (opname));
 }

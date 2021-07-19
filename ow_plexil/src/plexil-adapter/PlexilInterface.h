@@ -45,14 +45,12 @@ class PlexilInterface
                     const Goal& goal,
                     int id,
                     t_action_active_cb active_cb,
+                    t_action_feedback_cb<FeedbackPtr> feedback_cb,
                     t_action_done_cb<ResultPtr> done_cb)
   {
     if (ac) {
       ROS_INFO ("Sending goal to action %s", opname.c_str());
-      ac->sendGoal (goal,
-                    done_cb,
-                    active_cb,
-                    default_action_feedback_cb<FeedbackPtr>);
+      ac->sendGoal (goal, done_cb, active_cb, feedback_cb);
       ROS_INFO ("Sent goal to action %s", opname.c_str());
     }
     else {
