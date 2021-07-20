@@ -44,7 +44,7 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 static void (* CommandStatusCallback) (int,bool);
 
-const double PanTiltTimeout = 5.0; // seconds, made up
+const double PanTiltTimeout = 25.0; // seconds, made up
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -286,10 +286,12 @@ void OwInterface::managePanTilt (const string& opname,
   // We are only concerned when there is a pan/tilt in progress.
   if (! operationRunning (opname)) return;
 
+  //converting radians to degrees
+  position = position * R2D;
   int id = Running.at (opname);
 
   // Antenna states of interest,
-  bool reached = within_tolerance (current, goal, DegreeTolerance);
+  bool reached = within_tolerance (position, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
@@ -297,7 +299,7 @@ void OwInterface::managePanTilt (const string& opname,
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
-                opname.c_str(), current, goal);
+                opname.c_str(), position, goal);
     }
   }
 }

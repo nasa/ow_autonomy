@@ -1,0 +1,38 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This is a simplified and stubbed version of a procedure that should
+// "interrogate" the terrain to find a good sampling location.  Instead, we
+// choose an arbitrary location and probe for ground position there.
+
+#include "plan-interface.h"
+
+LibraryAction TakePicture ();
+LibraryAction PanAndShoot (In Real PanAngle);
+
+IdentifySampleTarget2: Sequence
+{
+    Real CurrentPanDegree;
+    Real GoalPanDegree;
+
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    LibraryCall Tilt(Degrees = 45);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall PanAndShoot(PanAngle = 65);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall PanAndShoot(PanAngle = 70);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall PanAndShoot(PanAngle = 75);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+
+}
