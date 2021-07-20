@@ -44,7 +44,7 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 static void (* CommandStatusCallback) (int,bool);
 
-const double PanTiltTimeout = 25.0; // seconds, made up
+const double PanTiltTimeout = 15.0; // seconds, made up
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -288,6 +288,26 @@ void OwInterface::managePanTilt (const string& opname,
   if (! operationRunning (opname)) return;
 
   int id = Running.at (opname);
+
+  //if position is over 360 we want to bring it back within the
+  //-360 to 360 range to check if goal position has been reached.
+  if(abs(current) > 360){
+    if(current < 0){
+      current = fmod(abs(current),360.0)*-1;
+    }
+    else{
+      current = fmod(abs(current), 360.0);
+    }
+  }
+
+  //We cant guarantee which way the antenna will move, so we have to 
+  //check if the current angle is equivalent.Ex:-180 degrees == 180 degrees.
+  if(current > 0 && goal < 0){
+    current = current - 360; 
+  }
+  else if(current < 0 && goal > 0){
+    current = current + 360;
+  }
 
   // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
@@ -546,6 +566,7 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 static void antenna_op (const string& opname, double degrees,
                         std::unique_ptr<ros::Publisher>& pub, int id)
 {
+
   if (! mark_operation_running (opname, id)) {
     return;
   }

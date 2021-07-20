@@ -2,20 +2,65 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This is a simplified and stubbed version of a procedure that should
-// "interrogate" the terrain to find a good sampling location.  Instead, we
-// choose an arbitrary location and probe for ground position there.
+// Simple plan to test Pan and Tilt functions
 
 #include "plan-interface.h"
 
 TestPanTilt: Sequence
 {
+
+    log_info("Testing Pan, should succeed on all tests.");
+    LibraryCall Pan(Degrees = 65);
     log_info("Current Pan Degree: ", Lookup(PanDegrees));
     log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-    LibraryCall Pan(Degrees = 70);
+
+    LibraryCall Pan(Degrees = 0);
     log_info("Current Pan Degree: ", Lookup(PanDegrees));
     log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = 180);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = -180);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = 350);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = -350);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = -360);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = -45);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Pan(Degrees = 10);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    log_info("PAN TEST FINISHED");
+
+    
+
+    log_info("Testing Tilt, should move to 45 degrees, back to 0, then attempt 200 before colliding and timing out.");
     LibraryCall Tilt(Degrees = 45);
     log_info("Current Pan Degree: ", Lookup(PanDegrees));
     log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Tilt(Degrees = 0);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+
+    LibraryCall Tilt(Degrees = 200);
+    log_info("Current Pan Degree: ", Lookup(PanDegrees));
+    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    log_info("TILT TEST FINISHED");
+    log_info("TestPanTilt Completed");
 }
