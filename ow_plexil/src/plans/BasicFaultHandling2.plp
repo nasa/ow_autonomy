@@ -1,0 +1,275 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan builds on ReferenceMission2 by more complexly considering arm, 
+// antenna, power and system faults and associated responses 
+// (as opposed to just pausing as is done in ReferenceMission2)
+
+// This goal is to minimize wasted power and lost time given mission constraints.
+// In the future, this could be expanded to consider fault responses to each 
+// specific fault, instead of responses to the four fault categories
+
+
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+
+LibraryAction StartSampleAnalysis;
+
+LibraryAction LogFaultStatus (In Boolean continue);
+
+LibraryAction BasicFaultHandlingImage(In Boolean battery_critical,
+                                      In Boolean antenna_ok,
+                                      In Boolean power_ok,
+                                      In Boolean image_interrupted,
+                                      InOut Boolean first_image_call);
+
+LibraryAction BasicFaultHandlingUnstow(In Boolean battery_ok,
+                                      In Boolean arm_ok,
+                                      In Boolean power_ok,
+                                      In Boolean unstow_interrupted,
+                                      InOut Boolean first_unstow_call);
+
+LibraryAction BasicFaultHandlingSearch(In Boolean battery_ok,
+                                      In Boolean arm_ok,
+                                      In Boolean power_ok,
+                                      In Boolean search_interrupted,
+                                      InOut Boolean first_search_call);
+
+BasicFaultHandling: Concurrence
+{
+  // Guards to track current behavior #TODO: not sure if this type of guard is needed
+  Boolean ImagingLandingSite = false;
+  Boolean UnstowingArm = false;
+  Boolean SearchingWorkspace = false; 
+ 
+  // Guards for mission continuation
+  Boolean BatteryOK = true; // Power and temperature of battery, no fault info
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
+  Boolean ArmOK = true; // Affects manipulator tasks
+  Boolean AntennaOK = true; // Affects panning and tilting
+  Boolean PowerOK = true; // Affects entire system, stop non-critical tasks (fault-related)
+  Boolean SystemOK = true; // #TODO What do these affect? What about force torque faults?
+  
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+  Real CriticallyLowCharge = 0.05;
+  Boolean BatteryCritical = false;
+
+  // Temporary guard for fault response while loops
+  //Integer Timeout = 20; // arbitrary choice
+
+  // Guards to ensure re-attempt of interrupted nodes
+  Boolean ImageInterrupted = false;
+  Boolean UnstowInterrupted = false;
+  Boolean SearchInterrupted = false;
+  Boolean FirstImageCall = true;
+  Boolean FirstUnstowCall = true;
+  Boolean FirstSearchCall = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  WaitForBatteryHealth:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !BatteryOK; // Battery issues occurring
+    Skip !MissionInProgress;
+
+    BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+
+    if BatteryCritical
+    {
+      log_warning
+      ("Battery health issues critical, mission operations nominally paused...");
+      Wait 10;
+    }
+    else
+    {
+      log_warning
+      ("Non-critical battery health issues, reverting to monitoring tasks temporarily...");
+      LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+                                        antenna_ok = AntennaOK,
+                                        power_ok = PowerOK,
+                                        image_interrupted = ImageInterrupted,
+                                        first_image_call = FirstImageCall); // #TODO Repeat node needs work
+    }
+    endif;
+ 
+  }
+
+  CheckFaults: // Was HandleFaults, but really only checks them so renamed
+  {
+    // Update fault guard variables, denoting fault type, if any
+    Repeat MissionInProgress;
+    Start MissionInProgress && !NoFaults;
+    Skip !MissionInProgress;
+
+    // Look up fault guard variables based on current state of faults in system
+    ArmOK = !Lookup(ArmFault);
+    AntennaOK = !Lookup(AntennaFault);
+    PowerOK = !Lookup(PowerFault);
+    SystemOK = !Lookup(SystemFault);
+
+    Wait 1;
+    
+  }
+
+  HandlePowerFaults:
+  {
+
+    Repeat MissionInProgress;
+    Start MissionInProgress && !PowerOK; // Power fault occurring
+    Skip !MissionInProgress;
+
+    log_warning
+      ("Power fault occurring, mission operations nominally paused...");
+    Wait 10;
+    // #TODO Add timeout logic
+
+    // This also ignores reattempting whatever node got interrupted by the power fault
+
+  }
+
+  HandleAntennaFaults:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !AntennaOK && ImageInterrupted; // Antenna fault occurring
+    Skip !MissionInProgress;
+
+    // Imaging is the baseline task, with no task to revert to if an antenna fault halts it
+    // So, the response is to wait for fault resolution until a specified timeout
+
+    log_warning
+      ("Antenna fault occurring during imaging, mission operations nominally paused...");
+    Wait 10;
+    // #TODO Add to timeout count
+
+    // When/how will we reattempt Image?
+
+  }
+
+  HandleArmFaults:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !ArmOK && UnstowInterrupted || SearchInterrupted; // Arm fault occurring
+    Skip !MissionInProgress;
+
+    log_warning
+      ("Arm fault occurring during arm operations, reverting to imaging task...");
+    LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+                                        antenna_ok = AntennaOK,
+                                        power_ok = PowerOK,
+                                        image_interrupted = ImageInterrupted,
+                                        first_image_call = FirstImageCall); // #TODO Repeat node needs work
+    Wait 1;
+
+    // #TODO When/how will we reattempt either Unstow or Search?
+
+  }
+
+  Mission: UncheckedSequence
+  {
+
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    log_info ("Starting BasicFaultHandling plan...");
+
+    LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+                                        antenna_ok = AntennaOK,
+                                        power_ok = PowerOK,
+                                        image_interrupted = ImageInterrupted,
+                                        first_image_call = FirstImageCall);
+
+    // Logging for testing
+    log_info ("Image success: ", BasicFaultHandlingImage.outcome == SUCCESS);
+    log_info ("Image interrupted: ", BasicFaultHandlingImage.outcome == INTERRUPTED);
+    log_info ("Image failure: ", BasicFaultHandlingImage.outcome == FAILURE);
+    log_info ("Image skipped: ", BasicFaultHandlingImage.outcome == SKIPPED);
+    ImageInterrupted = (BasicFaultHandlingImage.outcome == INTERRUPTED); // This is not sufficient
+
+    LibraryCall BasicFaultHandlingUnstow(battery_ok = BatteryOK,
+                                        arm_ok = ArmOK,
+                                        power_ok = PowerOK,
+                                        unstow_interrupted = UnstowInterrupted,
+                                        first_unstow_call = FirstUnstowCall);
+
+    // Logging for testing
+    log_info ("Unstow success: ", BasicFaultHandlingUnstow.outcome == SUCCESS);
+    log_info ("Unstow interrupted: ", BasicFaultHandlingUnstow.outcome == INTERRUPTED);
+    log_info ("Unstow failure: ", BasicFaultHandlingUnstow.outcome == FAILURE);
+    log_info ("Unstow skipped: ", BasicFaultHandlingUnstow.outcome == SKIPPED);
+    UnstowInterrupted = (BasicFaultHandlingUnstow.outcome == INTERRUPTED); // This is not sufficient
+
+    LibraryCall BasicFaultHandlingSearch(battery_ok = BatteryOK,
+                                        arm_ok = ArmOK,
+                                        power_ok = PowerOK,
+                                        search_interrupted = SearchInterrupted,
+                                        first_search_call = FirstSearchCall);
+
+    // Logging for testing
+    log_info ("Search success: ", BasicFaultHandlingSearch.outcome == SUCCESS);
+    log_info ("Search interrupted: ", BasicFaultHandlingSearch.outcome == INTERRUPTED);
+    log_info ("Search failure: ", BasicFaultHandlingSearch.outcome == FAILURE);
+    log_info ("Search skipped: ", BasicFaultHandlingSearch.outcome == SKIPPED);
+    SearchInterrupted = (BasicFaultHandlingSearch.outcome == INTERRUPTED); // This is not sufficient
+    
+    log_info ("BasicFaultHandling plan complete.");
+    MissionInProgress = false;
+  }
+
+}
+

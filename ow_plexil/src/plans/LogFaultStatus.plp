@@ -1,0 +1,30 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+
+#include "plan-interface.h"
+
+LogFaultStatus:
+{
+  In Boolean continue;
+
+  Boolean ArmOK = true;
+  Boolean AntennaOK = true; 
+  Boolean PowerOK = true; 
+  Boolean SystemOK = true; 
+
+  Exit !continue;
+
+  ArmOK = !Lookup(ArmFault);
+  AntennaOK = !Lookup(AntennaFault);
+  PowerOK = !Lookup(PowerFault);
+  SystemOK = !Lookup(SystemFault);
+
+  log_info ("** Current Fault Statuses **");
+  log_info ("ArmOK: ", ArmOK);
+  log_info ("AntennaOK: ", AntennaOK);
+  log_info ("PowerOK: ", PowerOK);
+  log_info ("SystemOK: ", SystemOK);
+
+}

@@ -1,0 +1,23 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+BasicFaultHandlingUnstow:
+{
+  In battery_ok, arm_ok, power_ok, unstow_interrupted;
+  InOut first_unstow_call;
+
+  Repeat first_unstow_call || unstow_interrupted;
+  Start battery_ok && arm_ok && power_ok;
+  ExitCondition !(battery_ok && arm_ok && power_ok);
+  log_info ("** Unstowing Arm **");
+  LibraryCall Unstow;
+
+  if first_unstow_call
+  {
+  first_unstow_call = false;
+  }
+}
+

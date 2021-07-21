@@ -1,0 +1,31 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos);
+
+BasicFaultHandlingSearch:
+{
+  In battery_ok, arm_ok, power_ok, search_interrupted;
+  InOut first_search_call;
+
+  Repeat first_search_call || search_interrupted;
+  Start battery_ok && arm_ok && power_ok;
+  ExitCondition !(battery_ok && arm_ok && power_ok);
+  log_info ("** Identifying Sample Target **");
+  LibraryCall IdentifySampleTarget (X = trench_x,
+                                  Y = trench_y,
+                                  GroundPos = ground_pos,
+                                  Parallel = parallel);
+
+  if first_search_call
+  {
+  first_search_call = false;
+  }
+}
+
