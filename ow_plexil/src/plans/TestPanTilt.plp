@@ -9,58 +9,54 @@
 TestPanTilt: Sequence
 {
 
-    log_info("Testing Pan, should succeed on all tests.");
-    LibraryCall Pan(Degrees = 65);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    In Real Goal;
+    In String Action;
+    InOut Integer TestSuccess;
+    Real tolerance = 0.4;
+    Real current = 0;
 
-    LibraryCall Pan(Degrees = 0);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    //output test number
+    log_info("TEST: ", TestSuccess+1);
 
-    LibraryCall Pan(Degrees = 180);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    //check for which command was passed
+    if(Action == "Pan" || Action == "pan"){
+      LibraryCall Pan(Degrees = Goal); 
+      current = Lookup(PanDegrees);
+    }
+    elseif(Action == "Tilt" || Action == "tilt"){
+      LibraryCall Tilt(Degrees = Goal);
+      current = Lookup(TiltDegrees);
+    }
 
-    LibraryCall Pan(Degrees = -180);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    //Normalize between -360 and 360
+    if(abs(current)+tolerance > 360){
+      if(current < 0){
+        current = (abs(current) % 360)*-1;
+      }
+      else{
+        current = (abs(current) % 360);
+      }
+    }
+    endif;
 
-    LibraryCall Pan(Degrees = 350);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    //check for equivalent angles
+    if(current > 0 && Goal < 0){
+      current = current - 360; 
+    }
+    else if(current < 0 && Goal > 0){
+      current = current + 360;
+    }
+    endif;
 
-    LibraryCall Pan(Degrees = -350);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
+    //check if resulting position is within tolerance
+    if(current <= Goal + tolerance && current >= Goal - tolerance){
+      log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
+      //if we succeed we increment the TestSuccess
+      TestSuccess = TestSuccess + 1;
+    }
+    else{
+      log_error(Action, ": FAILED", " Goal: ", Goal, " Actual: ", current);
+    }
 
-    LibraryCall Pan(Degrees = -360);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
 
-    LibraryCall Pan(Degrees = -45);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall Pan(Degrees = 10);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-    log_info("PAN TEST FINISHED");
-
-    
-
-    log_info("Testing Tilt, should move to 45 degrees, back to 0, then attempt 200 before colliding and timing out.");
-    LibraryCall Tilt(Degrees = 45);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall Tilt(Degrees = 0);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall Tilt(Degrees = 200);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-    log_info("TILT TEST FINISHED");
-    log_info("TestPanTilt Completed");
 }
