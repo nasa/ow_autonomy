@@ -277,7 +277,7 @@ BasicFaultHandling: Concurrence
       log_info ("PowerOK: ", PowerOK);
       log_info ("SystemOK: ", SystemOK);
     }
-    }
+
     else
     {
       log_info ("Unstow did not start or other issue occurred...");
