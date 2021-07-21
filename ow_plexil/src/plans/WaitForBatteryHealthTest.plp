@@ -1,0 +1,69 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+WaitForBatteryHealthTest:
+{
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+  Real CriticallyLowCharge = 0.05;
+  Boolean BatteryCritical = false;
+  Real TestRemainingUsefulLife = 0.10;
+
+  // Guards for mission continuation
+  Boolean BatteryOK = true; // Power and temperature of battery, no fault info
+  Boolean MissionInProgress = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  WaitForBatteryHealth:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !BatteryOK; // Battery issues occurring
+    Skip !MissionInProgress;
+
+    // BatteryCritical = (Lookup(TestRemainingUsefulLife) < CriticallyLowCharge);
+    BatteryCritical = (TestRemainingUsefulLife < CriticallyLowCharge);
+    log_info ("BatteryCritical: ", BatteryCritical);
+
+    if BatteryCritical
+    {
+      log_warning
+      ("Battery health issues critical, mission operations nominally paused...");
+      Wait 10;
+    }
+    else
+    {
+      log_warning
+      ("Non-critical battery health issues, reverting to monitoring tasks temporarily...");
+      /*LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+                                        antenna_ok = AntennaOK,
+                                        power_ok = PowerOK,
+                                        image_interrupted = ImageInterrupted,
+                                        first_image_call = FirstImageCall);*/
+    }
+    endif;
+ 
+  }
+
+  Mission: UncheckedSequence
+  {
+    log_info ("Starting WaitForBatteryHealthTest plan...");
+    log_info ("RemainingUsefulLife: ", TestRemainingUsefulLife);
+  }
+
+}

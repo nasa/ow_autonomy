@@ -1,0 +1,8 @@
+
+Command pprint(...);
+
+Test:
+{
+  Boolean num = true;
+  pprint("Test print", num);
+}

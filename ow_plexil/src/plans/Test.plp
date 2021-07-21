@@ -6,34 +6,91 @@
 
 LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
 Test: Concurrence
 {
   Boolean BatteryOK = true;
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
   Boolean ArmOK = true; // Affects manipulator tasks
   Boolean AntennaOK = true; // Affects panning and tilting
   Boolean PowerOK = true; // Affects entire system, stop non-critical tasks (fault-related)
   Boolean SystemOK = true; // #TODO What do these affect? What about force torque faults?
 
-  Image:
+  Boolean ImageInterrupted = false;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  HandleFaults:
   {
-    // Start iff battery is okay and there are no relevant faults
-    // Ignore power faults, monitoring tasks prioritized
-    Start BatteryOK && AntennaOK && PowerOK;
-    ExitCondition !(AntennaOK && PowerOK);
-    log_info ("** Imaging Landing Site **");
-    LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
-                                   IgnoreCrash = true);
+    // Update fault guard variables, denoting fault type, if any
+    Repeat MissionInProgress;
+    Start MissionInProgress && !NoFaults;
+    Skip !MissionInProgress;
+
+    // Look up fault guard variables based on current state of faults in system
+    ArmOK = !Lookup(ArmFault);
+    AntennaOK = !Lookup(AntennaFault);
+    PowerOK = !Lookup(PowerFault);
+    SystemOK = !Lookup(SystemFault);
+
+    Wait 10;
+    
   }
-
-  log_info (Image.outcome); // This works
-
+  
   CheckOutcome:
-  {
+    {
+      //Boolean ImageInterrupted;
 
-    Repeat true;
-    // log_info (Image.outcome); // This does not work
-    log_info ("Testing", SUCCESS);
-    Wait 5;
+      Repeat true;
+      // log_info (Image.outcome); // This does not work
+      log_info ("Testing", ImageInterrupted);
+      Wait 5;
+    }
+
+  Mission: UncheckedSequence
+  {
+    Image:
+    {
+      // Start iff battery is okay and there are no relevant faults
+      // Ignore power faults, monitoring tasks prioritized
+      Start BatteryOK && AntennaOK && PowerOK;
+      ExitCondition !(AntennaOK && PowerOK);
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
+                                     IgnoreCrash = true);
+      //Wait 1; // For testing
+      log_info ("Outcome pretest");
+      log_info ("Outcome test: ", Image.outcome);
+    }
+
+    log_info (Image.outcome); // This works
+
+    ImageInterrupted = (Image.outcome == INTERRUPTED);
+
+    log_info ("Test plan complete.");
+    log_info ("True is: ", true);
+
   }
 
 

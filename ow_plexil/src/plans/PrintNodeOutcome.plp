@@ -1,0 +1,32 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+PrintNodeOutcome:
+  {
+    In Outcome; // e.g. 17 for SUCCESS
+
+    if (Outcome == SUCCESS)
+    {
+      log_info("Outcome is success...");
+    }
+    else if (Outcome == INTERRUPTED)
+    {
+      log_info ("Outcome is interrupted...");
+    }
+    else if (Outcome == FAILURE)
+    {
+      log_info ("Outcome is failure...");
+    }
+    else if (Outcome == SKIPPED)
+    {
+      log_info ("Outcome is skipped...");
+    }
+    else
+    {
+      log_info ("Image did not start or other issue occurred...");
+    }
+
+  }

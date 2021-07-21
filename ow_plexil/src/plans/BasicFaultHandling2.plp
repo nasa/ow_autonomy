@@ -72,7 +72,7 @@ LibraryAction BasicFaultHandlingSearch(In Boolean battery_ok,
                                       In Boolean search_interrupted,
                                       InOut Boolean first_search_call);
 
-BasicFaultHandling: Concurrence
+BasicFaultHandling2: Concurrence
 {
   // Guards to track current behavior #TODO: not sure if this type of guard is needed
   Boolean ImagingLandingSite = false;
@@ -121,7 +121,7 @@ BasicFaultHandling: Concurrence
     Start MissionInProgress && !BatteryOK; // Battery issues occurring
     Skip !MissionInProgress;
 
-    BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+    BatteryCritical = (Lookup(RemainingUsefulLife) < CriticallyLowCharge);
 
     if BatteryCritical
     {

@@ -54,7 +54,6 @@ LibraryAction Deliver (In Real X,
 
 
 // Lander queries
-
 Real Lookup StateOfCharge;
 Real Lookup RemainingUsefulLife;
 Real Lookup BatteryTemperature;

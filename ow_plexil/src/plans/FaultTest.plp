@@ -109,6 +109,14 @@ FaultTest: Concurrence
       LibraryCall ImageLandingSite(InstanceName = "FaultTest",
                                    IgnoreCrash = true);
     }
+
+    log_info ("Image outcome: ", Image.outcome);
+    log_info("Success test ", SUCCESS);
+    if (Image.outcome == SUCCESS) {
+      log_info ("Image outcome is success");
+    }
+    endif;
+
     
     log_info ("FaultTest plan complete.");
     MissionInProgress = false;
