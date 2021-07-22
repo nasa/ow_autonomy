@@ -1,0 +1,62 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Simple plan to test Pan and Tilt functions
+
+#include "plan-interface.h"
+
+TestPanTilt: Sequence
+{
+
+    In Real Goal;
+    In String Action;
+    InOut Integer TestSuccess;
+    Real tolerance = 0.4;
+    Real current = 0;
+
+    //output test number
+    log_info("TEST: ", TestSuccess+1);
+
+    //check for which command was passed
+    if(Action == "Pan" || Action == "pan"){
+      LibraryCall Pan(Degrees = Goal); 
+      current = Lookup(PanDegrees);
+    }
+    elseif(Action == "Tilt" || Action == "tilt"){
+      LibraryCall Tilt(Degrees = Goal);
+      current = Lookup(TiltDegrees);
+    }
+
+    //Normalize between -360 and 360
+    if(abs(current) > 360){
+      if(current < 0){
+        current = (abs(current) % 360)*-1;
+      }
+      else{
+        current = (abs(current) % 360);
+      }
+    }
+    endif;
+
+    //check for equivalent angles
+    if(current > 0 && Goal < 0){
+      current = current - 360; 
+    }
+    else if(current < 0 && Goal > 0){
+      current = current + 360;
+    }
+    endif;
+
+    //check if resulting position is within tolerance
+    if(abs(current - Goal) <= tolerance){
+      log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
+      //if we succeed we increment the TestSuccess
+      TestSuccess = TestSuccess + 1;
+    }
+    else{
+      log_error(Action, ": FAILED", " Goal: ", Goal, " Actual: ", current);
+    }
+
+
+}

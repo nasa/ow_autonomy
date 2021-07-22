@@ -138,11 +138,8 @@ class OwInterface
   void deliverAction (double x, double y, double z, int id);
   bool operationRunning (const std::string& name) const;
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  void tiltCallback (const control_msgs::JointControllerState::ConstPtr&);
-  void panCallback (const control_msgs::JointControllerState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void managePanTilt (const std::string& opname,
-                      double position, double velocity,
                       double current, double goal,
                       const ros::Time& start);
   void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
@@ -194,8 +191,6 @@ class OwInterface
   std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
   std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
 
-  std::unique_ptr<ros::Subscriber> m_antennaPanSubscriber;
-  std::unique_ptr<ros::Subscriber> m_antennaTiltSubscriber;
   std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
   std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
   std::unique_ptr<ros::Subscriber> m_socSubscriber;
