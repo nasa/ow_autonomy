@@ -11,8 +11,12 @@ LibraryAction IdentifySampleTarget (InOut Real X,
 
 BasicFaultHandlingSearch:
 {
-  In battery_ok, arm_ok, power_ok, search_interrupted;
-  InOut first_search_call;
+  In Boolean battery_ok, arm_ok, power_ok, search_interrupted;
+  InOut Boolean first_search_call;
+
+  // These 4 variables are assigned in the call to IdentifySampleTarget.
+  Real trench_x, trench_y, ground_pos;
+  Boolean parallel;
 
   Repeat first_search_call || search_interrupted;
   Start battery_ok && arm_ok && power_ok;

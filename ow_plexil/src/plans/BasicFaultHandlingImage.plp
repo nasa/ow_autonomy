@@ -9,7 +9,7 @@ LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 BasicFaultHandlingImage:
 {
   In Boolean battery_critical, antenna_ok, power_ok, image_interrupted;
-  InOut first_image_call;
+  InOut Boolean first_image_call;
 
   // Start iff battery is okay and there are no relevant faults
   // Ignore power faults, monitoring tasks prioritized

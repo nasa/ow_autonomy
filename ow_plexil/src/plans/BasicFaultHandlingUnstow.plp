@@ -6,8 +6,8 @@
 
 BasicFaultHandlingUnstow:
 {
-  In battery_ok, arm_ok, power_ok, unstow_interrupted;
-  InOut first_unstow_call;
+  In Boolean battery_ok, arm_ok, power_ok, unstow_interrupted;
+  InOut Boolean first_unstow_call;
 
   Repeat first_unstow_call || unstow_interrupted;
   Start battery_ok && arm_ok && power_ok;
