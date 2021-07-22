@@ -8,7 +8,6 @@
 #include <ros/ros.h>
 #include <ow_plexil/PlanSelection.h>
 #include "OwExecutive.h"
-#include "OwInterface.h"
 
 class PlexilPlanSelection{
   public:

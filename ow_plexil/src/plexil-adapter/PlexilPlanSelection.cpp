@@ -4,6 +4,8 @@
 
 
 #include "PlexilPlanSelection.h"
+#include "OwInterface.h"
+#include "OWLATSimInterface.h"
 #include <string>
 #include <std_msgs/String.h>
 
@@ -19,6 +21,10 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
 
   //initialize the OwInterface
   OwInterface::instance()->initialize();
+
+  // OWLAT
+  OWLATSimInterface::instance()->initialize();
+
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
   // wait for the first proper clock message before running the plan
@@ -36,11 +42,11 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
   }
   //workaround for the getPlanState not returning correctly for first plan
   m_first_plan = true;
-  
+
   //initialize service
   m_planSelectionService = std::make_unique<ros::ServiceServer>
       (m_genericNodeHandle->
-       advertiseService("/plexil_plan_selection", 
+       advertiseService("/plexil_plan_selection",
        &PlexilPlanSelection::planSelectionServiceCallback, this));
 
   //initialize publisher
@@ -60,17 +66,17 @@ void PlexilPlanSelection::start()
     if(plan_array.size() > 0){
       length = plan_array.size();
       for(int i = 0; i < length; i++){
-        //trys to run the current plan 
+        //trys to run the current plan
         runCurrentPlan();
         //waits until plan finishes running
         waitForPlan();
         //checks if plan_array has been cleared
         if(plan_array.size() == 0){
-          break; 
+          break;
         }
       }
     }
-    //if no plans we spinonce and sleep before checking again 
+    //if no plans we spinonce and sleep before checking again
     ros::spinOnce();
     rate.sleep();
   }
@@ -97,7 +103,7 @@ void PlexilPlanSelection::runCurrentPlan(){
   if(m_executive->runPlan(plan_array[0].c_str())){
     //workaround for getPlanState not working on first plan
     if(m_first_plan == true){
-      m_first_plan = false; 
+      m_first_plan = false;
     }
     // Times out after 3 seconds or the plan is registered as running.
     int timeout = 0;
@@ -133,12 +139,12 @@ void PlexilPlanSelection::runCurrentPlan(){
 bool PlexilPlanSelection::planSelectionServiceCallback(ow_plexil::PlanSelection::Request &req,
                                                        ow_plexil::PlanSelection::Response &res)
 {
-  //if command is ADD we add given plans to the plan_array 
+  //if command is ADD we add given plans to the plan_array
   if(req.command.compare("ADD") == 0){
     plan_array.insert(plan_array.end(), req.plans.begin(), req.plans.end());
     res.success = true;
   }
-  //if command is RESET  delete all plans in the plan_array 
+  //if command is RESET  delete all plans in the plan_array
   else if(req.command.compare("RESET") == 0){
     plan_array.clear();
     ROS_INFO ("Plan list cleared, current plan will finish execution before stopping");
@@ -150,4 +156,3 @@ bool PlexilPlanSelection::planSelectionServiceCallback(ow_plexil::PlanSelection:
   }
   return true;
 }
-

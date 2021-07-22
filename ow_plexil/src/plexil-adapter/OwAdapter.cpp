@@ -7,6 +7,7 @@
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
+#include "OWLATSimInterface.h"
 #include "subscriber.h"
 
 // ROS
@@ -270,15 +271,6 @@ static void unstow (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
-/*
-static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->owlatUnstow (CommandId);
-  send_ack_once(*cr);
-}
-*/
-
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -383,6 +375,16 @@ static void take_picture (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+// OWLAT
+
+static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
+{
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OWLATSimInterface::instance()->owlatUnstow (CommandId);
+  send_ack_once(*cr);
+}
+
+
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -480,7 +482,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("log_debug", log_debug);
   g_configuration->registerCommandHandler("stow", stow);
   g_configuration->registerCommandHandler("unstow", unstow);
-  //  g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
@@ -489,6 +490,10 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("take_picture", take_picture);
+
+  // OWLAT
+  g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
+
 
   TheAdapter = this;
   setSubscriber (receiveBool);

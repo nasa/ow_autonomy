@@ -23,6 +23,7 @@ using OwlatUnstowActionClient =
 class OWLATSimInterface : public PlexilInterface
 {
  public:
+  static std::shared_ptr<OWLATSimInterface> instance();
   OWLATSimInterface() = default;
   ~OWLATSimInterface() = default;
   OWLATSimInterface (const OWLATSimInterface&) = delete;
@@ -36,6 +37,7 @@ class OWLATSimInterface : public PlexilInterface
  private:
   void owlatUnstowAction (int id);
 
+  static std::shared_ptr<OWLATSimInterface> m_instance;
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
 };
 

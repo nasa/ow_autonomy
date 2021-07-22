@@ -25,16 +25,36 @@ static std::vector<string> LanderOpNames =
   };
 
 
+std::shared_ptr<OWLATSimInterface> OWLATSimInterface::m_instance = nullptr;
+
+std::shared_ptr<OWLATSimInterface> OWLATSimInterface::instance ()
+{
+  // Very simple singleton
+  if (m_instance == nullptr) m_instance = std::make_shared<OWLATSimInterface>();
+  return m_instance;
+}
+
 void OWLATSimInterface::initialize()
 {
-  for (auto name : LanderOpNames) {
-    registerLanderOperation (name);
-  }
+  static bool initialized = false;
 
-  if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
-    ROS_ERROR ("OWLAT Unstow action server did not connect!");
+  if (not initialized) {
+
+    for (auto name : LanderOpNames) {
+      registerLanderOperation (name);
+    }
+
+    // Initialize pointers
+    m_owlatUnstowClient =
+      std::make_unique<OwlatUnstowActionClient>(Name_OwlatUnstow, true);
+
+    // Connect to action servers
+    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("OWLAT Unstow action server did not connect!");
+    }
   }
 }
+
 
 /////////////////////////////// OWLAT Interface ////////////////////////////////
 
