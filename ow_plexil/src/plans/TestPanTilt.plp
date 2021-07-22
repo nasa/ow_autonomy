@@ -29,7 +29,7 @@ TestPanTilt: Sequence
     }
 
     //Normalize between -360 and 360
-    if(abs(current)+tolerance > 360){
+    if(abs(current) > 360){
       if(current < 0){
         current = (abs(current) % 360)*-1;
       }
@@ -49,7 +49,7 @@ TestPanTilt: Sequence
     endif;
 
     //check if resulting position is within tolerance
-    if(current <= Goal + tolerance && current >= Goal - tolerance){
+    if(abs(current - Goal) <= tolerance){
       log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
       //if we succeed we increment the TestSuccess
       TestSuccess = TestSuccess + 1;

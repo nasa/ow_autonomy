@@ -291,7 +291,7 @@ void OwInterface::managePanTilt (const string& opname,
 
   //if position is over 360 we want to bring it back within the
   //-360 to 360 range to check if goal position has been reached.
-  if(fabs(current) > 360+DegreeTolerance){
+  if(fabs(current) > 360){
     if(current < 0){
       current = fmod(fabs(current),360.0)*-1;
     }
