@@ -15,4 +15,11 @@
         args="$(arg plan)"
         output="screen">
   </node>
+
+  <node name="republish" 
+        type="republish" 
+        pkg="image_transport" 
+        output="screen" 
+        args="_image_transport:=compressedDepth compressed in:=/StereoCamera/left/image_rect raw out:=/StereoCamera/left/image_rect/Depth_raw " />
+
 </launch>
