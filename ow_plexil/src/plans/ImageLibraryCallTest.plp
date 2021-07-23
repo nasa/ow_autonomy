@@ -1,0 +1,112 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+LibraryAction BasicFaultHandlingImage(In Boolean battery_critical,
+                                      In Boolean antenna_ok,
+                                      In Boolean power_ok,
+                                      In Boolean image_interrupted,
+                                      InOut Boolean first_image_call);
+
+ImageLibraryCallTest: Concurrence
+{
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+  Boolean BatteryCritical = false;
+  Real CriticallyLowCharge = 0.05;
+
+  // Guards for mission continuation
+  Boolean BatteryOK = true; // Power and temperature of battery, no fault info
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
+  Boolean ArmOK = true;
+  Boolean AntennaOK = true;
+  Boolean PowerOK = true;
+  Boolean SystemOK = true;
+
+  // Guards to ensure re-attempt of interrupted nodes
+  Boolean ImageInterrupted = false;
+  Boolean FirstImageCall = true;
+
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  CheckFaults: // Was HandleFaults, but really only checks them so renamed
+  {
+    // Update fault guard variables, denoting fault type, if any
+    Repeat MissionInProgress;
+    Start MissionInProgress; // Used to have !NoFaults but we want this checked regardless right? #TODO
+    Skip !MissionInProgress;
+
+    // Look up fault guard variables based on current state of faults in system
+    ArmOK = !Lookup(ArmFault);
+    AntennaOK = !Lookup(AntennaFault);
+    PowerOK = !Lookup(PowerFault);
+    SystemOK = !Lookup(SystemFault);
+
+    Wait 1;
+    
+  }
+
+  UpdateBatteryCritical:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress; // We want this checked regardless of !BatteryOK right? #TODO
+    Skip !MissionInProgress;
+
+    BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+    log_info ("BatteryCritical: ", BatteryCritical);
+    Wait 1;
+  }
+
+
+  Mission: UncheckedSequence
+  {
+    log_info ("Starting WaitForBatteryHealthTest plan...");
+    
+    log_info ("Running original image node...");
+
+    Image:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+                                   IgnoreCrash = true);
+    }
+
+    log_info ("Running library called image node...");
+
+    LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+                                        antenna_ok = AntennaOK,
+                                        power_ok = PowerOK,
+                                        image_interrupted = ImageInterrupted,
+                                        first_image_call = FirstImageCall);
+
+
+    log_info ("WaitForBatteryHealthTest plan complete.");
+    MissionInProgress = false;
+  }
+
+}
