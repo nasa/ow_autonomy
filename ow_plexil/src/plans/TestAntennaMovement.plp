@@ -13,8 +13,8 @@ TestAntennaMovement: CheckedSequence
   Integer TestCount = 0;
 
   //initial location
-  LibraryCall Pan(Degrees = 0);
   LibraryCall Tilt(Degrees = 0);
+  LibraryCall Pan(Degrees = 0);
 
   //Pan tests
   LibraryCall TestPanTilt(Goal = 180, Action = "Pan", TestSuccess = TestCount); 
