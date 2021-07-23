@@ -69,6 +69,8 @@ Boolean Lookup PowerFault;
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
+Real    Lookup PanDegrees;
+Real    Lookup TiltDegrees;
 
 
 // Misc
