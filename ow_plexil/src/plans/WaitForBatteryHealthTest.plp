@@ -10,7 +10,9 @@ LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_charge_ok,
                             InOut Boolean all_ok);
 
-WaitForBatteryHealthTest:
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+WaitForBatteryHealthTest: Concurrence
 {
   // Power monitoring
   Boolean BatteryTempOK = true;
@@ -18,7 +20,11 @@ WaitForBatteryHealthTest:
   Boolean BatteryChargeOK = true;
   Real CriticallyLowCharge = 0.05;
   Boolean BatteryCritical = false;
-  Real TestRemainingUsefulLife = 0.10;
+
+  // Manual Testing variables
+  // Use 0.04 for the variable below to test BatteryCritical (0.1 for not critical)
+  Real TestStateOfCharge = 0.04;
+  Boolean Test = false; // SET THIS TO TRUE TO TEST MANUALLY
 
   // Guards for mission continuation
   Boolean BatteryOK = true; // Power and temperature of battery, no fault info
@@ -33,11 +39,19 @@ WaitForBatteryHealthTest:
   WaitForBatteryHealth:
   {
     Repeat MissionInProgress;
-    Start MissionInProgress && !BatteryOK; // Battery issues occurring
+    Start MissionInProgress; //&& !BatteryOK; // Battery issues occurring
     Skip !MissionInProgress;
 
-    // BatteryCritical = (Lookup(TestRemainingUsefulLife) < CriticallyLowCharge);
-    BatteryCritical = (TestRemainingUsefulLife < CriticallyLowCharge);
+    if Test
+    {
+      BatteryCritical = (TestStateOfCharge < CriticallyLowCharge);
+    }
+    else
+    {
+      BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+    }
+    endif;
+
     log_info ("BatteryCritical: ", BatteryCritical);
 
     if BatteryCritical
@@ -50,20 +64,50 @@ WaitForBatteryHealthTest:
     {
       log_warning
       ("Non-critical battery health issues, reverting to monitoring tasks temporarily...");
-      /*LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
-                                        antenna_ok = AntennaOK,
-                                        power_ok = PowerOK,
-                                        image_interrupted = ImageInterrupted,
-                                        first_image_call = FirstImageCall);*/
+      //LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+      //                                  antenna_ok = AntennaOK,
+      //                                  power_ok = PowerOK,
+      //                                  image_interrupted = ImageInterrupted,
+      //                                  first_image_call = FirstImageCall);
+      Wait 10;
     }
     endif;
  
   }
 
+  /*TestConcurrence:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && Test;
+    Skip !MissionInProgress;
+
+    log_info ("MissioninProgress: ", MissionInProgress);
+    Wait 10;
+  }*/
+
   Mission: UncheckedSequence
   {
     log_info ("Starting WaitForBatteryHealthTest plan...");
-    log_info ("RemainingUsefulLife: ", TestRemainingUsefulLife);
+    if Test
+    {
+      log_info ("StateOfCharge: ", TestStateOfCharge);
+    }
+    else
+    {
+      log_info ("StateOfCharge: ", Lookup(StateOfCharge));
+    }
+    endif;
+    Wait 1;
+    //Test = true;
+    /*Image:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+                                   IgnoreCrash = true);
+    }*/
+    log_info ("WaitForBatteryHealthTest plan complete.");
+    MissionInProgress = false;
   }
 
 }
