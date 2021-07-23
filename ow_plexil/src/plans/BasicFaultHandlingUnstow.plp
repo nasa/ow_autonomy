@@ -12,6 +12,7 @@ BasicFaultHandlingUnstow:
   Repeat first_unstow_call || unstow_interrupted;
   Start battery_ok && arm_ok && power_ok;
   ExitCondition !(battery_ok && arm_ok && power_ok);
+  log_info ("Library calling unstow...");
   log_info ("** Unstowing Arm **");
   LibraryCall Unstow;
 

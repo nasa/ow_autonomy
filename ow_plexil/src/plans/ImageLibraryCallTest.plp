@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// The purpose of this file was to test calling BasicFaultHandlingImage
+// More specifically, to test whether the repeat conditions work as expected
+
 #include "plan-interface.h"
 
 LibraryAction MonitorPower (In Boolean continue,
@@ -77,26 +80,26 @@ ImageLibraryCallTest: Concurrence
     Skip !MissionInProgress;
 
     BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
-    log_info ("BatteryCritical: ", BatteryCritical);
+    //log_info ("BatteryCritical: ", BatteryCritical);
     Wait 1;
   }
 
 
   Mission: UncheckedSequence
   {
-    log_info ("Starting WaitForBatteryHealthTest plan...");
+    log_info ("Starting ImageLibraryCallTest plan...");
     
-    log_info ("Running original image node...");
+    /*log_info ("Running original image node...");
 
     Image:
     {
       Start BatteryOK && NoFaults;
       log_info ("** Imaging Landing Site **");
-      LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+      LibraryCall ImageLandingSite(InstanceName = "ImageLibraryCallTest",
                                    IgnoreCrash = true);
-    }
+    }*/
 
-    log_info ("Running library called image node...");
+    // log_info ("Running library called image node...");
 
     LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
                                         antenna_ok = AntennaOK,
@@ -105,7 +108,7 @@ ImageLibraryCallTest: Concurrence
                                         first_image_call = FirstImageCall);
 
 
-    log_info ("WaitForBatteryHealthTest plan complete.");
+    log_info ("ImageLibraryCallTest plan complete.");
     MissionInProgress = false;
   }
 

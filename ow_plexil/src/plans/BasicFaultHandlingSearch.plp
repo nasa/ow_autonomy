@@ -21,6 +21,7 @@ BasicFaultHandlingSearch:
   Repeat first_search_call || search_interrupted;
   Start battery_ok && arm_ok && power_ok;
   ExitCondition !(battery_ok && arm_ok && power_ok);
+  log_info ("Library calling search...");
   log_info ("** Identifying Sample Target **");
   LibraryCall IdentifySampleTarget (X = trench_x,
                                   Y = trench_y,

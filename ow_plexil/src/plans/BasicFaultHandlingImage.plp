@@ -16,6 +16,7 @@ BasicFaultHandlingImage:
   Repeat first_image_call || image_interrupted;
   Start !battery_critical && antenna_ok && power_ok;
   ExitCondition (battery_critical || !antenna_ok || !power_ok);
+  log_info ("Library calling image...");
   log_info ("** Imaging Landing Site **");
   LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
                            IgnoreCrash = true);
