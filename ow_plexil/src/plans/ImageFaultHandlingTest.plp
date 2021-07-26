@@ -7,6 +7,9 @@
 // given the injection of relevant faults (antenna and power) in this case
 // We also consider battery level critical vs !batteryOK and how that affects imaging operations
 
+// Test 1: Once image is executing, manually inject a power or antenna fault
+
+
 #include "plan-interface.h"
 
 LibraryAction MonitorPower (In Boolean continue,
@@ -26,7 +29,7 @@ LibraryAction BasicFaultHandlingImage(In Boolean battery_critical,
                                       In Boolean image_interrupted,
                                       InOut Boolean first_image_call);
 
-ImageLibraryCallTest: Concurrence
+ImageFaultHandlingTest: Concurrence
 {
   // Power monitoring
   Boolean BatteryTempOK = true;
@@ -62,7 +65,7 @@ ImageLibraryCallTest: Concurrence
   {
     // Update fault guard variables, denoting fault type, if any
     Repeat MissionInProgress;
-    Start MissionInProgress; // Used to have !NoFaults but we want this checked regardless right? #TODO
+    Start MissionInProgress;
     Skip !MissionInProgress;
 
     // Look up fault guard variables based on current state of faults in system
@@ -72,16 +75,20 @@ ImageLibraryCallTest: Concurrence
     SystemOK = !Lookup(SystemFault);
 
     Wait 1;
-    
   }
 
   UpdateBatteryCritical:
   {
     Repeat MissionInProgress;
-    Start MissionInProgress; // We want this checked regardless of !BatteryOK right? #TODO
+    Start MissionInProgress;
     Skip !MissionInProgress;
 
     BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+    if BatteryCritical
+    {
+      log_warning
+        ("Battery critical!");
+    }
     //log_info ("BatteryCritical: ", BatteryCritical);
     Wait 1;
   }
@@ -91,19 +98,8 @@ ImageLibraryCallTest: Concurrence
 
   Mission: UncheckedSequence
   {
-    log_info ("Starting ImageLibraryCallTest plan...");
-    
-    /*log_info ("Running original image node...");
-
-    Image:
-    {
-      Start BatteryOK && NoFaults;
-      log_info ("** Imaging Landing Site **");
-      LibraryCall ImageLandingSite(InstanceName = "ImageLibraryCallTest",
-                                   IgnoreCrash = true);
-    }*/
-
-    // log_info ("Running library called image node...");
+    log_info ("Starting ImageFaultHandlingTest plan...");
+    log_info ("Confirming compilation...");
 
     LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
                                         antenna_ok = AntennaOK,
@@ -112,15 +108,16 @@ ImageLibraryCallTest: Concurrence
                                         first_image_call = FirstImageCall);
 
     // Logging for testing
-    log_info ("Image success: ", BasicFaultHandlingImage.outcome == SUCCESS);
+    // The following lines don't work with the library call above #TODO
+    /*log_info ("Image success: ", BasicFaultHandlingImage.outcome == SUCCESS);
     log_info ("Image interrupted: ", BasicFaultHandlingImage.outcome == INTERRUPTED);
     log_info ("Image failure: ", BasicFaultHandlingImage.outcome == FAILURE);
     log_info ("Image skipped: ", BasicFaultHandlingImage.outcome == SKIPPED);
     ImageInterrupted = (BasicFaultHandlingImage.outcome == INTERRUPTED); // This is not sufficient
-    log_info("ImageInterrupted: ", ImageInterrupted);
+    log_info("ImageInterrupted: ", ImageInterrupted);*/
 
 
-    log_info ("ImageLibraryCallTest plan complete.");
+    log_info ("ImageFaultHandlingTest plan complete.");
     MissionInProgress = false;
   }
 

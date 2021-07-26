@@ -121,8 +121,6 @@ BasicFaultHandling2: Concurrence
     Start MissionInProgress && !BatteryOK; // Battery issues occurring
     Skip !MissionInProgress;
 
-    BatteryCritical = (Lookup(RemainingUsefulLife) < CriticallyLowCharge);
-
     if BatteryCritical
     {
       log_warning
@@ -143,11 +141,27 @@ BasicFaultHandling2: Concurrence
  
   }
 
+  UpdateBatteryCritical:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress;
+    Skip !MissionInProgress;
+
+    BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
+    if BatteryCritical
+    {
+      log_warning
+        ("Battery critical!");
+    }
+    //log_info ("BatteryCritical: ", BatteryCritical);
+    Wait 1;
+  }
+
   CheckFaults: // Was HandleFaults, but really only checks them so renamed
   {
     // Update fault guard variables, denoting fault type, if any
     Repeat MissionInProgress;
-    Start MissionInProgress && !NoFaults;
+    Start MissionInProgress;
     Skip !MissionInProgress;
 
     // Look up fault guard variables based on current state of faults in system
