@@ -53,7 +53,7 @@ ImageFaultHandlingTest: Concurrence
   Boolean FirstImageCall = true;
 
   // String outcome workaround
-  StringOutcome = "Image not yet run";
+  String StringOutcome = "Image not yet run";
 
 
   LibraryCall MonitorPower (continue = MissionInProgress,
@@ -116,8 +116,8 @@ ImageFaultHandlingTest: Concurrence
     // The following lines don't work with the library call above #TODO
     // The workaround is in-progress, involves giving library calls names
     // and implementing a node within the one called that checks the outcome and gets string
-    StringOutcome = ImageCall.string_outcome;
-    log_info ("String outcome: ", StringOutcome);
+    //StringOutcome = ImageCall.string_outcome;
+    //log_info ("String outcome: ", StringOutcome);
     log_info ("Image success: ", ImageCall.string_outcome == "SUCCESS");
     log_info ("Image interrupted: ", ImageCall.string_outcome == "INTERRUPTED");
     log_info ("Image failure: ", ImageCall.string_outcome == "FAILURE");
