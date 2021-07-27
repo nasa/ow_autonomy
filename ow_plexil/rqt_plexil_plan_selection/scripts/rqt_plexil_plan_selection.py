@@ -5,7 +5,7 @@
 
 import sys
 
-from rqt_plexil_plan_selection.rqt_plexil_plan_selection import PlexilPlanSelection
+from rqt_plexil_plan_selection.rqt_plexil_plan_selection import PlexilPlanSelectionGUI
 from rqt_gui.main import Main
 
 plugin = 'rqt_plexil_plan_selection'

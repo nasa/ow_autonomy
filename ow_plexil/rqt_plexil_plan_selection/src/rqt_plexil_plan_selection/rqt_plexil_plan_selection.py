@@ -17,15 +17,15 @@ from ow_plexil.srv import PlanSelection
 from std_msgs.msg import String
 import rosservice
 
-class PlexilPlanSelection(Plugin):
+class PlexilPlanSelectionGUI(Plugin):
 
   #sets up our signal for the sub callback
   monitor_signal = pyqtSignal(['QString']) 
 
   def __init__(self, context):
     '''init initializes the widget and sets up our subscriber, publisher and event handlers'''
-    super(PlexilPlanSelection, self).__init__(context)
-    self.setObjectName('PlexilPlanSelection')
+    super(PlexilPlanSelectionGUI, self).__init__(context)
+    self.setObjectName('PlexilPlanSelectionGUI')
 
     # Process standalone plugin command-line arguments
     parser = ArgumentParser()
