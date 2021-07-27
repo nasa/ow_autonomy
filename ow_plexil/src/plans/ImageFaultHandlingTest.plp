@@ -116,13 +116,12 @@ ImageFaultHandlingTest: Concurrence
     // The following lines don't work with the library call above #TODO
     // The workaround is in-progress, involves giving library calls names
     // and implementing a node within the one called that checks the outcome and gets string
-    //StringOutcome = ImageCall.string_outcome;
-    //log_info ("String outcome: ", StringOutcome);
-    log_info ("Image success: ", ImageCall.string_outcome == "SUCCESS");
-    log_info ("Image interrupted: ", ImageCall.string_outcome == "INTERRUPTED");
-    log_info ("Image failure: ", ImageCall.string_outcome == "FAILURE");
-    log_info ("Image skipped: ", ImageCall.string_outcome == "SKIPPED");
-    ImageInterrupted = (ImageCall.string_outcome == "INTERRUPTED"); // This is not sufficient
+    log_info ("Image string outcome: ", StringOutcome);
+    log_info ("Image success: ", StringOutcome == "SUCCESS");
+    log_info ("Image interrupted: ", StringOutcome == "INTERRUPTED");
+    log_info ("Image failure: ", StringOutcome == "FAILURE");
+    log_info ("Image skipped: ", StringOutcome == "SKIPPED");
+    ImageInterrupted = (StringOutcome == "INTERRUPTED"); // This is not sufficient
     log_info("ImageInterrupted: ", ImageInterrupted);
 
 
