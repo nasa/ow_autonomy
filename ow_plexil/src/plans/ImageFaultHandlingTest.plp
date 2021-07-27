@@ -27,7 +27,8 @@ LibraryAction BasicFaultHandlingImage(In Boolean battery_critical,
                                       In Boolean antenna_ok,
                                       In Boolean power_ok,
                                       In Boolean image_interrupted,
-                                      InOut Boolean first_image_call);
+                                      InOut Boolean first_image_call,
+                                      InOut String string_outcome);
 
 ImageFaultHandlingTest: Concurrence
 {
@@ -50,6 +51,9 @@ ImageFaultHandlingTest: Concurrence
   // Guards to ensure re-attempt of interrupted nodes
   Boolean ImageInterrupted = false;
   Boolean FirstImageCall = true;
+
+  // String outcome workaround
+  StringOutcome = "Image not yet run";
 
 
   LibraryCall MonitorPower (continue = MissionInProgress,
@@ -101,20 +105,25 @@ ImageFaultHandlingTest: Concurrence
     log_info ("Starting ImageFaultHandlingTest plan...");
     log_info ("Confirming compilation...");
 
-    LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
+    ImageCall: LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
                                         antenna_ok = AntennaOK,
                                         power_ok = PowerOK,
                                         image_interrupted = ImageInterrupted,
-                                        first_image_call = FirstImageCall);
+                                        first_image_call = FirstImageCall,
+                                        string_outcome = StringOutcome);
 
     // Logging for testing
     // The following lines don't work with the library call above #TODO
-    /*log_info ("Image success: ", BasicFaultHandlingImage.outcome == SUCCESS);
-    log_info ("Image interrupted: ", BasicFaultHandlingImage.outcome == INTERRUPTED);
-    log_info ("Image failure: ", BasicFaultHandlingImage.outcome == FAILURE);
-    log_info ("Image skipped: ", BasicFaultHandlingImage.outcome == SKIPPED);
-    ImageInterrupted = (BasicFaultHandlingImage.outcome == INTERRUPTED); // This is not sufficient
-    log_info("ImageInterrupted: ", ImageInterrupted);*/
+    // The workaround is in-progress, involves giving library calls names
+    // and implementing a node within the one called that checks the outcome and gets string
+    StringOutcome = ImageCall.string_outcome;
+    log_info ("String outcome: ", StringOutcome);
+    log_info ("Image success: ", ImageCall.string_outcome == "SUCCESS");
+    log_info ("Image interrupted: ", ImageCall.string_outcome == "INTERRUPTED");
+    log_info ("Image failure: ", ImageCall.string_outcome == "FAILURE");
+    log_info ("Image skipped: ", ImageCall.string_outcome == "SKIPPED");
+    ImageInterrupted = (ImageCall.string_outcome == "INTERRUPTED"); // This is not sufficient
+    log_info("ImageInterrupted: ", ImageInterrupted);
 
 
     log_info ("ImageFaultHandlingTest plan complete.");

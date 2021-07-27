@@ -6,20 +6,54 @@
 
 LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 
-BasicFaultHandlingImage:
+BasicFaultHandlingImage: // Foo
 {
   In Boolean battery_critical, antenna_ok, power_ok, image_interrupted;
   InOut Boolean first_image_call;
+  InOut String string_outcome;
 
   // Start iff battery is okay and there are no relevant faults
   // Ignore power faults, monitoring tasks prioritized
   Repeat first_image_call || image_interrupted;
   Start !battery_critical && antenna_ok && power_ok;
   ExitCondition (battery_critical || !antenna_ok || !power_ok);
+
   log_info ("Library calling image...");
-  log_info ("** Imaging Landing Site **");
-  LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandling",
-                           IgnoreCrash = true);
+
+  GetStringOutcomeRoot: // Root
+  {
+    log_info ("** Imaging Landing Site **");
+  
+    
+    ImageLandingSiteCall: LibraryCall ImageLandingSite(InstanceName = "BasicFaultHandlingImage",
+                           IgnoreCrash = true); // a
+
+    // What happens if BasicFaultHandlingImage exits due to a fault or battery level issue
+    // and node b does not get run??
+    GetStringOutcome: // b
+    {
+      // Isn't accessing .outcome like this the same issue? 
+      // Wouldn't the workaround need to happen at every layer (i.e. every library call)?
+      if (ImageLandingSiteCall.outcome == SUCCESS) 
+      {
+        string_outcome = "SUCCESS";
+      }
+      else if (ImageLandingSiteCall.outcome == INTERRUPTED) 
+      {
+        string_outcome = "INTERRUPTED";
+      }
+      else if (ImageLandingSiteCall.outcome == FAILURE) 
+      {
+        string_outcome = "FAILURE";
+      }
+      else if (ImageLandingSiteCall.outcome == SKIPPED) 
+      {
+        string_outcome = "SKIPPED";
+      }
+      endif;
+
+    }
+  }
   if first_image_call
   {
   first_image_call = false;
