@@ -288,7 +288,6 @@ void OwInterface::managePanTilt (const string& opname,
   if (! operationRunning (opname)) return;
 
   //converting radians to degrees
-  position = position * R2D;
   int id = Running.at (opname);
 
   //if position is over 360 we want to bring it back within the
@@ -312,7 +311,7 @@ void OwInterface::managePanTilt (const string& opname,
   }
 
   // Antenna states of interest,
-  bool reached = within_tolerance (position, goal, DegreeTolerance);
+  bool reached = within_tolerance (current, goal, DegreeTolerance);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
@@ -320,7 +319,7 @@ void OwInterface::managePanTilt (const string& opname,
     if (expired) ROS_ERROR("%s timed out", opname.c_str());
     if (! reached) {
       ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
-                opname.c_str(), position, goal);
+                opname.c_str(), current, goal);
     }
   }
 }

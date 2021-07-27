@@ -24,9 +24,10 @@ class IdentifySampleLocation:
     time_synchronizer.registerCallback(self.site_imaging_callback)
     #visualization
     self.publisher = rospy.Publisher('breadcrumbs', MarkerArray, queue_size=10)
+    self.publish_photo = rospy.Publisher('sample_location', Image, queue_size=10)
     self.breadcrumbs = MarkerArray()
 
-    listener = tf.TransformListener()
+    self.listener = tf.TransformListener()
     self.bridge = CvBridge()
 
     self.SampleLocation = namedtuple("SampleLocation", "image timestamp size location")
@@ -54,29 +55,35 @@ class IdentifySampleLocation:
     new_location = self.SampleLocation(self.image, rect_img_msg.header.stamp.secs, self.size, self.location)
     self.location_history.append(new_location)
 
-    print(self.location_history)
+    print(self.size)
+    #print(self.location_history)
+    self.publish_chosen_location_image()
 
   def publish_chosen_location_image(self):
-     try:
-      self.image = self.bridge.cv2_to_imgmsg(self.image, "passthrough")
+    try:
+      self.image = self.bridge.cv2_to_imgmsg(self.image, "bgr8")
     except CvBridgeError, err:
       rospy.logerror("CV Bridge error: {0}".format(err))
       self.image = None
+
+    self.publish_photo.publish(self.image)
 
 
   def identify_sample_location(self):
     #filtering and finding contours of dark spots on self.image
     gray = cv.cvtColor(self.image, cv.COLOR_BGR2GRAY)
-    ret, thresh = cv.threshold(gray, 30, 255,cv.THRESH_BINARY_INV)
+    ret, thresh = cv.threshold(gray, 10, 255,cv.THRESH_BINARY_INV)
     contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
+    valid_contours = []
     #draw all contours over a certain size; 5000 seems good for now
     for i in contours:
-      if(cv.contourArea(i) >= 5000):
+      if cv.contourArea(i) >= 5000 and cv.contourArea(i) <= 1000000:
+        valid_contours.append(i)
         cv.drawContours(self.image, [i], 0, 255, 3)
      
     #find max contour and draw its contour and bounding box
-    max_contour = max(contours, key=cv.contourArea)
+    max_contour = max(valid_contours, key=cv.contourArea)
     self.size = cv.contourArea(max_contour)
     x,y,w,h = cv.boundingRect(max_contour)
     cv.rectangle(self.image, (x,y), (x+w, y+h), (0,255,0),3)
@@ -114,8 +121,8 @@ class IdentifySampleLocation:
     identified_location.point.z = site_coordinate[2]
 
     try:
-      listener.waitForTransform("StereoCameraLeft_optical_frame", "base_link", rospy.Time.now(), rospy.Duration(5))
-      transformed_location = listener.transformPoint("base_link", identified_location)
+      self.listener.waitForTransform("StereoCameraLeft_optical_frame", "base_link", rospy.Time.now(), rospy.Duration(5))
+      transformed_location = self.listener.transformPoint("base_link", identified_location)
     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
       print("HAD AN EXCEPTION THROWN")
       self.location = None
@@ -135,7 +142,7 @@ class IdentifySampleLocation:
     identified_location.point.y = y
     identified_location.point.z = z
     print(identified_location)
-    destination = listener.transformPoint("base_link", identified_location)
+    destination = self.listener.transformPoint("base_link", identified_location)
     print(destination)
     print(self.stereo_camera_model.project3dToPixel([x,y,z]))
 
