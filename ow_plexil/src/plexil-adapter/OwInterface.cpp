@@ -31,7 +31,7 @@ using std::ref;
 const double D2R = M_PI / 180.0 ;
 const double R2D = 180.0 / M_PI ;
 
-const double DegreeTolerance = 0.2;    // made up, degees
+const double DegreeTolerance = 0.4;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
 static bool within_tolerance (double val1, double val2, double tolerance)
@@ -44,7 +44,7 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 static void (* CommandStatusCallback) (int,bool);
 
-const double PanTiltTimeout = 25.0; // seconds, made up
+const double PanTiltTimeout = 15.0; // seconds, made up
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -259,12 +259,14 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        managePanTilt (Op_PanAntenna, position, velocity, m_currentPan,
-                       m_goalPan, m_panStart);
-      }
+        m_currentPan = position * R2D;
+        managePanTilt (Op_PanAntenna, m_currentPan, m_goalPan, m_panStart);
+        publish ("PanDegrees", m_currentPan);
+     }
       else if (joint == Joint::antenna_tilt) {
-        managePanTilt (Op_TiltAntenna, position, velocity, m_currentTilt,
-                       m_goalTilt, m_tiltStart);
+        m_currentTilt = position * R2D;
+        managePanTilt (Op_TiltAntenna, m_currentTilt, m_goalTilt, m_tiltStart);
+        publish ("TiltDegrees", m_currentTilt);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
@@ -279,7 +281,6 @@ void OwInterface::jointStatesCallback
 }
 
 void OwInterface::managePanTilt (const string& opname,
-                                 double position, double velocity,
                                  double current, double goal,
                                  const ros::Time& start)
 {
@@ -289,6 +290,26 @@ void OwInterface::managePanTilt (const string& opname,
   //converting radians to degrees
   position = position * R2D;
   int id = Running.at (opname);
+
+  //if position is over 360 we want to bring it back within the
+  //-360 to 360 range to check if goal position has been reached.
+  if(fabs(current) > 360){
+    if(current < 0){
+      current = fmod(fabs(current),360.0)*-1;
+    }
+    else{
+      current = fmod(fabs(current), 360.0);
+    }
+  }
+
+  //We cant guarantee which way the antenna will move, so we have to 
+  //check if the current angle is equivalent.Ex:-180 degrees == 180 degrees.
+  if(current > 0 && goal < 0){
+    current = current - 360; 
+  }
+  else if(current < 0 && goal > 0){
+    current = current + 360;
+  }
 
   // Antenna states of interest,
   bool reached = within_tolerance (position, goal, DegreeTolerance);
@@ -306,21 +327,6 @@ void OwInterface::managePanTilt (const string& opname,
 
 
 ///////////////////////// Antenna/Camera Support ///////////////////////////////
-
-void OwInterface::panCallback
-(const control_msgs::JointControllerState::ConstPtr& msg)
-{
-  m_currentPan = msg->set_point * R2D;
-  publish ("PanDegrees", m_currentPan);
-}
-
-void OwInterface::tiltCallback
-(const control_msgs::JointControllerState::ConstPtr& msg)
-{
-  m_currentTilt = msg->set_point * R2D;
-  publish ("TiltDegrees", m_currentTilt);
-}
-
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
@@ -489,15 +495,6 @@ void OwInterface::initialize()
        ("/StereoCamera/left/image_trigger", qsize, latch));
 
     // Initialize subscribers
-
-    m_antennaTiltSubscriber = std::make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/ant_tilt_position_controller/state", qsize,
-                 &OwInterface::tiltCallback, this));
-    m_antennaPanSubscriber = std::make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/ant_pan_position_controller/state", qsize,
-                 &OwInterface::panCallback, this));
     m_jointStatesSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
@@ -571,6 +568,7 @@ void OwInterface::setCommandStatusCallback (void (*callback) (int, bool))
 static void antenna_op (const string& opname, double degrees,
                         std::unique_ptr<ros::Publisher>& pub, int id)
 {
+
   if (! mark_operation_running (opname, id)) {
     return;
   }
