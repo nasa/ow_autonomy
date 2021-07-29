@@ -12,16 +12,17 @@ LibraryAction TestUnstow(In Boolean test1,
                         In Boolean test2,
                         In Integer count);*/
 
-LibraryAction TestImage(In Boolean continue,
-                        //InOut Boolean done, 
-                        InOut Integer count);
+LibraryAction TestImage(In Boolean unstow_done,
+                        InOut Boolean done, 
+                        InOut Integer count,
+                        InOut Boolean first);
 
-LibraryAction TestUnstow(In Boolean continue,
-                         //InOut Boolean done, 
+LibraryAction TestUnstow(In Boolean image_done,
+                         InOut Boolean done, 
                          InOut Integer count);
                         
 
-SimpleTest:
+SimpleTest: Concurrence
 {
   // Initial test
   Boolean Test1 = true;
@@ -33,8 +34,10 @@ SimpleTest:
   Boolean UnstowDone = false;
   Integer ImageCount = 0;
   Integer UnstowCount = 0;
+  Boolean First = true;
 
   log_info ("Running SimpleTest...");
+  log_info ("Compilation check: 264");
 
   // Initial test
   /*LibraryCall TestImage(test1=Test1,
@@ -46,16 +49,23 @@ SimpleTest:
                         test2=Test2,
                         count=Count);*/
                         
-  LibraryCall TestImage(continue=!UnstowDone, // #TODO this continue logic messes up on the first run
-                        //done=ImageDone,
-                        count=ImageCount);
-  ImageDone = true;
+  LibraryCall TestImage(unstow_done=UnstowDone,
+                        done=ImageDone,
+                        count=ImageCount,
+                        first=First);
+  Logging:
+  {
+  Start true;
 
-  LibraryCall TestUnstow(continue=!ImageDone,
-                        //done=UnstowDone,
-                        count=UnstowCount);
+  log_info ("ImageDone: ", ImageDone);
+  log_info ("UnstowDone: ", UnstowDone);
+  Wait 1;
+  }
 
-  UnstowDone = true;
+  LibraryCall TestUnstow(image_done=ImageDone,
+                         done=UnstowDone,
+                         count=UnstowCount);
+
 
 
   log_info ("SimpleTest complete.");

@@ -10,9 +10,10 @@ TestImage:
   //In Boolean test1, test2;
   
   // Back and forth test
-  In Boolean continue;
-  //InOut Boolean done;
+  In Boolean unstow_done;
+  InOut Boolean done;
   InOut Integer count;
+  InOut Boolean first;
 
   // Initial test
   /*Repeat test2;
@@ -20,11 +21,12 @@ TestImage:
   ExitCondition !test1 && !test2;*/
 
   // Back and forth test
-  //Repeat continue;
-  Start continue;
+  Repeat unstow_done && !done;
+  Start first || unstow_done;
 
   log_info ("Running TestImage...");
-  //done = true;
+  done = true;
+  first = false;
   //unstow_done = false;
 
   /*while true

@@ -7,8 +7,8 @@
 TestUnstow:
 {
   //In Boolean test1, test2;
-  In Boolean continue;
-  //InOut Boolean done;
+  In Boolean image_done;
+  InOut Boolean done;
   InOut Integer count;
 
   //Repeat test2;
@@ -16,11 +16,11 @@ TestUnstow:
   //ExitCondition !test1 && !test2;
 
   // Back and forth test
-  //Repeat continue;
-  Start continue;
+  Repeat image_done && !done;
+  Start image_done;
 
   log_info ("Running TestUnstow...");
-  //done = true;
+  done = true;
 
   /*while true
   {
