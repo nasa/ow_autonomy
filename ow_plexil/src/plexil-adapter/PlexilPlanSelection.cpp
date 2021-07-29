@@ -2,29 +2,14 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-
 #include "PlexilPlanSelection.h"
 #include "OwExecutive.h"
-#include "OwInterface.h"
-#include "OWLATSimInterface.h"
 #include <string>
 #include <std_msgs/String.h>
 
 void PlexilPlanSelection::initialize(std::string initial_plan)
 {
   ROS_INFO("Starting plexil node...");
-  //initialzing the Executive
-  if (! OwExecutive::instance()->initialize()) {
-    ROS_ERROR("Could not initialize OW executive, shutting down.");
-    return;
-  }
-
-  //initialize the OwInterface
-  OwInterface::instance()->initialize();
-
-  // OWLAT
-  OWLATSimInterface::instance()->initialize();
-
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
   // wait for the first proper clock message before running the plan

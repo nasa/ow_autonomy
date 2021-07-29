@@ -5,8 +5,10 @@
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>
-//Plan selection 
+
 #include "PlexilPlanSelection.h"
+#include "OwExecutive.h"
+#include "OwInterface.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,7 +21,12 @@ int main(int argc, char* argv[])
     std::string plan(argv[1]);
     initial_plan = plan;
   }
-  PlexilPlanSelection plan_selection; 
+  if (! OwExecutive::instance()->initialize()) {
+    ROS_ERROR("Could not initialize Plexil executive, shutting down.");
+    return 1;
+  }
+  OwInterface::instance()->initialize();
+  PlexilPlanSelection plan_selection;
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
   ros::spin();
