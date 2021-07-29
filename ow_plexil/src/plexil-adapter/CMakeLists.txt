@@ -45,10 +45,10 @@ add_dependencies(${LIB_NAME}
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS})
 
-add_executable(plexil_node plexil_node.cpp)
+add_executable(ow_exec_node ow_exec_node.cpp)
 add_executable(terminal_selection_node terminal_selection_node.cpp)
 
-target_link_libraries(plexil_node
+target_link_libraries(ow_exec_node
   ${catkin_LIBRARIES}
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
@@ -58,6 +58,6 @@ target_link_libraries(terminal_selection_node
   ${PLEXIL_LIBRARIES}
   ${LIB_NAME})
 
-install(TARGETS plexil_node terminal_selection_node
+install(TARGETS ow_exec_node terminal_selection_node
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 

@@ -11,7 +11,7 @@
 int main(int argc, char* argv[])
 {
   // Initializations
-  ros::init(argc, argv, "plexil_node");
+  ros::init(argc, argv, "ow_exec_node");
   std::string initial_plan = "None";
 
   //checking if there is a plan given
