@@ -1,0 +1,62 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+/*LibraryAction TestImage(In Boolean test1, 
+                        In Boolean test2,
+                        In Integer count);
+
+LibraryAction TestUnstow(In Boolean test1, 
+                        In Boolean test2,
+                        In Integer count);*/
+
+LibraryAction TestImage(In Boolean continue,
+                        //InOut Boolean done, 
+                        InOut Integer count);
+
+LibraryAction TestUnstow(In Boolean continue,
+                         //InOut Boolean done, 
+                         InOut Integer count);
+                        
+
+SimpleTest:
+{
+  // Initial test
+  Boolean Test1 = true;
+  Boolean Test2 = false;
+  Integer Count = 0;
+
+  // Switch back and forth test
+  Boolean ImageDone = false;
+  Boolean UnstowDone = false;
+  Integer ImageCount = 0;
+  Integer UnstowCount = 0;
+
+  log_info ("Running SimpleTest...");
+
+  // Initial test
+  /*LibraryCall TestImage(test1=Test1,
+                        test2=Test2,
+                        count=Count);
+
+
+  LibraryCall TestUnstow(test1=Test1,
+                        test2=Test2,
+                        count=Count);*/
+                        
+  LibraryCall TestImage(continue=!UnstowDone, // #TODO this continue logic messes up on the first run
+                        //done=ImageDone,
+                        count=ImageCount);
+  ImageDone = true;
+
+  LibraryCall TestUnstow(continue=!ImageDone,
+                        //done=UnstowDone,
+                        count=UnstowCount);
+
+  UnstowDone = true;
+
+
+  log_info ("SimpleTest complete.");
+}
