@@ -1,0 +1,8 @@
+# goal - number of images to be processed
+int64 num_images
+---
+# result
+bool success
+---
+# feedback
+string progress

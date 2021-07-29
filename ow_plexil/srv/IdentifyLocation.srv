@@ -1,5 +1,0 @@
-#input how many images to compare
-int32 num_images
----
-#output whether or not call was succesful
-bool success

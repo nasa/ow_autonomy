@@ -3,6 +3,7 @@ import rospy
 import sys
 import cv2 as cv
 import tf
+import actionlib
 import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, CameraInfo, PointCloud2
@@ -10,6 +11,7 @@ from geometry_msgs.msg import PointStamped
 import sensor_msgs.point_cloud2
 import message_filters
 from collections import namedtuple
+from ow_plexil.msg import IdentifyLocationAction, IdentifyLocationGoal, IdentifyLocationFeedback, IdentifyLocationResult
 
 
 from visualization_msgs.msg import Marker, MarkerArray
@@ -23,6 +25,11 @@ class IdentifySampleLocation:
     point_cloud_subscriber = message_filters.Subscriber("/StereoCamera/points2", PointCloud2)
     time_synchronizer = message_filters.TimeSynchronizer([rectified_image_subscriber, point_cloud_subscriber], 10)
     time_synchronizer.registerCallback(self.site_imaging_callback)
+
+    #action server setup
+    self.sample_location_action_server = actionlib.SimpleActionServer("identify_sample_location", 
+                                              IdentifyLocationAction, self.sample_location_callback, False) 
+    self.sample_location_action_server.start()
 
     #point visualization
     self.publisher = rospy.Publisher('breadcrumbs', MarkerArray, queue_size=10)
@@ -38,6 +45,7 @@ class IdentifySampleLocation:
     #Named tuple and array of named tuples to keep a history of previous images
     self.SampleLocation = namedtuple("SampleLocation", "image timestamp size location")
     self.location_history = []
+    self.image_history = []
 
     #member variables used to construct named tuples
     self.cx = None
@@ -45,6 +53,17 @@ class IdentifySampleLocation:
     self.image = None
     self.size = None
     self.location = None
+
+
+  def sample_location_callback(self, goal):
+    print(goal)
+    if len(self.image_history) >= goal:
+      subset = self.image_history[-goal:]
+      print(subset)
+    else:
+      print("Not enough images for goal")
+      self.sample_location_action_server.set_succeeded(IdentifyLocationResult(result=False))
+      
    
   def site_imaging_callback(self, rect_img_msg, points2_msg):
     try:

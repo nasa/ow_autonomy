@@ -26,8 +26,13 @@ find_package(PLEXIL REQUIRED)
 add_service_files(
   FILES
   PlanSelection.srv
-  IdentifyLocation.srv
 )
+
+add_action_files(
+  FILES
+  IdentifyLocation.action
+)
+
 ## for GUI
 catkin_python_setup()
 
@@ -35,6 +40,7 @@ generate_messages(
   DEPENDENCIES 
   geometry_msgs
   std_msgs
+  actionlib_msgs
 )
 
 
