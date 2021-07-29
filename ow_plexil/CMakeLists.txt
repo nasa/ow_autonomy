@@ -26,6 +26,7 @@ find_package(PLEXIL REQUIRED)
 add_service_files(
   FILES
   PlanSelection.srv
+  IdentifyLocation.srv
 )
 ## for GUI
 catkin_python_setup()

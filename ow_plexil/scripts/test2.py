@@ -18,21 +18,28 @@ class IdentifySampleLocation:
 
   def __init__(self):
 
+    #setting up synchronized subscribers for image_rect and point cloud
     rectified_image_subscriber = message_filters.Subscriber("/StereoCamera/left/image_rect", Image)
     point_cloud_subscriber = message_filters.Subscriber("/StereoCamera/points2", PointCloud2)
     time_synchronizer = message_filters.TimeSynchronizer([rectified_image_subscriber, point_cloud_subscriber], 10)
     time_synchronizer.registerCallback(self.site_imaging_callback)
-    #visualization
+
+    #point visualization
     self.publisher = rospy.Publisher('breadcrumbs', MarkerArray, queue_size=10)
-    self.publish_photo = rospy.Publisher('sample_location', Image, queue_size=10)
     self.breadcrumbs = MarkerArray()
 
+    #publishes modified opencv image with the contours and sample location outlined
+    self.publish_photo = rospy.Publisher('sample_location', Image, queue_size=10)
+
+    #listender and CvBridge
     self.listener = tf.TransformListener()
     self.bridge = CvBridge()
-
+    
+    #Named tuple and array of named tuples to keep a history of previous images
     self.SampleLocation = namedtuple("SampleLocation", "image timestamp size location")
     self.location_history = []
 
+    #member variables used to construct named tuples
     self.cx = None
     self.cy = None
     self.image = None
@@ -72,7 +79,7 @@ class IdentifySampleLocation:
   def identify_sample_location(self):
     #filtering and finding contours of dark spots on self.image
     gray = cv.cvtColor(self.image, cv.COLOR_BGR2GRAY)
-    ret, thresh = cv.threshold(gray, 10, 255,cv.THRESH_BINARY_INV)
+    ret, thresh = cv.threshold(gray, 15, 255,cv.THRESH_BINARY_INV)
     contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
 
     valid_contours = []
