@@ -1,0 +1,47 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+SimpleTest2: Concurrence
+{
+
+  Boolean ImageDone = false;
+  Boolean UnstowDone = false;
+  Boolean First = true;
+
+  log_info ("Running SimpleTest...");
+  log_info ("Compilation check: 2641");
+
+  Logging:
+  {
+    Repeat true;
+    log_info ("ImageDone: ", ImageDone);
+    log_info ("UnstowDone: ", UnstowDone);
+    Wait 1;
+  }
+
+  TestImage:
+  {
+    Repeat true;
+    Start First || UnstowDone;
+
+    log_info ("Running TestImage...");
+    First = false;
+    Wait 1;
+    ImageDone = true;
+  }
+
+  TestUnstow:
+  {
+    Repeat true;
+    Start ImageDone;
+
+    log_info ("Running TestUnstow...");
+    Wait 1;
+    UnstowDone = true;
+  }
+
+  log_info ("SimpleTest complete.");
+}
