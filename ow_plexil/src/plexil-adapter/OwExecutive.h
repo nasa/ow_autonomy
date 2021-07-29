@@ -15,11 +15,6 @@
 class OwExecutive
 {
  public:
-  OwExecutive() { }
-  ~OwExecutive();
-  OwExecutive (const OwExecutive&) = delete;
-  OwExecutive& operator= (const OwExecutive&) = delete;
-  
   static OwExecutive* instance();
 
   bool initialize ();
@@ -27,6 +22,11 @@ class OwExecutive
   bool runPlan (const std::string& filename);
 
  private:
+  OwExecutive();
+  ~OwExecutive();
+  OwExecutive (const OwExecutive&) = delete;
+  OwExecutive& operator= (const OwExecutive&) = delete;
+
   static OwExecutive* m_instance;
 };
 

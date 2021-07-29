@@ -4,6 +4,7 @@
 
 
 #include "PlexilPlanSelection.h"
+#include "OwExecutive.h"
 #include "OwInterface.h"
 #include "OWLATSimInterface.h"
 #include <string>
@@ -13,8 +14,7 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
 {
   ROS_INFO("Starting plexil node...");
   //initialzing the Executive
-  m_executive.reset(OwExecutive::instance());
-  if (! m_executive->initialize()) {
+  if (! OwExecutive::instance()->initialize()) {
     ROS_ERROR("Could not initialize OW executive, shutting down.");
     return;
   }
@@ -86,7 +86,7 @@ void PlexilPlanSelection::waitForPlan(){
   std_msgs::String status;
   ros::Rate rate(10); // 10 Hz for overall rate we are spinning
   //wait for current plan to finish before running next plan
-  while(!m_executive->getPlanState() && m_first_plan == false){
+  while(!OwExecutive::instance()->getPlanState() && m_first_plan == false){
     ros::spinOnce();
     rate.sleep();
   }
@@ -100,14 +100,14 @@ void PlexilPlanSelection::runCurrentPlan(){
   std_msgs::String status;
   ros::Rate rate(10); // 10 Hz for overall rate we are spinning
   //try to run the plan
-  if(m_executive->runPlan(plan_array[0].c_str())){
+  if(OwExecutive::instance()->runPlan(plan_array[0].c_str())){
     //workaround for getPlanState not working on first plan
     if(m_first_plan == true){
       m_first_plan = false;
     }
     // Times out after 3 seconds or the plan is registered as running.
     int timeout = 0;
-    while(m_executive->getPlanState() && timeout < 30){
+    while(OwExecutive::instance()->getPlanState() && timeout < 30){
       ros::spinOnce();
       rate.sleep();
       timeout+=1;

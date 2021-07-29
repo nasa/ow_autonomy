@@ -41,13 +41,20 @@ OwExecutive* OwExecutive::m_instance = NULL;
 OwExecutive* OwExecutive::instance ()
 {
   // Very simple singleton
-  if (m_instance == NULL) m_instance = new OwExecutive();
-  return m_instance;
+  return (m_instance ? m_instance : new OwExecutive());
+}
+
+OwExecutive::OwExecutive()
+{
+  m_instance = this;
 }
 
 OwExecutive::~OwExecutive()
 {
-  if (m_instance) delete m_instance;
+  if (m_instance) {
+    delete m_instance;
+    m_instance = NULL;
+  }
 }
 
 //returns true if current plan is finished executing
@@ -83,7 +90,7 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-	// updates Exec so that multiple plans can be run even after first plan finishes 
+	// updates Exec so that multiple plans can be run even after first plan finishes
   PlexilApp->notifyExec();
 	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
   PlexilApp->run();

@@ -3,6 +3,7 @@
 // this repository.
 
 #include "TerminalPlanSelection.h"
+#include <ow_plexil/PlanSelection.h>
 #include <string>
 
 void TerminalPlanSelection::initialize()
@@ -37,13 +38,13 @@ void TerminalPlanSelection::start(bool initial_plan)
   std::vector<std::string> plan_array;
 
   ros::Rate rate(10); // 10 Hz seems appropriate, for now.
-  std::string input; 
+  std::string input;
   // loops until terminated by user, prompts them to enter any additional plans after the
   // previous plan has been run to completion.
   while (ros::ok()) {
     if(m_plan_running == false){ // checks to see if previous plan finished
       std::cout << "\nEnter any additional plan to be run (or use the GUI): " << std::endl;
-      std::getline(std::cin, input); 
+      std::getline(std::cin, input);
       // if input is not empty we send the plan to the plan selection node for execution
       if(input != ""){
         ow_plexil::PlanSelection instruction;
@@ -65,11 +66,11 @@ void TerminalPlanSelection::start(bool initial_plan)
     }
   }
 }
-  
+
 void TerminalPlanSelection::planSelectionStatusCallback(const std_msgs::String::ConstPtr& msg)
 {
   // if plan is set as complete or failed we know that no plan is currently running
   if(msg->data.compare("COMPLETE") == 0 || msg->data.find("FAILED") != std::string::npos){
-    m_plan_running = false; 
+    m_plan_running = false;
   }
 }
