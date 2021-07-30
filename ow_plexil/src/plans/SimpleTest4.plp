@@ -1,0 +1,34 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+Command pprint (...);
+
+SimpleTest4: Concurrence
+{
+
+  Boolean ImageDone = false;
+  Boolean UnstowDone = false;
+  Boolean First = true;
+
+  Image:
+  {
+    Start First || UnstowDone;
+    Repeat true;
+
+    First = false;
+    pprint ("Running Image...");
+    Wait 1;
+    ImageDone = true;
+  }
+
+  Unstow:
+  {
+    Start ImageDone;
+    Repeat true;
+
+    pprint ("Running Unstow...");
+    Wait 1;
+    UnstowDone = true;
+  }
+}

@@ -4,7 +4,7 @@
 
 #include "plan-interface.h"
 
-SimpleTest2: Concurrence
+SimpleTest3: Concurrence
 {
 
   Boolean ImageDone = false;
