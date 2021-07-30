@@ -16,9 +16,13 @@
 
 // OWLAT Sim (installation required)
 #include <owlat_sim_msgs/ARM_UNSTOWAction.h>
+#include <owlat_sim_msgs/ARM_STOWAction.h>
 
 using OwlatUnstowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
+
+using OwlatStowActionClient =
+  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
 
 class OWLATSimInterface : public PlexilInterface
 {
@@ -33,12 +37,15 @@ class OWLATSimInterface : public PlexilInterface
 
   // Lander interface
   void owlatUnstow (int id);
+  void owlatStow (int id);
 
  private:
   void owlatUnstowAction (int id);
+  void owlatStowAction (int id);
 
   static std::shared_ptr<OWLATSimInterface> m_instance;
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
+  std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
 };
 
 #endif

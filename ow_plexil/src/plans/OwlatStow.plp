@@ -2,13 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test each operation of the OWLAT Simulator.
+Command owlat_stow();
 
-LibraryAction OwlatUnstow();
-LibraryAction OwlatStow();
-
-TestOWLATSim:
+OwlatStow:
 {
-  LibraryCall OwlatUnstow();
-  LibraryCall OwlatStow();
+  SynchronousCommand owlat_stow();
 }

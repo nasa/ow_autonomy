@@ -14,14 +14,17 @@ using std::thread;
 using std::string;
 
 const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
+const string Name_OwlatStow =   "/owlat_sim/ARM_STOW";
 
 // Used as indices into the subsequent vector.
 enum LanderOps {
-  OwlatUnstow
+  OwlatUnstow,
+  OwlatStow
 };
 
 static std::vector<string> LanderOpNames =
-  { Name_OwlatUnstow
+  { Name_OwlatUnstow,
+    Name_OwlatStow
   };
 
 
@@ -47,10 +50,15 @@ void OWLATSimInterface::initialize()
     // Initialize pointers
     m_owlatUnstowClient =
       std::make_unique<OwlatUnstowActionClient>(Name_OwlatUnstow, true);
+    m_owlatStowClient =
+      std::make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
 
     // Connect to action servers
     if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("OWLAT Unstow action server did not connect!");
+    }
+    if (! m_owlatStowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("OWLAT Stow action server did not connect!");
     }
   }
 }
@@ -78,4 +86,26 @@ void OWLATSimInterface::owlatUnstowAction (int id)
      default_action_active_cb (opname),
      default_action_feedback_cb<ARM_UNSTOWFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_UNSTOWResultConstPtr> (opname));
+}
+
+void OWLATSimInterface::owlatStow (int id)
+{
+  if (! markOperationRunning (Name_OwlatStow, id)) return;
+  thread action_thread (&OWLATSimInterface::owlatStowAction, this, id);
+  action_thread.detach();
+}
+
+void OWLATSimInterface::owlatStowAction (int id)
+{
+  ARM_STOWGoal goal;
+  string opname = Name_OwlatStow;  // shorter version
+
+  runAction<actionlib::SimpleActionClient<ARM_STOWAction>,
+            ARM_STOWGoal,
+            ARM_STOWResultConstPtr,
+            ARM_STOWFeedbackConstPtr>
+    (opname, m_owlatStowClient, goal, id,
+     default_action_active_cb (opname),
+     default_action_feedback_cb<ARM_STOWFeedbackConstPtr> (opname),
+     default_action_done_cb<ARM_STOWResultConstPtr> (opname));
 }

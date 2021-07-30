@@ -384,6 +384,13 @@ static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
+{
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OWLATSimInterface::instance()->owlatStow (CommandId);
+  send_ack_once(*cr);
+}
+
 
 
 ////////////////////// Publish/subscribe support ////////////////////////////
@@ -493,6 +500,7 @@ bool OwAdapter::initialize()
 
   // OWLAT
   g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
+  g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
 
 
   TheAdapter = this;
