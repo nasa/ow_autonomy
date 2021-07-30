@@ -9,8 +9,6 @@
 
 // OW
 #include "OwExecutive.h"
-// Is the following needed here?
-#include "OwAdapter.h"
 
 // PLEXIL
 #include "AdapterFactory.hh"
@@ -93,7 +91,7 @@ bool OwExecutive::runPlan (const string& filename)
   try {
 	// updates Exec so that multiple plans can be run even after first plan finishes
   PlexilApp->notifyExec();
-	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+  PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
   PlexilApp->run();
   }
   catch (const Error& e) {
@@ -180,8 +178,6 @@ bool OwExecutive::initialize ()
   get_plexil_debug_config();
 
   try {
-    // TODO: is this needed here?  It is also done in OwAdapter.
-    REGISTER_ADAPTER(OwAdapter, "Ow");
     PlexilApp = new PLEXIL::ExecApplication();
     if (!plexilInitializeInterfaces()) {
       ROS_ERROR("plexilInitializeInterfaces failed");
