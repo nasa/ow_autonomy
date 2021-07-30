@@ -9,6 +9,7 @@
 
 // OW
 #include "OwExecutive.h"
+// Is the following needed here?
 #include "OwAdapter.h"
 
 // PLEXIL
@@ -179,6 +180,7 @@ bool OwExecutive::initialize ()
   get_plexil_debug_config();
 
   try {
+    // TODO: is this needed here?  It is also done in OwAdapter.
     REGISTER_ADAPTER(OwAdapter, "Ow");
     PlexilApp = new PLEXIL::ExecApplication();
     if (!plexilInitializeInterfaces()) {

@@ -509,6 +509,8 @@ bool OwAdapter::initialize()
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
+  OWLATSimInterface::instance()->
+    setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
