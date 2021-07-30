@@ -1,0 +1,28 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+TestUnstow5:
+{
+  InOut Boolean image_done;
+  InOut Boolean unstow_done;
+  InOut Integer count;
+
+  Repeat true;
+  Start image_done;
+
+  log_info ("Running TestUnstow5...");
+
+  /*while true
+  {
+    //Count == Count + 1;
+    log_info ("Count: ", count);
+    Wait 5;
+  }*/
+
+  Wait 1;
+  image_done = false;
+  unstow_done = true;
+}
