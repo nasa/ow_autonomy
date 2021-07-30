@@ -19,6 +19,7 @@ SimpleTest4: Concurrence
     First = false;
     pprint ("Running Image...");
     Wait 1;
+    UnstowDone = false;
     ImageDone = true;
   }
 
@@ -29,6 +30,7 @@ SimpleTest4: Concurrence
 
     pprint ("Running Unstow...");
     Wait 1;
+    ImageDone = false;
     UnstowDone = true;
   }
 }

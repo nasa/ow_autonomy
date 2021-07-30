@@ -30,6 +30,7 @@ SimpleTest3: Concurrence
     log_info ("Running TestImage...");
     First = false;
     Wait 1;
+    UnstowDone = false;
     ImageDone = true;
   }
 
@@ -40,6 +41,7 @@ SimpleTest3: Concurrence
 
     log_info ("Running TestUnstow...");
     Wait 1;
+    ImageDone = false;
     UnstowDone = true;
   }
 
