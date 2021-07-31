@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     std::string plan(argv[1]);
     initial_plan = plan;
   }
-  if (! OwExecutive::instance()->initialize()) {
+  if (! OwExecutive::instance()->initialize ("ow-config.xml")) {
     ROS_ERROR("Could not initialize Plexil executive, shutting down.");
     return 1;
   }

@@ -8,7 +8,9 @@ set (HEADERS
   OwExecutive.h
   OwInterface.h
   OWLATSimInterface.h
+  CommonAdapter.h
   OwAdapter.h
+  OwlatAdapter.h
   PlexilPlanSelection.h
   TerminalPlanSelection.h
 )
@@ -20,7 +22,9 @@ set (SOURCES
   OwExecutive.cpp
   OwInterface.cpp
   OWLATSimInterface.cpp
+  CommonAdapter.cpp
   OwAdapter.cpp
+  OwlatAdapter.cpp
   PlexilPlanSelection.cpp
   TerminalPlanSelection.cpp
 )

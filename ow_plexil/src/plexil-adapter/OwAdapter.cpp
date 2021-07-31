@@ -2,12 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Implementation of PLEXIL interface adapter.
+// Implementation of PLEXIL interface adapter for OceanWATERS.
 
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
-#include "OWLATSimInterface.h"
 #include "subscriber.h"
 
 // ROS
@@ -36,8 +35,6 @@ using std::vector;
 //static Value const Unknown;
 const Value Unknown;
 
-// An empty argument vector.
-static vector<Value> const EmptyArgs;
 
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
@@ -149,7 +146,7 @@ static bool lookup (const std::string& state_name,
 
 static int CommandId = 0;
 
-std::mutex g_shared_mutex;
+static std::mutex g_shared_mutex;
 using CommandRecord = std::tuple<Command*,
                                  AdapterExecInterface*,
                                  bool>;
@@ -158,8 +155,8 @@ enum CommandRecordFields {CR_COMMAND, CR_ADAPTER, CR_ACK_SENT};
 
 static std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
 
-std::unique_ptr<CommandRecord>& new_command_record(Command* cmd,
-                                                   AdapterExecInterface* intf)
+static std::unique_ptr<CommandRecord>&
+new_command_record(Command* cmd, AdapterExecInterface* intf)
 {
   auto cr = std::make_tuple(cmd, intf, false);
   CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
@@ -219,41 +216,6 @@ static void command_status_callback (int id, bool success)
   send_ack_once(*cr, true);
   if (success) ack_success (cmd, intf);
   else ack_failure (cmd, intf);
-}
-
-
-static string log_string (const vector<Value>& args)
-{
-  std::ostringstream out;
-  out << "PLEXIL: ";
-  for (vector<Value>::const_iterator iter = args.begin();
-       iter != args.end();
-       iter++) out << *iter;
-  return out.str();
-}
-
-static void log_info (Command* cmd, AdapterExecInterface* intf)
-{
-  ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
-}
-
-static void log_warning (Command* cmd, AdapterExecInterface* intf)
-{
-  ROS_WARN("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
-}
-
-static void log_error (Command* cmd, AdapterExecInterface* intf)
-{
-  ROS_ERROR("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
-}
-
-static void log_debug (Command* cmd, AdapterExecInterface* intf)
-{
-  ROS_DEBUG("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
 }
 
 static void stow (Command* cmd, AdapterExecInterface* intf)
@@ -375,103 +337,9 @@ static void take_picture (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
-// OWLAT
-
-static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OWLATSimInterface::instance()->owlatUnstow (CommandId);
-  send_ack_once(*cr);
-}
-
-static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OWLATSimInterface::instance()->owlatStow (CommandId);
-  send_ack_once(*cr);
-}
-
-
-
-////////////////////// Publish/subscribe support ////////////////////////////
-
-// A localized handle on the adapter, which allows a
-// decoupling between the sample system and adapter.
-static OwAdapter* TheAdapter;
-
-static State createState (const string& state_name, const vector<Value>& value)
-{
-  State state(state_name, value.size());
-  if (value.size() > 0)
-  {
-    for(size_t i=0; i<value.size();i++)
-    {
-      state.setParameter(i, value[i]);
-    }
-  }
-  return state;
-}
-
-static void propagate (const State& state, const vector<Value>& value)
-{
-  TheAdapter->propagateValueChange (state, value);
-}
-
-// To do: templatize the following few
-
-static void receiveBool (const string& state_name, bool val)
-{
-  debugMsg("OwAdapter:receiveBool", " propagating " << state_name
-           << " with value " << (val ? "true" : "false"));
-  propagate (createState(state_name, EmptyArgs),
-             vector<Value> (1, val));
-}
-
-static void receiveDouble (const string& state_name, double val)
-{
-  propagate (createState(state_name, EmptyArgs),
-             vector<Value> (1, val));
-}
-
-static void receiveString (const string& state_name, const string& val)
-{
-  propagate (createState(state_name, EmptyArgs),
-             vector<Value> (1, val));
-}
-
-static void receiveBoolString (const string& state_name,
-                               bool val,
-                               const string& arg)
-{
-  propagate (createState(state_name, vector<Value> (1, arg)),
-             vector<Value> (1, val));
-}
-
-void OwAdapter::propagateValueChange (const State& state,
-                                       const vector<Value>& vals) const
-{
-  if (! isStateSubscribed (state)) {
-    debugMsg("OwAdapter:propagateValueChange", " ignoring " << state);
-    return;
-  }
-
-  debugMsg("OwAdapter:propagateValueChange", " sending " << state);
-  m_execInterface.handleValueChange (state, vals.front());
-  m_execInterface.notifyOfExternalEvent();
-}
-
-bool OwAdapter::isStateSubscribed(const State& state) const
-{
-  return m_subscribedStates.find(state) != m_subscribedStates.end();
-}
-
-
-///////////////////////////// Member functions //////////////////////////////////
-
-
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
-                     const pugi::xml_node& configXml) :
-  InterfaceAdapter(execInterface, configXml)
+                     const pugi::xml_node& configXml)
+  : CommonAdapter(execInterface, configXml)
 {
   debugMsg("OwAdapter", " created.");
 }
@@ -482,11 +350,7 @@ OwAdapter::~OwAdapter ()
 
 bool OwAdapter::initialize()
 {
-  g_configuration->defaultRegisterAdapter(this);
-  g_configuration->registerCommandHandler("log_info", log_info);
-  g_configuration->registerCommandHandler("log_warning", log_warning);
-  g_configuration->registerCommandHandler("log_error", log_error);
-  g_configuration->registerCommandHandler("log_debug", log_debug);
+  CommonAdapter::initialize();
   g_configuration->registerCommandHandler("stow", stow);
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
@@ -497,56 +361,10 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("take_picture", take_picture);
-
-  // OWLAT
-  g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
-  g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
-
-
-  TheAdapter = this;
-  setSubscriber (receiveBool);
-  setSubscriber (receiveString);
-  setSubscriber (receiveDouble);
-  setSubscriber (receiveBoolString);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
-  OWLATSimInterface::instance()->
-    setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
-
-bool OwAdapter::start()
-{
-  debugMsg("OwAdapter", " started.");
-  return true;
-}
-
-bool OwAdapter::stop()
-{
-  debugMsg("OwAdapter", " stopped.");
-  return true;
-}
-
-bool OwAdapter::reset()
-{
-  debugMsg("OwAdapter", " reset.");
-  return true;
-}
-
-bool OwAdapter::shutdown()
-{
-  debugMsg("OwAdapter", " shut down.");
-  return true;
-}
-
-void OwAdapter::invokeAbort(Command *cmd)
-{
-  ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
-            cmd->getName().c_str());
-}
-
-
-///////////////////////////// State support //////////////////////////////////
 
 void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 {
@@ -559,20 +377,6 @@ void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
     ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
   }
   entry.update(retval);
-}
-
-
-void OwAdapter::subscribe(const State& state)
-{
-  debugMsg("OwAdapter:subscribe", " to state " << state.name());
-  m_subscribedStates.insert(state);
-}
-
-
-void OwAdapter::unsubscribe (const State& state)
-{
-  debugMsg("OwAdapter:unsubscribe", " from state " << state.name());
-  m_subscribedStates.erase(state);
 }
 
 extern "C" {

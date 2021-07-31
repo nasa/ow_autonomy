@@ -17,7 +17,7 @@ class OwExecutive
  public:
   static OwExecutive* instance();
 
-  bool initialize ();
+  bool initialize (const std::string& config_file);
   bool getPlanState();
   bool runPlan (const std::string& filename);
 

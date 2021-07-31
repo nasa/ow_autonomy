@@ -108,23 +108,23 @@ bool OwExecutive::runPlan (const string& filename)
 
 // PLEXIL application setup functions start here.
 
-static bool plexilInitializeInterfaces()
+static bool plexilInitializeInterfaces (const string& config_file)
 {
-  string config = (PlexilDir + "ow-config.xml");
-  const char* config_file = config.c_str();
+  string configpath = (PlexilDir + config_file);
+  const char* config = configpath.c_str();
   pugi::xml_document config_doc;
   pugi::xml_node config_elt;
-  pugi::xml_parse_result parseResult = config_doc.load_file(config_file);
+  pugi::xml_parse_result parseResult = config_doc.load_file(config);
   if (parseResult.status != pugi::status_ok) {
     ROS_ERROR("Unable to load config file %s: %s",
-              config_file,
+              config,
               parseResult.description());
     return false;
   }
   else {
     config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG());
     if (!config_doc.empty() && config_elt.empty()) {
-      ROS_ERROR("config file %s has no Interfaces element", config_file);
+      ROS_ERROR("config file %s has no Interfaces element", config);
       return false;
     }
   }
@@ -166,7 +166,7 @@ static void get_plexil_debug_config()
   }
 }
 
-bool OwExecutive::initialize ()
+bool OwExecutive::initialize (const string& config_file)
 {
   // NOTE: this is the best we can do for now.
   // ROS provides no API to locate the 'devel' directory.
@@ -179,7 +179,7 @@ bool OwExecutive::initialize ()
 
   try {
     PlexilApp = new PLEXIL::ExecApplication();
-    if (!plexilInitializeInterfaces()) {
+    if (! plexilInitializeInterfaces (config_file)) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
     }
