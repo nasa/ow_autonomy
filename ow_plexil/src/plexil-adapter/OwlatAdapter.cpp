@@ -112,17 +112,6 @@ static void command_status_callback (int id, bool success)
   else ack_failure (cmd, intf);
 }
 
-
-static string log_string (const vector<Value>& args)
-{
-  std::ostringstream out;
-  out << "PLEXIL: ";
-  for (vector<Value>::const_iterator iter = args.begin();
-       iter != args.end();
-       iter++) out << *iter;
-  return out.str();
-}
-
 static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);

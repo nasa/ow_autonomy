@@ -7,7 +7,7 @@
 LibraryAction OwlatUnstow();
 LibraryAction OwlatStow();
 
-TestOWLATSim:
+TestOwlat:
 {
   LibraryCall OwlatUnstow();
   LibraryCall OwlatStow();
