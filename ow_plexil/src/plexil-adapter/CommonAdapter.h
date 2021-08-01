@@ -5,7 +5,8 @@
 #ifndef Common_Adapter
 #define Common_Adapter
 
-// PLEXIL Interface adapter class to be specialized for each testbed.
+// PLEXIL Interface adapter base class to be specialized for each testbed, along
+// with support utilities.
 
 // PLEXIL API
 #include "InterfaceAdapter.hh"
@@ -13,6 +14,7 @@
 #include "Value.hh"
 
 #include <set>
+#include <map>
 
 using namespace PLEXIL;
 
@@ -39,5 +41,29 @@ protected:
   bool isStateSubscribed(const State& state) const;
   std::set<State> m_subscribedStates;
 };
+
+
+///////////////////////////// Conveniences //////////////////////////////////
+
+// A prettier name for the "unknown" value.
+const Value Unknown;
+
+
+//////////////////////////// Command Handling //////////////////////////////
+
+extern int CommandId;
+
+using CommandRecord =
+  std::tuple<Command*, AdapterExecInterface*, bool /* ack sent */>;
+
+enum CommandRecordFields {CR_COMMAND, CR_ADAPTER, CR_ACK_SENT};
+
+extern std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
+
+std::unique_ptr<CommandRecord>&
+new_command_record(Command*, AdapterExecInterface*);
+
+void send_ack_once(CommandRecord&, bool skip=false);
+void command_status_callback (int id, bool success);
 
 #endif

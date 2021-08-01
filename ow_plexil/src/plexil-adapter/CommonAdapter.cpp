@@ -34,6 +34,75 @@ static vector<Value> const EmptyArgs;
 // decoupling between the sample system and adapter.
 static CommonAdapter* TheAdapter;
 
+int CommandId = 0;
+
+static std::mutex g_shared_mutex;
+
+std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
+
+std::unique_ptr<CommandRecord>&
+new_command_record(Command* cmd, AdapterExecInterface* intf)
+{
+  auto cr = std::make_tuple(cmd, intf, false);
+  CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
+  return CommandRegistry[CommandId];
+}
+
+static void ack_command (Command* cmd,
+                         PLEXIL::CommandHandleValue handle,
+                         AdapterExecInterface* intf)
+{
+  intf->handleCommandAck(cmd, handle);
+  intf->notifyOfExternalEvent();
+}
+
+static void ack_success (Command* cmd, AdapterExecInterface* intf)
+{
+  ack_command (cmd, COMMAND_SUCCESS, intf);
+}
+
+static void ack_failure (Command* cmd, AdapterExecInterface* intf)
+{
+  ack_command (cmd, COMMAND_FAILED, intf);
+}
+
+
+static void ack_sent (Command* cmd, AdapterExecInterface* intf)
+{
+  ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
+}
+
+void send_ack_once(CommandRecord& cr, bool skip)
+{
+  std::lock_guard<std::mutex> g(g_shared_mutex);
+  bool& sent_flag = std::get<CR_ACK_SENT>(cr);
+  if (!sent_flag)
+  {
+    if (!skip) {
+      ack_sent(std::get<CR_COMMAND>(cr), std::get<CR_ADAPTER>(cr));
+    }
+    sent_flag = true;
+  }
+}
+
+void command_status_callback (int id, bool success)
+{
+  auto it = CommandRegistry.find(id);
+  if (it == CommandRegistry.end())
+  {
+    ROS_ERROR_STREAM("command_status_callback: no command registered under id"
+                     << id);
+    return;
+  }
+
+  std::unique_ptr<CommandRecord>& cr = it->second;
+  Command* cmd = std::get<CR_COMMAND>(*cr);
+  AdapterExecInterface* intf = std::get<CR_ADAPTER>(*cr);
+  send_ack_once(*cr, true);
+  if (success) ack_success (cmd, intf);
+  else ack_failure (cmd, intf);
+}
+
 static State createState (const string& state_name, const vector<Value>& value)
 {
   State state(state_name, value.size());
@@ -81,23 +150,6 @@ static void receiveBoolString (const string& state_name,
   propagate (createState(state_name, vector<Value> (1, arg)),
              vector<Value> (1, val));
 }
-
-
-
-// HACK: duplicated in subclasses
-static void ack_command (Command* cmd,
-                         PLEXIL::CommandHandleValue handle,
-                         AdapterExecInterface* intf)
-{
-  intf->handleCommandAck(cmd, handle);
-  intf->notifyOfExternalEvent();
-}
-
-static void ack_success (Command* cmd, AdapterExecInterface* intf)
-{
-  ack_command (cmd, COMMAND_SUCCESS, intf);
-}
-// END HACK
 
 static string log_string (const vector<Value>& args)
 {
