@@ -4,7 +4,7 @@
 
 // Implementation of PLEXIL interface adapter for OWLAT simulator.
 
-// OW
+// ow_plexil
 #include "OwlatAdapter.h"
 #include "OWLATSimInterface.h"
 #include "subscriber.h"
@@ -71,11 +71,9 @@ void OwlatAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 
   Value retval = Unknown;  // the value of the queried state
 
-  // At the moment there are no lookups in OWLAT, so return Unknown.
-  //  if (! lookup(state.name(), state.parameters(), retval)) {
-  //    ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
-  //  }
-
+  // At the moment there are no lookups defined for OWLAT.
+  ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
+  
   entry.update(retval);
 }
 

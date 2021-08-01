@@ -8,7 +8,6 @@
 // PLEXIL Interface adapter for OWLAT simulator.
 
 #include "CommonAdapter.h"
-#include <set>
 
 // PLEXIL
 #include <Command.hh>
@@ -24,7 +23,7 @@ public:
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (State const& state, StateCacheEntry &entry);
+  virtual void lookupNow (const State&, StateCacheEntry&);
 };
 
 extern "C" {

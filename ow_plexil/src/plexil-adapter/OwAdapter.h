@@ -7,16 +7,11 @@
 
 // PLEXIL Interface adapter for OceanWATERS.
 
-// ow_plexil
 #include "CommonAdapter.h"
 
 // PLEXIL
 #include <Command.hh>
 #include <Value.hh>
-
-#include <set>
-
-using namespace PLEXIL;
 
 class OwAdapter : public CommonAdapter
 {
@@ -28,7 +23,7 @@ public:
   OwAdapter& operator= (const OwAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (State const& state, StateCacheEntry &entry);
+  virtual void lookupNow (const State&, StateCacheEntry&);
 };
 
 extern "C" {
