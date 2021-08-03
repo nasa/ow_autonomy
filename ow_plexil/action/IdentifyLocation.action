@@ -2,6 +2,7 @@
 int64 num_images
 ---
 # result
+float64[] sample_location
 bool success
 ---
 # feedback

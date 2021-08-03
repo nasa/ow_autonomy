@@ -52,6 +52,7 @@ LibraryAction Deliver (In Real X,
                        In Real Y,
                        In Real Z);
 
+LibraryAction IdentifySampleLocation (In Integer NumImages);
 
 // Lander queries
 

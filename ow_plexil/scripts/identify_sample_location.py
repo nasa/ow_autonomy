@@ -26,17 +26,13 @@ class IdentifySampleLocation:
     time_synchronizer = message_filters.TimeSynchronizer([rectified_image_subscriber, point_cloud_subscriber], 10)
     time_synchronizer.registerCallback(self.site_imaging_callback)
 
-    #action server setup
-    self.sample_location_action_server = actionlib.SimpleActionServer("identify_sample_location", 
-                                              IdentifyLocationAction, self.sample_location_callback, False) 
-    self.sample_location_action_server.start()
-
-    #point visualization
-    self.publisher = rospy.Publisher('breadcrumbs', MarkerArray, queue_size=10)
-    self.breadcrumbs = MarkerArray()
-
     #publishes modified opencv image with the contours and sample location outlined
     self.publish_photo = rospy.Publisher('sample_location', Image, queue_size=10)
+
+    #action server setup
+    self.sample_location_action_server = actionlib.SimpleActionServer("IdentifySampleLocation", 
+                                              IdentifyLocationAction, self.sample_location_callback, False) 
+    self.sample_location_action_server.start()
 
     #listender and CvBridge
     self.listener = tf.TransformListener()
@@ -49,28 +45,44 @@ class IdentifySampleLocation:
 
     #member variables used to construct named tuples
     self.largest_area = None
-    self.sample_location = None
+    self.best_sample_location = None
+    self.sample_location_image = None
+    self.uv = None
 
 
   def sample_location_callback(self, goal):
-    #makes sure callbacks have finished processing
-    if len(self.image_history) >= goal.num_images:
+
+    self.largest_area = None
+    self.best_sample_location = None
+    self.sample_location_image = None
+    self.uv = None
+
+    if len(self.image_history) > 0 and goal.num_images > 0:
+      if goal.num_images > len(self.image_history):
+        print("Goal is larger than total images recorded, only " + str(len(self.image_history)) + " images will be processed.")
       subset = self.image_history[-goal.num_images:]
       for i in subset:
-        sample_points_2d, contour_areas = self.identify_dark_sample_spots(i[0])
-        sample_point_3d, sample_point_area = self.get_3d_sample_point(i[1], sample_points_2d, contour_areas)
-        if(sample_point_area > self.largest_area):
+        sample_points_2d, contour_areas, cv_image = self.identify_dark_sample_spots(i[0])
+        sample_point_3d, sample_point_area, uv = self.get_3d_sample_point(i[1], sample_points_2d, contour_areas)
+        if sample_point_area > self.largest_area and sample_point_3d is not None:
           self.largest_area = sample_point_area
-          self.sample_location = sample_point_3d
-        print(sample_point_3d, sample_point_area)
-      print("COMPLETE")
-      print(self.largest_area, self.sample_location)
-      self.largest_area = None
-      self.sample_location = None
+          self.best_sample_location = sample_point_3d
+          self.sample_location_image = cv_image
+          self.uv = uv
+
+      if self.best_sample_location == None:
+        print("could not find valid sample")
+        self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=[]))
+      else:
+        print("SUCCESS")
+        print(self.largest_area, self.best_sample_location)
+        self.publish_chosen_location_image()
+        self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=True, sample_location=self.best_sample_location ))
         
     else:
-      print("Not enough images for goal")
-      self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False))
+      print("No images have been recorded")
+      self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=[]))
+
       
   def site_imaging_callback(self, rect_img_msg, points2_msg):
     #get both messages and save them to our image history for later processing
@@ -83,13 +95,13 @@ class IdentifySampleLocation:
 
 
   def publish_chosen_location_image(self):
+    cv.circle(self.sample_location_image, self.uv, 7, (0,255,0),-1)
     try:
-      self.image = self.bridge.cv2_to_imgmsg(self.image, "bgr8")
+      image = self.bridge.cv2_to_imgmsg(self.sample_location_image, "bgr8")
     except CvBridgeError, err:
       rospy.logerror("CV Bridge error: {0}".format(err))
-      self.image = None
-
-    self.publish_photo.publish(self.image)
+      return
+    self.publish_photo.publish(image)
 
 
   def identify_dark_sample_spots(self, location_image):
@@ -97,7 +109,7 @@ class IdentifySampleLocation:
       image = self.bridge.imgmsg_to_cv2(location_image, "bgr8")
     except CvBridgeError, err:
       rospy.logerror("CV Bridge error: {0}".format(err))
-      return
+      return None, None, None
 
     #filtering and finding contours of dark spots on self.image
     gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
@@ -114,12 +126,13 @@ class IdentifySampleLocation:
         moment = cv.moments(i)
         cx = int(moment["m10"] / moment["m00"])
         cy = int(moment["m01"] / moment["m00"])
+        cv.drawContours(image, [i], 0, 255, 3)
         sample_points_2d.append((cx, cy))
         contour_areas.append(area)
-      if len(valid_contours) >= 5:
+      if len(contour_areas) >= 5:
         break
 
-    return sample_points_2d, contour_areas
+    return sample_points_2d, contour_areas, image
 
 
   def get_3d_sample_point(self, point_cloud, sample_points_2d, contour_areas):
@@ -136,11 +149,11 @@ class IdentifySampleLocation:
 
       if site_coordinate == None:
         print("COULDNT FIND")
-        return
+        return None, None
 
     else:
       print("No sample points found")
-      return
+      return None, None
       
     identified_location = PointStamped()
     identified_location.header.frame_id = "StereoCameraLeft_optical_frame"
@@ -154,60 +167,11 @@ class IdentifySampleLocation:
       transformed_location = self.listener.transformPoint("base_link", identified_location)
     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
       print("HAD AN EXCEPTION THROWN")
-      
-    print("PRE:")
-    print(identified_location)
-    print("POST:")
-    print(transformed_location)
+      return None, None
 
-    return transformed_location, contour_areas[index] 
+    sample_point = [transformed_location.point.x, transformed_location.point.y, transformed_location.point.z]
 
-
-  def vizualize_sample_point(self):
-    identified_location = PointStamped()
-    identified_location.header.frame_id = "StereoCameraLeft_optical_frame"
-    identified_location.header.stamp = rospy.Time()
-    identified_location.point.x = x
-    identified_location.point.y = y
-    identified_location.point.z = z
-    print(identified_location)
-    destination = self.listener.transformPoint("base_link", identified_location)
-    print(destination)
-    print(self.stereo_camera_model.project3dToPixel([x,y,z]))
-
-    print("MADE IT2")
-
-    crumb = Marker()
-
-    # Each of the markers has to have a unique ID number.
-    crumb.id = 0
-
-    # Set the frame ID, type.
-    crumb.header.frame_id = 'base_link'
-    crumb.header.stamp = rospy.Time()
-    crumb.type = crumb.SPHERE
-
-    crumb.action = crumb.ADD
-
-    crumb.scale.x = 0.1
-    crumb.scale.y = 0.1
-    crumb.scale.z = 0.1
-
-    crumb.color.r = 0.0
-    crumb.color.g = 1.0
-    crumb.color.b = 0.0
-    crumb.color.a = 1.0
-
-    # Copy the transformed pose.  This is already in the map frame, after the TransformPose call.
-    crumb.pose.position.x = destination.point.x
-    crumb.pose.position.y = destination.point.y
-    crumb.pose.position.z = destination.point.z
-
-    # Add the marker to the marker array, and publish it out.
-    self.breadcrumbs.markers.append(crumb)
-    self.publisher.publish(self.breadcrumbs)
-
-
+    return sample_point, contour_areas[index], sample_points_2d[index]
 
 if __name__ == '__main__':
   rospy.init_node('test_node', argv=sys.argv)

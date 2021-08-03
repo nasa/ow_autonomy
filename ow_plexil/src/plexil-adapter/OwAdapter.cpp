@@ -374,6 +374,15 @@ static void take_picture (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
+{
+  int num_pictures;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (num_pictures);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  intf->handleCommandReturn(cmd, OwInterface::instance()->identifySampleLocation (num_pictures, CommandId));
+  send_ack_once(*cr);
+}
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -478,6 +487,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("identify_sample_location", identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);
 
   TheAdapter = this;

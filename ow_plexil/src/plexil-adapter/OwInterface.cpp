@@ -59,6 +59,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
+const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 
 enum LanderOps {
   GuardedMove,
@@ -70,12 +71,14 @@ enum LanderOps {
   Grind,
   Stow,
   Unstow,
-  TakePicture
+  TakePicture,
+  IdentifySampleLocation
 };
 
 static std::vector<string> LanderOpNames =
   { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
+    Op_IdentifySampleLocation
   };
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
@@ -97,7 +100,8 @@ static map<string, int> Running
   { Op_Grind, IDLE_ID },
   { Op_Stow, IDLE_ID },
   { Op_Unstow, IDLE_ID },
-  { Op_TakePicture, IDLE_ID }
+  { Op_TakePicture, IDLE_ID },
+  { Op_IdentifySampleLocation, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -425,6 +429,22 @@ static void guarded_move_done_cb
   publish ("GroundPosition", GroundPosition);
 }
 
+static std::vector<double> m_sample_point;
+
+template<int OpIndex, typename T>
+static void identify_sample_location_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
+{
+  if(result->success == true){
+    ROS_INFO ("Sample location found");
+    m_sample_point = result->sample_location;
+  }
+  else{
+    ROS_INFO ("Sample location not found");
+  }
+}
+
 //////////////////// General Action support ///////////////////////////////
 
 const auto ActionServerTimeout = 10.0;  // seconds
@@ -537,6 +557,7 @@ void OwInterface::initialize()
     m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_identifySampleLocationClient = std::make_unique<IdentifySampleLocationActionClient>(Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -555,6 +576,9 @@ void OwInterface::initialize()
     }
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    }
+    if (! m_identifySampleLocationClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }
 }
@@ -803,6 +827,32 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
             ow_lander::GuardedMoveFeedbackConstPtr>
     (Op_GuardedMove, m_guardedMoveClient, goal, id,
     guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
+}
+
+std::vector<float> OwInterface::identifySampleLocation (int num_images, int id)
+{ 
+  m_sample_point.clear();
+  if (! mark_operation_running (Op_IdentifySampleLocation, id)) return m_sample_point;
+  thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, id);
+  action_thread.detach();
+  ros::Rate rate(5);
+  while(m_sample_point.empty()){
+    rate.sleep();
+  }
+  return m_sample_point;
+}
+
+void OwInterface::identifySampleLocationAction (int num_images, int id)
+{
+  ow_plexil::IdentifyLocationGoal goal;
+  goal.num_images = num_images;
+
+  runAction<IdentifySampleLocation, actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>,
+            ow_plexil::IdentifyLocationGoal,
+            ow_plexil::IdentifyLocationResultConstPtr,
+            ow_plexil::IdentifyLocationFeedbackConstPtr>
+    (Op_IdentifySampleLocation, m_identifySampleLocationClient, goal, id,
+    identify_sample_location_done_cb<IdentifySampleLocation, ow_plexil::IdentifyLocationResultConstPtr>);
 }
 
 double OwInterface::getTilt () const

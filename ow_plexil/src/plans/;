@@ -21,7 +21,7 @@
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
-#include <ow_plexil/IdentifyLocationAction.h>
+#include <ow_plexil/IdentifyLocation.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
@@ -48,8 +48,6 @@ using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
-using IdentifySampleLocationActionClient =
-  actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
 template<int OpIndex, typename T>
   using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
@@ -79,7 +77,6 @@ class OwInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<float> identifySampleLocation (int num_images, int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
   void takePicture (int id);
@@ -135,7 +132,6 @@ class OwInterface
   void guardedMoveAction (double x, double y, double z,
                      double direction_x, double direction_y, double direction_z,
                      double search_distance, int id);
-  void identifySampleLocationAction (int num_images, int id);
   void digCircularAction (double x, double y, double depth,
                      double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
@@ -214,7 +210,7 @@ class OwInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
-  std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
+  std::unique_ptr<IdentifyLocationActionClient> m_deliverClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
