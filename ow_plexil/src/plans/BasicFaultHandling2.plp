@@ -240,7 +240,7 @@ BasicFaultHandling2: Concurrence
     // reasonable value given the other trenching parameters used.
     Real trench_length = 0.6;
 
-    log_info ("Starting BasicFaultHandling plan...");
+    log_info ("Starting BasicFaultHandling2 plan...");
 
     LibraryCall BasicFaultHandlingImage(battery_critical = BatteryCritical,
                                         antenna_ok = AntennaOK,
@@ -281,7 +281,7 @@ BasicFaultHandling2: Concurrence
     log_info ("Search skipped: ", BasicFaultHandlingSearch.outcome == SKIPPED);
     SearchInterrupted = (BasicFaultHandlingSearch.outcome == INTERRUPTED); // This is not sufficient
     
-    log_info ("BasicFaultHandling plan complete.");
+    log_info ("BasicFaultHandling2 plan complete.");
     MissionInProgress = false;
   }
 
