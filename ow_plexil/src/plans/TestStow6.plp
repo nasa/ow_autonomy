@@ -1,0 +1,25 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Stow the arm (which requires an unstow() first)
+
+#include "lander-commands.h"
+Command log_info(...);
+
+Stow:
+{
+  InOut Boolean stow_done;
+  InOut Boolean unstow_done;
+
+  Repeat true;
+  Start unstow_done;
+
+  log_info ("Running TestStow6...");
+  SynchronousCommand stow();
+
+  Wait 1;
+  stow_done = true;
+  unstow_done = false;
+
+}

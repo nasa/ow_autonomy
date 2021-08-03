@@ -8,20 +8,21 @@ TestImage5:
 {
   InOut Boolean unstow_done;
   InOut Boolean image_done;
-  InOut Integer count;
   InOut Boolean first;
+
+  Integer count = 0;
 
   Repeat true;
   Start first || unstow_done;
 
   log_info ("Running TestImage5...");
 
-  /*while true
+  while count < 5
   {
-    //Count == Count + 1;
+    count = count + 1;
     log_info ("Count: ", count);
-    Wait 5;
-  }*/
+    Wait 1;
+  }
 
   first = false;
   Wait 1;
