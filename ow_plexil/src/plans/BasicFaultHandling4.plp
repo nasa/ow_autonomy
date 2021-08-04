@@ -1,0 +1,131 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This goal is to minimize wasted power and lost time given mission constraints.
+// In the future, this could be expanded to consider fault responses to each 
+// specific fault, instead of responses to the four fault categories
+
+// For testing, we will focus only on one imaging (Image) 
+// and one arm task (UnstowStow) in this plan
+
+// The goal is to demonstrate switching between these distinct tasks
+// when a battery issue arises
+
+// ** NOTES **
+// In this plan we only consider battery issues for simplicity
+// BatteryOK is false iff the StateOfCharge is < 0.1
+// *** BatteryOK and BatteryCritical must be set by hand in this plan ***
+// BatteryCritical is true iff the StateOfCharge is < 0.05
+// Imaging is the only task that can run when !BatteryOK
+// Imaging (and all else) cannot run when BatteryCritical is true
+
+// ** EXPECTED BEHAVIOR **
+// If no battery issues: image, unstow, and stow
+// If !batteryOK and unstow/stow happening, interrupt unstow/stow, revert to imaging
+// When reverting to imaging, only do so until a timeout (timeout NOT IMPLEMENTED YET)
+// If BatteryCritical, then !BatteryOK, but cannot revert to imaging, so wait
+// Wait will occur until resolution or timeout (timeout NOT YET IMPLEMENTED)
+
+// ** QUESTIONS **
+// How do we achieve image repetition for when unstow/stow can't happen
+// without using ImageInProgress and having concurrency issues?
+// Initial proof of concept behavior goal: 
+// Image, !BatteryOK so UnstowStow can't start, 
+// !BatteryCritical so RevertToImageOrWait run image again
+// Next step: implement a timeout in RevertToImageOrWait
+
+#include "plan-interface.h"
+
+BasicFaultHandling4: Concurrence
+{
+  // Progress guards for mission continuation
+  Boolean MissionInProgress = true;
+  Boolean ImageInProgress = false;
+
+  // Battery variables
+  // CHANGE BatteryOK to false to observe issue with concurrency during revert to imaging
+  Boolean BatteryOK = true; // CHANGE BY HAND TO TEST
+  Real CriticallyLowCharge = 0.05;
+  Boolean BatteryCritical = false; // CHANGE BY HAND TO TEST
+
+  RevertToImageOrWait: // Need to rename (used to be WaitForBatteryHealth)
+  {
+    // This node assumes !BatteryOK (which means only imaging can occur, other nodes halt)
+    // This node will revert to imaging if battery is not critical
+    // This node will just wait if battery is critical
+
+    // #TODO A timeout will be implemented here in the future
+
+    Repeat MissionInProgress;
+    Start MissionInProgress && !BatteryOK; // Battery issues occurring
+    Skip !MissionInProgress;
+
+    if BatteryCritical
+    {
+      log_warning
+      ("Battery health issues critical, mission operations nominally paused...");
+      Wait 10;
+      // #TODO Add timeout logic
+
+    }
+    else
+    {
+      log_warning
+      ("Non-critical battery health issues, reverting to monitoring tasks temporarily...");
+      Image:
+      {
+        Start !BatteryCritical && !ImageInProgress;
+        ExitCondition BatteryCritical;
+	
+        Wait 1; // Added due to an error assigning ImageInProgress at the same time...
+        ImageInProgress = true;
+
+        log_info ("Running Image due to battery health...");
+        SynchronousCommand pan_antenna (90);
+
+        Wait 1;
+        ImageInProgress = false;
+      }
+    }
+    endif;
+ 
+  }
+
+  Mission: UncheckedSequence
+  {
+
+    log_info ("Starting BasicFaultHandling4 plan...");
+
+    Image:
+    {
+      Start !BatteryCritical && !ImageInProgress;
+      ExitCondition BatteryCritical;
+
+      ImageInProgress = true;
+
+      log_info ("Running Image...");
+      SynchronousCommand pan_antenna (90);
+
+      Wait 1;
+      ImageInProgress = false;
+    }
+
+    UnstowStow:
+    {
+      Start BatteryOK;
+      ExitCondition !BatteryOK;
+
+      log_info ("Running UnstowStow...");
+      SynchronousCommand unstow();
+      SynchronousCommand stow();
+
+      Wait 1;
+    }
+
+    log_info ("BasicFaultHandling4 plan complete.");
+    MissionInProgress = false;
+  } //end mission
+
+
+} //end all

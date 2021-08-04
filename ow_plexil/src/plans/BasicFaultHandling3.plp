@@ -14,6 +14,12 @@
 // The goal is to demonstrate switching between these distinct tasks
 // when faults only affect one of them
 
+// Expected behavior:
+// If no battery issues: image, unstow, and stow
+// If !batteryOK and unstow/stow happening, interrupt unstow/stow, revert imaging
+// Also if !batteryOK, only continue imaging until a timeout (not yet implemented)
+// Also if BatteryCritical (<0.05)
+
 #include "plan-interface.h"
 
 BasicFaultHandling3: Concurrence
@@ -22,12 +28,13 @@ BasicFaultHandling3: Concurrence
   // Progress guards for mission continuation
   Boolean MissionInProgress = true;
   Boolean ImageInProgress = false;
-  Boolean UnstowStowInProgress = false;
+  Boolean UnstowStowInProgress = false; // not used
+  Boolean AfterImage = false;
 
   // Fault guards for mission continuation
   Boolean NoFaults  = true; // General tracker
   Boolean SystemOK = true;  // Another general tracker
-  Boolean BatteryOK = false; // Affects all tasks // TESTING #TODO set baseline to true
+  Boolean BatteryOK = true; // Affects all tasks // TESTING #TODO set baseline to true
   Boolean ArmOK = true; // Affects manipulator tasks (includes force torque faults)
   Boolean AntennaOK = true; // Affects panning and tilting (imaging)
   Boolean PowerOK = true; // Affects entire system, stops everything
@@ -59,6 +66,7 @@ BasicFaultHandling3: Concurrence
 
   // WaitForBatteryHealth will run the imaging task iff:
   // battery is not okay AND battery is not critical
+  /*
   WaitForBatteryHealth:
   {
     Repeat MissionInProgress;
@@ -95,6 +103,7 @@ BasicFaultHandling3: Concurrence
     endif;
  
   }
+*/
 
   /*// HandlePowerFaults will halt mission progress using the Wait command
   // The plan will wait until timeout or power fault resolution (if possible)
@@ -115,6 +124,25 @@ BasicFaultHandling3: Concurrence
 
   }*/
 
+  PrintProgress:
+  {
+    Repeat MissionInProgress;
+    log_info ("ImageInProgress: ", ImageInProgress);
+    log_info ("BatteryOK: ", BatteryOK);
+    Wait 1;
+  }
+
+  /*
+  ResolveBatteryIssueTest:
+  {
+    Repeat MissionInProgress;
+    Start AfterImage;
+    BatteryOK = true; // to allow unstowstow to start after image has been done twice
+    // first image call will be the first step of the mission and the second will be due to !batteryOK
+    
+  }
+  */
+
   Mission: UncheckedSequence
   {
 
@@ -130,7 +158,7 @@ BasicFaultHandling3: Concurrence
       log_info ("Running Image...");
       SynchronousCommand pan_antenna (90);
 
-      Wait 1;
+      Wait 15;
       ImageInProgress = false;
     }
 

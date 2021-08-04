@@ -7,7 +7,7 @@
 #include "lander-commands.h"
 Command log_info(...);
 
-Stow:
+TestStow6:
 {
   InOut Boolean stow_done;
   InOut Boolean unstow_done;

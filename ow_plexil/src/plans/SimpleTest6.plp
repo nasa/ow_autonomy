@@ -5,12 +5,12 @@
 //#include "lander-commands.h"
 #include "plan-interface.h"
 
-/*LibraryAction TestUnstow6(InOut Boolean unstow_done,
+LibraryAction TestUnstow6(InOut Boolean unstow_done,
                         InOut Boolean stow_done, 
                         InOut Boolean first);
 
 LibraryAction TestStow6(InOut Boolean stow_done,
-                         InOut Boolean unstow_done);*/
+                         InOut Boolean unstow_done);
 
 SimpleTest6: Concurrence
 {
@@ -22,7 +22,7 @@ SimpleTest6: Concurrence
   log_info ("Running SimpleTest6...");
   log_info ("Compilation check: 4");
 
-  TestUnstow6:
+  /*TestUnstow6:
   {
     Repeat true;
     Start First || StowDone;
@@ -54,13 +54,13 @@ SimpleTest6: Concurrence
     UnstowDone = false;
 
     log_info ("TestStow6 complete.");
-  }
+  }*/
 
-  /*LibraryCall TestUnstow6(unstow_done=UnstowDone,
+  LibraryCall TestUnstow6(unstow_done=UnstowDone,
                         stow_done=StowDone,
                         first=First);
 
   LibraryCall TestStow6(stow_done=StowDone,
-                         unstow_done=UnstowDone);*/
+                         unstow_done=UnstowDone);
 
 }
