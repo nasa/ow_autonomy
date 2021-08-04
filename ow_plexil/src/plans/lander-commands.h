@@ -55,6 +55,6 @@ Command unstow();
 // Move from "ready" position to stowed position; requires unstow() first
 Command stow();
 
-Command identify_sample_location(Integer num_images);
+Real [3] Command identify_sample_location(Integer num_images);
 
 #endif

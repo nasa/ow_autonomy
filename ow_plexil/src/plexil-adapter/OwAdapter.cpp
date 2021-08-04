@@ -380,7 +380,10 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (num_pictures);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  intf->handleCommandReturn(cmd, OwInterface::instance()->identifySampleLocation (num_pictures, CommandId));
+  std::vector<double> temp;
+  temp = OwInterface::instance()->identifySampleLocation (num_pictures, CommandId);
+  Value point = Value(temp);
+  intf->handleCommandReturn(cmd, point);
   send_ack_once(*cr);
 }
 

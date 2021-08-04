@@ -35,6 +35,9 @@ IdentifySampleTarget2: Sequence
     log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
 
     LibraryCall IdentifySampleLocation(NumImages=3);
+    LibraryCall PanAndShoot(PanAngle = 80);
+    LibraryCall PanAndShoot(PanAngle = 85);
+    
 
 
 }

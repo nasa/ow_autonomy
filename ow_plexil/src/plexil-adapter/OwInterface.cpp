@@ -829,7 +829,7 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
     guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
-std::vector<float> OwInterface::identifySampleLocation (int num_images, int id)
+std::vector<double> OwInterface::identifySampleLocation (int num_images, int id)
 { 
   m_sample_point.clear();
   if (! mark_operation_running (Op_IdentifySampleLocation, id)) return m_sample_point;

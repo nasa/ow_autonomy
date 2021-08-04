@@ -79,7 +79,7 @@ class OwInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<float> identifySampleLocation (int num_images, int id);
+  std::vector<double> identifySampleLocation (int num_images, int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
   void takePicture (int id);
