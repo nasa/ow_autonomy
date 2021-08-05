@@ -45,7 +45,7 @@ BasicFaultHandling4: Concurrence
 
   // Battery variables
   // CHANGE BatteryOK to false to observe issue with concurrency during revert to imaging
-  Boolean BatteryOK = true; // CHANGE BY HAND TO TEST
+  Boolean BatteryOK = false; // CHANGE BY HAND TO TEST
   Real CriticallyLowCharge = 0.05;
   Boolean BatteryCritical = false; // CHANGE BY HAND TO TEST
 
@@ -78,7 +78,7 @@ BasicFaultHandling4: Concurrence
         Start !BatteryCritical && !ImageInProgress;
         ExitCondition BatteryCritical;
 	
-        Wait 1; // Added due to an error assigning ImageInProgress at the same time...
+        //Wait 1; // Added due to an error assigning ImageInProgress at the same time...
         ImageInProgress = true;
 
         log_info ("Running Image due to battery health...");
