@@ -1,0 +1,15 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+// This should change when you inject or remove arm faults
+// I do not see that behavior when I test
+
+ArmOKTest:
+{
+  Repeat true;
+  log_info("Lookup ArmFault: ", Lookup(ArmFault));
+  Wait 1;
+}

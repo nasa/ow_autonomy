@@ -10,30 +10,15 @@
 // and one arm task (UnstowStow) in this plan
 
 // The goal is to demonstrate switching between these distinct tasks
-// when a battery issue arises
+// when an arm fault arises
 
 // ** NOTES **
-// In this plan we only consider battery issues for simplicity
-// BatteryOK is false iff the StateOfCharge is < 0.1
-// *** BatteryOK and BatteryCritical must be set by hand in this plan ***
-// BatteryCritical is true iff the StateOfCharge is < 0.05
-// Imaging is the only task that can run when !BatteryOK
-// Imaging (and all else) cannot run when BatteryCritical is true
+// In this plan we only consider arm faults, which do not affect image
 
 // ** EXPECTED BEHAVIOR **
-// If no battery issues: image, unstow, and stow
-// If !batteryOK and unstow/stow happening, interrupt unstow/stow, revert to imaging
-// When reverting to imaging, only do so until a timeout (timeout NOT IMPLEMENTED YET)
-// If BatteryCritical, then !BatteryOK, but cannot revert to imaging, so wait
-// Wait will occur until resolution or timeout (timeout NOT YET IMPLEMENTED)
-
-// ** QUESTIONS **
-// How do we achieve image repetition for when unstow/stow can't happen
-// without using ImageInProgress and having concurrency issues?
-// Initial proof of concept behavior goal: 
-// Image, !BatteryOK so UnstowStow can't start, 
-// !BatteryCritical so RevertToImageOrWait run image again
-// Next step: implement a timeout in RevertToImageOrWait
+// If no arm issues: image, unstow, and stow
+// If !ArmOK during arm task (UnstowStow), revert to image (need a timeout)
+// If/when ArmOK again, reattempt UnstowStow (not implemented)
 
 #include "plan-interface.h"
 
@@ -42,54 +27,47 @@ BasicFaultHandling4: Concurrence
   // Progress guards for mission continuation
   Boolean MissionInProgress = true;
   Boolean ImageInProgress = false;
+  
+  // Fault guard variable
+  Boolean ArmOK = true;
 
-  // Battery variables
-  // CHANGE BatteryOK to false to observe issue with concurrency during revert to imaging
-  Boolean BatteryOK = false; // CHANGE BY HAND TO TEST
-  Real CriticallyLowCharge = 0.05;
-  Boolean BatteryCritical = false; // CHANGE BY HAND TO TEST
-
-  RevertToImageOrWait: // Need to rename (used to be WaitForBatteryHealth)
+  CheckArmFaults:
   {
-    // This node assumes !BatteryOK (which means only imaging can occur, other nodes halt)
-    // This node will revert to imaging if battery is not critical
-    // This node will just wait if battery is critical
-
-    // #TODO A timeout will be implemented here in the future
-
+    // Update fault guard variable
     Repeat MissionInProgress;
-    Start MissionInProgress && !BatteryOK; // Battery issues occurring
+    Start MissionInProgress;
     Skip !MissionInProgress;
 
-    if BatteryCritical
+    ArmOK = !Lookup(ArmFault);
+    log_info ("ArmOK is: ", ArmOK);
+
+    Wait 1;
+    
+  }
+
+  HandleArmFaults:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !ArmOK; // Arm fault occurring
+    Skip !MissionInProgress;
+    
+    // How do we only trigger this when an arm task is occurring?
+    // Currently this will run even if just image in occurring assuming !ArmOK
+
+    log_warning
+      ("Arm fault occurring during arm operations, reverting to imaging task...");
+    Image:
     {
-      log_warning
-      ("Battery health issues critical, mission operations nominally paused...");
-      Wait 10;
-      // #TODO Add timeout logic
+      log_info ("Running Image again...");
+      SynchronousCommand pan_antenna (90);
 
+      Wait 15; // Give time for user to inject/remove faults
     }
-    else
-    {
-      log_warning
-      ("Non-critical battery health issues, reverting to monitoring tasks temporarily...");
-      Image:
-      {
-        Start !BatteryCritical && !ImageInProgress;
-        ExitCondition BatteryCritical;
-	
-        //Wait 1; // Added due to an error assigning ImageInProgress at the same time...
-        ImageInProgress = true;
 
-        log_info ("Running Image due to battery health...");
-        SynchronousCommand pan_antenna (90);
+    Wait 1;
 
-        Wait 1;
-        ImageInProgress = false;
-      }
-    }
-    endif;
- 
+    // #TODO When/how will we reattempt either Unstow or Search?
+
   }
 
   Mission: UncheckedSequence
@@ -99,28 +77,22 @@ BasicFaultHandling4: Concurrence
 
     Image:
     {
-      Start !BatteryCritical && !ImageInProgress;
-      ExitCondition BatteryCritical;
-
-      ImageInProgress = true;
-
       log_info ("Running Image...");
       SynchronousCommand pan_antenna (90);
 
-      Wait 1;
-      ImageInProgress = false;
+      Wait 15; // Give time for user to inject/remove faults
     }
 
     UnstowStow:
     {
-      Start BatteryOK;
-      ExitCondition !BatteryOK;
+      Start ArmOK;
+      ExitCondition !ArmOK;
 
       log_info ("Running UnstowStow...");
       SynchronousCommand unstow();
       SynchronousCommand stow();
 
-      Wait 1;
+      Wait 15; // Give time for user to inject/remove faults
     }
 
     log_info ("BasicFaultHandling4 plan complete.");
