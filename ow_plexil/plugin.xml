@@ -1,5 +1,5 @@
 <library path="src">
-  <class name="PLEXIL Plan Selection" type="rqt_plexil_plan_selection.rqt_plexil_plan_selection.PlexilPlanSelection" 
+  <class name="PLEXIL Plan Selection" type="rqt_plexil_plan_selection.rqt_plexil_plan_selection.PlexilPlanSelectionGUI" 
   base_class_type="rqt_gui_py::Plugin">
     <description>
       A simple GUI that selects PLEXIL plans to be run by the ow_plexil node.
