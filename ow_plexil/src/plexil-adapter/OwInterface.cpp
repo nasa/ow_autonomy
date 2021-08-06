@@ -857,12 +857,12 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
     guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
-std::vector<double> OwInterface::identifySampleLocation (int num_images, int id)
+std::vector<double> OwInterface::identifySampleLocation (int num_images, std::string filter_type, int id)
 { 
   m_sample_point.clear();
   got_sample_location_result = false;
   if (! mark_operation_running (Op_IdentifySampleLocation, id)) return m_sample_point;
-  thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, id);
+  thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, filter_type, id);
   action_thread.detach();
 
   ros::Rate rate(10);
@@ -881,10 +881,11 @@ std::vector<double> OwInterface::identifySampleLocation (int num_images, int id)
   return m_sample_point;
 }
 
-void OwInterface::identifySampleLocationAction (int num_images, int id)
+void OwInterface::identifySampleLocationAction (int num_images, std::string filter_type, int id)
 {
   ow_plexil::IdentifyLocationGoal goal;
   goal.num_images = num_images;
+  goal.filter_type = filter_type;
 
   runAction<IdentifySampleLocation, actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>,
             ow_plexil::IdentifyLocationGoal,

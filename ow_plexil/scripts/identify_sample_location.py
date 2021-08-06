@@ -80,7 +80,6 @@ class IdentifySampleLocation:
         rospy.loginfo("Could not find valid sample location")
         self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=[]))
       else:
-        rospy.loginfo(self.largest_area, self.best_sample_location)
         #publishes the modified image showing our sample location choice
         self.publish_chosen_location_image()
         self.visualize_sample_point(self.best_sample_location)
@@ -100,7 +99,6 @@ class IdentifySampleLocation:
     #prevent our image history from getting too large saves most recent 50 images
     if len(self.image_history) > 50:
       self.image_history = self.image_history[-50:]
-    rospy.loginfo("HERE")
 
 
   def publish_chosen_location_image(self):
@@ -206,6 +204,7 @@ class IdentifySampleLocation:
     return sample_point, contour_areas[index], sample_points_2d[index]
 
   def visualize_sample_point(self, sample_point):
+    '''Publishes a marker showing the location of our sample point'''
     #header and action info
     visualized_point = Marker()
     visualized_point.id = 0
@@ -229,7 +228,7 @@ class IdentifySampleLocation:
     visualized_point.pose.position.z = sample_point[2]
 
     # Add the marker, and publish it out.
-    self.publisher.publish(visualized_point)
+    self.point_visualization_publisher.publish(visualized_point)
 
 
 if __name__ == '__main__':
