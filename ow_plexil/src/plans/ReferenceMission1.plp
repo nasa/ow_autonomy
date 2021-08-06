@@ -76,7 +76,6 @@ ReferenceMission1: Concurrence
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
                                   IgnoreCrash = true);
-    LibraryCall Unstow();
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
                                       GroundPos = ground_pos,
@@ -97,7 +96,6 @@ ReferenceMission1: Concurrence
     else
     {
       log_error ("Failed to find ground, aborting.");
-      LibraryCall Stow();
     }
     endif
     MissionInProgress = false;

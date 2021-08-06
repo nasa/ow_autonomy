@@ -26,6 +26,7 @@
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
 #include <string>
 
@@ -144,6 +145,7 @@ class OwInterface
   bool operationRunning (const std::string& name) const;
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
+  void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
@@ -198,6 +200,7 @@ class OwInterface
 
   std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
   std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
+  std::unique_ptr<ros::Subscriber> m_pointCloudSubscriber;
   std::unique_ptr<ros::Subscriber> m_socSubscriber;
   std::unique_ptr<ros::Subscriber> m_rulSubscriber;
   std::unique_ptr<ros::Subscriber> m_batteryTempSubscriber;
@@ -219,6 +222,7 @@ class OwInterface
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
   double m_goalPan, m_goalTilt;      // commanded pan/tilt values
+  bool m_pointCloudRecieved;
   ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
 

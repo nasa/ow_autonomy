@@ -9,6 +9,6 @@ IdentifySampleLocation:
 {
   In Integer NumImages;
   Real result[3];
-  result = identify_sample_location(NumImages);
+  SynchronousCommand result = identify_sample_location(NumImages);
   log_info("RESULT ", result);
 }

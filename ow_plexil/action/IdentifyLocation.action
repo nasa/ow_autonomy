@@ -1,5 +1,6 @@
 # goal - number of images to be processed
 int64 num_images
+string filter_type
 ---
 # result
 float64[] sample_location

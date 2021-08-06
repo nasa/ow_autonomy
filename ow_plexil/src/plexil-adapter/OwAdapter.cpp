@@ -380,10 +380,12 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (num_pictures);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  std::vector<double> temp;
-  temp = OwInterface::instance()->identifySampleLocation (num_pictures, CommandId);
-  Value point = Value(temp);
-  intf->handleCommandReturn(cmd, point);
+  std::vector<double> point_vector;
+  // Get our sample point from identifySampleLocation
+  point_vector = OwInterface::instance()->identifySampleLocation (num_pictures, CommandId);
+  // Contstruct a Value type vector for plexil before returning the result
+  Value value_point_vector = Value(point_vector);
+  intf->handleCommandReturn(cmd, value_point_vector);
   send_ack_once(*cr);
 }
 

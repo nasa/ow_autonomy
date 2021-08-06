@@ -8,36 +8,42 @@
 
 #include "plan-interface.h"
 
-LibraryAction TakePicture ();
 LibraryAction PanAndShoot (In Real PanAngle);
 
 IdentifySampleTarget2: Sequence
 {
-    Real CurrentPanDegree;
-    Real GoalPanDegree;
+  InOut Real X, Y, GroundPos;
+  InOut Boolean Parallel;
+  Real result[3];
+  Post Lookup (GroundFound);
 
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-    LibraryCall Tilt(Degrees = 45);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall PanAndShoot(PanAngle = 65);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall PanAndShoot(PanAngle = 70);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall PanAndShoot(PanAngle = 75);
-    log_info("Current Pan Degree: ", Lookup(PanDegrees));
-    log_info("Current Tilt Degree: ", Lookup(TiltDegrees));
-
-    LibraryCall IdentifySampleLocation(NumImages=3);
-    LibraryCall PanAndShoot(PanAngle = 80);
-    LibraryCall PanAndShoot(PanAngle = 85);
-    
+  // Take pictures in front of the lander for processing in identify_sample_location
+  // The Waits ensure that the PointCloud topic for the stereocamera has finished publishing
+  // An alternative would be to create a new takepicture command that waits for the pointcloud or modifying the current one
+  LibraryCall Tilt(Degrees = 50);
+  Wait 2;
+  LibraryCall PanAndShoot(PanAngle = 65);
+  Wait 2;
+  LibraryCall PanAndShoot(PanAngle = 70);
+  Wait 2;
+  LibraryCall PanAndShoot(PanAngle = 75);
+  Wait 2;
+  SynchronousCommand result = identify_sample_location(3);
 
 
+  // Guarded move is at attempt to find the ground position.  The chosen start
+  // position is based off of the result from identify_sample_location
+  LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[3]+.1,
+                           DirX = 0, DirY = 0, DirZ = 1,
+                           SearchDistance = 0.5);
+
+  //check for ground position
+  if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
+  else log_warning ("GuardedMove failed to find ground.");
+  endif
+
+  // The chosen X/Y sampling location, as well as choice for Parallel trench
+  X = result[0];
+  Y = result[1];
+  Parallel = true;
 }

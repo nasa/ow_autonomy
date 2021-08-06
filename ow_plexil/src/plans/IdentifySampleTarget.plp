@@ -2,31 +2,44 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This is a simplified and stubbed version of a procedure that should
-// "interrogate" the terrain to find a good sampling location.  Instead, we
-// choose an arbitrary location and probe for ground position there.
 
 #include "plan-interface.h"
+
+LibraryAction PanAndShoot (In Real PanAngle);
 
 IdentifySampleTarget:
 {
   InOut Real X, Y, GroundPos;
   InOut Boolean Parallel;
-
+  Real result[3];
   Post Lookup (GroundFound);
 
-  // Guarded move is at attempt to find the ground position.  The chosen start
-  // position (X/Y/Z) is arbitrary, as is the search direction (vertical).
-  LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
-                           DirX = 0, DirY = 0, DirZ = 1,
-                           SearchDistance = 0.5);
-  if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
-  else log_warning ("GuardedMove failed to find ground.");
-  endif
+  // Take pictures in front of the lander for processing in identify_sample_location
+  // An alternative would be to create a new takepicture command that waits for the pointcloud or modifying the current one
+  LibraryCall Tilt(Degrees = 50);
+  LibraryCall PanAndShoot(PanAngle = 65);
+  LibraryCall PanAndShoot(PanAngle = 70);
+  LibraryCall PanAndShoot(PanAngle = 75);
+  SynchronousCommand result = identify_sample_location(3);
 
-  // The chosen X/Y sampling location, as well as choice for Parallel trench
-  // direction are stubbed here; these choices are arbitrary.
-  X = 1.65;
-  Y = 0;
-  Parallel = true;
+  if (isKnown(result[0])){
+    LibraryCall Unstow();
+    // Guarded move is at attempt to find the ground position.  The chosen start
+    // position is based off of the result from identify_sample_location
+    LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
+                             DirX = 0, DirY = 0, DirZ = 1,
+                             SearchDistance = 0.5);
+
+    //check for ground position
+    if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
+    else log_warning ("GuardedMove failed to find ground.");
+    endif;
+
+    // The chosen X/Y sampling location, as well as choice for Parallel trench
+    X = result[0];
+    Y = result[1];
+    Parallel = true;  
+  }
+  endif;
+
 }

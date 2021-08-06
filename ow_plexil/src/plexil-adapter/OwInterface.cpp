@@ -333,12 +333,32 @@ void OwInterface::managePanTilt (const string& opname,
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
-
+  m_pointCloudRecieved = false;
   if (operationRunning (Op_TakePicture)) {
+    ros::Rate rate(10);
+    int timeout = 0;
+    // We wait for the pointcloud as well or the 5 sec timeout before marking as finished
+    while(m_pointCloudRecieved == false && timeout < 50){
+        ros::spinOnce();
+        rate.sleep();
+        timeout+=1;
+    }
+    if(timeout == 50){
+      ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
+    }
     mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
   }
 }
 
+void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& msg)
+{
+  // NOTE: the received pointcloud is ignored for now.
+  if (operationRunning (Op_TakePicture)) {
+    //mark as recieved
+    m_pointCloudRecieved = true;
+    mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
+  }
+}
 
 ///////////////////////// Power support /////////////////////////////////////
 
@@ -429,20 +449,24 @@ static void guarded_move_done_cb
   publish ("GroundPosition", GroundPosition);
 }
 
+//Since template is outside the scope of the class we cannot use a member variable and 
+//instead have to use a global one like in the guarded_move_done_cb above.
 static std::vector<double> m_sample_point;
-
+static bool got_sample_location_result = false;
 template<int OpIndex, typename T>
 static void identify_sample_location_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result)
 {
   if(result->success == true){
-    ROS_INFO ("Sample location found");
     m_sample_point = result->sample_location;
+    ROS_INFO ("Possible sample location identified at (%f, %f, %f)", 
+           m_sample_point[0], m_sample_point[1], m_sample_point[2]);
   }
   else{
-    ROS_INFO ("Sample location not found");
+    ROS_ERROR("Could not get sample point from IdentifySampleLocation");
   }
+  got_sample_location_result = true;
 }
 
 //////////////////// General Action support ///////////////////////////////
@@ -522,6 +546,10 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
+    m_pointCloudSubscriber = std::make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/StereoCamera/points2", qsize,
+                 &OwInterface::pointCloudCallback, this));
     m_socSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
@@ -832,12 +860,23 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
 std::vector<double> OwInterface::identifySampleLocation (int num_images, int id)
 { 
   m_sample_point.clear();
+  got_sample_location_result = false;
   if (! mark_operation_running (Op_IdentifySampleLocation, id)) return m_sample_point;
   thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, id);
   action_thread.detach();
-  ros::Rate rate(5);
-  while(m_sample_point.empty()){
-    rate.sleep();
+
+  ros::Rate rate(10);
+  int timeout = 0;
+  /* We wait for a result from the action server or the 5 sec timeout before returning
+  I dont think a timeout is strictly necessary here but because this is blocking
+  I put it in for safety */
+  while(got_sample_location_result == false && timeout < 50){
+      ros::spinOnce();
+      rate.sleep();
+      timeout+=1;
+  }
+  if(timeout == 50){
+    ROS_ERROR("Did not recieve a sample point from IdentifySampleLocation before timeout.");
   }
   return m_sample_point;
 }
