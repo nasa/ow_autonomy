@@ -26,21 +26,26 @@
 #include <mutex>
 using std::string;
 using std::vector;
+using std::unique_ptr;
+using std::get;
+using std::mutex;
 
 // An empty argument vector.
-static vector<Value> const EmptyArgs;
+//static vector<Value> const EmptyArgs;
+const vector<Value> EmptyArgs;
 
-// A localized handle on the adapter, which allows a
-// decoupling between the sample system and adapter.
+// A pointer to the interface adapter, so that it can be accessed from static
+// functions.  WARNING: this allows only one adapter instance to be usable at a
+// time; multiple testbeds cannot operate concurrently.
 static CommonAdapter* TheAdapter;
+
+static mutex g_shared_mutex;
 
 int CommandId = 0;
 
-static std::mutex g_shared_mutex;
+std::map<int, unique_ptr<CommandRecord>> CommandRegistry;
 
-std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
-
-std::unique_ptr<CommandRecord>&
+unique_ptr<CommandRecord>&
 new_command_record(Command* cmd, AdapterExecInterface* intf)
 {
   auto cr = std::make_tuple(cmd, intf, false);
@@ -74,12 +79,12 @@ static void ack_sent (Command* cmd, AdapterExecInterface* intf)
 
 void send_ack_once(CommandRecord& cr, bool skip)
 {
-  std::lock_guard<std::mutex> g(g_shared_mutex);
-  bool& sent_flag = std::get<CR_ACK_SENT>(cr);
+  std::lock_guard<mutex> g(g_shared_mutex);
+  bool& sent_flag = get<CR_ACK_SENT>(cr);
   if (!sent_flag)
   {
     if (!skip) {
-      ack_sent(std::get<CR_COMMAND>(cr), std::get<CR_ADAPTER>(cr));
+      ack_sent(get<CR_COMMAND>(cr), get<CR_ADAPTER>(cr));
     }
     sent_flag = true;
   }
@@ -95,9 +100,9 @@ void command_status_callback (int id, bool success)
     return;
   }
 
-  std::unique_ptr<CommandRecord>& cr = it->second;
-  Command* cmd = std::get<CR_COMMAND>(*cr);
-  AdapterExecInterface* intf = std::get<CR_ADAPTER>(*cr);
+  unique_ptr<CommandRecord>& cr = it->second;
+  Command* cmd = get<CR_COMMAND>(*cr);
+  AdapterExecInterface* intf = get<CR_ADAPTER>(*cr);
   send_ack_once(*cr, true);
   if (success) ack_success (cmd, intf);
   else ack_failure (cmd, intf);
