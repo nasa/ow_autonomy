@@ -26,7 +26,7 @@ BasicFaultHandling4: Concurrence
 {
   // Progress guards for mission continuation
   Boolean MissionInProgress = true;
-  Boolean ImageInProgress = false;
+  Boolean ArmTaskAlreadyTried = false;
   
   // Fault guard variable
   Boolean ArmOK = true;
@@ -56,12 +56,14 @@ BasicFaultHandling4: Concurrence
 
     log_warning
       ("Arm fault occurring during arm operations, reverting to imaging task...");
-    Image:
+
+    Image: // Will be a library call
     {
       log_info ("Running Image again...");
       SynchronousCommand pan_antenna (90);
 
-      Wait 15; // Give time for user to inject/remove faults
+      log_info ("You have 10 seconds to inject or remove faults...");
+      Wait 10; // Give time for user to inject/remove faults
     }
 
     Wait 1;
@@ -70,20 +72,15 @@ BasicFaultHandling4: Concurrence
 
   }
 
-  Mission: UncheckedSequence
+  ReattemptArmTask:
   {
+    Repeat MissionInProgress;
+    Start MissionInProgress && ArmTaskAlreadyTried && ArmOK;
+    Skip !MissionInProgress;
 
-    log_info ("Starting BasicFaultHandling4 plan...");
+    log_info ("Reattempting arm task...");
 
-    Image:
-    {
-      log_info ("Running Image...");
-      SynchronousCommand pan_antenna (90);
-
-      Wait 15; // Give time for user to inject/remove faults
-    }
-
-    UnstowStow:
+    UnstowStow: // Will be a library call
     {
       Start ArmOK;
       ExitCondition !ArmOK;
@@ -91,8 +88,42 @@ BasicFaultHandling4: Concurrence
       log_info ("Running UnstowStow...");
       SynchronousCommand unstow();
       SynchronousCommand stow();
+      
+      log_info ("You have 10 seconds to inject or remove faults...");
+      Wait 10; // Give time for user to inject/remove faults
 
-      Wait 15; // Give time for user to inject/remove faults
+      ArmTaskAlreadyTried = true;
+    }
+
+  }
+
+  Mission: UncheckedSequence
+  {
+
+    log_info ("Starting BasicFaultHandling4 plan...");
+
+    Image: // Will be a library call
+    {
+      log_info ("Running Image...");
+      SynchronousCommand pan_antenna (90);
+
+      log_info ("You have 10 seconds to inject or remove faults...");
+      Wait 10; // Give time for user to inject/remove faults
+    }
+
+    UnstowStow: // Will be a library call
+    {
+      Start ArmOK;
+      ExitCondition !ArmOK;
+
+      log_info ("Running UnstowStow...");
+      SynchronousCommand unstow();
+      SynchronousCommand stow();
+      
+      log_info ("You have 10 seconds to inject or remove faults...");
+      Wait 10; // Give time for user to inject/remove faults
+
+      ArmTaskAlreadyTried = true;
     }
 
     log_info ("BasicFaultHandling4 plan complete.");

@@ -7,9 +7,23 @@
 // This should change when you inject or remove arm faults
 // I do not see that behavior when I test
 
+/*
 ArmOKTest:
 {
   Repeat true;
   log_info("Lookup ArmFault: ", Lookup(ArmFault));
   Wait 1;
+}
+*/
+
+LibraryAction MonitorArm (In Boolean continue,
+                             InOut Boolean arm_ok);
+
+ArmOKTest:
+{
+  Boolean MissionInProgress = true;
+  Boolean ArmOK = true;
+
+  LibraryCall MonitorArm (continue = MissionInProgress,
+                             arm_ok = ArmOK);
 }
