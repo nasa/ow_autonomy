@@ -81,7 +81,7 @@ ReferenceMission1: Concurrence
                                       Y = trench_y,
                                       GroundPos = ground_pos,
                                       Parallel = parallel,
-                                      FilterType = "Brown");
+                                      FilterType = "Dark");
     if (Lookup(GroundFound)) {
       LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                              Length = trench_length, BiteDepth = 0.05,
