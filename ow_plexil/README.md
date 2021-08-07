@@ -51,9 +51,12 @@ Build just the ow_plexil package with:
  catkin build ow_plexil
 ```
 
-_NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
+_NOTE 1: If any new PLEXIL plans (.plp or .ple files) have been added since your
 last build, a clean rebuild of ow_plexil is needed.  See bottom of this file
 for instructions._
+
+_NOTE 2: If you have JPL's OWLAT Simulator (proprietery), define the OWLAT flag,
+i.e. `catkin build -DOWLAT=ON` or `catkin build ow_plexil -DOWLAT=ON`._
 
 
 Start the Plexil node
