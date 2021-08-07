@@ -9,6 +9,10 @@ This directory contains the ROS package `ow_plexil`, which provides:
  - sample autonomy plans written in PLEXIL
  - code that interfaces the PLEXIL plans with the testbeds
 
+NOTE: OWLAT (Ocean Worlds Lander Autonomy Testbed) is a proprietery,
+closed-source simulator developed at JPL.  Instructions for use of this testbed
+are not provided with OceanWATERS.
+
 Contents
 --------
 
@@ -53,16 +57,22 @@ Build just the ow_plexil package with:
  catkin build ow_plexil
 ```
 
-_NOTE 1: If any new PLEXIL plans (.plp or .ple files) have been added since your
-last build, a clean rebuild of ow_plexil is needed.  See bottom of this file
-for instructions._
+NOTE: If you have OWLAT, define the OWLAT flag, i.e.
 
-_NOTE 2: If you have JPL's OWLAT Simulator (proprietery), define the OWLAT flag,
-i.e. `catkin build -DOWLAT=ON` or `catkin build ow_plexil -DOWLAT=ON`._
+  `catkin build -DOWLAT=ON`
+
+or
+
+  `catkin build ow_plexil -DOWLAT=ON`.
+
+_IMPORTANT: If any PLEXIL plans (.plp files) have been added or removed since
+your last build, a clean rebuild of ow_plexil is needed.  This is due to a build
+deficiency.  See bottom of this file for instructions._
 
 
-Start the Plexil node
----------------------
+
+Launch the plan executive
+-------------------------
 
 1. First you must start the simulator, e.g.
 
