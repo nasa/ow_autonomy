@@ -108,6 +108,9 @@ Launch the plan executive
 
    See `plans/README.md` for a description of the PLEXIL plans.
 
+   Optionally, plans may be selected and queued for execution using the Plan
+   Selection GUI in rqt.
+
 
 Clean
 -----
