@@ -7,7 +7,7 @@ Contents
 
 This directory contains C++ classes and code implementing:
 
- - the interface between the PLEXIL plans (found in ../plans) and the lander
- - the ROS node plexil_node that embodies the PLEXIL executive
+ - the interface between the PLEXIL plans (found in ../plans) and the testbeds*
+ - the ROS nodes ow_exec and owlat_exec that embody the PLEXIL executive
  - the ROS node terminal_selection_node that provides command-line plan selection
  
