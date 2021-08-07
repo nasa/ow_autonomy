@@ -7,6 +7,7 @@
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
+#include "adapter_support.h"
 #include "subscriber.h"
 
 // ROS

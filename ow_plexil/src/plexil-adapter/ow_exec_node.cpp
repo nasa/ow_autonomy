@@ -2,6 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Plan executive ROS node for OceanWATERS.
+
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>

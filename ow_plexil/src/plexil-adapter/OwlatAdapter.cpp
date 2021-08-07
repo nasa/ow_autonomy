@@ -6,7 +6,8 @@
 
 // ow_plexil
 #include "OwlatAdapter.h"
-#include "OWLATSimInterface.h"
+#include "OwlatInterface.h"
+#include "adapter_support.h"
 #include "subscriber.h"
 
 // ROS
@@ -31,14 +32,14 @@ using std::vector;
 static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OWLATSimInterface::instance()->owlatUnstow (CommandId);
+  OwlatInterface::instance()->owlatUnstow (CommandId);
   send_ack_once(*cr);
 }
 
 static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OWLATSimInterface::instance()->owlatStow (CommandId);
+  OwlatInterface::instance()->owlatStow (CommandId);
   send_ack_once(*cr);
 }
 
@@ -58,8 +59,7 @@ bool OwlatAdapter::initialize()
   CommonAdapter::initialize();
   g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
-  OWLATSimInterface::instance()->
-    setCommandStatusCallback (command_status_callback);
+  OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwlatAdapter", " initialized.");
   return true;
 }

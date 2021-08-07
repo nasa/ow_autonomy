@@ -7,6 +7,9 @@
 
 // PLEXIL interface adapter support utilities.
 
+// NOTE: In principle, this code could be folded into the CommonAdapter class,
+// but the effort and result could be complicated in several ways.
+
 #include "CommonAdapter.h"
 
 // PLEXIL
@@ -61,15 +64,15 @@ void receiveBool (const std::string& state_name, bool val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
 void receiveBoolString (const std::string& state_name,
-                        bool value,
+                        bool val,
                         const std::string& arg);
 
 
 /////////////////////////////// ROS Logging ///////////////////////////////////
 
-void log_info (Command* cmd, AdapterExecInterface* intf);
-void log_warning (Command* cmd, AdapterExecInterface* intf);
-void log_error (Command* cmd, AdapterExecInterface* intf);
-void log_debug (Command* cmd, AdapterExecInterface* intf);
+void log_info (Command*, AdapterExecInterface*);
+void log_warning (Command*, AdapterExecInterface*);
+void log_error (Command*, AdapterExecInterface*);
+void log_debug (Command*, AdapterExecInterface*);
 
 #endif

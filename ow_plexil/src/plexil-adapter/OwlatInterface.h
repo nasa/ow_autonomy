@@ -2,8 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#ifndef OwlatSimInterface_H
-#define OwlatSimInterface_H
+#ifndef OwlatInterface_H
+#define OwlatInterface_H
 
 // Interface to JPL's OWLAT simulator.
 
@@ -24,14 +24,14 @@ using OwlatUnstowActionClient =
 using OwlatStowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
 
-class OWLATSimInterface : public PlexilInterface
+class OwlatInterface : public PlexilInterface
 {
  public:
-  static std::shared_ptr<OWLATSimInterface> instance();
-  OWLATSimInterface() = default;
-  ~OWLATSimInterface() = default;
-  OWLATSimInterface (const OWLATSimInterface&) = delete;
-	OWLATSimInterface& operator= (const OWLATSimInterface&) = delete;
+  static std::shared_ptr<OwlatInterface> instance();
+  OwlatInterface() = default;
+  ~OwlatInterface() = default;
+  OwlatInterface (const OwlatInterface&) = delete;
+	OwlatInterface& operator= (const OwlatInterface&) = delete;
 
   void initialize();
 
@@ -43,7 +43,7 @@ class OWLATSimInterface : public PlexilInterface
   void owlatUnstowAction (int id);
   void owlatStowAction (int id);
 
-  static std::shared_ptr<OWLATSimInterface> m_instance;
+  static std::shared_ptr<OwlatInterface> m_instance;
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
   std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
 };

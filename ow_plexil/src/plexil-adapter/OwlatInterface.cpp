@@ -4,7 +4,7 @@
 
 #include <thread>
 #include <vector>
-#include "OWLATSimInterface.h"
+#include "OwlatInterface.h"
 
 using namespace owlat_sim_msgs;
 using std::hash;
@@ -28,16 +28,16 @@ static std::vector<string> LanderOpNames =
   };
 
 
-std::shared_ptr<OWLATSimInterface> OWLATSimInterface::m_instance = nullptr;
+std::shared_ptr<OwlatInterface> OwlatInterface::m_instance = nullptr;
 
-std::shared_ptr<OWLATSimInterface> OWLATSimInterface::instance ()
+std::shared_ptr<OwlatInterface> OwlatInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == nullptr) m_instance = std::make_shared<OWLATSimInterface>();
+  if (m_instance == nullptr) m_instance = std::make_shared<OwlatInterface>();
   return m_instance;
 }
 
-void OWLATSimInterface::initialize()
+void OwlatInterface::initialize()
 {
   static bool initialized = false;
 
@@ -66,14 +66,14 @@ void OWLATSimInterface::initialize()
 
 /////////////////////////////// OWLAT Interface ////////////////////////////////
 
-void OWLATSimInterface::owlatUnstow (int id)
+void OwlatInterface::owlatUnstow (int id)
 {
   if (! markOperationRunning (Name_OwlatUnstow, id)) return;
-  thread action_thread (&OWLATSimInterface::owlatUnstowAction, this, id);
+  thread action_thread (&OwlatInterface::owlatUnstowAction, this, id);
   action_thread.detach();
 }
 
-void OWLATSimInterface::owlatUnstowAction (int id)
+void OwlatInterface::owlatUnstowAction (int id)
 {
   ARM_UNSTOWGoal goal;
   string opname = Name_OwlatUnstow;  // shorter version
@@ -88,14 +88,14 @@ void OWLATSimInterface::owlatUnstowAction (int id)
      default_action_done_cb<ARM_UNSTOWResultConstPtr> (opname));
 }
 
-void OWLATSimInterface::owlatStow (int id)
+void OwlatInterface::owlatStow (int id)
 {
   if (! markOperationRunning (Name_OwlatStow, id)) return;
-  thread action_thread (&OWLATSimInterface::owlatStowAction, this, id);
+  thread action_thread (&OwlatInterface::owlatStowAction, this, id);
   action_thread.detach();
 }
 
-void OWLATSimInterface::owlatStowAction (int id)
+void OwlatInterface::owlatStowAction (int id)
 {
   ARM_STOWGoal goal;
   string opname = Name_OwlatStow;  // shorter version

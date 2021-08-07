@@ -2,13 +2,15 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Plan executive ROS node for the OWLAT simulator.
+
 // ROS
 #include <ros/ros.h>
 #include <ros/package.h>
 
 #include "PlexilPlanSelection.h"
 #include "OwExecutive.h"
-#include "OWLATSimInterface.h"
+#include "OwlatInterface.h"
 
 int main(int argc, char* argv[])
 {
@@ -25,7 +27,7 @@ int main(int argc, char* argv[])
     ROS_ERROR("Could not initialize Plexil executive, shutting down.");
     return 1;
   }
-  OWLATSimInterface::instance()->initialize();
+  OwlatInterface::instance()->initialize();
   PlexilPlanSelection plan_selection;
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
