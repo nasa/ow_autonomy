@@ -1,0 +1,42 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Simple plan to test Pan and Tilt functions
+
+#include "plan-interface.h"
+
+LibraryAction TestPanTilt (In Real Goal, In Real Action, InOut Integer TestSuccess);
+
+TestAntennaMovement: CheckedSequence
+{
+  Integer TestCount = 0;
+
+  //initial location
+  LibraryCall Tilt(Degrees = 0);
+  LibraryCall Pan(Degrees = 0);
+
+  //Pan tests
+  LibraryCall TestPanTilt(Goal = 180, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = -180, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = 350, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = -350, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = -45, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = 10, Action = "Pan", TestSuccess = TestCount); 
+
+  //Tilt tests
+  LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", TestSuccess = TestCount); 
+
+  //Checks if all tests have succeeded
+  if(TestCount == 11){
+    log_info("TestAntennaMovement: SUCCEEDED, 11/11 Tests Succeeded");
+  } 
+  else{
+    log_error("TestAntennaMovement: FAILED, ", TestCount, "/11 Tests Succeeded");
+  }
+ 
+}
