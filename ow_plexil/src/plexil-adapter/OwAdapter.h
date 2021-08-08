@@ -9,16 +9,12 @@
 
 #include "CommonAdapter.h"
 
-// PLEXIL
-#include <Command.hh>
-#include <Value.hh>
-
 class OwAdapter : public CommonAdapter
 {
 public:
   // No default constructor, only this specialized one.
   OwAdapter (AdapterExecInterface&, const pugi::xml_node&);
-  ~OwAdapter ();
+  ~OwAdapter () = default;
   OwAdapter (const OwAdapter&) = delete;
   OwAdapter& operator= (const OwAdapter&) = delete;
 

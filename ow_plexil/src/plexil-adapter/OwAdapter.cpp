@@ -24,9 +24,10 @@
 #include <StateCacheEntry.hh>
 
 // C++
-#include <map>
+#include <string>
 using std::string;
 using std::vector;
+using std::unique_ptr;
 
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
@@ -46,8 +47,8 @@ static void stubbed_lookup (const string& name, const string& value)
     value_out = val;                            \
   }
 
-static bool lookup (const std::string& state_name,
-                    const std::vector<PLEXIL::Value>& args,
+static bool lookup (const string& state_name,
+                    const vector<PLEXIL::Value>& args,
                     PLEXIL::Value& value_out)
 {
   bool retval = true;
@@ -136,7 +137,7 @@ static bool lookup (const std::string& state_name,
 
 static void stow (Command* cmd, AdapterExecInterface* intf)
 {
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->stow (CommandId);
   send_ack_once(*cr);
 
@@ -144,7 +145,7 @@ static void stow (Command* cmd, AdapterExecInterface* intf)
 
 static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->unstow (CommandId);
   send_ack_once(*cr);
 }
@@ -160,7 +161,7 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   args[4].getValue(dir_y);
   args[5].getValue(dir_z);
   args[6].getValue(search_distance);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
   send_ack_once(*cr);
@@ -177,7 +178,7 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   args[3].getValue(length);
   args[4].getValue(parallel);
   args[5].getValue(ground_pos);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
                                  CommandId);
   send_ack_once(*cr);
@@ -193,7 +194,7 @@ static void dig_circular (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(depth);
   args[3].getValue(ground_position);
   args[4].getValue(parallel);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
   send_ack_once(*cr);
@@ -208,7 +209,7 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue(depth);
   args[3].getValue(length);
   args[4].getValue(ground_position);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
   send_ack_once(*cr);
@@ -221,7 +222,7 @@ static void deliver (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue(x);
   args[1].getValue(y);
   args[2].getValue(z);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->deliver (x, y, z, CommandId);
   send_ack_once(*cr);
 }
@@ -231,7 +232,7 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->tiltAntenna (degrees, CommandId);
   send_ack_once(*cr);
 }
@@ -241,14 +242,14 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panAntenna (degrees, CommandId);
   send_ack_once(*cr);
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->takePicture (CommandId);
   send_ack_once(*cr);
 }
@@ -258,10 +259,6 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
   : CommonAdapter(execInterface, configXml)
 {
   debugMsg("OwAdapter", " created.");
-}
-
-OwAdapter::~OwAdapter ()
-{
 }
 
 bool OwAdapter::initialize()

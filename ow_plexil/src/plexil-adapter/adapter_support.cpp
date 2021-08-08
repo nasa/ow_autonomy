@@ -20,8 +20,7 @@ using std::unique_ptr;
 using std::get;
 using std::mutex;
 
-// An empty argument vector.
-//static vector<Value> const EmptyArgs;
+// An empty argument vector, for convenience.
 const vector<Value> EmptyArgs;
 
 CommonAdapter* g_adapter;

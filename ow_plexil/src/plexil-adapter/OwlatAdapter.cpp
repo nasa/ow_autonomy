@@ -23,12 +23,6 @@
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
 
-// C++
-#include <map>
-using std::string;
-using std::vector;
-
-
 static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -48,10 +42,6 @@ OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
   : CommonAdapter (execInterface, configXml)
 {
   debugMsg("OwlatAdapter", " created.");
-}
-
-OwlatAdapter::~OwlatAdapter ()
-{
 }
 
 bool OwlatAdapter::initialize()

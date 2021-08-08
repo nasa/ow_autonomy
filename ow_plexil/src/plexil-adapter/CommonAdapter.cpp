@@ -47,10 +47,6 @@ CommonAdapter::CommonAdapter(AdapterExecInterface& execInterface,
   debugMsg("CommonAdapter", " created.");
 }
 
-CommonAdapter::~CommonAdapter ()
-{
-}
-
 bool CommonAdapter::initialize()
 {
   g_configuration->defaultRegisterAdapter(this);

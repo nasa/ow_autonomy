@@ -5,7 +5,7 @@
 #ifndef adapter_support
 #define adapter_support
 
-// PLEXIL interface adapter support utilities.
+// Support utilities for CommonAdapter and its testbed specializations.
 
 // NOTE: In principle, this code could be folded into the CommonAdapter class,
 // but the effort and result could be complicated in several ways.

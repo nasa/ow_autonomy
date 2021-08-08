@@ -20,9 +20,8 @@ using namespace PLEXIL;
 class CommonAdapter : public InterfaceAdapter
 {
 public:
-  // No default constructor, only this specialized one.
-  CommonAdapter (AdapterExecInterface&, const pugi::xml_node&);
-  ~CommonAdapter ();
+  CommonAdapter() = delete;  // only a specialized constructor for subclasses
+  ~CommonAdapter() = default;
   CommonAdapter (const CommonAdapter&) = delete;
   CommonAdapter& operator= (const CommonAdapter&) = delete;
 
@@ -37,6 +36,7 @@ public:
   void propagateValueChange (const State&, const std::vector<Value>&) const;
 
 protected:
+  CommonAdapter (AdapterExecInterface&, const pugi::xml_node&);
   bool isStateSubscribed(const State& state) const;
   std::set<State> m_subscribedStates;
 };
