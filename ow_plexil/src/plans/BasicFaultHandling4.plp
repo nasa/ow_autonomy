@@ -31,6 +31,8 @@ BasicFaultHandling4: Concurrence
   // Fault guard variable
   Boolean ArmOK = true;
 
+  Real NewAngle = 0;
+
   CheckArmFaults:
   {
     // Update fault guard variable
@@ -60,7 +62,8 @@ BasicFaultHandling4: Concurrence
     Image: // Will be a library call
     {
       log_info ("Running Image again...");
-      SynchronousCommand pan_antenna (90);
+      NewAngle = Lookup(PanDegrees) + 90;
+      SynchronousCommand pan_antenna (NewAngle);
 
       log_info ("You have 10 seconds to inject or remove faults...");
       Wait 10; // Give time for user to inject/remove faults
@@ -123,12 +126,13 @@ BasicFaultHandling4: Concurrence
       log_info ("You have 10 seconds to inject or remove faults...");
       Wait 10; // Give time for user to inject/remove faults
 
-      ArmTaskAlreadyTried = true;
     }
 
-    log_info ("BasicFaultHandling4 plan complete.");
+    ArmTaskAlreadyTried = true;
+
+    log_info ("BasicFaultHandling4 Mission complete.");
     MissionInProgress = false;
   } //end mission
 
-
+  log_info ("BasicFaultHandling4 plan complete.");
 } //end all
