@@ -144,7 +144,7 @@ class IdentifySampleLocation:
       ret, thresh = cv.threshold(gray, 15, 255,cv.THRESH_BINARY_INV)
 
     #find contours and sort them largest to smallest
-    contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours.sort(reverse=True, key=cv.contourArea)
     sample_points_2d = []
     contour_areas = []
