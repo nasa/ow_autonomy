@@ -2,8 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Either pan antenna in 15 degree increments (if no antenna faults)
-// Or unstow and stow the arm repeatedly (if no arm faults)
+// Either pan antenna in 15 degree increments (if no antenna faults but arm faults active)
+// Or unstow and stow the arm repeatedly (if no arm faults but antenna faults active)
+// Neither (waiting for resolution if both faults active)
+// Both (if no faults)
 
 #include "plan-interface.h"
 
@@ -26,34 +28,26 @@ FaultHandlingPattern2: Concurrence
     Wait 1;
   }
 
-  Mission: UncheckedSequence
+  Pattern2Image:
   {
+    Repeat true;
+    Start AntennaOK;
 
-    log_info ("Running FaultHandlingPattern2 Mission...");
+    log_info ("Running Pattern2Image...");
+    NewAngle = Lookup(PanDegrees) + 15;
+    log_info ("Pan angle: ", NewAngle);
+    SynchronousCommand pan_antenna (NewAngle);
+  }
 
-    Pattern2Image:
-    {
-      Repeat true;
-      Start AntennaOK;
+  Pattern2UnstowStow:
+  {
+    Repeat true;
+    Start ArmOK;
 
-      log_info ("Running Pattern2Image...");
-      NewAngle = Lookup(PanDegrees) + 15;
-      log_info ("Pan angle: ", NewAngle);
-      SynchronousCommand pan_antenna (NewAngle);
-    }
-
-    Pattern2UnstowStow:
-    {
-      Repeat true;
-      Start ArmOK;
-
-      log_info ("Running Pattern2UnstowStow...");
-      SynchronousCommand unstow();
-      SynchronousCommand stow();
+    log_info ("Running Pattern2UnstowStow...");
+    SynchronousCommand unstow();
+    SynchronousCommand stow();
       
-    }
-
-    log_info ("FaultHandlingPattern2 Mission complete.");
   }
 
 }

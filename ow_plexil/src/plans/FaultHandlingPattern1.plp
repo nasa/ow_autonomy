@@ -24,24 +24,17 @@ FaultHandlingPattern1: Concurrence
     Wait 1;
   }
 
-  Mission: UncheckedSequence
+  Pattern1Image:
   {
+    Repeat true;
+    Start AntennaOK;
 
-    log_info ("Running FaultHandlingPattern1 Mission...");
-
-    Pattern1Image:
-    {
-      Repeat true;
-      Start AntennaOK;
-
-      log_info ("Running Pattern1Image...");
-      NewAngle = Lookup(PanDegrees) + 15;
-      log_info ("Pan angle: ", NewAngle);
-      SynchronousCommand pan_antenna (NewAngle);
-    }
-
-    log_info ("FaultHandlingPattern1 Mission complete.");
+    log_info ("Running Pattern1Image...");
+    NewAngle = Lookup(PanDegrees) + 15;
+    log_info ("Pan angle: ", NewAngle);
+    SynchronousCommand pan_antenna (NewAngle);
   }
+
 
 }
 
