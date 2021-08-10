@@ -12,7 +12,7 @@ import numpy as np
 import cv2 as cv
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
-from geometry_msgs.msg import PointStamped
+from geometry_msgs.msg import PointStamped, Point
 import sensor_msgs.point_cloud2
 from ow_plexil.msg import IdentifyLocationAction, IdentifyLocationGoal, IdentifyLocationFeedback, IdentifyLocationResult
 import message_filters
@@ -83,7 +83,7 @@ class IdentifySampleLocation:
       #if succesful we return our point, otherwise we return an empty list
       if self.best_sample_location == None:
         rospy.loginfo("Could not find valid sample location")
-        self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=[]))
+        self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=None))
       else:
         #publishes the modified image showing our sample location choice
         self.publish_chosen_location_image()
@@ -92,7 +92,7 @@ class IdentifySampleLocation:
 
     else:
       rospy.loginfo("No images have been recorded")
-      self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=[]))
+      self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=None))
 
 
   def site_imaging_callback(self, rect_img_msg, points2_msg):
@@ -203,8 +203,9 @@ class IdentifySampleLocation:
       rospy.loginfo("Could not transform point to base_link frame")
       return None, None, None
 
-    #converts transformed point to list for easier usage
-    sample_point = [transformed_location.point.x, transformed_location.point.y, transformed_location.point.z]
+    
+    sample_point = Point()
+    sample_point = transformed_location.point
     #returns our sample point, its contour and the original uv of the point
     return sample_point, contour_areas[index], sample_points_2d[index]
 
@@ -228,9 +229,9 @@ class IdentifySampleLocation:
     visualized_point.color.a = 1.0
 
     #point location
-    visualized_point.pose.position.x = sample_point[0]
-    visualized_point.pose.position.y = sample_point[1]
-    visualized_point.pose.position.z = sample_point[2]
+    visualized_point.pose.position.x = sample_point.x
+    visualized_point.pose.position.y = sample_point.y
+    visualized_point.pose.position.z = sample_point.z
 
     # Add the marker, and publish it out.
     self.point_visualization_publisher.publish(visualized_point)

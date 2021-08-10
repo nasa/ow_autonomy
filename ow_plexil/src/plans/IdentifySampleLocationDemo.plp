@@ -9,54 +9,27 @@
 
 #include "plan-interface.h"
 
-LibraryAction PanAndShoot (In Real PanAngle);
-
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos,
+                                    In String FilterType);
 IdentifySampleLocationDemo:
 {
-  Real result[3];
-  Post Lookup (GroundFound);
+  Real trench_x, trench_y, ground_pos;
+  Boolean parallel;
 
-  // Take pictures in front of the lander for processing in identify_sample_location
-  // An alternative would be to create a new takepicture command that waits for the pointcloud or modifying the current one
-  LibraryCall Tilt(Degrees = 50);
-  LibraryCall PanAndShoot(PanAngle = 65);
-  LibraryCall PanAndShoot(PanAngle = 70);
-  LibraryCall PanAndShoot(PanAngle = 75);
+  log_info("Testing Dark filter in IdentifySampleLocation");
+  LibraryCall IdentifySampleTarget (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel,
+                                    FilterType = "Dark");
 
-  //Shows Dark filter being used
-  SynchronousCommand result = identify_sample_location(3, "Dark");
-  if (isKnown(result[0])){
-    LibraryCall Unstow();
-    // Guarded move is at attempt to find the ground position.  The chosen start
-    // position is based off of the result from identify_sample_location
-    LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
-                             DirX = 0, DirY = 0, DirZ = 1,
-                             SearchDistance = 0.5);
-
-    //check for ground position
-    if (!Lookup (GroundFound)){
-      log_warning ("GuardedMove failed to find ground.");
-    }
-    endif;
-  }
-  endif;
-
-
-  //Shows Brown filter being used
-  SynchronousCommand result = identify_sample_location(3, "Brown");
-  if (isKnown(result[0])){
-    LibraryCall Unstow();
-    // Guarded move is at attempt to find the ground position.  The chosen start
-    // position is based off of the result from identify_sample_location
-    LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
-                             DirX = 0, DirY = 0, DirZ = 1,
-                             SearchDistance = 0.5);
-    if (!Lookup (GroundFound)){
-      log_warning ("GuardedMove failed to find ground.");
-    }
-    endif;
-  }
-  endif;
-
-
+  log_info("Testing Brown filter in IdentifySampleLocation");
+  LibraryCall IdentifySampleTarget (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel,
+                                    FilterType = "Brown");
 }

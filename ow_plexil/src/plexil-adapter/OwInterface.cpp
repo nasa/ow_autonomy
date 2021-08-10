@@ -459,7 +459,9 @@ static void identify_sample_location_done_cb
  const T& result)
 {
   if(result->success == true){
-    m_sample_point = result->sample_location;
+    m_sample_point.push_back(result->sample_location.x);
+    m_sample_point.push_back(result->sample_location.y);
+    m_sample_point.push_back(result->sample_location.z);
     ROS_INFO ("Possible sample location identified at (%f, %f, %f)", 
            m_sample_point[0], m_sample_point[1], m_sample_point[2]);
   }

@@ -3,8 +3,6 @@ int64 num_images
 string filter_type
 ---
 # result
-float64[] sample_location
+geometry_msgs/Point sample_location
 bool success
 ---
-# feedback
-string progress
