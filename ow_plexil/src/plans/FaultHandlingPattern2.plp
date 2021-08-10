@@ -1,0 +1,59 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Either pan antenna in 15 degree increments (if no antenna faults)
+// Or unstow and stow the arm repeatedly (if no arm faults)
+
+#include "plan-interface.h"
+
+
+FaultHandlingPattern2: Concurrence
+{
+  Real NewAngle = 0;
+  Boolean AntennaOK = true;
+  Boolean ArmOK = true;
+
+  CheckForFaults:
+  {
+    Repeat true;
+
+    AntennaOK = !Lookup(AntennaFault);
+    ArmOK = !Lookup(ArmFault);
+    log_info ("AntennaOK: ", AntennaOK);
+    log_info ("ArmOK: ", ArmOK);
+
+    Wait 1;
+  }
+
+  Mission: UncheckedSequence
+  {
+
+    log_info ("Running FaultHandlingPattern2 Mission...");
+
+    Pattern2Image:
+    {
+      Repeat true;
+      Start AntennaOK;
+
+      log_info ("Running Pattern2Image...");
+      NewAngle = Lookup(PanDegrees) + 15;
+      log_info ("Pan angle: ", NewAngle);
+      SynchronousCommand pan_antenna (NewAngle);
+    }
+
+    Pattern2UnstowStow:
+    {
+      Repeat true;
+      Start ArmOK;
+
+      log_info ("Running Pattern2UnstowStow...");
+      SynchronousCommand unstow();
+      SynchronousCommand stow();
+      
+    }
+
+    log_info ("FaultHandlingPattern2 Mission complete.");
+  }
+
+}
