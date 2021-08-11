@@ -1,0 +1,63 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// If no faults injected, this plan will pan 180 degrees, 
+// then unstow, and stow the arm
+
+#include "plan-interface.h"
+
+FaultHandlingPattern3: Concurrence
+{
+  Real NewAngle = 0;
+  Boolean SystemOK = true;
+  Boolean MissionInProgress = true;
+
+  CheckForFaults:
+  {
+    Repeat MissionInProgress;
+
+    SystemOK = !Lookup(SystemFault);
+    log_info ("SystemOK: ", SystemOK);
+
+    Wait 1;
+  }
+  
+  WaitForHealth:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !SystemOK;
+
+    log_warning
+      ("System health issues, mission operations nominally paused...");
+    Wait 10;
+  }
+
+  Mission:
+  {
+
+    log_info ("Starting FaultHandlingPattern3 Mission...");
+
+    Pattern3Image:
+    {
+      Start SystemOK;
+
+      log_info ("Running Pattern3Image...");
+      log_info ("Pan angle: ", 180);
+      SynchronousCommand pan_antenna (NewAngle);
+    }
+
+    Pattern3UnstowStow:
+    {
+      Start SystemOK;
+
+      log_info ("Running Pattern3UnstowStow...");
+      SynchronousCommand unstow();
+      SynchronousCommand stow();
+      
+    }
+
+    log_info ("FaultHandlingPattern3 Mission complete.");
+    MissionInProgress = false;
+  }
+}
