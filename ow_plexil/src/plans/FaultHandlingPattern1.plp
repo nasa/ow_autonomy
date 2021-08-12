@@ -8,30 +8,31 @@
 
 #include "plan-interface.h"
 
+LibraryAction InitializeLander (InOut Boolean initialize);
 
-FaultHandlingPattern1: Concurrence
+FaultHandlingPattern1:
 {
+  Boolean Initialize = true;
   Real NewAngle = 0;
-  Boolean AntennaOK = true;
+  Real NumPreviousRevolutions = 0;
 
-  CheckForFaults:
-  {
-    Repeat true;
-
-    AntennaOK = !Lookup(AntennaFault);
-    log_info ("AntennaOK: ", AntennaOK);
-
-    Wait 1;
-  }
+  LibraryCall InitializeLander (initialize = Initialize);
 
   Pattern1Image:
   {
     Repeat true;
-    Start AntennaOK;
+    Start !Lookup(AntennaFault) && !Initialize;
 
     log_info ("Running Pattern1Image...");
     NewAngle = Lookup(PanDegrees) + 15;
-    log_info ("Pan angle: ", NewAngle);
+
+    if NewAngle > 360
+    {
+      NumPreviousRevolutions = NewAngle/360;
+      NewAngle = (NumPreviousRevolutions - round(NumPreviousRevolutions))*360;
+    }
+    endif;
+
     SynchronousCommand pan_antenna (NewAngle);
   }
 
