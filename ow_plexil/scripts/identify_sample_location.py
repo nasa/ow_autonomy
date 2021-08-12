@@ -15,10 +15,13 @@ from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 import sensor_msgs.point_cloud2
 from ow_plexil.msg import IdentifyLocationAction, IdentifyLocationGoal, IdentifyLocationFeedback, IdentifyLocationResult
+from visualization_msgs.msg import Marker 
 import message_filters
-from visualization_msgs.msg import Marker
+from collections import deque
 
 class IdentifySampleLocation:
+  #Constant defining the maximum length of our image history deque
+  HISTORY_MAX_LENGTH = 50
 
   def __init__(self):
 
@@ -65,7 +68,7 @@ class IdentifySampleLocation:
     #checking if we have enough images to process and if our goal is greater than 0
     if len(self.image_history) > 0 and goal.num_images > 0:
       if goal.num_images > len(self.image_history):
-        rospy.loginfo("Goal is larger than total images recorded, only %s images will be processed.", str(len(self.image_history)))
+        rospy.logwarn("Goal is larger than total images recorded, only %s images will be processed.", str(len(self.image_history)))
 
       #we take a subset of length goal.num_images of the images in image history for  processing
       subset = self.image_history[-goal.num_images:]
@@ -101,10 +104,9 @@ class IdentifySampleLocation:
     #get both messages and save them to our image history for later processing
     self.image_history.append((rect_img_msg, points2_msg))
 
-    #prevent our image history from getting too large saves most recent 50 images
-    if len(self.image_history) > 50:
-      self.image_history = self.image_history[-50:]
-
+    #prevent our image history from getting too large saves most recent HISTORY_MAX_LENGTH images
+    if len(self.image_history) > self.HISTORY_MAX_LENGTH:
+      self.image_history = self.image_history[-HISTORY_MAX_LENGTH:]
 
   def publish_chosen_location_image(self):
     '''Publishes the original image with our drawn on contours and chosen sample location. 
@@ -132,19 +134,22 @@ class IdentifySampleLocation:
       return None, None, None
 
     #defaults to Dark Spot if argument doesnt match or none is given
-    if filter_type == "Brown":
+    if filter_type.lower() == "brown":
      #filtering brown spots on image
       hsv = cv.cvtColor(image, cv.COLOR_BGR2HSV)
       lower = np.array([0,16,32])
       upper = np.array([19,255,255])
       thresh = cv.inRange(hsv, lower, upper)
-    else:
+    elif filter_type.lower() == "dark":
       #filtering dark spots on image
       gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
       ret, thresh = cv.threshold(gray, 15, 255,cv.THRESH_BINARY_INV)
+    else:
+      rospy.logerror("Unknown/Unsupported filter type specified!")
+      return None, None, None
 
     #find contours and sort them largest to smallest
-    _, contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    _, contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours.sort(reverse=True, key=cv.contourArea)
     sample_points_2d = []
     contour_areas = []
@@ -175,7 +180,7 @@ class IdentifySampleLocation:
       index = 0
       #finds corresponding 3d point in point cloud from 2d pixel point takes the largest (first valid) point
       for i in sensor_msgs.point_cloud2.read_points(point_cloud, uvs=sample_points_2d):
-        if(np.isnan(i[0]) or np.isnan(i[1]) or np.isnan([2])):
+        if np.isnan(i[0]) or np.isnan(i[1]) or np.isnan(i[2]):
           #recording the index so that we can also get the corresponding contour
           index+=1
         else:

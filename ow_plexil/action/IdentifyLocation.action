@@ -1,6 +1,6 @@
 # goal - number of images to be processed
 int64 num_images
-string filter_type
+string filter_type # currently implemented filters: "Brown" and "Dark"
 ---
 # result
 geometry_msgs/Point sample_location
