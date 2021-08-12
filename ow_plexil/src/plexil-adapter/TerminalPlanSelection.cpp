@@ -43,7 +43,8 @@ void TerminalPlanSelection::start(bool initial_plan)
   while (ros::ok()) {
     if(m_plan_running == false){ // checks to see if previous plan finished
       std::cout << "\nEnter any additional plan to be run (or use the GUI): " << std::endl;
-      std::getline(std::cin, input); 
+      std::cin >> input;
+      std::cin.ignore();
       // if input is not empty we send the plan to the plan selection node for execution
       if(input != ""){
         ow_plexil::PlanSelection instruction;
