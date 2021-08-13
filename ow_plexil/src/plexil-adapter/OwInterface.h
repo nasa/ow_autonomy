@@ -148,7 +148,9 @@ class OwInterface
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
   template <typename T1, typename T2>
-    void faultCallback (T1 msg_val, T2&, const std::string& name);
+    void updateFaultStatus (T1 msg_val, T2&,
+                            const std::string& component_name,
+                            const std::string& state_name); // PLEXIL Lookup name
 
   template <typename T>
     bool faultActive (const T& fault_map) const;
