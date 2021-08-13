@@ -12,7 +12,6 @@ LibraryAction InitializeLander (InOut Boolean initialize);
 FaultHandlingPattern3: Concurrence
 {
   Boolean Initialize = true;
-  Real NewAngle = 0;
   Boolean MissionInProgress = true;
 
   LibraryCall InitializeLander (initialize = Initialize);
@@ -34,19 +33,27 @@ FaultHandlingPattern3: Concurrence
 
     Pattern3Image:
     {
-      Start !Lookup(SystemFault);
+      Start !Lookup(SystemFault) && !Initialize;
 
       log_info ("Running Pattern3Image...");
       log_info ("Pan angle: ", 180);
-      SynchronousCommand pan_antenna (NewAngle);
+      SynchronousCommand pan_antenna (180);
     }
 
-    Pattern3UnstowStow:
+    Pattern3Unstow:
     {
-      Start !Lookup(SystemFault);
+      Start !Lookup(SystemFault) && !Initialize;
 
-      log_info ("Running Pattern3UnstowStow...");
+      log_info ("Running Pattern3Unstow...");
       SynchronousCommand unstow();
+
+    }
+
+    Pattern3Stow:
+    {
+      Start !Lookup(SystemFault) && !Initialize;
+
+      log_info ("Running Pattern3Stow...");
       SynchronousCommand stow();
       
     }
