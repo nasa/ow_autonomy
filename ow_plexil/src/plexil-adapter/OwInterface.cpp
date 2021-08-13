@@ -21,6 +21,7 @@ using std::set;
 using std::map;
 using std::thread;
 using std::ref;
+using std::string;
 
 // C
 #include <cmath>  // for M_PI and fabs
@@ -34,6 +35,7 @@ const double R2D = 180.0 / M_PI ;
 const double DegreeTolerance = 0.4;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
+
 static bool within_tolerance (double val1, double val2, double tolerance)
 {
   return fabs (val1 - val2) <= tolerance;
@@ -45,6 +47,8 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 15.0; // seconds, made up
+const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
+const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -338,12 +342,12 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
     ros::Rate rate(10);
     int timeout = 0;
     // We wait for the pointcloud as well or the 5 sec timeout before marking as finished
-    while(m_pointCloudRecieved == false && timeout < 50){
+    while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
         ros::spinOnce();
         rate.sleep();
         timeout+=1;
     }
-    if(timeout == 50){
+    if(timeout == PointCloudTimeout){
       ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
     }
     mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
@@ -356,7 +360,6 @@ void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& 
   if (operationRunning (Op_TakePicture)) {
     //mark as recieved
     m_pointCloudRecieved = true;
-    mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
   }
 }
 
@@ -450,25 +453,25 @@ static void guarded_move_done_cb
 }
 
 //Since template is outside the scope of the class we cannot use a member variable and 
-//instead have to use a global one like in the guarded_move_done_cb above.
-static std::vector<double> m_sample_point;
-static bool got_sample_location_result = false;
+//instead have to use a static one like in the guarded_move_done_cb above.
+static std::vector<double> SamplePoint;
+static bool GotSampleLocation = false;
 template<int OpIndex, typename T>
 static void identify_sample_location_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result)
 {
   if(result->success == true){
-    m_sample_point.push_back(result->sample_location.x);
-    m_sample_point.push_back(result->sample_location.y);
-    m_sample_point.push_back(result->sample_location.z);
+    SamplePoint.push_back(result->sample_location.x);
+    SamplePoint.push_back(result->sample_location.y);
+    SamplePoint.push_back(result->sample_location.z);
     ROS_INFO ("Possible sample location identified at (%f, %f, %f)", 
-           m_sample_point[0], m_sample_point[1], m_sample_point[2]);
+           SamplePoint[0], SamplePoint[1], SamplePoint[2]);
   }
   else{
     ROS_ERROR("Could not get sample point from IdentifySampleLocation");
   }
-  got_sample_location_result = true;
+  GotSampleLocation = true;
 }
 
 //////////////////// General Action support ///////////////////////////////
@@ -510,7 +513,7 @@ std::shared_ptr<OwInterface> OwInterface::instance ()
 
 OwInterface::OwInterface ()
   : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0)
+    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
@@ -587,7 +590,8 @@ void OwInterface::initialize()
     m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
-    m_identifySampleLocationClient = std::make_unique<IdentifySampleLocationActionClient>(Op_IdentifySampleLocation, true);
+    m_identifySampleLocationClient = std::make_unique<IdentifySampleLocationActionClient>
+                                     (Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -859,11 +863,11 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
     guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
-std::vector<double> OwInterface::identifySampleLocation (int num_images, std::string filter_type, int id)
+std::vector<double> OwInterface::identifySampleLocation (int num_images, const string& filter_type, int id)
 { 
-  m_sample_point.clear();
-  got_sample_location_result = false;
-  if (! mark_operation_running (Op_IdentifySampleLocation, id)) return m_sample_point;
+  SamplePoint.clear();
+  GotSampleLocation = false;
+  if (! mark_operation_running (Op_IdentifySampleLocation, id)) return SamplePoint;
   thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, filter_type, id);
   action_thread.detach();
 
@@ -872,18 +876,18 @@ std::vector<double> OwInterface::identifySampleLocation (int num_images, std::st
   /* We wait for a result from the action server or the 5 sec timeout before returning
   I dont think a timeout is strictly necessary here but because this is blocking
   I put it in for safety */
-  while(got_sample_location_result == false && timeout < 50){
+  while(GotSampleLocation == false && timeout < SampleTimeout){
       ros::spinOnce();
       rate.sleep();
       timeout+=1;
   }
-  if(timeout == 50){
+  if(timeout == SampleTimeout){
     ROS_ERROR("Did not recieve a sample point from IdentifySampleLocation before timeout.");
   }
-  return m_sample_point;
+  return SamplePoint;
 }
 
-void OwInterface::identifySampleLocationAction (int num_images, std::string filter_type, int id)
+void OwInterface::identifySampleLocationAction (int num_images, const string& filter_type, int id)
 {
   ow_plexil::IdentifyLocationGoal goal;
   goal.num_images = num_images;
@@ -946,13 +950,13 @@ bool OwInterface::running (const string& name) const
   return false;
 }
 
-bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::hardTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtHardTorqueLimit.find (joint_name) !=
           JointsAtHardTorqueLimit.end());
 }
 
-bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());

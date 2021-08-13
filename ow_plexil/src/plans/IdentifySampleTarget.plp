@@ -36,6 +36,7 @@ IdentifySampleTarget:
   if (isKnown(result[0])){
     // Guarded move is an attempt to find the ground position.  The chosen start
     // position is based on the result from identify_sample_location.
+    LibraryCall Unstow();
     LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
                              DirX = 0, DirY = 0, DirZ = 1,
                              SearchDistance = 0.5);

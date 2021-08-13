@@ -80,7 +80,8 @@ class OwInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<double> identifySampleLocation (int num_images,std::string filter_type, int id);
+  std::vector<double> identifySampleLocation (int num_images, 
+                   const std::string& filter_type, int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
   void takePicture (int id);
@@ -136,7 +137,8 @@ class OwInterface
   void guardedMoveAction (double x, double y, double z,
                      double direction_x, double direction_y, double direction_z,
                      double search_distance, int id);
-  void identifySampleLocationAction (int num_images, std::string filter_type, int id);
+  void identifySampleLocationAction (int num_images, 
+                     const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
                      double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
