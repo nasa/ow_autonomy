@@ -81,7 +81,8 @@ class OwInterface
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
   std::vector<double> identifySampleLocation (int num_images, 
-                   const std::string& filter_type, int id);
+                                              const std::string& filter_type,
+                                              int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
   void takePicture (int id);
@@ -133,16 +134,16 @@ class OwInterface
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
-               bool parallel, double ground_pos, int id);
+                    bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
-                     double direction_x, double direction_y, double direction_z,
-                     double search_distance, int id);
+                          double dir_x, double dir_y, double dir_z,
+                          double search_distance, int id);
   void identifySampleLocationAction (int num_images, 
-                     const std::string& filter_type, int id);
+                                     const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
-                     double ground_pos, bool parallel, int id);
+                          double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
-                   double ground_pos, int id);
+                        double ground_pos, int id);
   void deliverAction (double x, double y, double z, int id);
   bool operationRunning (const std::string& name) const;
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
