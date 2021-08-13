@@ -205,8 +205,9 @@ static void handle_joint_fault (Joint joint, int joint_index,
 }
 
 template <typename T1, typename T2>
-void OwInterface::faultCallback (T1 msg_val, T2& fmap,
-                                 const string& component)
+void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
+                                     const string& component,
+                                     const string& state_name)
 {
   for (auto const& entry : fmap) {
     string key = entry.first;
@@ -216,10 +217,12 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
     if (!fault_active && faulty) {
       ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = true;
+      publish (state_name, true);
     }
     else if (fault_active && !faulty) {
       ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = false;
+      publish (state_name, false);
     }
   }
 }
@@ -227,22 +230,22 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
 void OwInterface::systemFaultMessageCallback
 (const  ow_faults::SystemFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_systemErrors, "SYSTEM");
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
 void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_armErrors, "ARM");
+  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
 void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_powerErrors, "POWER");
+  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
 void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
+  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
 void OwInterface::jointStatesCallback
@@ -300,10 +303,10 @@ void OwInterface::managePanTilt (const string& opname,
     }
   }
 
-  //We cant guarantee which way the antenna will move, so we have to 
+  //We cant guarantee which way the antenna will move, so we have to
   //check if the current angle is equivalent.Ex:-180 degrees == 180 degrees.
   if(current > 0 && goal < 0){
-    current = current - 360; 
+    current = current - 360;
   }
   else if(current < 0 && goal > 0){
     current = current + 360;
