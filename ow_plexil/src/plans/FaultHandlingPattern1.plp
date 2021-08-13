@@ -1,0 +1,41 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pan in 15 degree increments as long as no antenna fault is present
+// If an antenna fault is present, wait for resolution
+// No timeout implemented
+
+#include "plan-interface.h"
+
+LibraryAction InitializeLander (InOut Boolean initialize);
+
+FaultHandlingPattern1:
+{
+  Boolean Initialize = true;
+  Real NewAngle = 0;
+  Real NumPreviousRevolutions = 0;
+
+  LibraryCall InitializeLander (initialize = Initialize);
+
+  Pattern1Image:
+  {
+    Repeat true;
+    Start !Lookup(AntennaFault) && !Initialize;
+
+    log_info ("Running Pattern1Image...");
+    NewAngle = Lookup(PanDegrees) + 15;
+
+    if NewAngle > 360
+    {
+      NumPreviousRevolutions = NewAngle/360;
+      NewAngle = (NumPreviousRevolutions - round(NumPreviousRevolutions))*360;
+    }
+    endif;
+
+    SynchronousCommand pan_antenna (NewAngle);
+  }
+
+
+}
+
