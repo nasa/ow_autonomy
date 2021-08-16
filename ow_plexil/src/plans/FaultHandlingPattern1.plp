@@ -3,33 +3,29 @@
 // this repository.
 
 // Pan in 15 degree increments as long as no antenna fault is present
-// If an antenna fault is present, wait for resolution
-// No timeout implemented
+// If an antenna fault is occurs, pause until the fault is removed
 
 #include "plan-interface.h"
 
-LibraryAction InitializeLander (InOut Boolean initialize);
+LibraryAction InitializeAntennaAndArm (InOut Boolean initialize);
 
 FaultHandlingPattern1:
 {
   Boolean Initialize = true;
   Real NewAngle = 0;
-  Real NumPreviousRevolutions = 0;
 
-  LibraryCall InitializeLander (initialize = Initialize);
+  LibraryCall InitializeAntennaAndArm (initialize = Initialize);
 
   Pattern1Image:
   {
     Repeat true;
-    Start !Lookup(AntennaFault) && !Initialize;
+    Start !Lookup(AntennaFault);
 
-    log_info ("Running Pattern1Image...");
     NewAngle = Lookup(PanDegrees) + 15;
 
     if NewAngle > 360
     {
-      NumPreviousRevolutions = NewAngle/360;
-      NewAngle = (NumPreviousRevolutions - round(NumPreviousRevolutions))*360;
+      NewAngle = NewAngle mod 360;
     }
     endif;
 

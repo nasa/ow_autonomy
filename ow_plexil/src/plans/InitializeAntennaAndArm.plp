@@ -6,20 +6,22 @@
 
 #include "plan-interface.h"
 
-InitializeLander:
+InitializeAntennaAndArm:
 {
   InOut Boolean initialize;
 
-  log_info ("Initializing lander...");
+  log_info ("Initializing lander antenna and arm...");
 
-  log_info ("Resetting pan angle to 0...");
-  SynchronousCommand pan_antenna (0);
   log_info ("Resetting tilt angle to 0...");
   SynchronousCommand tilt_antenna (0);
-  log_info ("If arm unstowed, restowing the arm...");
+  log_info ("Resetting pan angle to 0...");
+  SynchronousCommand pan_antenna (0);
+  log_info ("Stowing the arm...");
   SynchronousCommand stow();
 
   log_info ("Initialization complete.");
   initialize = false;
+
+  Wait 5; // To buffer before a plan begins after initialization
 }
 
