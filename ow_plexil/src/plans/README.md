@@ -75,7 +75,8 @@ response to a fault
 
 The following represent the success criteria of the IdentifySampleLocationDemo
 plan.  Note that the Plexil node must first be started (with or without a plan
-specified) to enable the RQT and RViz additions specified below.
+specified) to enable the RQT and RViz additions specified below.  And you'll
+need to first refresh the topic menu in RQT.
 - In the Rqt image viewer select the `/sample_location` topic (last entry at the
   time of this writing).  Once a point is selected the outlined contours of
   potential sample locations and the chosen target should show up.  The green
