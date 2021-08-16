@@ -34,4 +34,5 @@ IdentifySampleLocationDemo:
                                     GroundPos = ground_pos,
                                     Parallel = parallel,
                                     FilterType = "Brown");
+  log_info("IdentifySampleLocationDemo finished.");
 }

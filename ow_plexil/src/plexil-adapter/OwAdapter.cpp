@@ -385,6 +385,11 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   std::vector<double> point_vector;
   // Get our sample point from identifySampleLocation
   point_vector = OwInterface::instance()->identifySampleLocation (num_pictures, filter_type, CommandId);
+  // Checks if we have a valid sized point
+  if(point_vector.size() != 3){
+    // Resizes the array and initializes values to -500 so we know to skip
+    point_vector.resize(1,-500);
+  }
   // Contstruct a Value type vector for plexil before returning the result
   Value value_point_vector = Value(point_vector);
   intf->handleCommandReturn(cmd, value_point_vector);

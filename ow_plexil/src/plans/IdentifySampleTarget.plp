@@ -33,7 +33,7 @@ IdentifySampleTarget:
   LibraryCall PanAndShoot(PanAngle = c_pan + delta);
   SynchronousCommand result = identify_sample_location(3, FilterType);
 
-  if (isKnown(result[0])){
+  if (isKnown(result[2])){
     // Guarded move is an attempt to find the ground position.  The chosen start
     // position is based on the result from identify_sample_location.
     LibraryCall Unstow();
