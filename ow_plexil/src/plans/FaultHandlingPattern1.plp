@@ -14,6 +14,8 @@ FaultHandlingPattern1:
   Boolean Initialize = true;
   Real NewAngle = 0;
 
+  log_info ("Starting FaultHandlingPattern1 plan...");
+
   LibraryCall InitializeAntennaAndArm (initialize = Initialize);
 
   Pattern1Image:
@@ -32,6 +34,6 @@ FaultHandlingPattern1:
     SynchronousCommand pan_antenna (NewAngle);
   }
 
-
+  log_info ("FaultHandlingPattern1 plan complete.");
 }
 
