@@ -2,35 +2,37 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Either pan antenna in 15 degree increments (if no antenna faults but arm faults active)
-// Or unstow and stow the arm repeatedly (if no arm faults but antenna faults active)
-// Neither (waiting for resolution if both faults active)
-// Both (if no faults)
+// Action 1: Pan antenna in 15 degree increments.
+// Action 2: Unstow and stow the arm repeatedly.
+// If no faults are occurring, action 1 and 2 occur simultaneously.
+// If an antenna fault but no arm faults occurring, only action 2 occurs.
+// If an arm fault but no antenna faults occurring, only action 1 occurs.
+// If both antenna and arm faults occurring, the plan waits for resolution.
+
 
 #include "plan-interface.h"
 
-LibraryAction InitializeLander (InOut Boolean initialize);
+LibraryAction InitializeAntennaAndArm (InOut Boolean initialize);
 
 FaultHandlingPattern2: Concurrence
 {
   Boolean Initialize = true;
   Real NewAngle = 0;
-  Real NumPreviousRevolutions = 0;
 
-  LibraryCall InitializeLander (initialize = Initialize);
+  log_info ("Starting FaultHandlingPattern2 plan...");
+
+  LibraryCall InitializeAntennaAndArm (initialize = Initialize);
 
   Pattern2Image:
   {
     Repeat true;
     Start !Lookup(AntennaFault) && !Initialize;
 
-    log_info ("Running Pattern2Image...");
     NewAngle = Lookup(PanDegrees) + 15;
 
     if NewAngle > 360
     {
-      NumPreviousRevolutions = NewAngle/360;
-      NewAngle = (NumPreviousRevolutions - round(NumPreviousRevolutions))*360;
+      NewAngle = NewAngle mod 360;
     }
     endif;
 
@@ -42,7 +44,6 @@ FaultHandlingPattern2: Concurrence
     Repeat true;
     Start !Lookup(ArmFault) && !Initialize;
 
-    log_info ("Running Pattern2UnstowStow...");
     SynchronousCommand unstow();
     SynchronousCommand stow();
       
