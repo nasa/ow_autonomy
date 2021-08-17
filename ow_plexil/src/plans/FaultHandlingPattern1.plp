@@ -23,13 +23,7 @@ FaultHandlingPattern1:
     Repeat true;
     Start !Lookup(AntennaFault);
 
-    NewAngle = Lookup(PanDegrees) + 15;
-
-    if NewAngle > 360
-    {
-      NewAngle = NewAngle mod 360;
-    }
-    endif;
+    NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
     SynchronousCommand pan_antenna (NewAngle);
   }
