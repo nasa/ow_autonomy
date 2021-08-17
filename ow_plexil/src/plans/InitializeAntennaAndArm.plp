@@ -8,7 +8,6 @@
 
 InitializeAntennaAndArm:
 {
-  InOut Boolean initialize;
 
   log_info ("Initializing lander antenna and arm...");
 
@@ -20,8 +19,6 @@ InitializeAntennaAndArm:
   SynchronousCommand stow();
 
   log_info ("Initialization complete.");
-  initialize = false;
 
-  Wait 5; // To buffer before a plan begins after initialization
 }
 

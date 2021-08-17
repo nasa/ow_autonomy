@@ -7,16 +7,15 @@
 
 #include "plan-interface.h"
 
-LibraryAction InitializeAntennaAndArm (InOut Boolean initialize);
+LibraryAction InitializeAntennaAndArm ();
 
 FaultHandlingPattern1:
 {
-  Boolean Initialize = true;
   Real NewAngle = 0;
 
   log_info ("Starting FaultHandlingPattern1 plan...");
 
-  LibraryCall InitializeAntennaAndArm (initialize = Initialize);
+  LibraryCall InitializeAntennaAndArm ();
 
   Pattern1Image:
   {
