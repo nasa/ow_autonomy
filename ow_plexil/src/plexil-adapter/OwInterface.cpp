@@ -225,22 +225,22 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
 }
 
 void OwInterface::systemFaultMessageCallback
-(const  ow_faults::SystemFaults::ConstPtr& msg)
+(const  ow_faults_injection::SystemFaults::ConstPtr& msg)
 {
   faultCallback (msg->value, m_systemErrors, "SYSTEM");
 }
 
-void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback(const ow_faults_injection::ArmFaults::ConstPtr& msg)
 {
   faultCallback (msg->value, m_armErrors, "ARM");
 }
 
-void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback (const ow_faults_injection::PowerFaults::ConstPtr& msg)
 {
   faultCallback (msg->value, m_powerErrors, "POWER");
 }
 
-void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback(const ow_faults_injection::PTFaults::ConstPtr& msg)
 {
   faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
 }

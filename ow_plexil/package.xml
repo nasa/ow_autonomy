@@ -11,7 +11,7 @@
   <depend>rospy</depend>
   <depend>roslib</depend>
   <depend>ow_lander</depend>
-  <depend>ow_faults</depend>
+  <depend>ow_faults_injection</depend>
   <depend>actionlib_msgs</depend>
   <depend>actionlib</depend>
   <depend>std_msgs</depend>

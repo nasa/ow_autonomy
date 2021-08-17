@@ -59,4 +59,4 @@ The following represent the success criteria of the Reference Mission 2 plan:
 - The plan is interruptable through fault injection, i.e. pauses in 
 response to a fault
 	- Faults can be injected via rqt, a python script, or the command line
- ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults/README.md))
+ ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults_injection/README.md))
