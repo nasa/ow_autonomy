@@ -72,7 +72,7 @@ class OwInterface
   OwInterface ();
   ~OwInterface ();
   OwInterface (const OwInterface&) = delete;
-	OwInterface& operator= (const OwInterface&) = delete;
+  OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Operational interface
