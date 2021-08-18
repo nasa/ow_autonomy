@@ -47,5 +47,5 @@ FaultHandlingPattern2:
 
   }
 
-  log_info ("Starting FaultHandlingPattern2 plan...");
+  log_info ("FaultHandlingPattern2 plan complete.");
 }
