@@ -27,7 +27,8 @@ LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
                                     InOut Boolean Parallel,
-                                    InOut Real GroundPos);
+                                    InOut Real GroundPos,
+                                    In String FilterType);
 
 LibraryAction DigTrench (In Real X,
                          In Real Y,
@@ -118,7 +119,8 @@ ReferenceMission2: Concurrence
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
                                         GroundPos = ground_pos,
-                                        Parallel = parallel);
+                                        Parallel = parallel,
+                                        FilterType = "Dark");
     }
     if (Lookup(GroundFound)) {
       Dig:
