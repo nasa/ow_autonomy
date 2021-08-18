@@ -374,6 +374,27 @@ static void take_picture (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
+{
+  int num_pictures;
+  std::string filter_type;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (num_pictures);
+  args[1].getValue (filter_type);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  std::vector<double> point_vector;
+  // Get our sample point from identifySampleLocation
+  point_vector = OwInterface::instance()->identifySampleLocation (num_pictures, filter_type, CommandId);
+  // Checks if we have a valid sized point
+  if(point_vector.size() != 3){
+    // Resizes the array and initializes values to -500 so we know to skip
+    point_vector.resize(1,-500);
+  }
+  // Contstruct a Value type vector for plexil before returning the result
+  Value value_point_vector = Value(point_vector);
+  intf->handleCommandReturn(cmd, value_point_vector);
+  send_ack_once(*cr);
+}
 
 ////////////////////// Publish/subscribe support ////////////////////////////
 
@@ -478,6 +499,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("identify_sample_location", identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);
 
   TheAdapter = this;

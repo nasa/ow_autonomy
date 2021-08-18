@@ -15,4 +15,11 @@
         args="$(arg plan)"
         output="screen">
   </node>
+
+  <node pkg="ow_plexil"
+        name="identify_sample_location"
+        type="identify_sample_location.py"
+        output="screen">
+  </node>
+
 </launch>
