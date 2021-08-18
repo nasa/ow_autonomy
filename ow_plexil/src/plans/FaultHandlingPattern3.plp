@@ -14,60 +14,61 @@
 
 #include "plan-interface.h"
 
-LibraryAction InitializeAntennaAndArm (InOut Boolean initialize);
+LibraryAction InitializeAntennaAndArm ();
 
-FaultHandlingPattern3: Concurrence
+FaultHandlingPattern3:
 {
-  Boolean Initialize = true;
-  Boolean MissionInProgress = true;
+
+  LibraryCall InitializeAntennaAndArm ();
 
   log_info ("Starting FaultHandlingPattern3 plan...");
 
-  LibraryCall InitializeAntennaAndArm (initialize = Initialize);
-
-  WaitForHealth:
-  {
-    Repeat MissionInProgress;
-    Start MissionInProgress && Lookup(SystemFault);
-
-    log_warning
-      ("System health issues, mission operations nominally paused...");
-    Wait 10;
-  }
-
-  Mission:
+  Run: Concurrence
   {
 
-    log_info ("Starting FaultHandlingPattern3 Mission...");
+    Boolean MissionInProgress = true;
 
-    Pattern3Image:
+    WaitForHealth:
     {
-      Start !Lookup(SystemFault) && !Initialize;
+      Repeat MissionInProgress;
+      Start MissionInProgress && Lookup(SystemFault);
 
-      log_info ("Running Pattern3Image...");
-      log_info ("Pan angle: ", 180);
-      SynchronousCommand pan_antenna (180);
+      log_warning
+        ("System health issues, mission operations nominally paused...");
+      Wait 10;
     }
 
-    Pattern3Unstow:
+    Mission:
     {
-      Start !Lookup(SystemFault) && !Initialize;
 
-      log_info ("Running Pattern3Unstow...");
-      SynchronousCommand unstow();
+      Pattern3Image:
+      {
+        Start !Lookup(SystemFault);
 
-    }
+        SynchronousCommand pan_antenna (180);
+      }
 
-    Pattern3Stow:
-    {
-      Start !Lookup(SystemFault) && !Initialize;
+      Pattern3Unstow:
+      {
+        Start !Lookup(SystemFault);
 
-      log_info ("Running Pattern3Stow...");
-      SynchronousCommand stow();
+        SynchronousCommand unstow();
+
+      }
+
+      Pattern3Stow:
+      {
+        Start !Lookup(SystemFault);
+
+        SynchronousCommand stow();
       
+      }
+
+      MissionInProgress = false;
     }
 
-    log_info ("FaultHandlingPattern3 Mission complete.");
-    MissionInProgress = false;
   }
+
+  log_info ("FaultHandlingPattern3 plan complete.");
+
 }
