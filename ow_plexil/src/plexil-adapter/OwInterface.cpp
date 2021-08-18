@@ -21,6 +21,7 @@ using std::set;
 using std::map;
 using std::thread;
 using std::ref;
+using std::string;
 
 // C
 #include <cmath>  // for M_PI and fabs
@@ -34,6 +35,7 @@ const double R2D = 180.0 / M_PI ;
 const double DegreeTolerance = 0.4;    // made up, degees
 const double VelocityTolerance = 0.01; // made up, unitless
 
+
 static bool within_tolerance (double val1, double val2, double tolerance)
 {
   return fabs (val1 - val2) <= tolerance;
@@ -45,6 +47,8 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 static void (* CommandStatusCallback) (int,bool);
 
 const double PanTiltTimeout = 15.0; // seconds, made up
+const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
+const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -59,6 +63,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
+const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 
 enum LanderOps {
   GuardedMove,
@@ -70,12 +75,14 @@ enum LanderOps {
   Grind,
   Stow,
   Unstow,
-  TakePicture
+  TakePicture,
+  IdentifySampleLocation
 };
 
 static std::vector<string> LanderOpNames =
   { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
+    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
+    Op_IdentifySampleLocation
   };
 
 // NOTE: The following map *should* be thread-safe, according to C++11 docs and
@@ -97,7 +104,8 @@ static map<string, int> Running
   { Op_Grind, IDLE_ID },
   { Op_Stow, IDLE_ID },
   { Op_Unstow, IDLE_ID },
-  { Op_TakePicture, IDLE_ID }
+  { Op_TakePicture, IDLE_ID },
+  { Op_IdentifySampleLocation, IDLE_ID }
 };
 
 static bool is_lander_operation (const string& name)
@@ -290,6 +298,7 @@ void OwInterface::managePanTilt (const string& opname,
   // We are only concerned when there is a pan/tilt in progress.
   if (! operationRunning (opname)) return;
 
+  //converting radians to degrees
   int id = Running.at (opname);
 
   //if position is over 360 we want to bring it back within the
@@ -331,12 +340,31 @@ void OwInterface::managePanTilt (const string& opname,
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
-
+  m_pointCloudRecieved = false;
   if (operationRunning (Op_TakePicture)) {
+    ros::Rate rate(10);
+    int timeout = 0;
+    // We wait for the pointcloud as well or the 5 sec timeout before marking as finished
+    while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
+        ros::spinOnce();
+        rate.sleep();
+        timeout+=1;
+    }
+    if(timeout == PointCloudTimeout){
+      ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
+    }
     mark_operation_finished (Op_TakePicture, Running.at (Op_TakePicture));
   }
 }
 
+void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& msg)
+{
+  // NOTE: the received pointcloud is ignored for now.
+  if (operationRunning (Op_TakePicture)) {
+    //mark as recieved
+    m_pointCloudRecieved = true;
+  }
+}
 
 ///////////////////////// Power support /////////////////////////////////////
 
@@ -427,6 +455,28 @@ static void guarded_move_done_cb
   publish ("GroundPosition", GroundPosition);
 }
 
+//Since template is outside the scope of the class we cannot use a member variable and 
+//instead have to use a static one like in the guarded_move_done_cb above.
+static std::vector<double> SamplePoint;
+static bool GotSampleLocation = false;
+template<int OpIndex, typename T>
+static void identify_sample_location_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
+{
+  if(result->success == true){
+    SamplePoint.push_back(result->sample_location.x);
+    SamplePoint.push_back(result->sample_location.y);
+    SamplePoint.push_back(result->sample_location.z);
+    ROS_INFO ("Possible sample location identified at (%f, %f, %f)", 
+           SamplePoint[0], SamplePoint[1], SamplePoint[2]);
+  }
+  else{
+    ROS_ERROR("Could not get sample point from IdentifySampleLocation");
+  }
+  GotSampleLocation = true;
+}
+
 //////////////////// General Action support ///////////////////////////////
 
 const auto ActionServerTimeout = 10.0;  // seconds
@@ -466,7 +516,7 @@ std::shared_ptr<OwInterface> OwInterface::instance ()
 
 OwInterface::OwInterface ()
   : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0)
+    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
@@ -504,6 +554,10 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
+    m_pointCloudSubscriber = std::make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/StereoCamera/points2", qsize,
+                 &OwInterface::pointCloudCallback, this));
     m_socSubscriber = std::make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
@@ -539,6 +593,8 @@ void OwInterface::initialize()
     m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_identifySampleLocationClient = std::make_unique<IdentifySampleLocationActionClient>
+                                     (Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -557,6 +613,9 @@ void OwInterface::initialize()
     }
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    }
+    if (! m_identifySampleLocationClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }
 }
@@ -807,6 +866,44 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
     guarded_move_done_cb<GuardedMove, ow_lander::GuardedMoveResultConstPtr>);
 }
 
+std::vector<double> OwInterface::identifySampleLocation (int num_images, const string& filter_type, int id)
+{ 
+  SamplePoint.clear();
+  GotSampleLocation = false;
+  if (! mark_operation_running (Op_IdentifySampleLocation, id)) return SamplePoint;
+  thread action_thread (&OwInterface::identifySampleLocationAction, this, num_images, filter_type, id);
+  action_thread.detach();
+
+  ros::Rate rate(10);
+  int timeout = 0;
+  /* We wait for a result from the action server or the 5 sec timeout before returning
+  I dont think a timeout is strictly necessary here but because this is blocking
+  I put it in for safety */
+  while(GotSampleLocation == false && timeout < SampleTimeout){
+      ros::spinOnce();
+      rate.sleep();
+      timeout+=1;
+  }
+  if(timeout == SampleTimeout){
+    ROS_ERROR("Did not recieve a sample point from IdentifySampleLocation before timeout.");
+  }
+  return SamplePoint;
+}
+
+void OwInterface::identifySampleLocationAction (int num_images, const string& filter_type, int id)
+{
+  ow_plexil::IdentifyLocationGoal goal;
+  goal.num_images = num_images;
+  goal.filter_type = filter_type;
+
+  runAction<IdentifySampleLocation, actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>,
+            ow_plexil::IdentifyLocationGoal,
+            ow_plexil::IdentifyLocationResultConstPtr,
+            ow_plexil::IdentifyLocationFeedbackConstPtr>
+    (Op_IdentifySampleLocation, m_identifySampleLocationClient, goal, id,
+    identify_sample_location_done_cb<IdentifySampleLocation, ow_plexil::IdentifyLocationResultConstPtr>);
+}
+
 double OwInterface::getTilt () const
 {
   return m_currentTilt;
@@ -856,13 +953,13 @@ bool OwInterface::running (const string& name) const
   return false;
 }
 
-bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::hardTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtHardTorqueLimit.find (joint_name) !=
           JointsAtHardTorqueLimit.end());
 }
 
-bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
