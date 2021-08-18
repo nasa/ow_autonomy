@@ -12,41 +12,40 @@
 
 #include "plan-interface.h"
 
-LibraryAction InitializeAntennaAndArm (InOut Boolean initialize);
+LibraryAction InitializeAntennaAndArm ();
 
-FaultHandlingPattern2: Concurrence
+FaultHandlingPattern2:
 {
-  Boolean Initialize = true;
   Real NewAngle = 0;
+
+  LibraryCall InitializeAntennaAndArm ();
 
   log_info ("Starting FaultHandlingPattern2 plan...");
 
-  LibraryCall InitializeAntennaAndArm (initialize = Initialize);
-
-  Pattern2Image:
+  Run: Concurrence
   {
-    Repeat true;
-    Start !Lookup(AntennaFault) && !Initialize;
 
-    NewAngle = Lookup(PanDegrees) + 15;
-
-    if NewAngle > 360
+    Pattern2Image:
     {
-      NewAngle = NewAngle mod 360;
+      Repeat true;
+      Start !Lookup(AntennaFault);
+
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+      SynchronousCommand pan_antenna (NewAngle);
     }
-    endif;
 
-    SynchronousCommand pan_antenna (NewAngle);
-  }
+    Pattern2UnstowStow:
+    {
+      Repeat true;
+      Start !Lookup(ArmFault);
 
-  Pattern2UnstowStow:
-  {
-    Repeat true;
-    Start !Lookup(ArmFault) && !Initialize;
-
-    SynchronousCommand unstow();
-    SynchronousCommand stow();
+      SynchronousCommand unstow();
+      SynchronousCommand stow();
       
+    }
+
   }
 
+  log_info ("Starting FaultHandlingPattern2 plan...");
 }
