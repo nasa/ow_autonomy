@@ -24,6 +24,8 @@ CheckForFaults:
                Lookup(ArmFault) ||
                Lookup(PowerFault));
 
-    Wait 1; // seconds, arbitrary choice
+    log_info ("Waiting until there are no faults...");
+
+    Wait 5; // seconds, arbitrary choice
   }
 }

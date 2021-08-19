@@ -21,11 +21,11 @@ FaultHandlingPattern2:
   Boolean NoFaults = false; // Assume system is not okay, hence needs checking
   Real NewAngle = 0;
 
+  log_info ("Starting FaultHandlingPattern2 plan...");
+
   LibraryCall CheckForFaults (all_ok = NoFaults); // Ends when there are no faults
 
   LibraryCall InitializeAntennaAndArm ();
-
-  log_info ("Starting FaultHandlingPattern2 plan...");
 
   Run: Concurrence
   {
