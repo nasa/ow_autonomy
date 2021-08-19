@@ -43,8 +43,8 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
   string frame;
   bool relative;
-  //vector<double> positionv;
-  //vector<double> orientationv;
+  vector<double> position_vector;
+  vector<double> orientation_vector;
   //double* position;
   //double* orientation;
   //Value position = Value(positionv);
@@ -52,17 +52,20 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
  // vector<Real> position;
  // vector<Real> orientation;
   size_t length = 5;
-  RealArray *position;
-  RealArray *orientation;
-
- 
+  RealArray *position = &RealArray(length, false);
+  RealArray *orientation = &RealArray(length, false);
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
   args[2].getValuePointer(position);
   args[3].getValuePointer(orientation);
+  position->getContentsVector(position_vector);
+  orientation->getContentsVector(orientation_vector);
+
+
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveCartesian (CommandId);
+  OwlatInterface::instance()->owlatArmMoveCartesian (frame, relative, position_vector, 
+                                                     orientation_vector, CommandId);
   send_ack_once(*cr);
 }
 
