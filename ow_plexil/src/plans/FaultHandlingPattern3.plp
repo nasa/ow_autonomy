@@ -23,50 +23,27 @@ FaultHandlingPattern3:
 
   log_info ("Starting FaultHandlingPattern3 plan...");
 
-  Run: Concurrence
+  Image:
   {
+    Start !Lookup(SystemFault);
 
-    Boolean MissionInProgress = true;
+    SynchronousCommand pan_antenna (180);
+  }
 
-    WaitForHealth:
-    {
-      Repeat MissionInProgress;
-      Start MissionInProgress && Lookup(SystemFault);
+  Unstow:
+  {
+    Start !Lookup(SystemFault);
 
-      log_warning
-        ("System health issues, mission operations nominally paused...");
-      Wait 10;
-    }
+    SynchronousCommand unstow();
 
-    Mission:
-    {
+  }
 
-      Pattern3Image:
-      {
-        Start !Lookup(SystemFault);
+  Stow:
+  {
+    Start !Lookup(SystemFault);
 
-        SynchronousCommand pan_antenna (180);
-      }
-
-      Pattern3Unstow:
-      {
-        Start !Lookup(SystemFault);
-
-        SynchronousCommand unstow();
-
-      }
-
-      Pattern3Stow:
-      {
-        Start !Lookup(SystemFault);
-
-        SynchronousCommand stow();
+    SynchronousCommand stow();
       
-      }
-
-      MissionInProgress = false;
-    }
-
   }
 
   log_info ("FaultHandlingPattern3 plan complete.");
