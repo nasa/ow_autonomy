@@ -12,11 +12,16 @@
 
 #include "plan-interface.h"
 
+LibraryAction CheckForFaults (InOut Boolean all_ok);
+
 LibraryAction InitializeAntennaAndArm ();
 
 FaultHandlingPattern2:
 {
+  Boolean NoFaults = false; // Assume system is not okay, hence needs checking
   Real NewAngle = 0;
+
+  LibraryCall CheckForFaults (all_ok = NoFaults); // Ends when there are no faults
 
   LibraryCall InitializeAntennaAndArm ();
 
@@ -39,6 +44,7 @@ FaultHandlingPattern2:
     {
       Repeat true;
       Start !Lookup(ArmFault);
+      Invariant !Lookup(ArmFault);
 
       SynchronousCommand unstow();
       SynchronousCommand stow();
