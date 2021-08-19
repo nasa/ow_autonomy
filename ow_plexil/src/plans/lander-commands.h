@@ -55,4 +55,8 @@ Command unstow();
 // Move from "ready" position to stowed position; requires unstow() first
 Command stow();
 
+//processes number of images already taken with the stereo camera to find the 3d point to sample
+//filter_type can either be Dark or Brown, (Dark chooses dark spots, brown chooses brown spots).
+Real [3] Command identify_sample_location(Integer num_images, String filter_type);
+
 #endif

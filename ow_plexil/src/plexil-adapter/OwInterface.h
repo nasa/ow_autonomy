@@ -21,10 +21,12 @@
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
+#include <ow_plexil/IdentifyLocationAction.h>
 
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
 #include <string>
 
@@ -49,6 +51,8 @@ using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using IdentifySampleLocationActionClient =
+  actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
 // Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
@@ -61,7 +65,7 @@ class OwInterface : public PlexilInterface
   OwInterface ();
   ~OwInterface () = default;
   OwInterface (const OwInterface&) = delete;
-	OwInterface& operator= (const OwInterface&) = delete;
+  OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
 
   // Operational interface
@@ -69,6 +73,9 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
+  std::vector<double> identifySampleLocation (int num_images, 
+                                              const std::string& filter_type,
+                                              int id);
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
   void takePicture (int id);
@@ -106,17 +113,20 @@ class OwInterface : public PlexilInterface
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
-               bool parallel, double ground_pos, int id);
+                    bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
-                     double direction_x, double direction_y, double direction_z,
-                     double search_distance, int id);
+                          double dir_x, double dir_y, double dir_z,
+                          double search_distance, int id);
+  void identifySampleLocationAction (int num_images, 
+                                     const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
-                     double ground_pos, bool parallel, int id);
+                          double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
-                   double ground_pos, int id);
+                        double ground_pos, int id);
   void deliverAction (double x, double y, double z, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
+  void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
@@ -128,7 +138,9 @@ class OwInterface : public PlexilInterface
   void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
   template <typename T1, typename T2>
-    void faultCallback (T1 msg_val, T2&, const std::string& name);
+    void updateFaultStatus (T1 msg_val, T2&,
+                            const std::string& component_name,
+                            const std::string& state_name); // PLEXIL Lookup name
 
   template <typename T>
     bool faultActive (const T& fault_map) const;
@@ -173,6 +185,7 @@ class OwInterface : public PlexilInterface
 
   std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
   std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
+  std::unique_ptr<ros::Subscriber> m_pointCloudSubscriber;
   std::unique_ptr<ros::Subscriber> m_socSubscriber;
   std::unique_ptr<ros::Subscriber> m_rulSubscriber;
   std::unique_ptr<ros::Subscriber> m_batteryTempSubscriber;
@@ -189,10 +202,12 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
   double m_currentPan, m_currentTilt;
   double m_goalPan, m_goalTilt;      // commanded pan/tilt values
+  bool m_pointCloudRecieved;
   ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
 

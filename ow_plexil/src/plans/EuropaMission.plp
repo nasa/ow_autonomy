@@ -26,7 +26,8 @@ LibraryAction Image (In String desc);
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
                                     InOut Boolean Parallel,
-                                    InOut Real GroundPos);
+                                    InOut Real GroundPos,
+                                    In String FilterType);
 LibraryAction DigTrench (In Real X,
                          In Real Y,
                          In Real GroundPos,
@@ -161,7 +162,8 @@ EuropaMission: Concurrence
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
                                         GroundPos = ground_pos,
-                                        Parallel = parallel);
+                                        Parallel = parallel,
+                                        FilterType = "Dark");
 
       if (! Lookup(GroundFound)) {
         // Note that the default value of GroundFound is false, so
