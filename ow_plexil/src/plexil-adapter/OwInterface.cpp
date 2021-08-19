@@ -19,9 +19,12 @@
 #include <functional>
 using std::set;
 using std::map;
+using std::vector;
 using std::thread;
 using std::ref;
 using std::string;
+using std::shared_ptr;
+using std::make_unique;
 
 // C
 #include <cmath>  // for M_PI and fabs
@@ -81,7 +84,7 @@ enum LanderOps {
   IdentifySampleLocation
 };
 
-static std::vector<string> LanderOpNames = {
+static vector<string> LanderOpNames = {
   Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
   Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
   Op_IdentifySampleLocation
@@ -280,7 +283,8 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
   if (operationRunning (Op_TakePicture)) {
     ros::Rate rate(10);
     int timeout = 0;
-    // We wait for the pointcloud as well or the 5 sec timeout before marking as finished
+    // We wait for the pointcloud as well or the 5 sec timeout before marking as
+    // finished.
     while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
         ros::spinOnce();
         rate.sleep();
@@ -396,7 +400,7 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 // Since template is outside the scope of the class we cannot use a member
 // variable and instead have to use a static one like in the
 // guarded_move_done_cb above.
-static std::vector<double> SamplePoint;
+static vector<double> SamplePoint;
 static bool GotSampleLocation = false;
 template<int OpIndex, typename T>
 static void identify_sample_location_done_cb
@@ -419,9 +423,9 @@ static void identify_sample_location_done_cb
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
-std::shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
+shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
 
-std::shared_ptr<OwInterface> OwInterface::instance ()
+shared_ptr<OwInterface> OwInterface::instance ()
 {
   // Very simple singleton
   if (m_instance == nullptr) m_instance = std::make_shared<OwInterface>();
@@ -445,74 +449,74 @@ void OwInterface::initialize()
       registerLanderOperation (name);
     }
 
-    m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
+    m_genericNodeHandle = make_unique<ros::NodeHandle>();
 
     // Initialize publishers.  Queue size is a guess at adequacy.  For now,
     // latching in lieu of waiting for publishers.
 
     const int qsize = 3;
     const bool latch = true;
-    m_antennaTiltPublisher = std::make_unique<ros::Publisher>
+    m_antennaTiltPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_tilt_position_controller/command", qsize, latch));
-    m_antennaPanPublisher = std::make_unique<ros::Publisher>
+    m_antennaPanPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_pan_position_controller/command", qsize, latch));
-    m_leftImageTriggerPublisher = std::make_unique<ros::Publisher>
+    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
 
     // Initialize subscribers
-    m_jointStatesSubscriber = std::make_unique<ros::Subscriber>
+    m_jointStatesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
-    m_cameraSubscriber = std::make_unique<ros::Subscriber>
+    m_cameraSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
-    m_pointCloudSubscriber = std::make_unique<ros::Subscriber>
+    m_pointCloudSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/points2", qsize,
                  &OwInterface::pointCloudCallback, this));
-    m_socSubscriber = std::make_unique<ros::Subscriber>
+    m_socSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
-    m_batteryTempSubscriber = std::make_unique<ros::Subscriber>
+    m_batteryTempSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/battery_temperature", qsize,
                  temperature_callback));
-    m_rulSubscriber = std::make_unique<ros::Subscriber>
+    m_rulSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     // subscribers for fault messages
-    m_systemFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this));
-    m_armFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/arm_faults_status", qsize,
                 &OwInterface::armFaultCallback, this));
-    m_powerFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_powerFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/power_faults_status", qsize,
                 &OwInterface::powerFaultCallback, this));
-    m_ptFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_ptFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this));
 
     m_guardedMoveClient =
-      std::make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
-    m_unstowClient = std::make_unique<UnstowActionClient>(Op_Unstow, true);
-    m_stowClient = std::make_unique<StowActionClient>(Op_Stow, true);
-    m_grindClient = std::make_unique<GrindActionClient>(Op_Grind, true);
-    m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
-    m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
-    m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
-    m_identifySampleLocationClient = std::make_unique<IdentifySampleLocationActionClient>
-                                     (Op_IdentifySampleLocation, true);
+      make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
+    m_unstowClient = make_unique<UnstowActionClient>(Op_Unstow, true);
+    m_stowClient = make_unique<StowActionClient>(Op_Stow, true);
+    m_grindClient = make_unique<GrindActionClient>(Op_Grind, true);
+    m_digCircularClient = make_unique<DigCircularActionClient>(Op_DigCircular, true);
+    m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
+    m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
+      (Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -532,7 +536,8 @@ void OwInterface::initialize()
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
     }
-    if (! m_identifySampleLocationClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_identifySampleLocationClient->waitForServer
+        (ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }
@@ -767,10 +772,9 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
      guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 
-std::vector<double>
-OwInterface::identifySampleLocation (int num_images,
-                                     const string& filter_type,
-                                     int id)
+vector<double> OwInterface::identifySampleLocation (int num_images,
+                                                    const string& filter_type,
+                                                    int id)
 {
   SamplePoint.clear();
   GotSampleLocation = false;
@@ -851,7 +855,7 @@ double OwInterface::getBatteryTemperature () const
   return BatteryTemperature;
 }
 
-bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::hardTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtHardTorqueLimit.find (joint_name) !=
           JointsAtHardTorqueLimit.end());

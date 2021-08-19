@@ -264,7 +264,9 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   std::vector<double> point_vector;
   // Get our sample point from identifySampleLocation
-  point_vector = OwInterface::instance()->identifySampleLocation (num_pictures, filter_type, CommandId);
+  point_vector = OwInterface::instance()->identifySampleLocation (num_pictures,
+                                                                  filter_type,
+                                                                  CommandId);
   // Checks if we have a valid sized point
   if(point_vector.size() != 3){
     // Resizes the array and initializes values to -500 so we know to skip
@@ -295,7 +297,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
-  g_configuration->registerCommandHandler("identify_sample_location", identify_sample_location);
+  g_configuration->registerCommandHandler("identify_sample_location",
+                                          identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
