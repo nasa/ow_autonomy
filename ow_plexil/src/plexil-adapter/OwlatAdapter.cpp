@@ -23,6 +23,8 @@
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
 
+using std::string;
+
 static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -34,6 +36,33 @@ static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatStow (CommandId);
+  send_ack_once(*cr);
+}
+
+static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
+{
+  string frame;
+  bool relative;
+  //vector<double> positionv;
+  //vector<double> orientationv;
+  //double* position;
+  //double* orientation;
+  //Value position = Value(positionv);
+  //Value orientation = Value(orientationv);
+ // vector<Real> position;
+ // vector<Real> orientation;
+  size_t length = 5;
+  RealArray *position;
+  RealArray *orientation;
+
+ 
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValuePointer(position);
+  args[3].getValuePointer(orientation);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwlatInterface::instance()->owlatArmMoveCartesian (CommandId);
   send_ack_once(*cr);
 }
 
@@ -49,6 +78,7 @@ bool OwlatAdapter::initialize()
   CommonAdapter::initialize();
   g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
+  g_configuration->registerCommandHandler("owlat_arm_move_cartesian", owlat_arm_move_cartesian);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwlatAdapter", " initialized.");
   return true;
