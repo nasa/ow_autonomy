@@ -41,19 +41,18 @@ static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
 
 static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
-  string frame;
+  int frame;
   bool relative;
-  vector<double> position_vector;
-  vector<double> orientation_vector;
+  vector<double> const *position_vector = NULL;
+  vector<double> const *orientation_vector = NULL;
   //double* position;
   //double* orientation;
   //Value position = Value(positionv);
   //Value orientation = Value(orientationv);
  // vector<Real> position;
  // vector<Real> orientation;
-  size_t length = 5;
-  RealArray *position = &RealArray(length, false);
-  RealArray *orientation = &RealArray(length, false);
+  RealArray const *position = NULL;
+  RealArray const *orientation = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -64,8 +63,8 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 
 
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveCartesian (frame, relative, position_vector, 
-                                                     orientation_vector, CommandId);
+  OwlatInterface::instance()->owlatArmMoveCartesian (frame, relative, *position_vector, 
+                                                     *orientation_vector, CommandId);
   send_ack_once(*cr);
 }
 

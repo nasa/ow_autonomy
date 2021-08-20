@@ -45,13 +45,13 @@ class OwlatInterface : public PlexilInterface
   // Lander interface
   void owlatUnstow (int id);
   void owlatStow (int id);
-  void owlatArmMoveCartesian (string frame, bool relative, 
+  void owlatArmMoveCartesian (int frame, bool relative, 
                               vector<double> position, 
                               vector<double> orientation, int id);
  private:
   void owlatUnstowAction (int id);
   void owlatStowAction (int id);
-  void owlatArmMoveCartesianAction (string frame, bool relative, 
+  void owlatArmMoveCartesianAction (int frame, bool relative, 
                                     vector<double> position, 
                                     vector<double> orientation, int id);
 

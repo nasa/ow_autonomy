@@ -19,8 +19,9 @@
 
 
 // Move from stowed position to a "ready" position
-Command unstow();
+Command owlat_unstow();
 // Move from "ready" position to stowed position; requires unstow() first
-Command stow();
+Command owlat_stow();
+Command owlat_arm_move_cartesian(Integer frame, Boolean relative, Real position[3], Real orientation[4]); 
 
 #endif

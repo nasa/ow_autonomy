@@ -120,7 +120,7 @@ void OwlatInterface::owlatStowAction (int id)
      default_action_done_cb<ARM_STOWResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveCartesian (string frame, bool relative, 
+void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative, 
                                             vector<double> position, 
                                             vector<double> orientation,
                                             int id)
@@ -131,12 +131,21 @@ void OwlatInterface::owlatArmMoveCartesian (string frame, bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveCartesianAction (string frame, bool relative, 
+void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative, 
                                             vector<double> position, 
                                             vector<double> orientation,
                                             int id)
 {
   ARM_MOVE_CARTESIANGoal goal;
+  goal.frame.value = frame;
+  goal.relative = relative;
+  goal.pose.position.x = position[0];
+  goal.pose.position.y = position[1];
+  goal.pose.position.z = position[2];
+  goal.pose.orientation.x = orientation[0];
+  goal.pose.orientation.y = orientation[1];
+  goal.pose.orientation.z = orientation[2];
+  goal.pose.orientation.w = orientation[3];
   string opname = Name_OwlatArmMoveCartesian;  // shorter version
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_CARTESIANAction>,

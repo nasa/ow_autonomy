@@ -1,0 +1,13 @@
+#include "owlat-interface.h"
+
+OwlatTest:
+{
+
+  Integer frame = 9;
+  Boolean relative = false;
+  Real position[3] = #(0.3 0.3 0.3);
+  Real orientation[4] = #(0.0 0.0 0.0 1.0);
+
+  LibraryCall OwlatUnstow();
+  LibraryCall OwlatArmMoveCartesian(Frame=frame, Relative=relative, Position=position, Orientation=orientation);
+}

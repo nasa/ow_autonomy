@@ -17,8 +17,10 @@ Command log_error (...);
 // PLEXIL library for lander operations in OWLAT.
 LibraryAction OwlatUnstow();
 LibraryAction OwlatStow();
-
-
+LibraryAction OwlatArmMoveCartesian(In Integer Frame,
+                                    In Boolean Relative,
+                                    In Real Position[3],
+                                    In Real Orientation[4]);
 
 
 // Misc
