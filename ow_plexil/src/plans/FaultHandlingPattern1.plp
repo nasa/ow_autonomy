@@ -7,18 +7,13 @@
 
 #include "plan-interface.h"
 
-LibraryAction CheckForFaults (InOut Boolean all_ok);
-
 LibraryAction InitializeAntennaAndArm ();
 
 FaultHandlingPattern1:
 {
-  Boolean NoFaults = false; // Assume system is not okay, hence needs checking
   Real NewAngle = 0;
 
   log_info ("Starting FaultHandlingPattern1 plan...");
-
-  LibraryCall CheckForFaults (all_ok = NoFaults); // Ends when there are no faults
 
   LibraryCall InitializeAntennaAndArm ();
 
