@@ -41,20 +41,54 @@ See the comments inside all the plans for more information.
 7. Continuous: non-terminating plan that performs continuous operations, useful
    as a stress/load test.
 
+8. IdentifySampleLocationDemo: This plan demonstrates the IdentifySampleTarget
+   plan which uses the stereocamera to find a desirable sample location. It runs
+   two tests, one with the "Brown" filter and one with the "Dark" filter. These
+   filters find areas in the workspace that have the highest color concentration
+   (Brown or Dark colors based on the filter used) and returns a 3d point that
+   represents the sample target.  The plan then makes a guarded move to these
+   sample targets. When a point is found the action server publishes two
+   visualization topics which are described in testing plans below.
 
 Plan Details
-------------
+============
 
 ### ReferenceMission2 ###
 
-The following represent the success criteria of the Reference Mission 2 plan: 
+The following represent the success criteria of the Reference Mission 2 plan:
 - Left running the plan completes
-	- Upon completion, the plan will print "ReferenceMission2 plan 
+	- Upon completion, the plan will print "ReferenceMission2 plan
 	complete."
 	- To more easily view this message when it occurs, add the following
  	after the launch command:<br/>
 	` | grep -i "ReferenceMission2 plan complete."`
-- The plan is interruptable through fault injection, i.e. pauses in 
+- The plan is interruptable through fault injection, i.e. pauses in
 response to a fault
 	- Faults can be injected via rqt, a python script, or the command line
  ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults/README.md))
+
+
+### IdentifySampleLocationDemo ###
+
+The following represent the success criteria of the IdentifySampleLocationDemo
+plan.  Note that the Plexil node must first be started (with or without a plan
+specified) to enable the RQT and RViz additions specified below.  And you'll
+need to first refresh the topic menu in RQT.
+- In the Rqt image viewer select the `/sample_location` topic (last entry at the
+  time of this writing).  Once a point is selected the outlined contours of
+  potential sample locations and the chosen target should show up.  The green
+  dot represents the selected point.
+- In Rviz to vizualize the 3d point and to see if the guarded move went to the
+  correct location:
+  - Select Add in the left menu under "Displays"
+  - Select "By topic"
+  - Scroll down and select the marker topic `/sample_point_visualization` and
+    select OK.
+  - Once a point is selected you should see a green sphere appear at the 3d
+    point location.
+- Both IdentifySampleTarget calls find a point and the guarded move attempts to
+  move to the locations. Note that due to a bug in guarded move it may fail
+  occasionally, but as long as it is close to the point selected then
+  IdentifySampleLocationDemo was succesful.
+- In rare cases no sample points can be found. If this happens success is
+  defined by a graceful exit.

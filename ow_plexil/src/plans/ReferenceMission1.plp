@@ -20,7 +20,8 @@ LibraryAction ImageLandingSite(In String InstanceName,
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
                                     InOut Boolean Parallel,
-                                    InOut Real GroundPos);
+                                    InOut Real GroundPos,
+                                    In String FilterType);
 LibraryAction DigTrench (In Real X,
                          In Real Y,
                          In Real GroundPos,
@@ -76,11 +77,11 @@ ReferenceMission1: Concurrence
     log_info ("Starting Reference Mission 1, Sol 0 ...");
     LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
                                   IgnoreCrash = true);
-    LibraryCall Unstow();
     LibraryCall IdentifySampleTarget (X = trench_x,
                                       Y = trench_y,
                                       GroundPos = ground_pos,
-                                      Parallel = parallel);
+                                      Parallel = parallel,
+                                      FilterType = "Dark");
     if (Lookup(GroundFound)) {
       LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                              Length = trench_length, BiteDepth = 0.05,
@@ -97,7 +98,6 @@ ReferenceMission1: Concurrence
     else
     {
       log_error ("Failed to find ground, aborting.");
-      LibraryCall Stow();
     }
     endif
     MissionInProgress = false;

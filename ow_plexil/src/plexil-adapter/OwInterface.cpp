@@ -19,8 +19,12 @@
 #include <functional>
 using std::set;
 using std::map;
+using std::vector;
 using std::thread;
 using std::ref;
+using std::string;
+using std::shared_ptr;
+using std::make_unique;
 
 // C
 #include <cmath>  // for M_PI and fabs
@@ -45,6 +49,8 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 //////////////////// Lander Operation Support ////////////////////////
 
 const double PanTiltTimeout = 15.0; // seconds, made up
+const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
+const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
@@ -59,6 +65,7 @@ const string Op_Grind             = "Grind";
 const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
+const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 
 
 // 1. Indices into subsequent vector
@@ -74,12 +81,14 @@ enum LanderOps {
   Stow,
   Unstow,
   TakePicture,
+  IdentifySampleLocation
 };
 
-static std::vector<string> LanderOpNames =
-  { Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-    Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture
-  };
+static vector<string> LanderOpNames = {
+  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
+  Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
+  Op_IdentifySampleLocation
+};
 
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
@@ -144,8 +153,9 @@ static void handle_joint_fault (Joint joint, int joint_index,
 }
 
 template <typename T1, typename T2>
-void OwInterface::faultCallback (T1 msg_val, T2& fmap,
-                                 const string& component)
+void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
+                                     const string& component,
+                                     const string& state_name)
 {
   for (auto const& entry : fmap) {
     string key = entry.first;
@@ -155,10 +165,12 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
     if (!fault_active && faulty) {
       ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = true;
+      publish (state_name, true);
     }
     else if (fault_active && !faulty) {
       ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = false;
+      publish (state_name, false);
     }
   }
 }
@@ -166,22 +178,22 @@ void OwInterface::faultCallback (T1 msg_val, T2& fmap,
 void OwInterface::systemFaultMessageCallback
 (const  ow_faults::SystemFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_systemErrors, "SYSTEM");
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
 void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_armErrors, "ARM");
+  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
 void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_powerErrors, "POWER");
+  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
 void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
 {
-  faultCallback (msg->value, m_panTiltErrors, "ANTENNA");
+  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
 void OwInterface::jointStatesCallback
@@ -239,10 +251,10 @@ void OwInterface::managePanTilt (const string& opname,
     }
   }
 
-  //We cant guarantee which way the antenna will move, so we have to 
-  //check if the current angle is equivalent.Ex:-180 degrees == 180 degrees.
+  // We can't guarantee which way the antenna will move, so we have to check if
+  // the current angle is equivalent.Ex:-180 degrees == 180 degrees.
   if(current > 0 && goal < 0){
-    current = current - 360; 
+    current = current - 360;
   }
   else if(current < 0 && goal > 0){
     current = current + 360;
@@ -267,10 +279,30 @@ void OwInterface::managePanTilt (const string& opname,
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
-
+  m_pointCloudRecieved = false;
   if (operationRunning (Op_TakePicture)) {
-    markOperationFinished (Op_TakePicture,
-                           m_runningOperations.at (Op_TakePicture));
+    ros::Rate rate(10);
+    int timeout = 0;
+    // We wait for the pointcloud as well or the 5 sec timeout before marking as
+    // finished.
+    while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
+        ros::spinOnce();
+        rate.sleep();
+        timeout+=1;
+    }
+    if(timeout == PointCloudTimeout){
+      ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
+    }
+    markOperationFinished (Op_TakePicture, m_runningOperations.at (Op_TakePicture));
+  }
+}
+
+void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& msg)
+{
+  // NOTE: the received pointcloud is ignored for now.
+  if (operationRunning (Op_TakePicture)) {
+    //mark as recieved
+    m_pointCloudRecieved = true;
   }
 }
 
@@ -352,21 +384,6 @@ bool OwInterface::powerFault () const
   return faultActive (m_powerErrors);
 }
 
-/*
-template<typename T>
-static void guarded_move_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const T& result,
- const string& opname)
-{
-  ROS_INFO ("%s finished in state %s", opname.c_str(), state.toString().c_str());
-  GroundFound = result->success;
-  GroundPosition = result->final.z;
-  publish ("GroundFound", GroundFound);
-  publish ("GroundPosition", GroundPosition);
-}
-*/
-
 template<typename T>
 static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 {
@@ -380,12 +397,35 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
   };
 }
 
+// Since template is outside the scope of the class we cannot use a member
+// variable and instead have to use a static one like in the
+// guarded_move_done_cb above.
+static vector<double> SamplePoint;
+static bool GotSampleLocation = false;
+template<int OpIndex, typename T>
+static void identify_sample_location_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
+{
+  if(result->success == true){
+    SamplePoint.push_back(result->sample_location.x);
+    SamplePoint.push_back(result->sample_location.y);
+    SamplePoint.push_back(result->sample_location.z);
+    ROS_INFO ("Possible sample location identified at (%f, %f, %f)",
+           SamplePoint[0], SamplePoint[1], SamplePoint[2]);
+  }
+  else{
+    ROS_ERROR("Could not get sample point from IdentifySampleLocation");
+  }
+  GotSampleLocation = true;
+}
+
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
-std::shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
+shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
 
-std::shared_ptr<OwInterface> OwInterface::instance ()
+shared_ptr<OwInterface> OwInterface::instance ()
 {
   // Very simple singleton
   if (m_instance == nullptr) m_instance = std::make_shared<OwInterface>();
@@ -394,7 +434,7 @@ std::shared_ptr<OwInterface> OwInterface::instance ()
 
 OwInterface::OwInterface ()
   : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0)
+    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
@@ -409,68 +449,74 @@ void OwInterface::initialize()
       registerLanderOperation (name);
     }
 
-    m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
+    m_genericNodeHandle = make_unique<ros::NodeHandle>();
 
     // Initialize publishers.  Queue size is a guess at adequacy.  For now,
     // latching in lieu of waiting for publishers.
 
     const int qsize = 3;
     const bool latch = true;
-    m_antennaTiltPublisher = std::make_unique<ros::Publisher>
+    m_antennaTiltPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_tilt_position_controller/command", qsize, latch));
-    m_antennaPanPublisher = std::make_unique<ros::Publisher>
+    m_antennaPanPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
        ("/ant_pan_position_controller/command", qsize, latch));
-    m_leftImageTriggerPublisher = std::make_unique<ros::Publisher>
+    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Empty>
        ("/StereoCamera/left/image_trigger", qsize, latch));
 
     // Initialize subscribers
-    m_jointStatesSubscriber = std::make_unique<ros::Subscriber>
+    m_jointStatesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
-    m_cameraSubscriber = std::make_unique<ros::Subscriber>
+    m_cameraSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
-    m_socSubscriber = std::make_unique<ros::Subscriber>
+    m_pointCloudSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/StereoCamera/points2", qsize,
+                 &OwInterface::pointCloudCallback, this));
+    m_socSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
-    m_batteryTempSubscriber = std::make_unique<ros::Subscriber>
+    m_batteryTempSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/battery_temperature", qsize,
                  temperature_callback));
-    m_rulSubscriber = std::make_unique<ros::Subscriber>
+    m_rulSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
     // subscribers for fault messages
-    m_systemFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this));
-    m_armFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/arm_faults_status", qsize,
                 &OwInterface::armFaultCallback, this));
-    m_powerFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_powerFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/power_faults_status", qsize,
                 &OwInterface::powerFaultCallback, this));
-    m_ptFaultMessagesSubscriber = std::make_unique<ros::Subscriber>
+    m_ptFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/faults/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this));
 
     m_guardedMoveClient =
-      std::make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
-    m_unstowClient = std::make_unique<UnstowActionClient>(Op_Unstow, true);
-    m_stowClient = std::make_unique<StowActionClient>(Op_Stow, true);
-    m_grindClient = std::make_unique<GrindActionClient>(Op_Grind, true);
-    m_digCircularClient = std::make_unique<DigCircularActionClient>(Op_DigCircular, true);
-    m_digLinearClient = std::make_unique<DigLinearActionClient>(Op_DigLinear, true);
-    m_deliverClient = std::make_unique<DeliverActionClient>(Op_Deliver, true);
+      make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
+    m_unstowClient = make_unique<UnstowActionClient>(Op_Unstow, true);
+    m_stowClient = make_unique<StowActionClient>(Op_Stow, true);
+    m_grindClient = make_unique<GrindActionClient>(Op_Grind, true);
+    m_digCircularClient = make_unique<DigCircularActionClient>(Op_DigCircular, true);
+    m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
+    m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
+      (Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -489,6 +535,10 @@ void OwInterface::initialize()
     }
     if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    }
+    if (! m_identifySampleLocationClient->waitForServer
+        (ros::Duration(ActionServerTimeout))) {
+      ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }
 }
@@ -722,6 +772,54 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
      guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
 }
 
+vector<double> OwInterface::identifySampleLocation (int num_images,
+                                                    const string& filter_type,
+                                                    int id)
+{
+  SamplePoint.clear();
+  GotSampleLocation = false;
+  if (! markOperationRunning (Op_IdentifySampleLocation, id)) return SamplePoint;
+  thread action_thread (&OwInterface::identifySampleLocationAction,
+                        this, num_images, filter_type, id);
+  action_thread.detach();
+
+  ros::Rate rate(10);
+  int timeout = 0;
+  // We wait for a result from the action server or the 5 sec timeout before
+  // returning. I dont think a timeout is strictly necessary here but because
+  // this is blocking I put it in for safety.
+  while(GotSampleLocation == false && timeout < SampleTimeout){
+      ros::spinOnce();
+      rate.sleep();
+      timeout+=1;
+  }
+  if(timeout == SampleTimeout){
+    ROS_ERROR("Did not recieve a sample point from "
+              "IdentifySampleLocation before timeout.");
+  }
+  return SamplePoint;
+}
+
+void OwInterface::identifySampleLocationAction (int num_images,
+                                                const string& filter_type,
+                                                int id)
+{
+  ow_plexil::IdentifyLocationGoal goal;
+  goal.num_images = num_images;
+  goal.filter_type = filter_type;
+
+  runAction<actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>,
+            ow_plexil::IdentifyLocationGoal,
+            ow_plexil::IdentifyLocationResultConstPtr,
+            ow_plexil::IdentifyLocationFeedbackConstPtr>
+    (Op_IdentifySampleLocation, m_identifySampleLocationClient, goal, id,
+     default_action_active_cb (Op_IdentifySampleLocation),
+     default_action_feedback_cb<ow_plexil::IdentifyLocationFeedbackConstPtr>
+     (Op_IdentifySampleLocation),
+     identify_sample_location_done_cb<IdentifySampleLocation,
+                                      ow_plexil::IdentifyLocationResultConstPtr>);
+}
+
 double OwInterface::getTilt () const
 {
   return m_currentTilt;
@@ -757,13 +855,13 @@ double OwInterface::getBatteryTemperature () const
   return BatteryTemperature;
 }
 
-bool OwInterface::hardTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::hardTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtHardTorqueLimit.find (joint_name) !=
           JointsAtHardTorqueLimit.end());
 }
 
-bool OwInterface::softTorqueLimitReached (const std::string& joint_name) const
+bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
