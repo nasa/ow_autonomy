@@ -14,17 +14,12 @@
 
 #include "plan-interface.h"
 
-LibraryAction CheckForFaults (InOut Boolean all_ok);
-
 LibraryAction InitializeAntennaAndArm ();
 
 FaultHandlingPattern3:
 {
-  Boolean NoFaults = false; // Assume system is not okay, hence needs checking  
 
   log_info ("Starting FaultHandlingPattern3 plan...");
-
-  LibraryCall CheckForFaults (all_ok = NoFaults); // Ends when there are no faults
 
   LibraryCall InitializeAntennaAndArm ();
 
