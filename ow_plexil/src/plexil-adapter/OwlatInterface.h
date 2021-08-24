@@ -103,7 +103,7 @@ class OwlatInterface : public PlexilInterface
   void owlatArmTareFS (int id);
   void owlatTaskDropoff (int frame, bool relative,vector<double> point, int id);
   void owlatTaskPSP (int frame, bool relative, vector<double> point, 
-                     vector<double> normal, double max_depth, float max_force,
+                     vector<double> normal, double max_depth, double max_force,
                      int id); 
   void owlatTaskScoop (int frame, bool relative, vector<double> point, 
                        vector<double> normal, int id); 

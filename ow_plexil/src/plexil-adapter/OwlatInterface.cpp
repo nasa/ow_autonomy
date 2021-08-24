@@ -5,7 +5,6 @@
 #include <thread>
 #include <vector>
 #include "OwlatInterface.h"
-#include <std_msgs/Float64MultiArray>
 
 using namespace owlat_sim_msgs;
 using std::hash;
@@ -345,7 +344,7 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<double> joi
   ARM_MOVE_JOINTSGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles.push_back(joints[i]); 
+    goal.angles[i] = joints[i]; 
   }
   string opname = Name_OwlatArmMoveJoints;  // shorter version
 
@@ -589,7 +588,7 @@ void OwlatInterface::owlatTaskScoop (int frame, bool relative,
                                      vector<double> normal, int id) 
 {
   if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskPSPAction,
+  thread action_thread (&OwlatInterface::owlatTaskScoopAction,
                         this, frame, relative, point, normal,
                         id);
   action_thread.detach();
@@ -639,11 +638,11 @@ void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
 {
   TASK_SHEAR_BEVAMETERGoal goal;
   goal.frame.value = frame;
-  goal.relative = relative;
+  goal.relative = relative; 
   for(int i = 0; i < goal.point.size(); i++){
     goal.point[i] = point[i]; 
     goal.normal[i] = normal[i];
-  }
+  }  
   goal.preload = preload;
   goal.max_torque = max_torque;
   string opname = Name_OwlatTaskShearBevameter;  // shorter version
