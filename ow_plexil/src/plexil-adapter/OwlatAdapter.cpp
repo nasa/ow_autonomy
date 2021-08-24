@@ -66,7 +66,7 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface
 {
   int frame;
   bool relative, retracting;
-  float force_threshold, torque_threshold;
+  double force_threshold, torque_threshold;
   vector<double> const *position_vector = NULL;
   vector<double> const *orientation_vector = NULL;
   RealArray const *position = NULL;
@@ -74,12 +74,12 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
   args[4].getValue(retracting);
   args[5].getValue(force_threshold);
   args[6].getValue(torque_threshold);
-  //change real array into a vector
+  args[2].getValuePointer(position);
+  args[3].getValuePointer(orientation);
+    //change real array into a vector
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -94,7 +94,7 @@ static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
   int joint;
-  float angle; //radians
+  double angle; //radians
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValue(joint);
@@ -104,11 +104,26 @@ static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *joints_vector = NULL;
+  RealArray const *joints = NULL;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(joints);
+  //change real array into a vector
+  joints->getContentsVector(joints_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwlatInterface::instance()->owlatArmMoveJoints (relative, *joints_vector,CommandId);
+  send_ack_once(*cr);
+}
+
 static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative, retracting;
-  float force_threshold, torque_threshold;
-  vector<float> const *joints_vector = NULL;
+  double force_threshold, torque_threshold;
+  vector<double> const *joints_vector = NULL;
   RealArray const *joints = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
@@ -119,7 +134,7 @@ static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* i
   //change real array into a vector
   joints->getContentsVector(joints_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, joints_vector,
+  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, *joints_vector,
                                     retracting, force_threshold, torque_threshold,
                                     CommandId);
   send_ack_once(*cr);
@@ -129,9 +144,9 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative, retracting;
-  float force_threshold, torque_threshold, distance, overdrive;
-  vector<float> const *position_vector = NULL;
-  vector<float> const *normal_vector = NULL;
+  double force_threshold, torque_threshold, distance, overdrive;
+  vector<double> const *position_vector = NULL;
+  vector<double> const *normal_vector = NULL;
   RealArray const *position = NULL;
   RealArray const *normal = NULL;
   const vector<Value>& args = cmd->getArgValues();
@@ -184,7 +199,7 @@ static void owlat_task_dropoff (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  vector<float> const *point_vector = NULL;
+  vector<double> const *point_vector = NULL;
   RealArray const *point = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
@@ -202,7 +217,7 @@ static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  float max_depth, max_force;
+  double max_depth, max_force;
   vector<double> const *point_vector = NULL;
   vector<double> const *normal_vector = NULL;
   RealArray const *point = NULL;
@@ -250,7 +265,7 @@ static void owlat_task_shear_bevameter (Command* cmd, AdapterExecInterface* intf
 {
   int frame;
   bool relative;
-  float preload, max_torque;
+  double preload, max_torque;
   vector<double> const *point_vector = NULL;
   vector<double> const *normal_vector = NULL;
   RealArray const *point = NULL;

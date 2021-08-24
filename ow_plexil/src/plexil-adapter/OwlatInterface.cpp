@@ -5,6 +5,7 @@
 #include <thread>
 #include <vector>
 #include "OwlatInterface.h"
+#include <std_msgs/Float64MultiArray>
 
 using namespace owlat_sim_msgs;
 using std::hash;
@@ -256,8 +257,8 @@ void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative,
                                                    vector<double> position, 
                                                    vector<double> orientation,
                                                    bool retracting,
-                                                   float force_threshold,
-                                                   float torque_threshold,int id)
+                                                   double force_threshold,
+                                                   double torque_threshold,int id)
 {
   if (! markOperationRunning (Name_OwlatArmMoveCartesianGuarded, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveCartesianGuardedAction,
@@ -270,8 +271,8 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
                                                          vector<double> position, 
                                                          vector<double> orientation,
                                                          bool retracting, 
-                                                         float force_threshold, 
-                                                         float torque_threshold,int id)
+                                                         double force_threshold, 
+                                                         double torque_threshold,int id)
 {
   ARM_MOVE_CARTESIAN_GUARDEDGoal goal;
   goal.frame.value = frame;
@@ -298,22 +299,21 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
      default_action_done_cb<ARM_MOVE_CARTESIAN_GUARDEDResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoint (int frame, bool relative, 
-                                        int joint, float angle, 
+void OwlatInterface::owlatArmMoveJoint (bool relative, 
+                                        int joint, double angle, 
                                         int id) 
 {
   if (! markOperationRunning (Name_OwlatArmMoveJoint, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointAction,
-                        this, frame, relative, joint, angle, id);
+                        this, relative, joint, angle, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointAction (int frame, bool relative, 
-                                              int joint, float angle, 
+void OwlatInterface::owlatArmMoveJointAction (bool relative, 
+                                              int joint, double angle, 
                                               int id) 
 {
   ARM_MOVE_JOINTGoal goal;
-  goal.frame.value = frame;
   goal.relative = relative;
   goal.joint = joint;
   goal.angle = angle;
@@ -329,7 +329,7 @@ void OwlatInterface::owlatArmMoveJointAction (int frame, bool relative,
      default_action_done_cb<ARM_MOVE_JOINTResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoints (bool relative, vector<float> joints, 
+void OwlatInterface::owlatArmMoveJoints (bool relative, vector<double> joints, 
                                          int id) 
 {
   if (! markOperationRunning (Name_OwlatArmMoveJoints, id)) return;
@@ -338,12 +338,15 @@ void OwlatInterface::owlatArmMoveJoints (bool relative, vector<float> joints,
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<float> joints, 
+void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<double> joints, 
                                                int id)
 {
+
   ARM_MOVE_JOINTSGoal goal;
   goal.relative = relative;
-  goal.joints = joints;
+  for(int i = 0; i < goal.angles.size(); i++){
+    goal.angles.push_back(joints[i]); 
+  }
   string opname = Name_OwlatArmMoveJoints;  // shorter version
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTSAction>,
@@ -357,10 +360,10 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<float> join
 }
 
 void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
-                                                vector<float> joints, 
+                                                vector<double> joints, 
                                                 bool retracting,
-                                                float force_threshold,
-                                                float torque_threshold, 
+                                                double force_threshold,
+                                                double torque_threshold, 
                                                 int id)
 {
   if (! markOperationRunning (Name_OwlatArmMoveJointsGuarded, id)) return;
@@ -371,15 +374,18 @@ void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
 }
 
 void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
-                                                      vector<float> joints, 
+                                                      vector<double> joints, 
                                                       bool retracting,
-                                                      float force_threshold,
-                                                      float torque_threshold, 
+                                                      double force_threshold,
+                                                      double torque_threshold, 
                                                       int id)
 {
+
   ARM_MOVE_JOINTS_GUARDEDGoal goal;
   goal.relative = relative;
-  goal.joints = joints;
+  for(int i = 0; i < goal.angles.size(); i++){
+    goal.angles[i] = joints[i]; 
+  }
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
@@ -396,11 +402,11 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
 }
 
 void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
-                                        vector<float> position, 
-                                        vector<float> normal,
-                                        float distance, float overdrive,
-                                        bool retracting, float force_threshold,
-                                        float torque_threshold, int id)
+                                        vector<double> position, 
+                                        vector<double> normal,
+                                        double distance, double overdrive,
+                                        bool retracting, double force_threshold,
+                                        double torque_threshold, int id)
 {
   if (! markOperationRunning (Name_OwlatArmPlaceTool, id)) return;
   thread action_thread (&OwlatInterface::owlatArmPlaceToolAction,
@@ -411,17 +417,19 @@ void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
 }
 
 void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
-                                              vector<float> position, 
-                                              vector<float> normal,
-                                              float distance, float overdrive,
-                                              bool retracting, float force_threshold,
-                                              float torque_threshold, int id)
+                                              vector<double> position, 
+                                              vector<double> normal,
+                                              double distance, double overdrive,
+                                              bool retracting, double force_threshold,
+                                              double torque_threshold, int id)
 {
   ARM_PLACE_TOOLGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
-  goal.position = position;
-  goal.normal = normal;
+  for(int i = 0; i < goal.position.size(); i++){
+    goal.position[i] = position[i]; 
+    goal.normal[i] = normal[i];
+  }
   goal.distance = distance;
   goal.overdrive = overdrive;
   goal.retracting = retracting;
@@ -507,7 +515,7 @@ void OwlatInterface::owlatArmTareFSAction (int id)
 }
 
 void OwlatInterface::owlatTaskDropoff (int frame, bool relative,
-                                       vector<float> point, int id) 
+                                       vector<double> point, int id) 
 {
   if (! markOperationRunning (Name_OwlatTaskDropoff, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskDropoffAction,
@@ -516,12 +524,14 @@ void OwlatInterface::owlatTaskDropoff (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskDropoffAction (int frame, bool relative,
-                                             vector<float> point, int id) 
+                                             vector<double> point, int id) 
 {
   TASK_DROPOFFGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
-  goal.point = point;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i]; 
+  }
   string opname = Name_OwlatTaskDropoff;  // shorter version
 
   runAction<actionlib::SimpleActionClient<TASK_DROPOFFAction>,
@@ -535,10 +545,10 @@ void OwlatInterface::owlatTaskDropoffAction (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskPSP (int frame, bool relative,
-                                   vector<float> point, 
-                                   vector<float> normal,
-                                   float max_depth,
-                                   float max_force, int id) 
+                                   vector<double> point, 
+                                   vector<double> normal,
+                                   double max_depth,
+                                   double max_force, int id) 
 {
   if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskPSPAction,
@@ -548,16 +558,18 @@ void OwlatInterface::owlatTaskPSP (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
-                                         vector<float> point, 
-                                         vector<float> normal,
-                                         float max_depth,
-                                         float max_force, int id) 
+                                         vector<double> point, 
+                                         vector<double> normal,
+                                         double max_depth,
+                                         double max_force, int id) 
 {
   TASK_PSPGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
-  goal.point = point;
-  goal.normal = normal;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i]; 
+    goal.normal[i] = normal[i];
+  }
   goal.max_depth = max_depth;
   goal.max_force = max_force;
   string opname = Name_OwlatTaskPSP;  // shorter version
@@ -573,25 +585,27 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
-                                     vector<float> point, 
-                                     vector<float> normal, int id) 
+                                     vector<double> point, 
+                                     vector<double> normal, int id) 
 {
   if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskPSPAction,
                         this, frame, relative, point, normal,
-                        max_depth, max_force, id);
+                        id);
   action_thread.detach();
 }
 
 void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
-                                           vector<float> point, 
-                                           vector<float> normal, int id) 
+                                           vector<double> point, 
+                                           vector<double> normal, int id) 
 {
   TASK_SCOOPGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
-  goal.point = point;
-  goal.normal = normal;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i]; 
+    goal.normal[i] = normal[i];
+  }
   string opname = Name_OwlatTaskScoop;  // shorter version
 
   runAction<actionlib::SimpleActionClient<TASK_SCOOPAction>,
@@ -605,10 +619,10 @@ void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskShearBevameter (int frame, bool relative,
-                                              vector<float> point, 
-                                              vector<float> normal,
-                                              float preload,
-                                              float max_torque, int id) 
+                                              vector<double> point, 
+                                              vector<double> normal,
+                                              double preload,
+                                              double max_torque, int id) 
 {
   if (! markOperationRunning (Name_OwlatTaskShearBevameter, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskShearBevameterAction,
@@ -618,16 +632,18 @@ void OwlatInterface::owlatTaskShearBevameter (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
-                                                    vector<float> point, 
-                                                    vector<float> normal,
-                                                    float preload,
-                                                    float max_torque, int id) 
+                                                    vector<double> point, 
+                                                    vector<double> normal,
+                                                    double preload,
+                                                    double max_torque, int id) 
 {
   TASK_SHEAR_BEVAMETERGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
-  goal.point = point;
-  goal.normal = normal;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i]; 
+    goal.normal[i] = normal[i];
+  }
   goal.preload = preload;
   goal.max_torque = max_torque;
   string opname = Name_OwlatTaskShearBevameter;  // shorter version
