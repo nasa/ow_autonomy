@@ -4,11 +4,18 @@
 
 // If no faults are occurring, this plan will pan 180 degrees, 
 // and then unstow and stow the arm.
+
 // If any fault is injected, the plan will pause and wait for resolution.
+// Resolution is defined as the removal of the fault. 
+
+// Upon resolution, the halted action will not complete,
+// but the plan will continue to the next node.
+
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
 // unstowing or stowing.
+
 // Otherwise, the pausing will visually become apparent when the next
 // operation does not begin due to it.
 
@@ -27,7 +34,7 @@ FaultHandlingPattern3:
   {
     Start !Lookup(AntennaFault);
 
-    SynchronousCommand pan_antenna (180);
+    LibraryCall Pan (Degrees=180);
   }
 
   Unstow:
