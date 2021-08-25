@@ -22,10 +22,10 @@ enum LanderOps {
   OwlatStow
 };
 
-static std::vector<string> LanderOpNames =
-  { Name_OwlatUnstow,
-    Name_OwlatStow
-  };
+static std::vector<string> LanderOpNames = {
+  Name_OwlatUnstow,
+  Name_OwlatStow
+};
 
 
 std::shared_ptr<OwlatInterface> OwlatInterface::m_instance = nullptr;

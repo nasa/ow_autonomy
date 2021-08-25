@@ -22,7 +22,7 @@ endif()
 
 set (SOURCES
   subscriber.cpp
-	action_support.cpp
+  action_support.cpp
   adapter_support.cpp
   PlexilInterface.cpp
   OwExecutive.cpp

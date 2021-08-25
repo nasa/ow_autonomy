@@ -22,7 +22,7 @@ class PlexilInterface
   bool running (const std::string& name) const;
 
   // Is the given operation name valid?
-  bool isLanderOperation (const std::string& name);
+  bool isLanderOperation (const std::string& name) const;
 
   bool markOperationRunning (const std::string& name, int id);
   bool markOperationFinished (const std::string& name, int id);
@@ -65,9 +65,7 @@ class PlexilInterface
 
  private:
   // Callback function in PLEXIL adapter for success/failure of given command.
-  // This didn't work, so using conventional pointer.
-  //  std::unique_ptr<void*(int,bool)> m_commandStatusCallback;
-  void (*m_commandStatusCallback)(int,bool);
+  std::function<void(int, bool)> m_commandStatusCallback;
 };
 
 #endif

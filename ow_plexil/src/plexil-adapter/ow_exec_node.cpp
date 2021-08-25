@@ -32,5 +32,5 @@ int main(int argc, char* argv[])
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
   ros::spin();
-  return 0;  // We never actually get here!
+  return 0;
 }
