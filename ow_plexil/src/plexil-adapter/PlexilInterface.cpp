@@ -48,6 +48,7 @@ bool PlexilInterface::markOperationFinished (const string& name, int id)
     if (m_commandStatusCallback) m_commandStatusCallback (id, true);
     else ROS_ERROR ("markOperationFinished: m_commandStatusCallback was null!");
   }
+  else ROS_WARN ("markOperationFinished: %s was not running.", name.c_str());
 }
 
 bool PlexilInterface::running (const string& name) const
