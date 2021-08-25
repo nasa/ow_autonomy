@@ -21,6 +21,30 @@ LibraryAction OwlatArmMoveCartesian(In Integer Frame,
                                     In Boolean Relative,
                                     In Real Position[3],
                                     In Real Orientation[4]);
+LibraryAction owlatArmMoveCartesianGuarded(In Integer frame,In Boolean relative, 
+                                           In Real position[3], In Real orientation[4],
+                                           In Boolean retracting, In Real force_threshold,
+                                           In Real torque_threshold); 
+LibraryAction owlatArmMoveJoint(In Boolean relative, In Integer joint, In Real angle);
+LibraryAction owlatArmMoveJoints(In Boolean relative, In Real angles[7]);
+LibraryAction owlatArmMoveJointsGuarded(In Boolean relative, In Real angles[7],
+                                        In Boolean retracting, In Real force_threshold,
+                                        In Real torque_threshold);
+LibraryAction owlatArmPlaceTool(In Boolean relative, In Real position[3], In Real normal[3],
+                                In Real distance, In Real overdrive, In Real force_threshold,
+                                In Real torque_threshold);
+LibraryAction owlatArmSetTool(In Integer tool);
+LibraryAction owlatArmStop();
+LibraryAction owlatArmTareFS();
+LibraryAction owlatTaskDropoff(In Integer frame, In Boolean relative, In Real point[3]);
+LibraryAction owlatTaskPSP(In Integer frame, In Boolean relative, In Real point[3],
+                           In Real normal[3], In Real max_depth, In Real max_force);
+LibraryAction owlatTaskScoop(In Integer frame, In Boolean relative, In Real point[3],
+                             In Real normal[3]);
+LibraryAction owlatTaskShearBevameter(In Integer frame, In Boolean relative, In Real point[3],
+                                      In Real normal[3], In Real preload, In Real max_torque);
+
+
 
 
 // Misc

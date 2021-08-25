@@ -90,8 +90,8 @@ class OwlatInterface : public PlexilInterface
                                      double torque_threshold,int id);
   void owlatArmMoveJoint (bool relative, int joint, double angle, 
                           int id);
-  void owlatArmMoveJoints (bool relative, vector<double> joints, int id); 
-  void owlatArmMoveJointsGuarded (bool relative, vector<double> joints, 
+  void owlatArmMoveJoints (bool relative, vector<double> angles, int id); 
+  void owlatArmMoveJointsGuarded (bool relative, vector<double> angles, 
                                   bool retracting, double force_threshold,
                                   double torque_threshold, int id);
   void owlatArmPlaceTool (int frame, bool relative, vector<double> position, 
@@ -127,8 +127,8 @@ class OwlatInterface : public PlexilInterface
                                            double torque_threshold,int id);
   void owlatArmMoveJointAction (bool relative, int joint,
                                 double angle, int id); 
-  void owlatArmMoveJointsAction (bool relative, vector<double> joints, int id);
-  void owlatArmMoveJointsGuardedAction (bool relative, vector<double> joints, 
+  void owlatArmMoveJointsAction (bool relative, vector<double> angles, int id);
+  void owlatArmMoveJointsGuardedAction (bool relative, vector<double> angles, 
                                         bool retracting, double force_threshold,
                                         double torque_threshold, int id);
   void owlatArmPlaceToolAction (int frame, bool relative, 

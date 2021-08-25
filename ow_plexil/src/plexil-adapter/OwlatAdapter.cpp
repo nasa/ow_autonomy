@@ -107,15 +107,15 @@ static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
 static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
-  vector<double> const *joints_vector = NULL;
-  RealArray const *joints = NULL;
+  vector<double> const *angles_vector = NULL;
+  RealArray const *angles = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValuePointer(joints);
   //change real array into a vector
-  joints->getContentsVector(joints_vector);
+  angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJoints (relative, *joints_vector,CommandId);
+  OwlatInterface::instance()->owlatArmMoveJoints (relative, *angles_vector,CommandId);
   send_ack_once(*cr);
 }
 
@@ -123,16 +123,16 @@ static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* i
 {
   bool relative, retracting;
   double force_threshold, torque_threshold;
-  vector<double> const *joints_vector = NULL;
-  RealArray const *joints = NULL;
+  vector<double> const *angles_vector = NULL;
+  RealArray const *angles = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
-  args[1].getValuePointer(joints);
+  args[1].getValuePointer(angles);
   args[2].getValue(retracting);
   args[3].getValue(force_threshold);
   args[4].getValue(torque_threshold);
   //change real array into a vector
-  joints->getContentsVector(joints_vector);
+  angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, *joints_vector,
                                     retracting, force_threshold, torque_threshold,

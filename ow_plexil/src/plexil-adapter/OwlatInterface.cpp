@@ -328,23 +328,23 @@ void OwlatInterface::owlatArmMoveJointAction (bool relative,
      default_action_done_cb<ARM_MOVE_JOINTResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoints (bool relative, vector<double> joints, 
+void OwlatInterface::owlatArmMoveJoints (bool relative, vector<double> angles, 
                                          int id) 
 {
   if (! markOperationRunning (Name_OwlatArmMoveJoints, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointsAction,
-                        this, relative, joints, id);
+                        this, relative, angles, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<double> joints, 
+void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<double> angles, 
                                                int id)
 {
 
   ARM_MOVE_JOINTSGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles[i] = joints[i]; 
+    goal.angles[i] = angles[i]; 
   }
   string opname = Name_OwlatArmMoveJoints;  // shorter version
 
@@ -359,7 +359,7 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative, vector<double> joi
 }
 
 void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
-                                                vector<double> joints, 
+                                                vector<double> angles, 
                                                 bool retracting,
                                                 double force_threshold,
                                                 double torque_threshold, 
@@ -367,13 +367,13 @@ void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
 {
   if (! markOperationRunning (Name_OwlatArmMoveJointsGuarded, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointsGuardedAction,
-                        this, relative, joints, retracting, force_threshold,
+                        this, relative, angles, retracting, force_threshold,
                         torque_threshold, id);
   action_thread.detach();
 }
 
 void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
-                                                      vector<double> joints, 
+                                                      vector<double> angles, 
                                                       bool retracting,
                                                       double force_threshold,
                                                       double torque_threshold, 
@@ -383,7 +383,7 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
   ARM_MOVE_JOINTS_GUARDEDGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles[i] = joints[i]; 
+    goal.angles[i] = angles[i]; 
   }
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
