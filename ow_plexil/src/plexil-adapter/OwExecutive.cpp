@@ -35,25 +35,11 @@ static string PlexilDir = "";
 // The embedded PLEXIL application
 static PLEXIL::ExecApplication* PlexilApp = NULL;
 
-OwExecutive* OwExecutive::m_instance = NULL;
-
 OwExecutive* OwExecutive::instance ()
 {
   // Very simple singleton
-  return (m_instance ? m_instance : new OwExecutive());
-}
-
-OwExecutive::OwExecutive()
-{
-  m_instance = this;
-}
-
-OwExecutive::~OwExecutive()
-{
-  if (m_instance) {
-    delete m_instance;
-    m_instance = NULL;
-  }
+  static OwExecutive instance;
+  return &instance;
 }
 
 bool OwExecutive::getPlanState()
