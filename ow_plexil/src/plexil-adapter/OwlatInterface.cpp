@@ -52,10 +52,12 @@ void OwlatInterface::initialize()
       std::make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
 
     // Connect to action servers
-    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatUnstowClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT Unstow action server did not connect!");
     }
-    if (! m_owlatStowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatStowClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT Stow action server did not connect!");
     }
   }
