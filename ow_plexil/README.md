@@ -124,3 +124,10 @@ To clean the entire ROS workspace (not needed if you only want to rebuild
 ow_plexil):
 
   `catkin clean`
+
+Caveats
+-------
+
+When using the OWLAT simulator, some operations, in particular the arm stow and
+unstow, may be reported as completed well before the arm has come to rest.  This
+is a known issue in the simulator and is to be fixed in its next release.
