@@ -9,6 +9,7 @@
 #include "OwlatInterface.h"
 #include "adapter_support.h"
 #include "subscriber.h"
+using namespace PLEXIL;
 
 // ROS
 #include <ros/ros.h>
@@ -63,7 +64,7 @@ void OwlatAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 
   // At the moment there are no lookups defined for OWLAT.
   ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
-  
+
   entry.update(retval);
 }
 

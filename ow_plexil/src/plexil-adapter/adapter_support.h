@@ -16,7 +16,6 @@
 #include <Value.hh>
 #include <Command.hh>
 #include <AdapterExecInterface.hh>
-using namespace PLEXIL;
 
 // C++
 #include <map>
@@ -26,7 +25,7 @@ using namespace PLEXIL;
 ///////////////////////////// Conveniences //////////////////////////////////
 
 // A prettier name for the "unknown" value.
-const Value Unknown;
+const PLEXIL::Value Unknown;
 
 // A pointer to the interface adapter, so that it can be accessed from static
 // functions.  WARNING: this allows only one adapter instance to be usable at a
@@ -42,12 +41,12 @@ extern int CommandId;
 // Record that combines a Plexil command instance with its executive interface
 // and a flag indicating whether the command has been acknowledged.
 using CommandRecord =
-  std::tuple<Command*, AdapterExecInterface*, bool /* ack_sent */>;
+  std::tuple<PLEXIL::Command*, PLEXIL::AdapterExecInterface*, bool /* ack_sent */>;
 
 enum CommandRecordFields {CR_COMMAND, CR_ADAPTER, CR_ACK_SENT};
 
 std::unique_ptr<CommandRecord>&
-new_command_record(Command*, AdapterExecInterface*);
+new_command_record(PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
 
 // Registry of all commands currently in execution by testbed.
 extern std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
@@ -70,9 +69,9 @@ void receiveBoolString (const std::string& state_name,
 
 /////////////////////////////// ROS Logging ///////////////////////////////////
 
-void log_info (Command*, AdapterExecInterface*);
-void log_warning (Command*, AdapterExecInterface*);
-void log_error (Command*, AdapterExecInterface*);
-void log_debug (Command*, AdapterExecInterface*);
+void log_info (PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
+void log_warning (PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
+void log_error (PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
+void log_debug (PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
 
 #endif

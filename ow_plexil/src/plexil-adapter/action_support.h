@@ -16,6 +16,7 @@
 // typically happens very fast, so this timeout is only to prevent indifinite
 // wait when an action server is down for some reason.
 //
+// TODO: rename to ACTION_SERVER_TIMEOUT to follow coding guidelines
 const auto ActionServerTimeout = 10.0;  // seconds
 
 // The following action callbacks are essentially stubs that do nothing more

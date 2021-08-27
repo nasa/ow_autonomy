@@ -11,8 +11,6 @@ using std::hash;
 using std::string;
 using std::thread;
 
-using std::string;
-
 const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
 const string Name_OwlatStow =   "/owlat_sim/ARM_STOW";
 

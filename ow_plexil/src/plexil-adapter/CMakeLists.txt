@@ -2,6 +2,8 @@ set(LIB_NAME ow_adapter)
 
 OPTION(OWLAT "Build to also support JPL's OWLAT simulator" OFF)
 
+# OceanWATERS code (required)
+
 set (HEADERS
   joint_support.h
   subscriber.h
@@ -16,10 +18,6 @@ set (HEADERS
   TerminalPlanSelection.h
 )
 
-if(OWLAT)
-  set (HEADERS ${HEADERS} OwlatAdapter.h OwlatInterface.h)
-endif()
-
 set (SOURCES
   subscriber.cpp
   action_support.cpp
@@ -33,7 +31,10 @@ set (SOURCES
   TerminalPlanSelection.cpp
 )
 
+# OWLAT code (optional)
+
 if(OWLAT)
+  set (HEADERS ${HEADERS} OwlatAdapter.h OwlatInterface.h)
   set (SOURCES ${SOURCES} OwlatAdapter.cpp OwlatInterface.cpp)
 endif()
 

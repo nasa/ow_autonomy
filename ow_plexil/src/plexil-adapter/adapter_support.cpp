@@ -10,6 +10,7 @@
 
 // PLEXIL
 #include <Debug.hh>
+using namespace PLEXIL;
 
 // C++
 #include <map>
