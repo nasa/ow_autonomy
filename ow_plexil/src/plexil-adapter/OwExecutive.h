@@ -15,6 +15,15 @@
 class OwExecutive
 {
  public:
+  
+  // Deletes the singleton instance.  Would need to be explicitly called in the
+  // present singleton scheme, since the singleton instance pointer is private
+  // and only accessible through instance().  This function is idempotent, and
+  // effectively useless in the current context, because the containing process
+  // can only be terminated externally, e.g. with a keyboard interrupt.
+  ~OwExecutive();
+
+  // Singleton instance constructor and accessor.
   static OwExecutive* instance();
 
   bool initialize (const std::string& config_file);
@@ -23,7 +32,6 @@ class OwExecutive
 
  private:
   OwExecutive();
-  ~OwExecutive();
   OwExecutive (const OwExecutive&) = delete;
   OwExecutive& operator= (const OwExecutive&) = delete;
 
