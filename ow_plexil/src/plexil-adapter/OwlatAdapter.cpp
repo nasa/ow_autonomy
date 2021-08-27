@@ -111,7 +111,7 @@ static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
   RealArray const *angles = NULL;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
-  args[1].getValuePointer(joints);
+  args[1].getValuePointer(angles);
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -134,7 +134,7 @@ static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* i
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, *joints_vector,
+  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, *angles_vector,
                                     retracting, force_threshold, torque_threshold,
                                     CommandId);
   send_ack_once(*cr);

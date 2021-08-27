@@ -45,8 +45,8 @@ Command owlat_arm_move_joints_guarded(Boolean relative, Real angles[7],
 
 // Perform a guarded pose move to the specified position moving along the given normal 
 // vector until meeting a force threshold.
-Command owlat_arm_place_tool(Boolean relative, Real position[3], Real normal[3],
-                             Real distance, Real overdrive, Real force_threshold,
+Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], Real normal[3],
+                             Real distance, Real overdrive, Boolean retracting, Real force_threshold,
                              Real torque_threshold);
 
 // Set the arm to use the provided tool.

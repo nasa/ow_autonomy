@@ -1,0 +1,22 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-lander-commands.h"
+
+OwlatArmPlaceTool:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Position[3];
+  In Real Normal[3];
+  In Real Distance;
+  In Real Overdrive;
+  In Boolean Retracting;
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
+
+  SynchronousCommand owlat_arm_place_tool(Frame, Relative, Position, Normal,
+                                          Distance, Overdrive, Retracting,
+                                          ForceThreshold, TorqueThreshold);
+}
