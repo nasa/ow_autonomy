@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
   plan_selection.start(); //begin control loop
   ros::spin();
 
-  // Never reached, because the killing the process is the only way to terminate
+  // Never reached, because killing the process is the only way to terminate
   // this program.
   return 0;
 }

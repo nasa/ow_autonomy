@@ -95,21 +95,20 @@ bool OwExecutive::runPlan (const string& filename)
 
 static bool plexilInitializeInterfaces (const string& config_file)
 {
-  string configpath = (PlexilDir + config_file);
-  const char* config = configpath.c_str();
+  string config_path = (PlexilDir + config_file);
   pugi::xml_document config_doc;
   pugi::xml_node config_elt;
-  pugi::xml_parse_result parseResult = config_doc.load_file(config);
-  if (parseResult.status != pugi::status_ok) {
+  pugi::xml_parse_result parse_result = config_doc.load_file (config_path.c_str());
+  if (parse_result.status != pugi::status_ok) {
     ROS_ERROR("Unable to load config file %s: %s",
-              config,
-              parseResult.description());
+              config_path.c_str(),
+              parse_result.description());
     return false;
   }
   else {
     config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG());
     if (!config_doc.empty() && config_elt.empty()) {
-      ROS_ERROR("config file %s has no Interfaces element", config);
+      ROS_ERROR("config file %s has no Interfaces element", config_path.c_str());
       return false;
     }
   }
