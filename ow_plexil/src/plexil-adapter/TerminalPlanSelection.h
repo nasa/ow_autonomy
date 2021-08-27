@@ -6,7 +6,6 @@
 #define Terminal_Plan_Selection_H
 
 #include <ros/ros.h>
-#include <ow_plexil/PlanSelection.h>
 #include <std_msgs/String.h>
 
 class TerminalPlanSelection{

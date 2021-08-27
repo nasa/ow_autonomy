@@ -1,5 +1,5 @@
 <Interfaces>
-  <!-- PLEXIL interfaces for OceanWATERS -->
+  <!-- PLEXIL interfaces for OWLAT simulator -->
   <Adapter AdapterType="Utility"/>
   <Adapter AdapterType="OSNativeTime"/>
   <Adapter AdapterType="Launcher"/>
@@ -11,7 +11,7 @@
                           UseTime="true" />
   </Adapter>
   <Adapter AdapterType="StringAdapter"/>
-  <Adapter AdapterType="ow_adapter">
+  <Adapter AdapterType="owlat_adapter">
     <DefaultCommandAdapter/>
     <DefaultLookupAdapter/>
   </Adapter>
