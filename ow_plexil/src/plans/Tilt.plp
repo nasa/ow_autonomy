@@ -4,10 +4,13 @@
 
 // Tilt antenna to specified degrees.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Tilt:
 {
   In Real Degrees;
+
+  Exit Lookup(AntennaFault);
+
   SynchronousCommand tilt_antenna (Degrees);
 }

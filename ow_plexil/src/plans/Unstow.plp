@@ -5,9 +5,11 @@
 // Unstow the arm, which is moving it to a specified "ready" position from
 // wherever its current location.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Unstow:
 {
+  Exit Lookup(ArmFault);
+
   SynchronousCommand unstow();
 }

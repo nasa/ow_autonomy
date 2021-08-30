@@ -4,7 +4,7 @@
 
 // Perform one pass of a linear digging action.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 DigLinear:
 {
@@ -13,6 +13,8 @@ DigLinear:
   In Real Depth;
   In Real Length;
   In Real GroundPos;
+
+  Exit Lookup(ArmFault);
 
   SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
 }

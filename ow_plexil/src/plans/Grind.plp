@@ -4,7 +4,7 @@
 
 // Perform one pass with the grinding tool, using the given parameters.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Grind:
 {
@@ -14,6 +14,8 @@ Grind:
   In Real Length;
   In Real GroundPos;
   In Boolean Parallel;
+
+  Exit Lookup(ArmFault);
 
   SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
 }

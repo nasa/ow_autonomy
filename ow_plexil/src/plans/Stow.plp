@@ -5,10 +5,12 @@
 // Stow the arm, which requires an unstow() first.  These commands simply move
 // the arm to specific coordinates.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Stow:
 {
+  Exit Lookup(ArmFault);
+
   SynchronousCommand unstow();
   SynchronousCommand stow();
 }
