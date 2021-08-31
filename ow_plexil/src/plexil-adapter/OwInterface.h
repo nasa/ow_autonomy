@@ -12,7 +12,7 @@
 #include <memory>
 #include <ros/ros.h>
 
-// ROS Actions
+// ROS Actions - OceanWATERS
 #include <actionlib/client/simple_action_client.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
@@ -35,6 +35,8 @@
 #include <ow_faults/PowerFaults.h>
 #include <ow_faults/PTFaults.h>
 
+#include "PlexilInterface.h"
+
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
 using StowActionClient =
@@ -52,25 +54,16 @@ using DeliverActionClient =
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
-template<int OpIndex, typename T>
-  using t_action_done_cb = void (*)(const actionlib::SimpleClientGoalState&,
-                                    const T& result_ignored);
-
-template<int OpIndex, typename T>
-void default_action_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const T& result_ignored);
-
 // Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
 using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 
-class OwInterface
+class OwInterface : public PlexilInterface
 {
  public:
   static std::shared_ptr<OwInterface> instance();
   OwInterface ();
-  ~OwInterface ();
+  ~OwInterface () = default;
   OwInterface (const OwInterface&) = delete;
   OwInterface& operator= (const OwInterface&) = delete;
   void initialize ();
@@ -113,24 +106,10 @@ class OwInterface
   bool   armFault () const;
   bool   powerFault () const;
 
-  // Is the given operation (as named in .cpp file) running?
-  bool running (const std::string& name) const;
-
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
-  // Command feedback
-  void setCommandStatusCallback (void (*callback) (int, bool));
-
-
  private:
-  template <int OpIndex, class ActionClient, class Goal,
-            class ResultPtr, class FeedbackPtr>
-    void runAction (const std::string& opname,
-                    std::unique_ptr<ActionClient>&,
-                    const Goal&, int id,
-                    t_action_done_cb<OpIndex, ResultPtr> done_cb =
-                    default_action_done_cb<OpIndex, ResultPtr>);
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
@@ -145,13 +124,14 @@ class OwInterface
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
   void deliverAction (double x, double y, double z, int id);
-  bool operationRunning (const std::string& name) const;
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
+  void antennaOp (const std::string& opname, double degrees,
+                  std::unique_ptr<ros::Publisher>&, int id);
   void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
   void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);

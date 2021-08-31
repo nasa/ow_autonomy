@@ -6,18 +6,14 @@ PLEXIL plans
 ============
 
 This directory contains PLEXIL plans that implement onboard autonomy for Ocean
-World landers, as supported by the OceanWATERS software testbed.
+World landers, as supported by the OceanWATERS and OWLAT software testbeds.
 
-Plans are executed by starting the autonomy node, which takes as an argument the
-name of the compiled plan, which is the same name as the `.plp` files here,
-except with extension `.plx`.  The default plan, when not supplied, is Demo.plx,
-which is the compilation of Demo.plp.  Compiled files are found only in the
-`devel/etc/plexil` directory of your workspace.
+See ow_plexil/README.md for instructions for selecting and executing plans.
 
-Not all of these plans may be executed directly by the autonomy node, because of
-some of them are library plans.  Only _top level_ plans may be run directly.  A
-top level plan is one having no parameters, i.e. no `In` or `InOut` variable
-declarations near the top.
+Not all of these plans may be executed directly, because of some of them are
+library plans.  Only _top level_ plans may be run directly.  A top level plan is
+one having no parameters, i.e. no `In` or `InOut` variable declarations near the
+top.
 
 Descriptions of some key plans, and other files of interest, are as follows.
 See the comments inside all the plans for more information.
@@ -33,18 +29,19 @@ See the comments inside all the plans for more information.
    filers are saved to ~/.ros by default; the location can be customized in
    `ow-config.xml`.
 
-3. Demo: Default plan for the autonomy node.  Exercises a short sequence of arm
-   and antenna operations.
+3. Demo: Exercises a short sequence of arm and antenna operations.
 
 4. TestAntennaCamera: A short panoramic imaging demo.
 
-5. TorqueTest: Overtorque detection.  This plan attempts to push the scoop into
+5. TestAntennaMovement: A more thorough test of pan/tilt operations.
+
+6. TorqueTest: Overtorque detection.  This plan attempts to push the scoop into
    the ground, which creates joint over-torquing warnings and errors.
 
-6. Continuous: non-terminating plan that performs continuous operations, useful
+7. Continuous: non-terminating plan that performs continuous operations, useful
    as a stress/load test.
 
-7. IdentifySampleLocationDemo: This plan demonstrates the IdentifySampleTarget
+8. IdentifySampleLocationDemo: This plan demonstrates the IdentifySampleTarget
    plan which uses the stereocamera to find a desirable sample location. It runs
    two tests, one with the "Brown" filter and one with the "Dark" filter. These
    filters find areas in the workspace that have the highest color concentration
@@ -53,19 +50,19 @@ See the comments inside all the plans for more information.
    sample targets. When a point is found the action server publishes two
    visualization topics which are described in testing plans below.
 
-Testing plans
--------------
+Plan Details
+============
 
 ### ReferenceMission2 ###
 
-The following represent the success criteria of the Reference Mission 2 plan: 
+The following represent the success criteria of the Reference Mission 2 plan:
 - Left running the plan completes
-	- Upon completion, the plan will print "ReferenceMission2 plan 
+	- Upon completion, the plan will print "ReferenceMission2 plan
 	complete."
 	- To more easily view this message when it occurs, add the following
  	after the launch command:<br/>
 	` | grep -i "ReferenceMission2 plan complete."`
-- The plan is interruptable through fault injection, i.e. pauses in 
+- The plan is interruptable through fault injection, i.e. pauses in
 response to a fault
 	- Faults can be injected via rqt, a python script, or the command line
  ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults/README.md))
@@ -95,9 +92,3 @@ need to first refresh the topic menu in RQT.
   IdentifySampleLocationDemo was succesful.
 - In rare cases no sample points can be found. If this happens success is
   defined by a graceful exit.
-
-
-
-
-
-

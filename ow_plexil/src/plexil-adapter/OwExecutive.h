@@ -15,19 +15,16 @@
 class OwExecutive
 {
  public:
-  OwExecutive() { }
-  ~OwExecutive();
+  OwExecutive() = default;
   OwExecutive (const OwExecutive&) = delete;
   OwExecutive& operator= (const OwExecutive&) = delete;
-  
+  ~OwExecutive() = default;
+
   static OwExecutive* instance();
 
-  bool initialize ();
-  bool getPlanState();
+  bool initialize (const std::string& config_file);
+  bool getPlanState(); // returns true if current plan is finished executing
   bool runPlan (const std::string& filename);
-
- private:
-  static OwExecutive* m_instance;
 };
 
 #endif

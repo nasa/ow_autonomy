@@ -9,7 +9,6 @@
 
 // OW
 #include "OwExecutive.h"
-#include "OwAdapter.h"
 
 // PLEXIL
 #include "AdapterFactory.hh"
@@ -36,21 +35,13 @@ static string PlexilDir = "";
 // The embedded PLEXIL application
 static PLEXIL::ExecApplication* PlexilApp = NULL;
 
-OwExecutive* OwExecutive::m_instance = NULL;
-
 OwExecutive* OwExecutive::instance ()
 {
   // Very simple singleton
-  if (m_instance == NULL) m_instance = new OwExecutive();
-  return m_instance;
+  static OwExecutive instance;
+  return &instance;
 }
 
-OwExecutive::~OwExecutive()
-{
-  if (m_instance) delete m_instance;
-}
-
-//returns true if current plan is finished executing
 bool OwExecutive::getPlanState()
 {
 	return PlexilApp->allPlansFinished();
@@ -83,9 +74,9 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-	// updates Exec so that multiple plans can be run even after first plan finishes 
+	// updates Exec so that multiple plans can be run even after first plan finishes
   PlexilApp->notifyExec();
-	g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+  PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
   PlexilApp->run();
   }
   catch (const Error& e) {
@@ -102,23 +93,22 @@ bool OwExecutive::runPlan (const string& filename)
 
 // PLEXIL application setup functions start here.
 
-static bool plexilInitializeInterfaces()
+static bool plexilInitializeInterfaces (const string& config_file)
 {
-  string config = (PlexilDir + "ow-config.xml");
-  const char* config_file = config.c_str();
+  string config_path = (PlexilDir + config_file);
   pugi::xml_document config_doc;
   pugi::xml_node config_elt;
-  pugi::xml_parse_result parseResult = config_doc.load_file(config_file);
-  if (parseResult.status != pugi::status_ok) {
+  pugi::xml_parse_result parse_result = config_doc.load_file (config_path.c_str());
+  if (parse_result.status != pugi::status_ok) {
     ROS_ERROR("Unable to load config file %s: %s",
-              config_file,
-              parseResult.description());
+              config_path.c_str(),
+              parse_result.description());
     return false;
   }
   else {
     config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG());
     if (!config_doc.empty() && config_elt.empty()) {
-      ROS_ERROR("config file %s has no Interfaces element", config_file);
+      ROS_ERROR("config file %s has no Interfaces element", config_path.c_str());
       return false;
     }
   }
@@ -160,7 +150,7 @@ static void get_plexil_debug_config()
   }
 }
 
-bool OwExecutive::initialize ()
+bool OwExecutive::initialize (const string& config_file)
 {
   // NOTE: this is the best we can do for now.
   // ROS provides no API to locate the 'devel' directory.
@@ -172,9 +162,8 @@ bool OwExecutive::initialize ()
   get_plexil_debug_config();
 
   try {
-    REGISTER_ADAPTER(OwAdapter, "Ow");
     PlexilApp = new PLEXIL::ExecApplication();
-    if (!plexilInitializeInterfaces()) {
+    if (! plexilInitializeInterfaces (config_file)) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
     }
