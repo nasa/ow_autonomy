@@ -9,18 +9,17 @@
 
 Unstow: UncheckedSequence
 {
+  //PreCondition !Lookup(ArmFault);
   PostCondition !Lookup(ArmFault);
 
-  Attempt:
+  if !Lookup(ArmFault)
   {
-    PreCondition !Lookup(ArmFault);
-
     SynchronousCommand unstow();
   }
-
-  if Attempt.outcome == FAILURE
+  else
   {
     log_error ("Command unstow not sent to lander due to active arm fault.");
   }
+  endif;
 
 }
