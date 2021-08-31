@@ -9,6 +9,7 @@
 
 Unstow: UncheckedSequence
 {
+  PostCondition !Lookup(ArmFault);
 
   Attempt:
   {
