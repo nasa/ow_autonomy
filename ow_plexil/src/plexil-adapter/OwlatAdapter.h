@@ -2,28 +2,28 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#ifndef Ow_Adapter
-#define Ow_Adapter
+#ifndef Owlat_Adapter
+#define Owlat_Adapter
 
-// PLEXIL Interface adapter for OceanWATERS.
+// PLEXIL Interface adapter for OWLAT simulator.
 
 #include "CommonAdapter.h"
 
-class OwAdapter : public CommonAdapter
+class OwlatAdapter : public CommonAdapter
 {
 public:
   // No default constructor, only this specialized one.
-  OwAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
-  ~OwAdapter () = default;
-  OwAdapter (const OwAdapter&) = delete;
-  OwAdapter& operator= (const OwAdapter&) = delete;
+  OwlatAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  ~OwlatAdapter () = default;
+  OwlatAdapter (const OwlatAdapter&) = delete;
+  OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
   virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
 };
 
 extern "C" {
-  void initOwAdapter();
+  void initOwlatAdapter();
 }
 
 #endif

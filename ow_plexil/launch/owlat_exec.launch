@@ -1,0 +1,18 @@
+<!-- Launch the plexil_node and terminal selection node. -->
+
+<launch>
+  <arg name="plan" default="None"/>
+
+  <node pkg="ow_plexil"
+        name="owlat_exec_node"
+        type="owlat_exec_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+  <node pkg="ow_plexil"
+        name="terminal_selection_node"
+        type="terminal_selection_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+</launch>
