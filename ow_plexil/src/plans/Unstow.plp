@@ -7,19 +7,11 @@
 
 #include "plan-interface.h"
 
-Unstow: UncheckedSequence
+Unstow:
 {
-  //PreCondition !Lookup(ArmFault);
   PostCondition !Lookup(ArmFault);
 
-  if !Lookup(ArmFault)
-  {
-    SynchronousCommand unstow();
-  }
-  else
-  {
-    log_error ("Command unstow not sent to lander due to active arm fault.");
-  }
-  endif;
+  if (!Lookup(ArmFault)) SynchronousCommand unstow();
+  else log_error ("Command unstow not sent to lander due to active arm fault.");
 
 }
