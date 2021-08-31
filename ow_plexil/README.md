@@ -3,9 +3,15 @@ Research and Simulation can be found in README.md in the root directory of this
 repository.
 
 This directory contains the ROS package `ow_plexil`, which provides:
- - a ROS node named `plexil_node` that embeds a PLEXIL plan executive
+ - launch file for OceanWATERS plan execution (ow_exec.launch)
+ - launch file for OWLAT plan execution (owlat_exec.launch)
+ - ROS nodes supporting the above launch files
  - sample autonomy plans written in PLEXIL
- - code that interfaces the PLEXIL plans with the OceanWATERS simulator
+ - code that interfaces the PLEXIL plans with the testbeds
+
+NOTE: OWLAT (Ocean Worlds Lander Autonomy Testbed) is a proprietery,
+closed-source simulator developed at JPL.  Instructions for use of this testbed
+are not provided with OceanWATERS.
 
 Contents
 --------
@@ -13,7 +19,7 @@ Contents
 `src/plans` directory contains the PLEXIL plans.
 
 `src/plexil-adapter` contains the supporting code needed to run the PLEXIL plans,
-and also the ROS node implementation.
+and also the ROS node implementations.
 
 See the `README.md` files in each subdirectory for more information.
 
@@ -51,13 +57,22 @@ Build just the ow_plexil package with:
  catkin build ow_plexil
 ```
 
-_NOTE: If any new PLEXIL plans (.plp or .ple files) have been added since your
-last build, a clean rebuild of ow_plexil is needed.  See bottom of this file
-for instructions._
+NOTE: If you have OWLAT, define the OWLAT flag, i.e.
+
+  `catkin build -DOWLAT=ON`
+
+or
+
+  `catkin build ow_plexil -DOWLAT=ON`.
+
+_IMPORTANT: If any PLEXIL plans (.plp files) have been added or removed since
+your last build, a clean rebuild of ow_plexil is needed.  This is due to a build
+deficiency.  See bottom of this file for instructions._
 
 
-Start the Plexil node
----------------------
+
+Launch the plan executive
+-------------------------
 
 1. First you must start the simulator, e.g.
 
@@ -70,21 +85,31 @@ Start the Plexil node
       `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
       `europa_test_dem.launch`.
 
-2. Next start the Plexil node.  Starting the Plexil node always runs a
-   PLEXIL plan.  The simplest version is:
+2. Next launch the desired executive.  For OceanWATERS:
 
-   `roslaunch ow_plexil plexil_node.launch`
+   `roslaunch ow_plexil ow_exec.launch`
 
-   This invocation loads the default PLEXIL plan, `Demo.plx`.  A specific plan
-   may be run by adding it to the command line, e.g.
+   For OWLAT:
 
-   `roslaunch ow_plexil plexil_node.launch plan:=ReferenceMission1.plx`
+   `roslaunch ow_plexil owlat_exec.launch`
 
-   The argument given to the `plan` parameter must be a file found in :
+   NOTE: only one of these may be launched at a time.
 
-   `<ow_workspace>/devel/etc/plexil`
+   You will be prompted for a plan to execute.  This must be a `.plx` file
+	 that exists in `<ow_workspace>/devel/etc/plexil`.
+
+   NOTE: you must select a plan that is valid for the given testbed.  An OWLAT
+   plan will not run with OceanWATERS, or vice versa -- the executive node will
+   crash.
+
+   Optionally, a plan may be specified on the command line, e.g.
+
+   `roslaunch ow_plexil ow_exec.launch plan:=ReferenceMission1.plx`
 
    See `plans/README.md` for a description of the PLEXIL plans.
+
+   Optionally, plans may be selected and queued for execution using the Plan
+   Selection GUI in rqt.
 
 
 Clean
@@ -99,3 +124,10 @@ To clean the entire ROS workspace (not needed if you only want to rebuild
 ow_plexil):
 
   `catkin clean`
+
+Caveats
+-------
+
+When using the OWLAT simulator, some operations, in particular the arm stow and
+unstow, may be reported as completed well before the arm has come to rest.  This
+is a known issue in the simulator and is to be fixed in its next release.

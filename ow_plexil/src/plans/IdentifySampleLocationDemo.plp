@@ -1,0 +1,38 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Takes pictures of terrain using stereo camera in front of lander and sends
+// them to action server for processing.  Points of interest are determined by
+// FilterType: "Brown" finds brown areas, "Dark" finds dark areas.  The plan
+// chooses the best sample point and then uses guarded move to find the exact
+// ground position of that spot.  Meant as a demo to show both filter types
+// working.
+
+#include "plan-interface.h"
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos,
+                                    In String FilterType);
+IdentifySampleLocationDemo:
+{
+  Real trench_x, trench_y, ground_pos;
+  Boolean parallel;
+
+  log_info("Testing Dark filter in IdentifySampleLocation");
+  LibraryCall IdentifySampleTarget (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel,
+                                    FilterType = "Dark");
+
+  log_info("Testing Brown filter in IdentifySampleLocation");
+  LibraryCall IdentifySampleTarget (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel,
+                                    FilterType = "Brown");
+  log_info("IdentifySampleLocationDemo finished.");
+}
