@@ -7,21 +7,15 @@
 
 #include "plan-interface.h"
 
-Unstow:
+Unstow: UncheckedSequence
 {
-
-  log_info ("testing");
 
   Attempt:
   {
     PreCondition !Lookup(ArmFault);
 
-    log_info ("testing 2");
-
     SynchronousCommand unstow();
   }
-
-  log_info ("Attempt outcome: ", Attempt.outcome);
 
   if Attempt.outcome == FAILURE
   {
