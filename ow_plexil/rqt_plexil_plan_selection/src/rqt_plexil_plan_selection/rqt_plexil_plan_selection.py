@@ -54,7 +54,7 @@ class PlexilPlanSelectionGUI(Plugin):
     self.monitor_signal[str].connect(self.monitor_status)
     #populates the plan list
     self.populate_plan_list()
-        
+
     #sets up tables
     self._widget.sentPlansTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
     self._widget.planQueueTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
