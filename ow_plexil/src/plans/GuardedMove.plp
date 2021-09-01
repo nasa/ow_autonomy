@@ -17,8 +17,14 @@ GuardedMove:
   In Real DirZ;
   In Real SearchDistance;
 
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
-  Wait 5; // Add some delay to make sure the status has been updated
+  if (!Lookup(ArmFault))
+  { 
+    SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
+    Wait 5; // Add some delay to make sure the status has been updated
+  }
+  else log_error ("Command guarded_move not sent to lander due to active arm fault.");
+
+  
 }

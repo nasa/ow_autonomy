@@ -9,8 +9,13 @@
 
 Stow:
 {
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand unstow();
-  SynchronousCommand stow();
+  if (!Lookup(ArmFault))
+  {
+    SynchronousCommand unstow();
+    SynchronousCommand stow();
+  }
+  else log_error ("Command stow not sent to lander due to active arm fault.");
+
 }

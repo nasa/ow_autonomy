@@ -14,7 +14,9 @@ Deliver:
   In Real Y;
   In Real Z;
 
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand deliver (X, Y, Z);
+  if (!Lookup(ArmFault)) SynchronousCommand deliver (X, Y, Z);
+  else log_error ("Command deliver not sent to lander due to active arm fault.");
+
 }

@@ -10,7 +10,9 @@ Tilt:
 {
   In Real Degrees;
 
-  Exit Lookup(AntennaFault);
+  PostCondition !Lookup(AntennaFault);
 
-  SynchronousCommand tilt_antenna (Degrees);
+  if (!Lookup(AntennaFault)) SynchronousCommand tilt_antenna (Degrees);
+  else log_error ("Command tilt_antenna not sent to lander due to active antenna fault.");
+
 }

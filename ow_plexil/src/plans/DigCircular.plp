@@ -14,7 +14,9 @@ DigCircular:
   In Real GroundPos;
   In Boolean Parallel;
 
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+  if (!Lookup(ArmFault)) SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+  else log_error ("Command dig_circular not sent to lander due to active arm fault.");
+
 }

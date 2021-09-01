@@ -10,7 +10,10 @@ Pan:
 {
   In Real Degrees;
 
-  Exit Lookup(AntennaFault);
+  PostCondition !Lookup(AntennaFault);
 
-  SynchronousCommand pan_antenna (Degrees);
+  if (!Lookup(AntennaFault)) SynchronousCommand pan_antenna (Degrees);
+  else log_error ("Command pan_antenna not sent to lander due to active antenna fault.");
+
+  
 }

@@ -15,7 +15,10 @@ Grind:
   In Real GroundPos;
   In Boolean Parallel;
 
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  if (!Lookup(ArmFault)) SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  else log_error ("Command grind not sent to lander due to active arm fault.");
+
+
 }

@@ -14,7 +14,9 @@ DigLinear:
   In Real Length;
   In Real GroundPos;
 
-  Exit Lookup(ArmFault);
+  PostCondition !Lookup(ArmFault);
 
-  SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+  if (!Lookup(ArmFault)) SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+  else log_error ("Command dig_linear not sent to lander due to active arm fault.");
+
 }
