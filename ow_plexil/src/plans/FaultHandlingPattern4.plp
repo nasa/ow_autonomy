@@ -30,36 +30,27 @@ FaultHandlingPattern4:
   Mission: 
   {
     
-    // This plan current will restart nodes if they are interrupted by a fault
-    // and then that fault is resolved. This will continue until completion of
-    // the processes in that node. However, currently the plan will continue
-    // indefinitely on Image since there is no way to get the action state
-    // in PLEXIL. This is what Jira 778 is for, so this plan can be tested
-    // once that Jira has been resolved.
-
     Image:
     {
       Repeat !ImageDone;
       Start !Lookup(AntennaFault);
-      Exit ImageDone;
+      End ImageDone;
 
-      SynchronousCommand pan_antenna (90)
+      SynchronousCommand pan_antenna (180);
 
-      ImageDone = !Lookup(AntennaFault); // Temporary solution
-      log_info ("ImageDone: ", ImageDone);
+      ImageDone = !Lookup(AntennaFault);
 
     }
     
-    /*
     Unstow:
     {
       Repeat !UnstowDone;
       Start !Lookup(ArmFault);
-      Exit UnstowDone;
+      End UnstowDone;
 
       SynchronousCommand unstow(); 
       
-      ImageDone = !Lookup(ArmFault);
+      UnstowDone = !Lookup(ArmFault);
 
     }
 
@@ -67,14 +58,13 @@ FaultHandlingPattern4:
     {
       Repeat !StowDone;
       Start !Lookup(ArmFault);
-      Exit StowDone;
+      End StowDone;
 
       SynchronousCommand stow();
       
-      ImageDone = !Lookup(ArmFault);
+      StowDone = !Lookup(ArmFault);
   
     }
-    */
 
   }
 
