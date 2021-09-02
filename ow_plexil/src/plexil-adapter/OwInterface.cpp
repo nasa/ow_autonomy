@@ -518,26 +518,32 @@ void OwInterface::initialize()
     m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
 
-    if (! m_unstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_unstowClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
     }
-    if (! m_stowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_stowClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Stow action server did not connect!");
     }
-    if (! m_digCircularClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_digCircularClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigCircular action server did not connect!");
     }
-    if (! m_digLinearClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_digLinearClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigLinear action server did not connect!");
     }
-    if (! m_deliverClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_deliverClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
     }
-    if (! m_guardedMoveClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_guardedMoveClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
     }
     if (! m_identifySampleLocationClient->waitForServer
-        (ros::Duration(ActionServerTimeout))) {
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }

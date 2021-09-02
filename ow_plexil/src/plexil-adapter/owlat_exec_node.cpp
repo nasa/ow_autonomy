@@ -15,11 +15,11 @@
 int main(int argc, char* argv[])
 {
   // Initializations
-  ros::init(argc, argv, "ow_exec_node");
+  ros::init(argc, argv, "owlat_exec_node");
   std::string initial_plan = "None";
 
   //checking if there is a plan given
-  if(argc == 2 && std::string(argv[1]).compare("None") != 0) {
+  if(argc >= 2 && std::string(argv[1]).compare("None") != 0) {
     std::string plan(argv[1]);
     initial_plan = plan;
   }
@@ -32,5 +32,8 @@ int main(int argc, char* argv[])
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
   ros::spin();
-  return 0;  // We never actually get here!
+
+  // Never reached, because killing the process is the only way to terminate
+  // this program.
+  return 0;
 }

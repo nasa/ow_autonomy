@@ -20,7 +20,7 @@ PlexilInterface::~PlexilInterface ()
   m_commandStatusCallback = nullptr;
 }
 
-bool PlexilInterface::isLanderOperation (const string& name)
+bool PlexilInterface::isLanderOperation (const string& name) const
 {
   return m_runningOperations.find(name) != m_runningOperations.end();
 }
@@ -44,17 +44,22 @@ bool PlexilInterface::markOperationFinished (const string& name, int id)
   m_runningOperations.at (name) = IDLE_ID;
   publish ("Running", false, name);
   publish ("Finished", true, name);
-  if (id != IDLE_ID) m_commandStatusCallback (id, true);
-
+  if (id != IDLE_ID) {
+    if (m_commandStatusCallback) m_commandStatusCallback (id, true);
+    else ROS_ERROR ("markOperationFinished: m_commandStatusCallback was null!");
+  }
+  else ROS_WARN ("markOperationFinished: %s was not running.", name.c_str());
 }
 
 bool PlexilInterface::running (const string& name) const
 {
-  // TODO: add check for valid operation name
-  return operationRunning (name);
-
-  //  ROS_ERROR("PlexilInterface::running: unsupported operation: %s", name.c_str());
-  //  return false;
+  if (isLanderOperation (name)) {
+    return operationRunning (name);
+  }
+  else {
+    ROS_ERROR("PlexilInterface::running: unsupported operation: %s", name.c_str());
+    return false;
+  }
 }
 
 bool PlexilInterface::operationRunning (const string& name) const

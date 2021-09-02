@@ -13,13 +13,13 @@ class OwlatAdapter : public CommonAdapter
 {
 public:
   // No default constructor, only this specialized one.
-  OwlatAdapter (AdapterExecInterface&, const pugi::xml_node&);
+  OwlatAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
   ~OwlatAdapter () = default;
   OwlatAdapter (const OwlatAdapter&) = delete;
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (const State&, StateCacheEntry&);
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
 };
 
 extern "C" {

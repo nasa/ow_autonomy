@@ -9,7 +9,7 @@
 
 void PlexilPlanSelection::initialize(std::string initial_plan)
 {
-  ROS_INFO("Starting plexil node...");
+  ROS_INFO("Starting PLEXIL executive node...");
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
 
   // wait for the first proper clock message before running the plan
@@ -39,7 +39,7 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
       (m_genericNodeHandle->advertise<std_msgs::String>
        ("/plexil_plan_selection_status", 20));
 
-  ROS_INFO("Plexil node started, ready for PLEXIL plans.");
+  ROS_INFO("Executive node started, ready for PLEXIL plans.");
 }
 
 void PlexilPlanSelection::start()

@@ -13,13 +13,13 @@ class OwAdapter : public CommonAdapter
 {
 public:
   // No default constructor, only this specialized one.
-  OwAdapter (AdapterExecInterface&, const pugi::xml_node&);
+  OwAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
   ~OwAdapter () = default;
   OwAdapter (const OwAdapter&) = delete;
   OwAdapter& operator= (const OwAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (const State&, StateCacheEntry&);
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
 };
 
 extern "C" {

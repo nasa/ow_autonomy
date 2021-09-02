@@ -22,6 +22,7 @@
 #include <Debug.hh>
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
+using namespace PLEXIL;
 
 // C++
 #include <string>

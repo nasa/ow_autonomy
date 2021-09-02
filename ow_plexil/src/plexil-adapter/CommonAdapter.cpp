@@ -21,6 +21,7 @@
 #include <Debug.hh>
 #include <Expression.hh>
 #include <StateCacheEntry.hh>
+using namespace PLEXIL;
 
 void CommonAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals) const

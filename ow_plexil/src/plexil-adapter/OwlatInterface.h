@@ -84,7 +84,7 @@ class OwlatInterface : public PlexilInterface
   OwlatInterface() = default;
   ~OwlatInterface() = default;
   OwlatInterface (const OwlatInterface&) = delete;
-	OwlatInterface& operator= (const OwlatInterface&) = delete;
+  OwlatInterface& operator= (const OwlatInterface&) = delete;
 
   void initialize();
 

@@ -4,8 +4,7 @@
 
 // Test each operation of the OWLAT Simulator.
 
-LibraryAction OwlatUnstow();
-LibraryAction OwlatStow();
+#include "owlat-interface.h"
 
 TestOwlat:
 {
