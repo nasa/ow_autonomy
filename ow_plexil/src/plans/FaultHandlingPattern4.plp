@@ -43,7 +43,7 @@ FaultHandlingPattern4:
       Start !Lookup(AntennaFault);
       Exit ImageDone;
 
-      SynchronousCommand pan_antenna (90);
+      SynchronousCommand pan_antenna (90)
 
       ImageDone = !Lookup(AntennaFault); // Temporary solution
       log_info ("ImageDone: ", ImageDone);
