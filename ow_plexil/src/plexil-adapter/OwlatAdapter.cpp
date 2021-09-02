@@ -345,6 +345,20 @@ static void armTool (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getArmTool());
 }
 
+static void pspStopReason (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getPSPStopReason ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getPSPStopReason());
+}
+
+static void shearBevameterStopReason (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getShearBevameterStopReason ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getShearBevameterStopReason());
+}
+
 static void getDefault (const State& state, StateCacheEntry &entry)
 {
   debugMsg("SampleAdapter:getSize", "lookup called for " << state.name()
@@ -389,6 +403,8 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("ArmFTForce", armFTForce);
   g_configuration->registerLookupHandler("ArmPose", armPose);
   g_configuration->registerLookupHandler("ArmTool", armTool);
+  g_configuration->registerLookupHandler("PSPStopReason", pspStopReason);
+  g_configuration->registerLookupHandler("ShearBevameterStopReason", shearBevameterStopReason);
   g_configuration->setDefaultLookupHandler(getDefault);
 
   debugMsg("OwlatAdapter", " initialized.");

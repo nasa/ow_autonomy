@@ -54,6 +54,8 @@ Real Lookup ArmFTTorque;
 Real Lookup ArmFTForce;
 Real Lookup ArmPose;
 Real Lookup ArmTool;
+Real Lookup PSPStopReason;
+Real Lookup ShearBevameterStopReason;
 
 // Misc
 // Query whether a given operation is running.  Uses the operation names as

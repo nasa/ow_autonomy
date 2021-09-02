@@ -132,6 +132,8 @@ class OwlatInterface : public PlexilInterface
   Value getArmFTForce();
   Value getArmPose();
   Value getArmTool();
+  Value getPSPStopReason();
+  Value getShearBevameterStopReason();
 
  private:
 
@@ -221,7 +223,6 @@ class OwlatInterface : public PlexilInterface
   vector<double> m_arm_ft_force;
   vector<double> m_arm_pose;
   double m_arm_tool;
-
 };
 
 #endif

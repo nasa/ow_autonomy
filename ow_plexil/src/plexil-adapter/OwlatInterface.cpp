@@ -69,6 +69,33 @@ static std::vector<string> LanderOpNames =
     Name_OwlatTaskShearBevameter
   };
 
+// Task Shear Bevameter Callback
+static double BevameterStopReasonVar = 0;
+template<int OpIndex, typename T>
+static void task_shear_bevameter_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
+{
+  ROS_INFO("Shear Bevameter Stop Reason: : %d", result->stop_reason.value);
+  BevameterStopReasonVar = result->stop_reason.value;
+  publish("ShearBevameterStopReason", BevameterStopReasonVar);
+  ROS_INFO ("/owlat_sim/TASK_SHEAR_BEVAMETER finished in state %s", 
+            state.toString().c_str());
+}
+
+// Task PSP Callback
+static double PSPStopReasonVar = 0;
+template<int OpIndex, typename T>
+static void task_psp_done_cb
+(const actionlib::SimpleClientGoalState& state,
+ const T& result)
+{
+  ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
+  PSPStopReasonVar = result->stop_reason.value;
+  publish("PSPStopReason", PSPStopReasonVar);
+  ROS_INFO ("/owlat_sim/TASK_PSP finished in state %s", 
+            state.toString().c_str());
+}
 
 std::shared_ptr<OwlatInterface> OwlatInterface::m_instance = nullptr;
 
@@ -634,7 +661,7 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
     (opname, m_owlatTaskPSPClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TASK_PSPFeedbackConstPtr> (opname),
-     default_action_done_cb<TASK_PSPResultConstPtr> (opname));
+     task_psp_done_cb<OwlatArmTaskPSP,TASK_PSPResultConstPtr>);
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
@@ -708,7 +735,7 @@ void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
     (opname, m_owlatTaskShearBevameterClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TASK_SHEAR_BEVAMETERFeedbackConstPtr> (opname),
-     default_action_done_cb<TASK_SHEAR_BEVAMETERResultConstPtr> (opname));
+     task_shear_bevameter_done_cb<OwlatArmTaskShearBevameter, TASK_SHEAR_BEVAMETERResultConstPtr>);
 }
 
 
@@ -812,5 +839,17 @@ Value OwlatInterface::getArmTool()
 {
   Value value_arm_tool = Value(m_arm_tool);
   return value_arm_tool;
+}
+
+Value OwlatInterface::getPSPStopReason()
+{
+  Value value_stop_reason = Value(PSPStopReasonVar);
+  return value_stop_reason;
+}
+
+Value OwlatInterface::getShearBevameterStopReason()
+{
+  Value value_stop_reason = Value(BevameterStopReasonVar);
+  return value_stop_reason;
 }
 
