@@ -43,19 +43,14 @@ FaultHandlingPattern4:
       Start !Lookup(AntennaFault);
       Exit ImageDone;
 
-      SynchronousCommand pan_antenna (180);
+      SynchronousCommand pan_antenna (90);
 
-      /*
-      if pan_antenna.state == SUCCEEDED // #TODO Fix syntax after jira 778 done
-      {
-        log_info ("Image successfully completed...");
-        ImageDone = true;
-      }
-      */
+      ImageDone = !Lookup(AntennaFault); // Temporary solution
+      log_info ("ImageDone: ", ImageDone);
 
     }
     
-    
+    /*
     Unstow:
     {
       Repeat !UnstowDone;
@@ -64,13 +59,7 @@ FaultHandlingPattern4:
 
       SynchronousCommand unstow(); 
       
-      /*
-      if unstow.state == SUCCEEDED // #TODO Fix syntax after jira 778 done
-      {
-        log_info ("Unstow successfully completed...");
-        UnstowDone = true;
-      }
-      */
+      ImageDone = !Lookup(ArmFault);
 
     }
 
@@ -82,16 +71,10 @@ FaultHandlingPattern4:
 
       SynchronousCommand stow();
       
-      /*
-      if stow.state == SUCCEEDED // #TODO Fix syntax after jira 778 done
-      {
-        log_info ("Stow successfully completed...");
-        StowDone = true;
-      }
-      */
+      ImageDone = !Lookup(ArmFault);
   
     }
-    
+    */
 
   }
 
