@@ -52,9 +52,15 @@ class PlexilPlanSelectionGUI(Plugin):
   
     #Qt signal to modify GUI from callback
     self.monitor_signal[str].connect(self.monitor_status)
-    #populates the plan list
-    self.populate_plan_list()
 
+    #populates the plan list, shows different plans based off of what launch file is running
+    if rospy.has_param('owlat_flag'):
+      owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat_plans')
+      self.populate_plan_list(owlat_plan_dir)
+    else:
+      ow_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
+      self.populate_plan_list(ow_plan_dir)
+ 
     #sets up tables
     self._widget.sentPlansTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
     self._widget.planQueueTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
@@ -69,11 +75,9 @@ class PlexilPlanSelectionGUI(Plugin):
     self._widget.sendButton.clicked[bool].connect(self.handle_send_button_clicked)
     self._widget.resetButton.clicked[bool].connect(self.handle_reset_button_clicked)
 
-  def populate_plan_list(self):
+  def populate_plan_list(self, plan_dir):
     '''Finds all .ple plexil plans in the plans directory and stores them in the widget list.'''
     plan_list = []
-    #get directory
-    plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
     #get all plans with extension .ple
     for p in os.listdir(plan_dir):
       if p.endswith(".ple"):

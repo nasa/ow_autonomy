@@ -1,6 +1,10 @@
 <!-- Launch the plexil_node and terminal selection node. -->
 
 <launch>
+
+  <!-- Lets GUI know what plans to display -->
+  <param name="owlat_flag" value="True"/>
+
   <arg name="plan" default="None"/>
 
   <node pkg="ow_plexil"
@@ -15,4 +19,10 @@
         args="$(arg plan)"
         output="screen">
   </node>
+  <node pkg="rqt_gui"
+        name="rqt_gui"
+        type="rqt_gui"
+        args="-s rqt_plexil_plan_selection"
+  />
+
 </launch>
