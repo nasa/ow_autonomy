@@ -141,6 +141,17 @@ void receiveBoolString (const string& state_name, bool val, const string& arg)
              vector<Value> (1, val));
 }
 
+void receiveDoubleVector (const string& state_name, vector<double> vals)
+{
+  vector<Value> vector_values;
+  for(int i = 0; i < vals.size(); i++){
+    Value temp = Value(vals[i]);
+    vector_values.push_back(temp);
+  }
+  propagate (create_state(state_name, EmptyArgs),
+             vector_values);
+}
+
 static string log_string (const vector<Value>& args)
 {
   std::ostringstream out;

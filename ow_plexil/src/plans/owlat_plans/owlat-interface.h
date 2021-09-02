@@ -45,6 +45,15 @@ LibraryAction OwlatTaskShearBevameter(In Integer Frame, In Boolean Relative, In 
 
 
 
+Real Lookup Size;
+Real Lookup ArmJointAngles;
+Real Lookup ArmJointAccelerations;
+Real Lookup ArmJointTorques;
+Real Lookup ArmJointVelocities;
+Real Lookup ArmFTTorque;
+Real Lookup ArmFTForce;
+Real Lookup ArmPose;
+Real Lookup ArmTool;
 
 // Misc
 // Query whether a given operation is running.  Uses the operation names as

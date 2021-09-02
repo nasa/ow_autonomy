@@ -21,6 +21,7 @@ using namespace PLEXIL;
 // C++
 #include <map>
 #include <string>
+using std::vector;
 
 
 ///////////////////////////// Conveniences //////////////////////////////////
@@ -66,6 +67,7 @@ void receiveString (const std::string& state_name, const std::string& val);
 void receiveBoolString (const std::string& state_name,
                         bool val,
                         const std::string& arg);
+void receiveDoubleVector (const std::string& state_name, vector<double> vals);
 
 
 /////////////////////////////// ROS Logging ///////////////////////////////////

@@ -12,6 +12,7 @@
 #include <ros/ros.h>
 
 // ow_plexil
+#include <Value.hh>
 #include "PlexilInterface.h"
 
 // OWLAT Sim (installation required)
@@ -30,9 +31,20 @@
 #include <owlat_sim_msgs/TASK_PSPAction.h>
 #include <owlat_sim_msgs/TASK_SCOOPAction.h>
 #include <owlat_sim_msgs/TASK_SHEAR_BEVAMETERAction.h>
+#include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
+#include <owlat_sim_msgs/ARM_JOINT_ACCELERATIONS.h>
+#include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
+#include <owlat_sim_msgs/ARM_JOINT_VELOCITIES.h>
+#include <owlat_sim_msgs/ARM_FT_TORQUE.h>
+#include <owlat_sim_msgs/ARM_FT_FORCE.h>
+#include <owlat_sim_msgs/ARM_POSE.h>
+#include <owlat_sim_msgs/ARM_TOOL.h>
 
 using std::string;
 using std::vector;
+using std::unique_ptr;
+using std::make_unique;
+using namespace PLEXIL;
 
 using OwlatUnstowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
@@ -111,9 +123,19 @@ class OwlatInterface : public PlexilInterface
                                 vector<double> normal, double preload,
                                 double max_torque, int id); 
 
-
+  // Lookups
+  Value getArmJointAngles();
+  Value getArmJointAccelerations();
+  Value getArmJointTorques();
+  Value getArmJointVelocities();
+  Value getArmFTTorque();
+  Value getArmFTForce();
+  Value getArmPose();
+  Value getArmTool();
 
  private:
+
+  // Actions
   void owlatUnstowAction (int id);
   void owlatStowAction (int id);
   void owlatArmMoveCartesianAction (int frame, bool relative, 
@@ -149,10 +171,31 @@ class OwlatInterface : public PlexilInterface
   void owlatTaskShearBevameterAction (int frame, bool relative,
                                       vector<double> point, vector<double> normal,
                                       double preload, double max_torque, int id); 
-
-
-
+  //instance and node handle
   static std::shared_ptr<OwlatInterface> m_instance;
+  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
+
+  // Subscribers
+  std::unique_ptr<ros::Subscriber> m_armJointAnglesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armJointAccelerationsSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armJointTorquesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armJointVelocitiesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armFTTorqueSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armFTForceSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armPoseSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armToolSubscriber;
+
+  // Callbacks
+  void armJointAnglesCallback(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
+  void armJointAccelerationsCallback(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg);
+  void armJointTorquesCallback(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
+  void armJointVelocitiesCallback(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
+  void armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg);
+  void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
+  void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
+  void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
+
+  // Action Clients
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
   std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
   std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
@@ -168,6 +211,16 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<OwlatTaskPSPActionClient> m_owlatTaskPSPClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
   std::unique_ptr<OwlatTaskShearBevameterActionClient> m_owlatTaskShearBevameterClient;
+
+  // Member variables
+  vector<double> m_arm_joint_angles;
+  vector<double> m_arm_joint_accelerations;
+  vector<double> m_arm_joint_torques;
+  vector<double> m_arm_joint_velocities;
+  vector<double> m_arm_ft_torque;
+  vector<double> m_arm_ft_force;
+  vector<double> m_arm_pose;
+  double m_arm_tool;
 
 };
 

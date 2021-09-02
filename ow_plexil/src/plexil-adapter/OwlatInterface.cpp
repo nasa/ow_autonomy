@@ -5,6 +5,9 @@
 #include <thread>
 #include <vector>
 #include "OwlatInterface.h"
+#include <ArrayImpl.hh>
+#include <functional>
+#include "subscriber.h"
 
 using namespace owlat_sim_msgs;
 using std::hash;
@@ -85,6 +88,57 @@ void OwlatInterface::initialize()
     for (auto name : LanderOpNames) {
       registerLanderOperation (name);
     }
+
+    m_genericNodeHandle = make_unique<ros::NodeHandle>();
+    m_arm_joint_angles.resize(7);
+    m_arm_joint_accelerations.resize(7);
+    m_arm_joint_torques.resize(7);
+    m_arm_joint_velocities.resize(7);
+    m_arm_ft_torque.resize(3);
+    m_arm_ft_force.resize(3);
+    m_arm_pose.resize(7);
+    m_arm_tool = 0;
+
+    const int qsize = 3;
+    m_armJointAnglesSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
+       &OwlatInterface::armJointAnglesCallback, this));
+ 
+    m_armJointAccelerationsSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
+       &OwlatInterface::armJointAccelerationsCallback, this));
+
+    m_armJointTorquesSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/owlat_sim/ARM_JOINT_TORQUES", qsize,
+       &OwlatInterface::armJointTorquesCallback, this));
+
+    m_armJointVelocitiesSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
+       &OwlatInterface::armJointAnglesCallback, this));
+
+    m_armFTTorqueSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/owlat_sim/ARM_FT_TORQUE", qsize,
+       &OwlatInterface::armFTTorqueCallback, this));
+
+   m_armFTForceSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle ->
+         subscribe("/owlat_sim/ARM_FT_FORCE", qsize,
+         &OwlatInterface::armFTForceCallback, this));
+
+   m_armPoseSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle ->
+         subscribe("/owlat_sim/ARM_POSE", qsize,
+         &OwlatInterface::armPoseCallback, this));
+         
+   m_armToolSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle ->
+         subscribe("/owlat_sim/ARM_TOOL", qsize,
+         &OwlatInterface::armToolCallback, this));
 
     // Initialize pointers
     m_owlatUnstowClient =
@@ -656,3 +710,107 @@ void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
      default_action_feedback_cb<TASK_SHEAR_BEVAMETERFeedbackConstPtr> (opname),
      default_action_done_cb<TASK_SHEAR_BEVAMETERResultConstPtr> (opname));
 }
+
+
+void OwlatInterface::armJointAnglesCallback(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_angles.begin()); 
+  publish("ArmJointAngles", m_arm_joint_angles);
+}
+
+void OwlatInterface::armJointAccelerationsCallback(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin()); 
+  publish("ArmJointAccelerations", m_arm_joint_accelerations);
+}
+
+void OwlatInterface::armJointTorquesCallback(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin()); 
+  publish("ArmJointTorques", m_arm_joint_torques);
+}
+
+void OwlatInterface::armJointVelocitiesCallback(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin()); 
+  publish("ArmJointVelocities", m_arm_joint_velocities);
+}
+
+void OwlatInterface::armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_ft_torque.begin()); 
+  publish("ArmFTTorque", m_arm_ft_torque);
+}
+
+void OwlatInterface::armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg)
+{
+  std::copy(msg->value.begin(), msg->value.end(), m_arm_ft_force.begin()); 
+  publish("ArmFTForce", m_arm_ft_force);
+}
+
+void OwlatInterface::armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
+{
+  m_arm_pose[0] = msg->value.position.x;
+  m_arm_pose[1] = msg->value.position.y;
+  m_arm_pose[2] = msg->value.position.z;
+  m_arm_pose[3] = msg->value.orientation.x;
+  m_arm_pose[4] = msg->value.orientation.y;
+  m_arm_pose[5] = msg->value.orientation.z;
+  m_arm_pose[6] = msg->value.orientation.w;
+  publish("ArmPose", m_arm_pose);
+}
+
+void OwlatInterface::armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
+{
+  m_arm_tool = msg->value.value;
+  publish("ArmTool", m_arm_tool);
+}
+
+Value OwlatInterface::getArmJointAngles()
+{
+  Value value_joint_angles = Value(m_arm_joint_angles);
+  return value_joint_angles;
+}
+
+Value OwlatInterface::getArmJointAccelerations()
+{
+  Value value_joint_accelerations = Value(m_arm_joint_accelerations);
+  return value_joint_accelerations;
+}
+
+Value OwlatInterface::getArmJointTorques()
+{
+  Value value_joint_torques = Value(m_arm_joint_torques);
+  return value_joint_torques;
+}
+
+Value OwlatInterface::getArmJointVelocities()
+{
+  Value value_joint_velocities = Value(m_arm_joint_velocities);
+  return value_joint_velocities;
+}
+
+Value OwlatInterface::getArmFTTorque()
+{
+  Value value_ft_torque = Value(m_arm_ft_torque);
+  return value_ft_torque;
+}
+
+Value OwlatInterface::getArmFTForce()
+{
+  Value value_ft_force = Value(m_arm_ft_force);
+  return value_ft_force;
+}
+
+Value OwlatInterface::getArmPose()
+{
+  Value value_arm_pose = Value(m_arm_pose);
+  return value_arm_pose;
+}
+
+Value OwlatInterface::getArmTool()
+{
+  Value value_arm_tool = Value(m_arm_tool);
+  return value_arm_tool;
+}
+

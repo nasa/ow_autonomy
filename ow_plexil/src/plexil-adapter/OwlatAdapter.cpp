@@ -289,6 +289,70 @@ static void owlat_task_shear_bevameter (Command* cmd, AdapterExecInterface* intf
 }
 
 
+static void armJointAngles (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmJointAngles ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmJointAngles());
+}
+
+static void armJointAccelerations (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmJointAccelerations ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmJointAccelerations());
+}
+
+static void armJointTorques (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmJointTorques ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmJointTorques());
+}
+
+static void armJointVelocities (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmJointVelocities ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmJointVelocities());
+}
+
+static void armFTTorque (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmFTTorque ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmFTTorque());
+}
+
+static void armFTForce (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmFTForce ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmFTForce());
+}
+
+static void armPose (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmPose ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmPose());
+}
+
+static void armTool (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("getArmTool ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getArmTool());
+}
+
+static void getDefault (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("SampleAdapter:getSize", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  debugMsg("Invalid State: ", state.name());
+  entry.update(Unknown);
+}
+
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
@@ -316,6 +380,17 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   g_configuration->registerCommandHandler("owlat_task_shear_bevameter", owlat_task_shear_bevameter);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
+
+  g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
+  g_configuration->registerLookupHandler("ArmJointAccelerations", armJointAccelerations);
+  g_configuration->registerLookupHandler("ArmJointTorques", armJointTorques);
+  g_configuration->registerLookupHandler("ArmJointVelocities", armJointVelocities);
+  g_configuration->registerLookupHandler("ArmFTTorque", armFTTorque);
+  g_configuration->registerLookupHandler("ArmFTForce", armFTForce);
+  g_configuration->registerLookupHandler("ArmPose", armPose);
+  g_configuration->registerLookupHandler("ArmTool", armTool);
+  g_configuration->setDefaultLookupHandler(getDefault);
+
   debugMsg("OwlatAdapter", " initialized.");
   return true;
 }
