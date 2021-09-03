@@ -19,9 +19,11 @@ LibraryAction InitializeAntennaAndArm ();
 FaultHandlingPattern4:
 {
 
-  Boolean ImageDone = false;
+  Boolean PanDone = false;
   Boolean UnstowDone = false;
   Boolean StowDone = false;
+
+  Real AngleToGoal;
 
   LibraryCall InitializeAntennaAndArm ();
 
@@ -30,15 +32,20 @@ FaultHandlingPattern4:
   Mission: 
   {
     
-    Image:
+    PanAntenna:
     {
-      Repeat !ImageDone;
+      Repeat !PanDone;
       Start !Lookup(AntennaFault);
-      Skip ImageDone;
+      Skip PanDone;
 
       LibraryCall Pan (Degrees=180);
+      
+      AngleToGoal = 180 - abs(Lookup(PanDegrees));
 
-      ImageDone = !Lookup(AntennaFault);
+      if abs(AngleToGoal) < 1
+      {
+        PanDone = true;
+      }
 
     }
 
