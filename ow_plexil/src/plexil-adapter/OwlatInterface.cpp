@@ -200,49 +200,49 @@ void OwlatInterface::initialize()
       std::make_unique<OwlatTaskShearBevameterActionClient>(Name_OwlatTaskShearBevameter, true);
 
     // Connect to action servers
-    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT UNSTOW action server did not connect!");
     }
-    if (! m_owlatStowClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatStowClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT STOW action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmMoveCartesianClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianGuardedClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmMoveCartesianGuardedClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmMoveJointClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmMoveJointClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINT action server did not connect!");
     }
-    if (! m_owlatArmMoveJointsClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmMoveJointsClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS action server did not connect!");
     }
-    if (! m_owlatArmMoveJointsGuardedClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmMoveJointsGuardedClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmPlaceToolClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmPlaceToolClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_PLACE_TOOL action server did not connect!");
     }
-    if (! m_owlatArmSetToolClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmSetToolClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_SET_TOOL action server did not connect!");
     }
-    if (! m_owlatArmStopClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmStopClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_STOP action server did not connect!");
     }
-    if (! m_owlatArmTareFSClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatArmTareFSClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_TARE_FS action server did not connect!");
     }
-    if (! m_owlatTaskDropoffClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatTaskDropoffClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_DROPOFF action server did not connect!");
     }
-    if (! m_owlatTaskPSPClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatTaskPSPClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_PSP action server did not connect!");
     }
-    if (! m_owlatTaskScoopClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatTaskScoopClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_SCOOP action server did not connect!");
     }
-    if (! m_owlatTaskShearBevameterClient->waitForServer(ros::Duration(ActionServerTimeout))) {
+    if (! m_owlatTaskShearBevameterClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_SHEAR_BEVAMETER action server did not connect!");
     }
   }
