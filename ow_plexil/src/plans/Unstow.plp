@@ -5,9 +5,22 @@
 // Unstow the arm, which is moving it to a specified "ready" position from
 // wherever its current location.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Unstow:
 {
-  SynchronousCommand unstow();
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault) 
+    log_error ("Command unstow not sent to lander due to active arm fault(s).");
+
+  CommandLander:
+  {
+    Start !Lookup(ArmFault);
+
+    log_info ("Arm fault(s) resolved, sending unstow command to lander...");
+
+    SynchronousCommand unstow();
+  }
+
 }
