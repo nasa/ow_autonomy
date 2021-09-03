@@ -9,16 +9,24 @@
 
 Unstow:
 {
+  Boolean FaultDetected = false;
+
   PostCondition !Lookup(ArmFault);
 
-  if Lookup(ArmFault) 
+  if Lookup(ArmFault)
+  { 
     log_error ("Command unstow not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
 
-  CommandLander:
+  SendUnstow:
   {
     Start !Lookup(ArmFault);
 
-    log_info ("Arm fault(s) resolved, sending unstow command to lander...");
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending unstow command to lander...");
+    }
 
     SynchronousCommand unstow();
   }
