@@ -34,33 +34,34 @@ FaultHandlingPattern4:
     {
       Repeat !ImageDone;
       Start !Lookup(AntennaFault);
-      End ImageDone;
+      Skip ImageDone;
 
-      SynchronousCommand pan_antenna (180);
+      LibraryCall Pan (Degrees=180);
 
       ImageDone = !Lookup(AntennaFault);
 
     }
-    
+
     Unstow:
     {
       Repeat !UnstowDone;
       Start !Lookup(ArmFault);
-      End UnstowDone;
+      Skip UnstowDone;
 
-      SynchronousCommand unstow(); 
+      LibraryCall Unstow(); 
       
       UnstowDone = !Lookup(ArmFault);
 
     }
 
+    
     Stow:
     {
       Repeat !StowDone;
       Start !Lookup(ArmFault);
-      End StowDone;
+      Skip StowDone;
 
-      SynchronousCommand stow();
+      LibraryCall Stow();
       
       StowDone = !Lookup(ArmFault);
   
