@@ -28,10 +28,10 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <ow_faults_injection/SystemFaults.h>
-#include <ow_faults_injection/ArmFaults.h>
-#include <ow_faults_injection/PowerFaults.h>
-#include <ow_faults_injection/PTFaults.h>
+#include <ow_faults_detection/SystemFaults.h>
+#include <ow_faults_detection/ArmFaults.h>
+#include <ow_faults_detection/PowerFaults.h>
+#include <ow_faults_detection/PTFaults.h>
 
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
@@ -142,10 +142,10 @@ class OwInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
-  void systemFaultMessageCallback (const ow_faults_injection::SystemFaults::ConstPtr&);
-  void armFaultCallback (const ow_faults_injection::ArmFaults::ConstPtr&);
-  void powerFaultCallback (const ow_faults_injection::PowerFaults::ConstPtr&);
-  void antennaFaultCallback (const ow_faults_injection::PTFaults::ConstPtr&);
+  void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
+  void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
+  void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
+  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
 
   template <typename T1, typename T2>
     void faultCallback (T1 msg_val, T2&, const std::string& name);
