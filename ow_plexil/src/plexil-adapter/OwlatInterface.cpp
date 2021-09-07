@@ -52,8 +52,8 @@ enum LanderOps {
   OwlatArmTaskShearBevameter
 };
 
-static std::vector<string> LanderOpNames =
-  { Name_OwlatUnstow,
+static std::vector<string> LanderOpNames = {
+    Name_OwlatUnstow,
     Name_OwlatStow,
     Name_OwlatArmMoveCartesian,
     Name_OwlatArmMoveCartesianGuarded,
@@ -351,7 +351,7 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
                                                          vector<double> orientation,
                                                          bool retracting, 
                                                          double force_threshold, 
-                                                         double torque_threshold,int id)
+                                                         double torque_threshold, int id)
 {
   ARM_MOVE_CARTESIAN_GUARDEDGoal goal;
   goal.frame.value = frame;

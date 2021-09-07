@@ -44,10 +44,10 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  vector<double> const *position_vector = NULL;
-  vector<double> const *orientation_vector = NULL;
-  RealArray const *position = NULL;
-  RealArray const *orientation = NULL;
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *orientation_vector = nullptr;
+  RealArray const *position = nullptr;
+  RealArray const *orientation = nullptr;
   // Get our Frame, relative, position and orientation
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
@@ -68,10 +68,10 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface
   int frame;
   bool relative, retracting;
   double force_threshold, torque_threshold;
-  vector<double> const *position_vector = NULL;
-  vector<double> const *orientation_vector = NULL;
-  RealArray const *position = NULL;
-  RealArray const *orientation = NULL;
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *orientation_vector = nullptr;
+  RealArray const *position = nullptr;
+  RealArray const *orientation = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -108,15 +108,15 @@ static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
 static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
-  vector<double> const *angles_vector = NULL;
-  RealArray const *angles = NULL;
+  vector<double> const *angles_vector = nullptr;
+  RealArray const *angles = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValuePointer(angles);
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJoints (relative, *angles_vector,CommandId);
+  OwlatInterface::instance()->owlatArmMoveJoints (relative, *angles_vector, CommandId);
   send_ack_once(*cr);
 }
 
@@ -124,8 +124,8 @@ static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* i
 {
   bool relative, retracting;
   double force_threshold, torque_threshold;
-  vector<double> const *angles_vector = NULL;
-  RealArray const *angles = NULL;
+  vector<double> const *angles_vector = nullptr;
+  RealArray const *angles = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValuePointer(angles);
@@ -146,10 +146,10 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   int frame;
   bool relative, retracting;
   double force_threshold, torque_threshold, distance, overdrive;
-  vector<double> const *position_vector = NULL;
-  vector<double> const *normal_vector = NULL;
-  RealArray const *position = NULL;
-  RealArray const *normal = NULL;
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *normal_vector = nullptr;
+  RealArray const *position = nullptr;
+  RealArray const *normal = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -200,8 +200,8 @@ static void owlat_task_dropoff (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  vector<double> const *point_vector = NULL;
-  RealArray const *point = NULL;
+  vector<double> const *point_vector = nullptr;
+  RealArray const *point = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -219,10 +219,10 @@ static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
   int frame;
   bool relative;
   double max_depth, max_force;
-  vector<double> const *point_vector = NULL;
-  vector<double> const *normal_vector = NULL;
-  RealArray const *point = NULL;
-  RealArray const *normal = NULL;
+  vector<double> const *point_vector = nullptr;
+  vector<double> const *normal_vector = nullptr;
+  RealArray const *point = nullptr;
+  RealArray const *normal = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -244,10 +244,10 @@ static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  vector<double> const *point_vector = NULL;
-  vector<double> const *normal_vector = NULL;
-  RealArray const *point = NULL;
-  RealArray const *normal = NULL;
+  vector<double> const *point_vector = nullptr;
+  vector<double> const *normal_vector = nullptr;
+  RealArray const *point = nullptr;
+  RealArray const *normal = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -267,10 +267,10 @@ static void owlat_task_shear_bevameter (Command* cmd, AdapterExecInterface* intf
   int frame;
   bool relative;
   double preload, max_torque;
-  vector<double> const *point_vector = NULL;
-  vector<double> const *normal_vector = NULL;
-  RealArray const *point = NULL;
-  RealArray const *normal = NULL;
+  vector<double> const *point_vector = nullptr;
+  vector<double> const *normal_vector = nullptr;
+  RealArray const *point = nullptr;
+  RealArray const *normal = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
@@ -362,7 +362,7 @@ static void shearBevameterStopReason (const State& state, StateCacheEntry &entry
 
 static void getDefault (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("SampleAdapter:getSize", "lookup called for " << state.name()
+  debugMsg("getDefault", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
   debugMsg("Invalid State: ", state.name());
   entry.update(Unknown);

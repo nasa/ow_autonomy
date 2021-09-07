@@ -3,7 +3,7 @@
 <launch>
 
   <!-- Lets GUI know what plans to display -->
-  <param name="owlat_flag" value="True"/>
+  <param name="owlat_flag" type="boolean" value="True"/>
 
   <arg name="plan" default="None"/>
 

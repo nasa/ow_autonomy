@@ -45,7 +45,6 @@ LibraryAction OwlatTaskShearBevameter(In Integer Frame, In Boolean Relative, In 
 LibraryAction PrintNodeStart(In String NodeName);
 LibraryAction PrintNodeFinish(In String NodeName);
 
-Real Lookup Size;
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
 Real Lookup ArmJointTorques;
