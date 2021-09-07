@@ -75,7 +75,4 @@ Command owlat_task_shear_bevameter(Integer frame, Boolean relative, Real point[3
                                    Real normal[3], Real preload, Real max_torque);
 
 
-
-
-
 #endif

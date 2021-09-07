@@ -9,12 +9,13 @@
 #include <functional>
 #include "subscriber.h"
 
-using namespace owlat_sim_msgs;
 using std::hash;
 using std::string;
 using std::thread;
 using std::string;
 using std::vector;
+using namespace owlat_sim_msgs;
+using namespace PLEXIL;
 
 const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
 const string Name_OwlatStow =   "/owlat_sim/ARM_STOW";
@@ -307,9 +308,9 @@ void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative,
 }
 
 void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative, 
-                                            vector<double> position, 
-                                            vector<double> orientation,
-                                            int id)
+                                                  vector<double> position, 
+                                                  vector<double> orientation,
+                                                  int id)
 {
   ARM_MOVE_CARTESIANGoal goal;
   goal.frame.value = frame;
@@ -795,61 +796,51 @@ void OwlatInterface::armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& m
 
 Value OwlatInterface::getArmJointAngles()
 {
-  Value value_joint_angles = Value(m_arm_joint_angles);
-  return value_joint_angles;
+  return(Value(m_arm_joint_angles));
 }
 
 Value OwlatInterface::getArmJointAccelerations()
 {
-  Value value_joint_accelerations = Value(m_arm_joint_accelerations);
-  return value_joint_accelerations;
+  return(Value(m_arm_joint_accelerations));
 }
 
 Value OwlatInterface::getArmJointTorques()
 {
-  Value value_joint_torques = Value(m_arm_joint_torques);
-  return value_joint_torques;
+  return(Value(m_arm_joint_torques));
 }
 
 Value OwlatInterface::getArmJointVelocities()
 {
-  Value value_joint_velocities = Value(m_arm_joint_velocities);
-  return value_joint_velocities;
+  return(Value(m_arm_joint_velocities));
 }
 
 Value OwlatInterface::getArmFTTorque()
 {
-  Value value_ft_torque = Value(m_arm_ft_torque);
-  return value_ft_torque;
+  return(Value(m_arm_ft_torque));
 }
 
 Value OwlatInterface::getArmFTForce()
 {
-  Value value_ft_force = Value(m_arm_ft_force);
-  return value_ft_force;
+  return(Value(m_arm_ft_force));
 }
 
 Value OwlatInterface::getArmPose()
 {
-  Value value_arm_pose = Value(m_arm_pose);
-  return value_arm_pose;
+  return(Value(m_arm_pose));
 }
 
 Value OwlatInterface::getArmTool()
 {
-  Value value_arm_tool = Value(m_arm_tool);
-  return value_arm_tool;
+  return(Value(m_arm_tool));
 }
 
 Value OwlatInterface::getPSPStopReason()
 {
-  Value value_stop_reason = Value(PSPStopReasonVar);
-  return value_stop_reason;
+  return(Value(PSPStopReasonVar));
 }
 
 Value OwlatInterface::getShearBevameterStopReason()
 {
-  Value value_stop_reason = Value(BevameterStopReasonVar);
-  return value_stop_reason;
+  return(Value(BevameterStopReasonVar));
 }
 

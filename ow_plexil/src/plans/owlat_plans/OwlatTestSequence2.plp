@@ -17,8 +17,15 @@ OwlatTestSequence2:
   Real position[3] = #(0.0 0.0 0.4);
   Real orientation[4] = #(0.0 0.0 0.0 1.0);
 
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence2");
+
   log_info("Unstowing arm with ARM_UNSTOW.");
   LibraryCall OwlatUnstow();
   log_info("Moving arm into position above surface with ARM_MOVE_CARTESIAN.");
-  LibraryCall OwlatArmMoveCartesian(Frame=frame, Relative=relative, Position=position, Orientation=orientation);
+  LibraryCall OwlatArmMoveCartesian(Frame=frame, 
+                                    Relative=relative,
+                                    Position=position,
+                                    Orientation=orientation);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence2");
 }

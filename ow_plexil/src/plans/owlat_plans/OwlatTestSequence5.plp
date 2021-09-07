@@ -21,6 +21,8 @@ OwlatTestSequence5:
   Real max_depth = 0.3;
   Real max_force = 10.0;
 
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence5");
+
   // Change tool to the Pressure Sinkage Plate
   log_info("Changing end effector tool to the Pressure Sinkage Plate.");
   LibraryCall OwlatArmSetTool(Tool=1);
@@ -32,5 +34,7 @@ OwlatTestSequence5:
   log_info("Performing data collection of geophysical properties with TASK_PSP.");
   LibraryCall OwlatTaskPSP(Frame=frame, Relative=relative, Point=point, 
                            Normal=normal, MaxDepth=max_depth, MaxForce=max_force);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence5");
 }
 

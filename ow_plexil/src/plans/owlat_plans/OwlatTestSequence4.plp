@@ -23,6 +23,8 @@ OwlatTestSequence4:
   Real force_threshold = 5.0;
   Real torque_threshold = 1.0;
   
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
+
   // Test Sequence 2 gets arm into position
   LibraryCall OwlatTestSequence2();
 
@@ -37,4 +39,6 @@ OwlatTestSequence4:
   LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative, Position=position, 
                                 Normal=normal, Distance=distance, Overdrive=overdrive, Retracting=true,
                                 ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence4");
 }

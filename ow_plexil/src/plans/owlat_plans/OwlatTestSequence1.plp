@@ -17,6 +17,8 @@ OwlatTestSequence1:
   Real force_threshold = 5.0;
   Real torque_threshold = 1.0;
 
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence1");
+
   // Get Arm into position above ground
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
 
@@ -24,11 +26,18 @@ OwlatTestSequence1:
   LibraryCall OwlatArmTareFS();
 
   // Move the arm until it comes in contact with the ground 
-  LibraryCall OwlatArmMoveJointsGuarded(Relative=true, Angles=angles2, Retracting=false,
-                                        ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+  LibraryCall OwlatArmMoveJointsGuarded(Relative=true, 
+                                        Angles=angles2, 
+                                        Retracting=false,
+                                        ForceThreshold=force_threshold, 
+                                        TorqueThreshold=torque_threshold);
 
   // Pull the arm back from the surface
-  LibraryCall OwlatArmMoveJointsGuarded(Relative=true, Angles=angles3, Retracting=true,
-                                        ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+  LibraryCall OwlatArmMoveJointsGuarded(Relative=true, 
+                                        Angles=angles3, 
+                                        Retracting=true,
+                                        ForceThreshold=force_threshold, 
+                                        TorqueThreshold=torque_threshold);
 
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence1");
 }

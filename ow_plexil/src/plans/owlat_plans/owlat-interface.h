@@ -42,8 +42,8 @@ LibraryAction OwlatTaskPSP(In Integer Frame, In Boolean Relative, In Real Point[
 LibraryAction OwlatTaskScoop(In Integer Frame, In Boolean Relative, In Real Point[3], In Real Normal[3]);
 LibraryAction OwlatTaskShearBevameter(In Integer Frame, In Boolean Relative, In Real Point[3],
                                       In Real Normal[3], In Real Preload, In Real MaxTorque);
-
-
+LibraryAction PrintNodeStart(In String NodeName);
+LibraryAction PrintNodeFinish(In String NodeName);
 
 Real Lookup Size;
 Real Lookup ArmJointAngles;

@@ -44,7 +44,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 using std::make_unique;
-using namespace PLEXIL;
 
 using OwlatUnstowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
@@ -124,16 +123,16 @@ class OwlatInterface : public PlexilInterface
                                 double max_torque, int id); 
 
   // Lookups
-  Value getArmJointAngles();
-  Value getArmJointAccelerations();
-  Value getArmJointTorques();
-  Value getArmJointVelocities();
-  Value getArmFTTorque();
-  Value getArmFTForce();
-  Value getArmPose();
-  Value getArmTool();
-  Value getPSPStopReason();
-  Value getShearBevameterStopReason();
+  PLEXIL::Value getArmJointAngles();
+  PLEXIL::Value getArmJointAccelerations();
+  PLEXIL::Value getArmJointTorques();
+  PLEXIL::Value getArmJointVelocities();
+  PLEXIL::Value getArmFTTorque();
+  PLEXIL::Value getArmFTForce();
+  PLEXIL::Value getArmPose();
+  PLEXIL::Value getArmTool();
+  PLEXIL::Value getPSPStopReason();
+  PLEXIL::Value getShearBevameterStopReason();
 
  private:
 
