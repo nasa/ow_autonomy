@@ -4,8 +4,8 @@
   <arg name="plan" default="None"/>
 
   <node pkg="ow_plexil"
-        name="plexil_node"
-        type="plexil_node"
+        name="ow_exec_node"
+        type="ow_exec_node"
         args="$(arg plan)"
         output="screen">
   </node>
@@ -15,4 +15,11 @@
         args="$(arg plan)"
         output="screen">
   </node>
+
+  <node pkg="ow_plexil"
+        name="identify_sample_location"
+        type="identify_sample_location.py"
+        output="screen">
+  </node>
+
 </launch>

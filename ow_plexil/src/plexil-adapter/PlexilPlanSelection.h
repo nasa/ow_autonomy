@@ -7,8 +7,6 @@
 
 #include <ros/ros.h>
 #include <ow_plexil/PlanSelection.h>
-#include "OwExecutive.h"
-#include "OwInterface.h"
 
 class PlexilPlanSelection{
   public:
@@ -27,7 +25,6 @@ class PlexilPlanSelection{
     void waitForPlan();
 
     std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
-    std::unique_ptr<OwExecutive> m_executive;
     std::unique_ptr<ros::ServiceServer> m_planSelectionService;
     std::unique_ptr<ros::Publisher> m_planSelectionStatusPublisher;
     std::vector<std::string> plan_array;
