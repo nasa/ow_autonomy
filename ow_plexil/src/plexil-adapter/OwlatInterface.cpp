@@ -98,13 +98,11 @@ static void task_psp_done_cb
             state.toString().c_str());
 }
 
-std::shared_ptr<OwlatInterface> OwlatInterface::m_instance = nullptr;
-
-std::shared_ptr<OwlatInterface> OwlatInterface::instance ()
+OwlatInterface* OwlatInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == nullptr) m_instance = std::make_shared<OwlatInterface>();
-  return m_instance;
+  static OwlatInterface instance;
+  return &instance;
 }
 
 void OwlatInterface::initialize()

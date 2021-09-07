@@ -79,7 +79,7 @@ using OwlatTaskShearBevameterActionClient =
 class OwlatInterface : public PlexilInterface
 {
  public:
-  static std::shared_ptr<OwlatInterface> instance();
+  static OwlatInterface* instance();
   OwlatInterface() = default;
   ~OwlatInterface() = default;
   OwlatInterface (const OwlatInterface&) = delete;
@@ -172,8 +172,7 @@ class OwlatInterface : public PlexilInterface
   void owlatTaskShearBevameterAction (int frame, bool relative,
                                       vector<double> point, vector<double> normal,
                                       double preload, double max_torque, int id); 
-  //instance and node handle
-  static std::shared_ptr<OwlatInterface> m_instance;
+  // node handle
   std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Subscribers
