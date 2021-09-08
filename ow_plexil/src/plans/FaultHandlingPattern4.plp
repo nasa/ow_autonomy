@@ -2,8 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// If no faults are occurring, this plan will pan 180 degrees, 
-// and then unstow and stow the arm.
+// Pattern summary: Execute a sequence of actions. If a fault is injected
+// during a related action, the plan will stop the action. If/when the fault
+// is cleared, the action will automatically be attempted again.
+
+// More specifically: If no faults are occurring, this plan will pan 180 
+// degrees, and then unstow and stow the arm.
 // If any fault is injected, the plan will pause and wait for resolution.
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
@@ -19,59 +23,116 @@ LibraryAction InitializeAntennaAndArm ();
 FaultHandlingPattern4:
 {
 
+  Boolean MissionInProgress = true;
+
   Boolean PanDone = false;
   Boolean UnstowDone = false;
   Boolean StowDone = false;
 
-  Real AngleToGoal;
+  log_info ("Starting FaultHandlingPattern4 plan...");
 
   LibraryCall InitializeAntennaAndArm ();
 
-  log_info ("Starting FaultHandlingPattern4 plan...");
-
-  Mission: 
+  RunMission: Concurrence
   {
     
-    PanAntenna:
+    End !MissionInProgress;
+    log_info ("Starting Mission...");
+
+    LogPanError:
     {
-      Repeat !PanDone;
-      Start !Lookup(AntennaFault);
-      Skip PanDone;
 
-      LibraryCall Pan (Degrees=180);
-      
-      AngleToGoal = 180 - abs(Lookup(PanDegrees));
+      Start !PanDone && Lookup(AntennaFault);
+    
+      log_error ("Panning halted due to an antenna fault.");
+    }
 
-      if abs(AngleToGoal) < 1
+    LogUnstowError:
+    {
+
+      Start !UnstowDone && Lookup(ArmFault);
+    
+      log_error ("Unstowing halted due to an arm fault.");
+    }
+
+    LogStowError:
+    {
+
+      Start UnstowDone && !StowDone && Lookup(ArmFault);
+    
+      log_error ("Stowing halted due to an arm fault.");
+    }
+
+    Mission: 
+    {
+    
+      PanAntenna:
       {
-        PanDone = true;
+        Real PanToleranceDegrees = 1.0;
+
+        Repeat !PanDone;
+        Start !Lookup(AntennaFault);
+        Skip PanDone;
+
+        LibraryCall Pan (Degrees=180);
+
+        if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
+        {
+          PanDone = true;
+        }
+
       }
 
-    }
+      UnstowArm:
+      {
+        Repeat !UnstowDone;
+        Start !Lookup(ArmFault);
+        Skip UnstowDone;
 
-    Unstow:
-    {
-      Repeat !UnstowDone;
-      Start !Lookup(ArmFault);
-      Skip UnstowDone;
-
-      LibraryCall Unstow(); 
+        LibraryCall Unstow(); 
       
-      UnstowDone = !Lookup(ArmFault);
+        // Since it is currently not possible to check the success/failure
+        // of lander commands or the current arm position, we instead
+        // use the following temporary check for when an arm fault is resolved
+        // to denote that the arm has been unstowed.
 
-    }
+        // The assumption is that if the above Unstow() has completed
+        // and there is no arm fault, unstow is most likely successfully done.
+
+        // Limitation: If the arm fault is cleared before Unstow() finishes,
+        // successfully or otherwise, this check will incorrectly indicate
+        // completion of unstowing altogether.
+
+        UnstowDone = !Lookup(ArmFault);
+
+      }
 
     
-    Stow:
-    {
-      Repeat !StowDone;
-      Start !Lookup(ArmFault);
-      Skip StowDone;
+      StowArm:
+      {
+        Repeat !StowDone;
+        Start !Lookup(ArmFault);
+        Skip StowDone;
 
-      LibraryCall Stow();
+        LibraryCall Stow();
+
+        // Since it is currently not possible to check the success/failure
+        // of lander commands or the current arm position, we instead
+        // use the following temporary check for when an arm fault is resolved
+        // to denote that the arm has been stowed.
+
+        // The assumption is that if the above Stow() has completed
+        // and there is no arm fault, unstow is most likely successfully done.
+
+        // Limitation: If the arm fault is cleared before Stow() finishes,
+        // successfully or otherwise, this check will incorrectly indicate
+        // completion of stowing altogether.
       
-      StowDone = !Lookup(ArmFault);
+        StowDone = !Lookup(ArmFault);
   
+      }
+
+      MissionInProgress = false;
     }
 
   }
