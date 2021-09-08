@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatTestSequence2();
+LibraryAction OwlatPrepArm();
 
 OwlatTestSequence5:
 {
@@ -27,8 +27,8 @@ OwlatTestSequence5:
   log_info("Changing end effector tool to the Pressure Sinkage Plate.");
   LibraryCall OwlatArmSetTool(Tool=1);
 
-  // Test Sequence 2 gets arm into position
-  LibraryCall OwlatTestSequence2();
+  // gets arm into position
+  LibraryCall OwlatPrepArm();
 
   // Executes TASK_PSP
   log_info("Performing data collection of geophysical properties with TASK_PSP.");

@@ -91,35 +91,36 @@ class OwlatInterface : public PlexilInterface
   void owlatUnstow (int id);
   void owlatStow (int id);
   void owlatArmMoveCartesian (int frame, bool relative, 
-                              vector<double> position, 
-                              vector<double> orientation, int id);
+                              const vector<double>& position, 
+                              const vector<double>& orientation, 
+                              int id);
   void owlatArmMoveCartesianGuarded (int frame, bool relative, 
-                                     vector<double> position, 
-                                     vector<double> orientation,
+                                     const vector<double>& position, 
+                                     const vector<double>& orientation,
                                      bool retracting,
                                      double force_threshold,
                                      double torque_threshold,int id);
   void owlatArmMoveJoint (bool relative, int joint, double angle, 
                           int id);
-  void owlatArmMoveJoints (bool relative, vector<double> angles, int id); 
-  void owlatArmMoveJointsGuarded (bool relative, vector<double> angles, 
+  void owlatArmMoveJoints (bool relative, const vector<double>& angles, int id); 
+  void owlatArmMoveJointsGuarded (bool relative, const vector<double>& angles, 
                                   bool retracting, double force_threshold,
                                   double torque_threshold, int id);
-  void owlatArmPlaceTool (int frame, bool relative, vector<double> position, 
-                          vector<double> normal,double distance, double overdrive,
+  void owlatArmPlaceTool (int frame, bool relative, const vector<double>& position, 
+                          const vector<double>& normal,double distance, double overdrive,
                           bool retracting, double force_threshold,
                           double torque_threshold, int id);
   void owlatArmSetTool (int tool, int id);
   void owlatArmStop (int id);
   void owlatArmTareFS (int id);
-  void owlatTaskDropoff (int frame, bool relative,vector<double> point, int id);
-  void owlatTaskPSP (int frame, bool relative, vector<double> point, 
-                     vector<double> normal, double max_depth, double max_force,
+  void owlatTaskDropoff (int frame, bool relative,const vector<double>& point, int id);
+  void owlatTaskPSP (int frame, bool relative, const vector<double>& point, 
+                     const vector<double>& normal, double max_depth, double max_force,
                      int id); 
-  void owlatTaskScoop (int frame, bool relative, vector<double> point, 
-                       vector<double> normal, int id); 
-  void owlatTaskShearBevameter (int frame, bool relative, vector<double> point, 
-                                vector<double> normal, double preload,
+  void owlatTaskScoop (int frame, bool relative, const vector<double>& point, 
+                       const vector<double>& normal, int id); 
+  void owlatTaskShearBevameter (int frame, bool relative, const vector<double>& point, 
+                                const vector<double>& normal, double preload,
                                 double max_torque, int id); 
 
   // Lookups
@@ -140,22 +141,23 @@ class OwlatInterface : public PlexilInterface
   void owlatUnstowAction (int id);
   void owlatStowAction (int id);
   void owlatArmMoveCartesianAction (int frame, bool relative, 
-                                    vector<double> position, 
-                                    vector<double> orientation, int id);
+                                    const vector<double>& position, 
+                                    const vector<double>& orientation, 
+                                    int id);
   void owlatArmMoveCartesianGuardedAction (int frame, bool relative, 
-                                           vector<double> position, 
-                                           vector<double> orientation,
+                                           const vector<double>& position, 
+                                           const vector<double>& orientation,
                                            bool retracting, 
                                            double force_threshold, 
                                            double torque_threshold,int id);
   void owlatArmMoveJointAction (bool relative, int joint,
                                 double angle, int id); 
-  void owlatArmMoveJointsAction (bool relative, vector<double> angles, int id);
-  void owlatArmMoveJointsGuardedAction (bool relative, vector<double> angles, 
+  void owlatArmMoveJointsAction (bool relative, const vector<double>& angles, int id);
+  void owlatArmMoveJointsGuardedAction (bool relative, const vector<double>& angles, 
                                         bool retracting, double force_threshold,
                                         double torque_threshold, int id);
   void owlatArmPlaceToolAction (int frame, bool relative, 
-                                vector<double> position, vector<double> normal,
+                                const vector<double>& position, const vector<double>& normal,
                                 double distance, double overdrive,
                                 bool retracting, double force_threshold,
                                 double torque_threshold, int id);
@@ -163,14 +165,14 @@ class OwlatInterface : public PlexilInterface
   void owlatArmStopAction (int id);
   void owlatArmTareFSAction (int id);
   void owlatTaskDropoffAction (int frame, bool relative,
-                               vector<double> point, int id);
-  void owlatTaskPSPAction (int frame, bool relative, vector<double> point, 
-                           vector<double> normal, double max_depth,
+                               const vector<double>& point, int id);
+  void owlatTaskPSPAction (int frame, bool relative, const vector<double>& point, 
+                           const vector<double>& normal, double max_depth,
                            double max_force, int id);
-  void owlatTaskScoopAction (int frame, bool relative, vector<double> point, 
-                             vector<double> normal, int id); 
+  void owlatTaskScoopAction (int frame, bool relative, const vector<double>& point, 
+                             const vector<double>& normal, int id); 
   void owlatTaskShearBevameterAction (int frame, bool relative,
-                                      vector<double> point, vector<double> normal,
+                                      const vector<double>& point, const vector<double>& normal,
                                       double preload, double max_torque, int id); 
   // node handle
   std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;

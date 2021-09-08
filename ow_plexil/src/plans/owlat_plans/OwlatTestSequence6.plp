@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatTestSequence2();
+LibraryAction OwlatPrepArm();
 
 OwlatTestSequence6:
 {
@@ -28,8 +28,8 @@ OwlatTestSequence6:
   log_info("Changing end effector tool to the Scoop.");
   LibraryCall OwlatArmSetTool(Tool=4);
 
-  // Test Sequence 2 gets arm into position
-  LibraryCall OwlatTestSequence2();
+  // gets arm into position
+  LibraryCall OwlatPrepArm();
 
   // Scoops ground
   log_info("Performing scoop operation with TASK_SCOOP.");

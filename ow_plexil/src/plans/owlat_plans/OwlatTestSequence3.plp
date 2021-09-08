@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatTestSequence2();
+LibraryAction OwlatPrepArm();
 
 OwlatTestSequence3:
 {
@@ -24,8 +24,8 @@ OwlatTestSequence3:
   
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence3");
 
-  // Test Sequence 2 gets arm into position
-  LibraryCall OwlatTestSequence2();
+  // gets arm into position
+  LibraryCall OwlatPrepArm();
 
   // Tare the force sensor
   LibraryCall OwlatArmTareFS();

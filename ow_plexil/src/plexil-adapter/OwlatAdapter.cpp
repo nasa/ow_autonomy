@@ -85,9 +85,12 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatArmMoveCartesianGuarded (frame, relative, 
-                                      *position_vector, *orientation_vector, 
-                                      retracting, force_threshold, torque_threshold,
-                                      CommandId);
+                                                            *position_vector,
+                                                            *orientation_vector, 
+                                                            retracting,
+                                                            force_threshold,
+                                                            torque_threshold,
+                                                            CommandId);
   send_ack_once(*cr);
 }
 
@@ -135,9 +138,12 @@ static void owlat_arm_move_joints_guarded (Command* cmd, AdapterExecInterface* i
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative, *angles_vector,
-                                    retracting, force_threshold, torque_threshold,
-                                    CommandId);
+  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative,
+                                                         *angles_vector,
+                                                         retracting, 
+                                                         force_threshold, 
+                                                         torque_threshold,
+                                                         CommandId);
   send_ack_once(*cr);
 }
 
@@ -165,10 +171,13 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatArmPlaceTool (frame, relative, 
-                                      *position_vector, *normal_vector, 
-                                      distance, overdrive, retracting,
-                                      force_threshold, torque_threshold,
-                                      CommandId);
+                                                 *position_vector,
+                                                 *normal_vector, 
+                                                 distance, overdrive,
+                                                 retracting,
+                                                 force_threshold,
+                                                 torque_threshold,
+                                                 CommandId);
   send_ack_once(*cr);
 }
 
@@ -258,7 +267,7 @@ static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatTaskScoop (frame, relative,*point_vector,
-                                            *normal_vector, CommandId);
+                                              *normal_vector, CommandId);
   send_ack_once(*cr);
 }
 
@@ -283,9 +292,11 @@ static void owlat_task_shear_bevameter (Command* cmd, AdapterExecInterface* intf
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatTaskShearBevameter (frame, relative,
-                                                *point_vector,*normal_vector, 
-                                                preload, max_torque,
-                                                CommandId);
+                                                       *point_vector,
+                                                       *normal_vector, 
+                                                       preload, 
+                                                       max_torque,
+                                                       CommandId);
   send_ack_once(*cr);
 }
 
@@ -360,9 +371,9 @@ static void shearBevameterStopReason (const State& state, StateCacheEntry &entry
   entry.update(OwlatInterface::instance()->getShearBevameterStopReason());
 }
 
-static void getDefault (const State& state, StateCacheEntry &entry)
+static void getDefaultLookupHandler (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("getDefault", "lookup called for " << state.name()
+  debugMsg("getDefaultLookupHandler", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
   debugMsg("Invalid State: ", state.name());
   entry.update(Unknown);
@@ -406,7 +417,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("ArmTool", armTool);
   g_configuration->registerLookupHandler("PSPStopReason", pspStopReason);
   g_configuration->registerLookupHandler("ShearBevameterStopReason", shearBevameterStopReason);
-  g_configuration->setDefaultLookupHandler(getDefault);
+  g_configuration->setDefaultLookupHandler(getDefaultLookupHandler);
 
   debugMsg("OwlatAdapter", " initialized.");
   return true;

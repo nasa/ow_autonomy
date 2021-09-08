@@ -8,6 +8,8 @@
 
 #include "owlat-interface.h"
 
+LibraryAction OwlatPrepArm();
+
 OwlatTestSequence2:
 {
 
@@ -21,11 +23,7 @@ OwlatTestSequence2:
 
   log_info("Unstowing arm with ARM_UNSTOW.");
   LibraryCall OwlatUnstow();
-  log_info("Moving arm into position above surface with ARM_MOVE_CARTESIAN.");
-  LibraryCall OwlatArmMoveCartesian(Frame=frame, 
-                                    Relative=relative,
-                                    Position=position,
-                                    Orientation=orientation);
+  LibraryCall OwlatPrepArm();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence2");
 }
