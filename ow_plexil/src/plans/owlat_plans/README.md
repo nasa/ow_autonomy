@@ -29,5 +29,7 @@ Known Issues:
   -TestSequence3: Clipping through ground plane, Aborted move
   -TestSequence4: Clipping through ground plane, Aborted move
   -TestSequence5: Clipping through ground plane, Aborted move
-  -TestSequence6: Clipping through ground plane, Aborted move
+  -TestSequence6: Clipping through ground plane, Aborted move, Do not run back to back; can
+                  cause OWLAT to throw extraneous velocity error which will freeze the sim and
+                  prevent any further plans from running.
 
