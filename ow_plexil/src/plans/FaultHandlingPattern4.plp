@@ -3,8 +3,9 @@
 // this repository.
 
 // Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the plan will stop the action. If/when the fault
-// is cleared, the action will automatically be attempted again.
+// during a related action, the action will stop and end in the ABORTED state.
+// If/when the fault is cleared, the action will automatically be 
+// attempted again.
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
@@ -13,8 +14,27 @@
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
 // unstowing or stowing.
-// Otherwise, the pausing will visually become apparent when the next
-// operation does not begin due to it.
+// NOTE 1: As of September 8th, 2021, only the ant_pan_effort_failure
+// will halt the panning action in this plan.
+
+// NOTE 2: Since it is currently not possible to check the success/failure
+// of lander commands or the current arm position, we instead use the
+// temporary check "!Lookup(ArmFault)" (seen in UnstowArm and StowArm)
+// for when an arm fault is resolved to denote that the arm has
+// been unstowed or stowed.
+// The assumption is that if the above Unstow() has completed
+// and there is no arm fault, unstow is most likely successfully done.
+// Limitation: If the arm fault is cleared before Unstow() or Stow() finishes,
+// successfully or otherwise, this check will incorrectly indicate
+// completion of unstowing or stowing altogether.
+
+// IMPORTANT NOTE: When injecting a fault during an arm operation,
+// you should wait until you see the action aborted, 
+// e.g. "Stow finished in state ABORTED" before clearing the fault.
+// Otherwise the action will show as completed, even though it halted
+// before completing the task. This is due to some bugs in the simulator,
+// and the fact that ROS action states are not exposed to PLEXIL.
+
 
 #include "plan-interface.h"
 
@@ -50,7 +70,7 @@ FaultHandlingPattern4:
     LogUnstowError:
     {
 
-      Start !UnstowDone && Lookup(ArmFault);
+      Start PanDone && !UnstowDone && Lookup(ArmFault);
     
       log_error ("Unstowing halted due to an arm fault.");
     }
@@ -91,17 +111,7 @@ FaultHandlingPattern4:
 
         LibraryCall Unstow(); 
       
-        // Since it is currently not possible to check the success/failure
-        // of lander commands or the current arm position, we instead
-        // use the following temporary check for when an arm fault is resolved
-        // to denote that the arm has been unstowed.
-
-        // The assumption is that if the above Unstow() has completed
-        // and there is no arm fault, unstow is most likely successfully done.
-
-        // Limitation: If the arm fault is cleared before Unstow() finishes,
-        // successfully or otherwise, this check will incorrectly indicate
-        // completion of unstowing altogether.
+        // See NOTE 2 for an explanation of logic
 
         UnstowDone = !Lookup(ArmFault);
 
@@ -116,17 +126,7 @@ FaultHandlingPattern4:
 
         LibraryCall Stow();
 
-        // Since it is currently not possible to check the success/failure
-        // of lander commands or the current arm position, we instead
-        // use the following temporary check for when an arm fault is resolved
-        // to denote that the arm has been stowed.
-
-        // The assumption is that if the above Stow() has completed
-        // and there is no arm fault, unstow is most likely successfully done.
-
-        // Limitation: If the arm fault is cleared before Stow() finishes,
-        // successfully or otherwise, this check will incorrectly indicate
-        // completion of stowing altogether.
+        // See NOTE 2 for an explanation of logic
       
         StowDone = !Lookup(ArmFault);
   
