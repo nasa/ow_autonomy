@@ -34,7 +34,7 @@ const string Name_OwlatTaskScoop =   "/owlat_sim/TASK_SCOOP";
 const string Name_OwlatTaskShearBevameter =   "/owlat_sim/TASK_SHEAR_BEVAMETER";
 
 // Used as indices into the subsequent vector.
-enum LanderOps {
+enum class LanderOps {
   OwlatUnstow,
   OwlatStow,
   OwlatArmMoveCartesian,
@@ -660,7 +660,8 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
     (opname, m_owlatTaskPSPClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TASK_PSPFeedbackConstPtr> (opname),
-     task_psp_done_cb<OwlatArmTaskPSP,TASK_PSPResultConstPtr>);
+     task_psp_done_cb<static_cast<int>(LanderOps::OwlatArmTaskPSP),
+     TASK_PSPResultConstPtr>);
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
@@ -734,7 +735,9 @@ void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
     (opname, m_owlatTaskShearBevameterClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TASK_SHEAR_BEVAMETERFeedbackConstPtr> (opname),
-     task_shear_bevameter_done_cb<OwlatArmTaskShearBevameter, TASK_SHEAR_BEVAMETERResultConstPtr>);
+     task_shear_bevameter_done_cb<
+     static_cast<int>(LanderOps::OwlatArmTaskShearBevameter),
+     TASK_SHEAR_BEVAMETERResultConstPtr>);
 }
 
 
