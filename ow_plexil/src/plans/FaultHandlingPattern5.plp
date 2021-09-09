@@ -3,9 +3,9 @@
 // this repository.
 
 // Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the plan will stop the action. As long as the
-// action is stopped, a backup action will repeat. If/when the fault
-// is cleared, the original action will automatically be attempted again.
+// during a related action, the action will stop and end in the ABORTED state. 
+// As long as the action is stopped, a backup action will repeat. If/when the 
+// fault is cleared, the original action will automatically be attempted again.
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
@@ -17,6 +17,13 @@
 // unstowing or stowing. 
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
+
+// IMPORTANT NOTE: When injecting a fault during an arm operation,
+// you should wait until you see the action aborted, 
+// e.g. "Stow finished in state ABORTED" before clearing the fault.
+// Otherwise the action will show as completed, even though it halted
+// before completing the task. This is due to some bugs in the simulator,
+// and the fact that ROS action states are not exposed to PLEXIL.
 
 
 #include "plan-interface.h"
@@ -53,7 +60,7 @@ FaultHandlingPattern5:
     LogUnstowError:
     {
 
-      Start !UnstowDone && Lookup(ArmFault);
+      Start PanDone && !UnstowDone && Lookup(ArmFault);
     
       log_error ("Unstowing halted due to an arm fault.");
     }
