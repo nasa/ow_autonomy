@@ -168,6 +168,7 @@ EuropaMission: Concurrence
       if (! Lookup(GroundFound)) {
         // Note that the default value of GroundFound is false, so
         log_error ("Failed to find ground. Stowing arm and stopping.");
+        LibraryCall Unstow(); // For safety in stowing
         LibraryCall Stow();
         MissionInProgress = false;
       }
@@ -225,6 +226,7 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
+      LibraryCall Unstow(); // For safety in stowing
       LibraryCall Stow();
       set_checkpoint("ArmStowed");
       SynchronousCommand flush_checkpoints();

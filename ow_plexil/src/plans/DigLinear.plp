@@ -4,7 +4,7 @@
 
 // Perform one pass of a linear digging action.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 DigLinear:
 {
@@ -14,5 +14,26 @@ DigLinear:
   In Real Length;
   In Real GroundPos;
 
-  SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command dig_linear not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDigLinear:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending dig_linear command to lander...");
+    }
+
+    SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+  }
+
 }

@@ -5,10 +5,31 @@
 // Stow the arm, which requires an unstow() first.  These commands simply move
 // the arm to specific coordinates.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Stow:
 {
+  Boolean FaultDetected = false;
 
-  SynchronousCommand stow();
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command stow not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendStow:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending stow command to lander...");
+    }
+
+    SynchronousCommand stow();
+  }
+
+
 }
