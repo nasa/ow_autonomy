@@ -6,7 +6,7 @@
 // delivering the sample to its receptacle (which has specific coordinates) and
 // dumping tailings from trench digging.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Deliver:
 {
@@ -14,5 +14,26 @@ Deliver:
   In Real Y;
   In Real Z;
 
-  SynchronousCommand deliver (X, Y, Z);
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command deliver not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDeliver:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending deliver command to lander...");
+    }
+
+    SynchronousCommand deliver (X, Y, Z);
+  }
+
 }

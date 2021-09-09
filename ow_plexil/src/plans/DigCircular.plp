@@ -4,7 +4,7 @@
 
 // Perform one pass of a circular digging action.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 DigCircular:
 {
@@ -14,5 +14,26 @@ DigCircular:
   In Real GroundPos;
   In Boolean Parallel;
 
-  SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command dig_circular not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDigCircular:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending dig_circular command to lander...");
+    }
+
+    SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+  }
+
 }

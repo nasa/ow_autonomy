@@ -5,7 +5,7 @@
 // Perform a guarded move with the given parameters.
 // A guarded move is typically used to find the ground.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 GuardedMove:
 {
@@ -17,6 +17,27 @@ GuardedMove:
   In Real DirZ;
   In Real SearchDistance;
 
-  SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
-  Wait 5; // Add some delay to make sure the status has been updated
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command guarded_move not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendGuardedMove:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending guarded_move command to lander...");
+    }
+
+    SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
+    Wait 5; // Add some delay to make sure the status has been updated
+  }
+  
 }
