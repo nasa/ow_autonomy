@@ -32,7 +32,7 @@ FaultHandlingPattern2:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      SynchronousCommand pan_antenna (NewAngle);
+      LibraryCall Pan (Degrees=NewAngle);
     }
 
     Pattern2UnstowStow:
@@ -41,8 +41,8 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      SynchronousCommand unstow();
-      SynchronousCommand stow();
+      LibraryCall Unstow();
+      LibraryCall Stow();
       
     }
 
