@@ -14,7 +14,7 @@
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
 // unstowing or stowing.
-// NOTE 1: As of September 8th, 2021, only the ant_pan_effort_failure
+// NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
 // IMPORTANT NOTE: When injecting a fault during an arm operation,

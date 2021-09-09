@@ -3,7 +3,7 @@
 // this repository.
 
 
-// A very basic sequence of actions, used in the fault handling patterns
+// A very basic sequence of actions, used in the fault handling patterns.
 
 // NOTE: Since it is currently not possible to check the success/failure
 // of lander commands or the current arm position, we instead use the
@@ -53,7 +53,7 @@ Mission:
 
     LibraryCall Unstow(); 
       
-    // See NOTE for an explanation of logic
+    // See NOTE above for an explanation of logic.
 
     unstow_done = !Lookup(ArmFault);
 
@@ -68,7 +68,7 @@ Mission:
 
     LibraryCall Stow();
 
-    // See NOTE for an explanation of logic
+    // See NOTE above for an explanation of logic.
       
     stow_done = !Lookup(ArmFault);
   
