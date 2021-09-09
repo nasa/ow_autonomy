@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatPrepArm();
+LibraryAction OwlatPositionArm();
 
 OwlatTestSequence6:
 {
@@ -29,7 +29,7 @@ OwlatTestSequence6:
   LibraryCall OwlatArmSetTool(Tool=4);
 
   // gets arm into position
-  LibraryCall OwlatPrepArm();
+  LibraryCall OwlatPositionArm();
 
   // Scoops ground
   log_info("Performing scoop operation with TASK_SCOOP.");

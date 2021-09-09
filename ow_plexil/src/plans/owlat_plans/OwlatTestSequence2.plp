@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatPrepArm();
+LibraryAction OwlatPositionArm();
 
 OwlatTestSequence2:
 {
@@ -23,7 +23,7 @@ OwlatTestSequence2:
 
   log_info("Unstowing arm with ARM_UNSTOW.");
   LibraryCall OwlatUnstow();
-  LibraryCall OwlatPrepArm();
+  LibraryCall OwlatPositionArm();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence2");
 }

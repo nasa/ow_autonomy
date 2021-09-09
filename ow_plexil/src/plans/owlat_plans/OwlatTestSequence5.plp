@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatPrepArm();
+LibraryAction OwlatPositionArm();
 
 OwlatTestSequence5:
 {
@@ -28,7 +28,7 @@ OwlatTestSequence5:
   LibraryCall OwlatArmSetTool(Tool=1);
 
   // gets arm into position
-  LibraryCall OwlatPrepArm();
+  LibraryCall OwlatPositionArm();
 
   // Executes TASK_PSP
   log_info("Performing data collection of geophysical properties with TASK_PSP.");

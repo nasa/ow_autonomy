@@ -5,10 +5,9 @@
 // This plan puts the arm into place above the ground plane to prepare for other
 // operations
 
-
 #include "owlat-interface.h"
 
-OwlatPrepArm:
+OwlatPositionArm:
 {
 
   // End effector frame

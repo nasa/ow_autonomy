@@ -8,7 +8,7 @@
 
 #include "owlat-interface.h"
 
-LibraryAction OwlatPrepArm();
+LibraryAction OwlatPositionArm();
 
 OwlatTestSequence4:
 {
@@ -26,7 +26,7 @@ OwlatTestSequence4:
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
 
   // gets arm into position
-  LibraryCall OwlatPrepArm();
+  LibraryCall OwlatPositionArm();
 
   // Approaches surface
   log_info("Approaching surface with ARM_PLACE_TOOL.");
