@@ -17,17 +17,6 @@
 // NOTE 1: As of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
-// NOTE 2: Since it is currently not possible to check the success/failure
-// of lander commands or the current arm position, we instead use the
-// temporary check "!Lookup(ArmFault)" (seen in UnstowArm and StowArm)
-// for when an arm fault is resolved to denote that the arm has
-// been unstowed or stowed.
-// The assumption is that if the above Unstow() has completed
-// and there is no arm fault, unstow is most likely successfully done.
-// Limitation: If the arm fault is cleared before Unstow() or Stow() finishes,
-// successfully or otherwise, this check will incorrectly indicate
-// completion of unstowing or stowing altogether.
-
 // IMPORTANT NOTE: When injecting a fault during an arm operation,
 // you should wait until you see the action aborted, 
 // e.g. "Stow finished in state ABORTED" before clearing the fault.
@@ -39,6 +28,11 @@
 #include "plan-interface.h"
 
 LibraryAction InitializeAntennaAndArm ();
+
+LibraryAction Mission (InOut Boolean mission_in_progress,
+                       InOut Boolean pan_done,
+                       InOut Boolean unstow_done,
+                       InOut Boolean stow_done);
 
 FaultHandlingPattern4:
 {
@@ -83,57 +77,10 @@ FaultHandlingPattern4:
       log_error ("Stowing halted due to an arm fault.");
     }
 
-    Mission: 
-    {
-    
-      PanAntenna:
-      {
-        Real PanToleranceDegrees = 1.0;
-
-        Repeat !PanDone;
-        Start !Lookup(AntennaFault);
-        Skip PanDone;
-
-        LibraryCall Pan (Degrees=180);
-
-        if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
-        {
-          PanDone = true;
-        }
-
-      }
-
-      UnstowArm:
-      {
-        Repeat !UnstowDone;
-        Start !Lookup(ArmFault);
-        Skip UnstowDone;
-
-        LibraryCall Unstow(); 
-      
-        // See NOTE 2 for an explanation of logic
-
-        UnstowDone = !Lookup(ArmFault);
-
-      }
-
-    
-      StowArm:
-      {
-        Repeat !StowDone;
-        Start !Lookup(ArmFault);
-        Skip StowDone;
-
-        LibraryCall Stow();
-
-        // See NOTE 2 for an explanation of logic
-      
-        StowDone = !Lookup(ArmFault);
-  
-      }
-
-      MissionInProgress = false;
-    }
+    LibraryCall Mission (mission_in_progress=MissionInProgress,
+                         pan_done=PanDone,
+                         unstow_done=UnstowDone,
+                         stow_done=StowDone);
 
   }
 
