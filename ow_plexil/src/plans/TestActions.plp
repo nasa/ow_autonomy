@@ -33,6 +33,7 @@ TestActions:
   // Receptacle coordinates
   LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
 
+  LibraryCall Unstow(); // For safety in stowing
   LibraryCall Stow();
 
   log_info ("Action test finished.");

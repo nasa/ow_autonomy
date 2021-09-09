@@ -159,6 +159,7 @@ ReferenceMission2: Concurrence
       {
         Start BatteryOK && NoFaults;
         log_info ("** Stowing Arm **");
+        LibraryCall Unstow(); // For safety in stowing
         LibraryCall Stow;
       }
       Analyze:
@@ -174,6 +175,7 @@ ReferenceMission2: Concurrence
      {
        Start BatteryOK && NoFaults;
        log_info ("** Stowing Arm **");
+       LibraryCall Unstow(); // For safety in stowing
        LibraryCall Stow;
      }
     }
