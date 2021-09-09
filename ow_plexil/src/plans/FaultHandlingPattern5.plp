@@ -86,9 +86,6 @@ FaultHandlingPattern5:
       Start MissionInProgress && Lookup(ArmFault) && PanDone;
       Skip !MissionInProgress;
 
-      // Might need to add logic so this only happens if antenna isnt operating 
-      // Otherwise might be sending conflicting commands and it would be confusing
-
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
       LibraryCall Pan (Degrees=NewAngle);
