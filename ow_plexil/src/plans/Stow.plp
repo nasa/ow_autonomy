@@ -9,5 +9,6 @@
 
 Stow:
 {
+  SynchronousCommand unstow();
   SynchronousCommand stow();
 }
