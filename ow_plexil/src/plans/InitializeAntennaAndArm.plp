@@ -30,6 +30,7 @@ InitializeAntennaAndArm:
   {
     Start !Lookup(ArmFault);
     log_info ("Stowing the arm...");
+    LibraryCall Unstow();
     LibraryCall Stow();
   }
 
