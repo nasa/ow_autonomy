@@ -4,7 +4,7 @@
 
 // Perform one pass with the grinding tool, using the given parameters.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Grind:
 {
@@ -15,5 +15,26 @@ Grind:
   In Real GroundPos;
   In Boolean Parallel;
 
-  SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command grind not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendGrind:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending grind command to lander...");
+    }
+
+    SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  }
+
 }

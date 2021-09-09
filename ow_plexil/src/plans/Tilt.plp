@@ -4,10 +4,32 @@
 
 // Tilt antenna to specified degrees.
 
-#include "lander-commands.h"
+#include "plan-interface.h"
 
 Tilt:
 {
   In Real Degrees;
-  SynchronousCommand tilt_antenna (Degrees);
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(AntennaFault);
+
+  if Lookup(AntennaFault)
+  { 
+    log_error ("Command tilt_antenna not sent to lander due to active antenna fault(s).");
+    FaultDetected = true;
+  }
+
+  SendTilt:
+  {
+    Start !Lookup(AntennaFault);
+
+    if FaultDetected
+    {
+      log_info ("Antenna fault(s) resolved, sending tilt_antenna command to lander...");
+    }
+
+    SynchronousCommand tilt_antenna (Degrees);
+  }
+
 }
