@@ -423,13 +423,11 @@ static void identify_sample_location_done_cb
 
 /////////////////////////// OwInterface members ////////////////////////////////
 
-shared_ptr<OwInterface> OwInterface::m_instance = nullptr;
-
-shared_ptr<OwInterface> OwInterface::instance ()
+OwInterface* OwInterface::instance ()
 {
   // Very simple singleton
-  if (m_instance == nullptr) m_instance = std::make_shared<OwInterface>();
-  return m_instance;
+  static OwInterface instance;
+  return &instance;
 }
 
 OwInterface::OwInterface ()

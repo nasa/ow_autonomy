@@ -1,0 +1,44 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This Test Sequence is found in the User Guide under section 3.11.1
+// It uses Test Sequence 2 for setup and uses ARM_PLACE_TOOL
+
+
+#include "owlat-interface.h"
+
+LibraryAction OwlatPositionArm();
+
+OwlatTestSequence4:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real position[3] = #(0.0 0.0 0.1);
+  Real normal[3] = #(0.0 0.0 -1.0);
+  Real distance = 0.15;
+  Real overdrive = 0.0;
+  Real force_threshold = 5.0;
+  Real torque_threshold = 1.0;
+  
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
+
+  // gets arm into position
+  LibraryCall OwlatPositionArm();
+
+  // Approaches surface
+  log_info("Approaching surface with ARM_PLACE_TOOL.");
+  LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative, Position=position, 
+                                Normal=normal, Distance=distance, Overdrive=overdrive, Retracting=false,
+                                ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+
+  // Retracts from surface
+  log_info("Retracting from surface with ARM_PLACE_TOOL.");
+  LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative, Position=position, 
+                                Normal=normal, Distance=distance, Overdrive=overdrive, Retracting=true,
+                                ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence4");
+}

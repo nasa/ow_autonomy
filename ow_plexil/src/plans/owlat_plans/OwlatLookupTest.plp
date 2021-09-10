@@ -1,0 +1,20 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-interface.h"
+
+OwlatLookupTest:
+{
+  Wait 1;
+  log_info("Arm Joint Angles: ", Lookup(ArmJointAngles));
+  log_info("Arm Joint Accelerations: ", Lookup(ArmJointAccelerations));
+  log_info("Arm Joint Torques: ", Lookup(ArmJointTorques));
+  log_info("Arm Joint Velocities: ", Lookup(ArmJointVelocities));
+  log_info("Arm FT Torque: ", Lookup(ArmFTTorque));
+  log_info("Arm FT Force: ", Lookup(ArmFTForce));
+  log_info("Arm Pose: ", Lookup(ArmPose));
+  log_info("Arm Tool: ", Lookup(ArmTool));
+  log_info("PSP Stop Reason: ", Lookup(PSPStopReason));
+  log_info("Shear Bevameter Stop Reason: ", Lookup(ShearBevameterStopReason));
+}

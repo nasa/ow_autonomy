@@ -82,7 +82,7 @@ Boolean Lookup Running (String operation_name);
 
 //////// PLEXIL Utilities
 
-// Predefined, unitless PLEXIL variable for current time.
+// Predefined, PLEXIL variable for current time.
 Real Lookup time;
 
 // String operations

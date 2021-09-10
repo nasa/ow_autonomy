@@ -1,0 +1,54 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This Test Sequence is found in the User Guide under section 3.10.1
+// It uses Test Sequence 2 for setup and uses ARM_TARE_FS, ARM_MOVE_CARTESIAN_GUARDED
+
+
+#include "owlat-interface.h"
+
+LibraryAction OwlatPositionArm();
+
+OwlatTestSequence3:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real position1[3] = #(0.0 0.0 0.15);
+  Real position2[3] = #(0.0 0.0 -0.1);
+  Real orientation[4] = #(0.0 0.0 0.0 1.0);
+  Real force_threshold = 5.0;
+  Real torque_threshold = 1.0;
+  
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence3");
+
+  // gets arm into position
+  LibraryCall OwlatPositionArm();
+
+  // Tare the force sensor
+  LibraryCall OwlatArmTareFS();
+
+  // Approaches surface
+  log_info("Approaching surface with ARM_MOVE_CARTESIAN_GUARDED.");
+  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame, 
+                                           Relative=relative, 
+                                           Position=position1, 
+                                           Orientation=orientation, 
+                                           Retracting=false,
+                                           ForceThreshold=force_threshold, 
+                                           TorqueThreshold=torque_threshold);
+
+  // Retracts from surface
+  log_info("Retracting from surface with ARM_MOVE_CARTESIAN_GUARDED.");
+  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame, 
+                                           Relative=relative, 
+                                           Position=position2, 
+                                           Orientation=orientation, 
+                                           Retracting=true,
+                                           ForceThreshold=force_threshold, 
+                                           TorqueThreshold=torque_threshold);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence3");
+}
