@@ -29,7 +29,7 @@
 
 LibraryAction InitializeAntennaAndArm ();
 
-LibraryAction Mission (InOut Boolean mission_in_progress,
+LibraryAction MissionSequence (InOut Boolean mission_in_progress,
                        InOut Boolean pan_done,
                        InOut Boolean unstow_done,
                        InOut Boolean stow_done);
@@ -77,7 +77,7 @@ FaultHandlingPattern4:
       log_error ("Stowing halted due to an arm fault.");
     }
 
-    LibraryCall Mission (mission_in_progress=MissionInProgress,
+    LibraryCall MissionSequence (mission_in_progress=MissionInProgress,
                          pan_done=PanDone,
                          unstow_done=UnstowDone,
                          stow_done=StowDone);
