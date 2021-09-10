@@ -42,9 +42,9 @@ LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean all_ok);
 
 LibraryAction MissionSequence2 (InOut Boolean mission_in_progress,
-                       InOut Boolean pan_done,
-                       InOut Boolean unstow_done,
-                       InOut Boolean stow_done);
+                                InOut Boolean pan_done,
+                                InOut Boolean unstow_done,
+                                InOut Boolean stow_done);
 
 FaultHandlingPattern6:
 {
@@ -74,7 +74,8 @@ FaultHandlingPattern6:
     LogPanError:
     {
 
-      Start !PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) || (Lookup(StateOfCharge) < CriticallyLowCharge));
+      Start !PanDone && (Lookup(AntennaFault) || Lookup(PowerFault)
+            || (Lookup(StateOfCharge) < CriticallyLowCharge));
     
       if Lookup(AntennaFault)
       {
@@ -139,10 +140,10 @@ FaultHandlingPattern6:
 
     
     LibraryCall MonitorPower (continue = MissionInProgress,
-                            battery_temp_ok = BatteryTempOK,
-                            battery_life_ok = BatteryLifeOK,
-                            battery_charge_ok = BatteryChargeOK,
-                            all_ok = BatteryOK);
+                              battery_temp_ok = BatteryTempOK,
+                              battery_life_ok = BatteryLifeOK,
+                              battery_charge_ok = BatteryChargeOK,
+                              all_ok = BatteryOK);
 
 
     BackupPanning:
@@ -150,7 +151,9 @@ FaultHandlingPattern6:
       Real NewAngle;
 
       Repeat MissionInProgress;
-      Start MissionInProgress && Lookup(ArmFault) && PanDone && (Lookup(StateOfCharge) > CriticallyLowCharge) && !Lookup(PowerFault);
+      Start MissionInProgress && Lookup(ArmFault) && PanDone
+            && (Lookup(StateOfCharge) > CriticallyLowCharge)
+            && !Lookup(PowerFault);
       Skip !MissionInProgress;
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
@@ -160,9 +163,9 @@ FaultHandlingPattern6:
     }
     
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
-                         pan_done=PanDone,
-                         unstow_done=UnstowDone,
-                         stow_done=StowDone);
+                                  pan_done=PanDone,
+                                  unstow_done=UnstowDone,
+                                  stow_done=StowDone);
 
   }
 
