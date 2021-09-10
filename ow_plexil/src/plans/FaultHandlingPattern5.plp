@@ -3,17 +3,18 @@
 // this repository.
 
 // Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the action will stop and end in the ABORTED state.
-// If/when the fault is cleared, the action will automatically be 
-// attempted again.
+// during a related action, the action will stop and end in the ABORTED state. 
+// As long as the action is stopped, a backup action will repeat. If/when the 
+// fault is cleared, the original action will automatically be attempted again.
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
-// If any fault is injected, the plan will pause and wait for resolution.
+// If a relevant fault is injected, the plan will stop the current action 
+// and start repeating a panning action as backup to the original action.
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
-// unstowing or stowing.
+// unstowing or stowing. 
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
@@ -34,7 +35,7 @@ LibraryAction MissionSequence (InOut Boolean mission_in_progress,
                        InOut Boolean unstow_done,
                        InOut Boolean stow_done);
 
-FaultHandlingPattern4:
+FaultHandlingPattern5:
 {
 
   Boolean MissionInProgress = true;
@@ -43,7 +44,7 @@ FaultHandlingPattern4:
   Boolean UnstowDone = false;
   Boolean StowDone = false;
 
-  log_info ("Starting FaultHandlingPattern4 plan...");
+  log_info ("Starting FaultHandlingPattern5 plan...");
 
   LibraryCall InitializeAntennaAndArm ();
 
@@ -77,6 +78,20 @@ FaultHandlingPattern4:
       log_error ("Stowing halted due to an arm fault.");
     }
 
+    BackupPanning:
+    {
+      Real NewAngle;
+
+      Repeat MissionInProgress;
+      Start MissionInProgress && Lookup(ArmFault) && PanDone;
+      Skip !MissionInProgress;
+
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+      LibraryCall Pan (Degrees=NewAngle);
+    
+    }
+
     LibraryCall MissionSequence (mission_in_progress=MissionInProgress,
                          pan_done=PanDone,
                          unstow_done=UnstowDone,
@@ -84,6 +99,6 @@ FaultHandlingPattern4:
 
   }
 
-  log_info ("FaultHandlingPattern4 plan complete.");
+  log_info ("FaultHandlingPattern5 plan complete.");
 
 }
