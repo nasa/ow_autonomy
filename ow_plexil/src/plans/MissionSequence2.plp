@@ -29,14 +29,12 @@ MissionSequence2:
   InOut Boolean unstow_done;
   InOut Boolean stow_done; 
 
-  log_info ("Test 1"); 
-
   PanAntenna:
   {
     Real PanToleranceDegrees = 1.0;
 
     Repeat !pan_done;
-    Start !Lookup(AntennaFault); // && !Lookup(PowerFault);
+    Start !Lookup(AntennaFault) && !Lookup(PowerFault);
     Skip pan_done;
 
     LibraryCall Pan (Degrees=180);
@@ -48,19 +46,17 @@ MissionSequence2:
 
   }
 
-  log_info ("Test 2");
-
   UnstowArm:
   {
     Repeat !unstow_done;
-    Start !Lookup(ArmFault); // && !Lookup(PowerFault);
+    Start !Lookup(ArmFault) && !Lookup(PowerFault);
     Skip unstow_done;
 
     LibraryCall Unstow(); 
       
     // See NOTE above for an explanation of logic.
 
-    unstow_done = !Lookup(ArmFault); //(!Lookup(ArmFault) && !Lookup(PowerFault));
+    unstow_done = (!Lookup(ArmFault) && !Lookup(PowerFault));
 
   }
 
@@ -68,14 +64,14 @@ MissionSequence2:
   StowArm:
   {
     Repeat !stow_done;
-    Start !Lookup(ArmFault); // && !Lookup(PowerFault);
+    Start !Lookup(ArmFault) && !Lookup(PowerFault);
     Skip stow_done;
 
     LibraryCall Stow();
 
     // See NOTE above for an explanation of logic.
       
-    stow_done = !Lookup(ArmFault); //(!Lookup(ArmFault) && !Lookup(PowerFault));
+    stow_done = (!Lookup(ArmFault) && !Lookup(PowerFault));
   
   }
 

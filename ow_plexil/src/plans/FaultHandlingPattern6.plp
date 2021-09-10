@@ -55,7 +55,6 @@ FaultHandlingPattern6:
   Boolean BatteryLifeOK = true;
   Boolean BatteryChargeOK = true;
   Real CriticallyLowCharge = 0.05;
-  Boolean BatteryCritical = false;
   Boolean BatteryOK = true; // Battery is okay at charge > 0.1
 
   Boolean PanDone = false;
@@ -75,7 +74,7 @@ FaultHandlingPattern6:
     LogPanError:
     {
 
-      Start !PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) || BatteryCritical);
+      Start !PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) || (Lookup(StateOfCharge) < CriticallyLowCharge));
     
       if Lookup(AntennaFault)
       {
@@ -86,7 +85,7 @@ FaultHandlingPattern6:
       {
         log_error ("Panning halted due to a power fault.");
       }
-      else if BatteryCritical
+      else if (Lookup(StateOfCharge) < CriticallyLowCharge)
       {
         log_error ("Panning halted due to the battery level being critically low.");
       }
@@ -144,30 +143,14 @@ FaultHandlingPattern6:
                             battery_life_ok = BatteryLifeOK,
                             battery_charge_ok = BatteryChargeOK,
                             all_ok = BatteryOK);
-    /*
-    CheckIfBatteryCritical:
-    {
-      Repeat MissionInProgress;
-      Skip !MissionInProgress;
 
-      BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
-    }
-
-    
-    Prints:
-    {
-      log_info ("BatteryCritical: ", BatteryCritical);
-      log_info ("BatteryOK: ", BatteryOK);
-      Wait 5;
-    }
-    */
 
     BackupPanning:
     {
       Real NewAngle;
 
       Repeat MissionInProgress;
-      Start MissionInProgress && Lookup(ArmFault) && PanDone; // && !BatteryCritical && !Lookup(PowerFault);
+      Start MissionInProgress && Lookup(ArmFault) && PanDone && (Lookup(StateOfCharge) > CriticallyLowCharge) && !Lookup(PowerFault);
       Skip !MissionInProgress;
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
