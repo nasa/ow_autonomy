@@ -29,7 +29,7 @@ MissionSequence2:
   InOut Boolean unstow_done;
   InOut Boolean stow_done; 
 
-  log_info ("test 1"); 
+  log_info ("Test 1"); 
 
   PanAntenna:
   {
@@ -48,7 +48,7 @@ MissionSequence2:
 
   }
 
-  log_info ("test 2");
+  log_info ("Test 2");
 
   UnstowArm:
   {

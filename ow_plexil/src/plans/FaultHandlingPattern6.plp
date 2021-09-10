@@ -138,12 +138,13 @@ FaultHandlingPattern6:
 
     }
 
+    
     LibraryCall MonitorPower (continue = MissionInProgress,
                             battery_temp_ok = BatteryTempOK,
                             battery_life_ok = BatteryLifeOK,
                             battery_charge_ok = BatteryChargeOK,
                             all_ok = BatteryOK);
-    
+    /*
     CheckIfBatteryCritical:
     {
       Repeat MissionInProgress;
@@ -152,19 +153,21 @@ FaultHandlingPattern6:
       BatteryCritical = (Lookup(StateOfCharge) < CriticallyLowCharge);
     }
 
+    
     Prints:
     {
       log_info ("BatteryCritical: ", BatteryCritical);
       log_info ("BatteryOK: ", BatteryOK);
       Wait 5;
     }
+    */
 
     BackupPanning:
     {
       Real NewAngle;
 
       Repeat MissionInProgress;
-      Start MissionInProgress && Lookup(ArmFault) && PanDone && !BatteryCritical && !Lookup(PowerFault);
+      Start MissionInProgress && Lookup(ArmFault) && PanDone; // && !BatteryCritical && !Lookup(PowerFault);
       Skip !MissionInProgress;
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
@@ -172,7 +175,7 @@ FaultHandlingPattern6:
       LibraryCall Pan (Degrees=NewAngle);
     
     }
-
+    
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
                          pan_done=PanDone,
                          unstow_done=UnstowDone,
