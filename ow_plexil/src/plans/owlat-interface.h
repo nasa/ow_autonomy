@@ -1,2 +1,0 @@
-LibraryAction OwlatUnstow();
-LibraryAction OwlatStow();

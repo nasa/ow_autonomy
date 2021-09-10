@@ -1,0 +1,40 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This Test Sequence is found in the User Guide under section 3.12.1
+// It uses Test Sequence 2 for setup and uses ARM_SET_TOOL, TASK_PSP
+
+
+#include "owlat-interface.h"
+
+LibraryAction OwlatPositionArm();
+
+OwlatTestSequence5:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real point[3] = #(0.0 0.0 0.1);
+  Real normal[3] = #(0.0 0.0 -1.0);
+  Real max_depth = 0.3;
+  Real max_force = 10.0;
+
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence5");
+
+  // Change tool to the Pressure Sinkage Plate
+  log_info("Changing end effector tool to the Pressure Sinkage Plate.");
+  LibraryCall OwlatArmSetTool(Tool=1);
+
+  // gets arm into position
+  LibraryCall OwlatPositionArm();
+
+  // Executes TASK_PSP
+  log_info("Performing data collection of geophysical properties with TASK_PSP.");
+  LibraryCall OwlatTaskPSP(Frame=frame, Relative=relative, Point=point, 
+                           Normal=normal, MaxDepth=max_depth, MaxForce=max_force);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence5");
+}
+

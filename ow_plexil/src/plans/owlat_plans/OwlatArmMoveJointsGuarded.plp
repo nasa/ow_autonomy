@@ -1,0 +1,18 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-lander-commands.h"
+
+OwlatArmMoveJointsGuarded:
+{
+  In Boolean Relative;
+  In Real Angles[7];
+  In Boolean Retracting;
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
+
+  SynchronousCommand owlat_arm_move_joints_guarded(Relative, Angles,
+                                                   Retracting, ForceThreshold,
+                                                   TorqueThreshold);
+}

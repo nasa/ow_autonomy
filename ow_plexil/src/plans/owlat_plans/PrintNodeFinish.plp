@@ -2,12 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test each operation of the OWLAT Simulator.
-
 #include "owlat-interface.h"
 
-TestOwlat:
+PrintNodeFinish:
 {
-  LibraryCall OwlatUnstow();
-  LibraryCall OwlatStow();
+  In String NodeName;
+  log_info(NodeName, " Finished.\n\n");
 }

@@ -1,0 +1,15 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-lander-commands.h"
+
+OwlatTaskScoop:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Point[3];
+  In Real Normal[3];
+
+  SynchronousCommand owlat_task_scoop(Frame, Relative, Point, Normal);
+}

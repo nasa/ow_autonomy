@@ -59,6 +59,7 @@ bool CommonAdapter::initialize()
   setSubscriber (receiveString);
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolString);
+  setSubscriber (receiveDoubleVector);
   g_adapter = this;
   debugMsg("CommonAdapter", " initialized.");
   return true;

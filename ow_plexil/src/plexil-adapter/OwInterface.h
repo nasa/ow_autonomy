@@ -61,7 +61,7 @@ using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 class OwInterface : public PlexilInterface
 {
  public:
-  static std::shared_ptr<OwInterface> instance();
+  static OwInterface* instance();
   OwInterface ();
   ~OwInterface () = default;
   OwInterface (const OwInterface&) = delete;
@@ -174,7 +174,6 @@ class OwInterface : public PlexilInterface
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
 
-  static std::shared_ptr<OwInterface> m_instance;
   std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Publishers and subscribers
