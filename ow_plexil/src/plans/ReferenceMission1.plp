@@ -91,6 +91,7 @@ ReferenceMission1: Concurrence
       LibraryCall CollectSample (X = trench_x, Y = trench_y,
                                  GroundPos = ground_pos, Depth = 0.11,
                                  Length = trench_length, Parallel = parallel);
+      LibraryCall Unstow(); // For safety in stowing
       LibraryCall Stow();
       LibraryCall StartSampleAnalysis;
       Wait 2;  // Wait for (stubbed) sample analysis to finish.

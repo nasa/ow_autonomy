@@ -1,0 +1,22 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-lander-commands.h"
+
+OwlatArmMoveCartesianGuarded:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Position[3];
+  In Real Orientation[4];
+  In Boolean Retracting;
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
+
+
+  SynchronousCommand owlat_arm_move_cartesian_guarded(Frame, Relative, 
+                                                      Position, Orientation,
+                                                      Retracting, ForceThreshold,
+                                                      TorqueThreshold); 
+}

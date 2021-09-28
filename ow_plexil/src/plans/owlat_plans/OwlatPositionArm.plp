@@ -1,0 +1,24 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan puts the arm into place above the ground plane to prepare for other
+// operations
+
+#include "owlat-interface.h"
+
+OwlatPositionArm:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real position[3] = #(0.0 0.0 0.4);
+  Real orientation[4] = #(0.0 0.0 0.0 1.0);
+
+  log_info("Moving arm into position above surface with ARM_MOVE_CARTESIAN.");
+  LibraryCall OwlatArmMoveCartesian(Frame=frame, 
+                                    Relative=relative,
+                                    Position=position,
+                                    Orientation=orientation);
+}

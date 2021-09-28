@@ -2,9 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-Command owlat_unstow();
+#include "owlat-lander-commands.h"
 
-OwlatUnstow:
+OwlatArmStop:
 {
-  SynchronousCommand owlat_unstow();
+  SynchronousCommand owlat_arm_stop();
 }

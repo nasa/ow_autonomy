@@ -76,14 +76,19 @@ Launch the plan executive
 
 1. First you must start the simulator, e.g.
 
-```bash
+  For OceanWATERS:
+  ```bash
   roslaunch ow europa_terminator.launch
-```
+  ```
    NOTES:
     - to omit the Gazebo GUI for faster performance, add `gzclient:=false`
     - for alternate terrains, other launch files are available:
       `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
       `europa_test_dem.launch`.
+
+  For OWLAT:
+  Start ROS: ``` roscore ```
+  Then start OWLAT in a separate tab: ```launch_owlat Scoop```
 
 2. Next launch the desired executive.  For OceanWATERS:
 
