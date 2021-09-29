@@ -23,6 +23,7 @@ using PLEXIL::Error;
 using PLEXIL::InterfaceSchema;
 
 // C++
+#include <stdlib.h>
 #include <fstream>
 #include <string>
 #include <iostream>
@@ -152,9 +153,14 @@ static void get_plexil_debug_config()
 
 bool OwExecutive::initialize (const string& config_file)
 {
-  // NOTE: this is the best we can do for now.
-  // ROS provides no API to locate the 'devel' directory.
-  PlexilDir = ros::package::getPath("ow_plexil") + "/../../../devel/etc/plexil/";
+  // Get plan library directory from the environment variable set by the ow_plexil env-hooks
+  char *plexil_plan_dir_env = getenv("PLEXIL_PLAN_DIR");
+  if(plexil_plan_dir_env == NULL) {
+      ROS_ERROR("Environment variable $PLEXIL_PLAN_DIR is not set.");
+      return false;
+  }
+
+  PlexilDir = plexil_plan_dir_env+std::string("/");
 
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
