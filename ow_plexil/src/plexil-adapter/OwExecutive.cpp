@@ -156,11 +156,11 @@ bool OwExecutive::initialize (const string& config_file)
   // Get plan library directory from the environment variable set by the ow_plexil env-hooks
   char *plexil_plan_dir_env = getenv("PLEXIL_PLAN_DIR");
   if(plexil_plan_dir_env == NULL) {
-      ROS_ERROR("Environment variable $PLEXIL_PLAN_DIR is not set.");
-      return false;
+    ROS_ERROR("Environment variable $PLEXIL_PLAN_DIR is not set.");
+    return false;
   }
 
-  PlexilDir = plexil_plan_dir_env+std::string("/");
+  PlexilDir = plexil_plan_dir_env+string("/");
 
   // Throw exceptions, DON'T assert
   Error::doThrowExceptions();
