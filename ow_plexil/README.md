@@ -85,6 +85,11 @@ Launch the plan executive
     - for alternate terrains, other launch files are available:
       `atacama_y1a.launch`, `europa_terminator_workspace.launch`,
       `europa_test_dem.launch`.
+    - the environment variable `$PLEXIL_PLAN_DIR` is required to locate the
+      `.plx` files used by the executive. This environment varialbe is exported
+      by the env-hooks which are sourced when sourcing the catkin setup script,
+      and should point to a directory in the catkin develspace where the `.plx`
+      files are deployed.
 
   For OWLAT:
   Start ROS: ``` roscore ```
