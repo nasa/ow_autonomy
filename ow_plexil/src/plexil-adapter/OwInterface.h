@@ -21,6 +21,7 @@
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
+#include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
 #include <control_msgs/JointControllerState.h>
@@ -51,6 +52,8 @@ using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using PanTiltActionClient =
+  actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
@@ -73,11 +76,14 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<double> identifySampleLocation (int num_images, 
+  std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
+  // Obsolete
   void tiltAntenna (double degrees, int id);
   void panAntenna (double degrees, int id);
+
+  void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
   void takePicture (int id);
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
@@ -117,13 +123,14 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
-  void identifySampleLocationAction (int num_images, 
+  void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
   void deliverAction (double x, double y, double z, int id);
+  void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
@@ -201,6 +208,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state - note that pan and tilt can be concurrent.

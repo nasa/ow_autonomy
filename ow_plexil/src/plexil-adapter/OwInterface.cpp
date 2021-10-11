@@ -55,16 +55,17 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-const string Op_GuardedMove       = "GuardedMove";
-const string Op_DigCircular       = "DigCircular";
-const string Op_DigLinear         = "DigLinear";
-const string Op_Deliver           = "Deliver";
-const string Op_PanAntenna        = "PanAntenna";
-const string Op_TiltAntenna       = "TiltAntenna";
-const string Op_Grind             = "Grind";
-const string Op_Stow              = "Stow";
-const string Op_Unstow            = "Unstow";
-const string Op_TakePicture       = "TakePicture";
+const string Op_GuardedMove            = "GuardedMove";
+const string Op_DigCircular            = "DigCircular";
+const string Op_DigLinear              = "DigLinear";
+const string Op_Deliver                = "Deliver";
+const string Op_PanAntenna             = "PanAntenna";
+const string Op_TiltAntenna            = "TiltAntenna";
+const string Op_Grind                  = "Grind";
+const string Op_Stow                   = "Stow";
+const string Op_Unstow                 = "Unstow";
+const string Op_TakePicture            = "TakePicture";
+const string Op_PanTiltAntenna         = "PanTiltAntenna";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 
 
@@ -77,6 +78,7 @@ enum LanderOps {
   Deliver,
   Pan,
   Tilt,
+  PanTilt,
   Grind,
   Stow,
   Unstow,
@@ -86,8 +88,8 @@ enum LanderOps {
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-  Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
-  Op_IdentifySampleLocation
+  Op_PanAntenna, Op_TiltAntenna, Op_PanAntenna, Op_Grind, Op_Stow, Op_Unstow,
+  Op_TakePicture, Op_IdentifySampleLocation
 };
 
 
@@ -513,6 +515,7 @@ void OwInterface::initialize()
     m_digCircularClient = make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
     m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
 
@@ -535,6 +538,10 @@ void OwInterface::initialize()
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
+    }
+    if (! m_panTiltClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Antenna pan/tilt action server did not connect!");
     }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -572,6 +579,30 @@ void OwInterface::panAntenna (double degrees, int id)
   m_goalPan = degrees;
   m_panStart = ros::Time::now();
   antennaOp (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
+}
+
+void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
+{
+  if (! markOperationRunning (Op_PanTiltAntenna, id)) return;
+  thread action_thread (&OwInterface::panTiltAntennaAction, this,
+                        pan_degrees, tilt_degrees, id);
+  action_thread.detach();
+}
+
+void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
+                                        int id)
+{
+  AntennaPanTiltGoal goal;
+  goal.pan = pan_degrees;
+  goal.tilt = tilt_degrees;
+  runAction<actionlib::SimpleActionClient<AntennaPanTiltAction>,
+            AntennaPanTiltGoal,
+            AntennaPanTiltResultConstPtr,
+            AntennaPanTiltFeedbackConstPtr>
+    (Op_PanTiltAntenna, m_panTiltClient, goal, id,
+     default_action_active_cb (Op_PanTiltAntenna),
+     default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTiltAntenna),
+     default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
 }
 
 void OwInterface::takePicture (int id)
