@@ -9,54 +9,72 @@
 TestPanTilt: Sequence
 {
 
-    In Real Goal;
-    In String Action;
-    InOut Integer TestSuccess;
+    In Real PanDegrees;
+    In Real TiltDegrees;
+    InOut Integer Success;
     Real tolerance = 0.4;
-    Real current = 0;
+    Real current_pan, current_tilt;
 
     //output test number
-    log_info("TEST: ", TestSuccess+1);
+    log_info("TEST: ", Success+1);
 
-    //check for which command was passed
-    if(Action == "Pan" || Action == "pan"){
-      LibraryCall Pan(Degrees = Goal); 
-      current = Lookup(PanDegrees);
-    }
-    elseif(Action == "Tilt" || Action == "tilt"){
-      LibraryCall Tilt(Degrees = Goal);
-      current = Lookup(TiltDegrees);
-    }
+    LibraryCall PanTilt(PanDegrees = PanDegrees, TiltDegrees = TiltDegrees);
+    current_pan  = Lookup(PanDegrees);
+    current_tilt = Lookup(TiltDegrees);
 
-    //Normalize between -360 and 360
-    if(abs(current) > 360){
-      if(current < 0){
-        current = (abs(current) % 360)*-1;
+    // TODO: simply much of the following, using library plans as needed
+
+    // Normalize between -360 and 360
+    if(abs(current_pan) > 360){
+      if(current_pan < 0){
+        current_pan = (abs(current_pan) % 360)*-1;
       }
       else{
-        current = (abs(current) % 360);
+        current_pan = (abs(current_pan) % 360);
       }
     }
     endif;
 
-    //check for equivalent angles
-    if(current > 0 && Goal < 0){
-      current = current - 360; 
-    }
-    else if(current < 0 && Goal > 0){
-      current = current + 360;
+    if(abs(current_tilt) > 360){
+      if(current_tilt < 0){
+        current_tilt = (abs(current_tilt) % 360)*-1;
+      }
+      else{
+        current_tilt = (abs(current_tilt) % 360);
+      }
     }
     endif;
 
-    //check if resulting position is within tolerance
-    if(abs(current - Goal) <= tolerance){
-      log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
-      //if we succeed we increment the TestSuccess
-      TestSuccess = TestSuccess + 1;
-    }
-    else{
-      log_error(Action, ": FAILED", " Goal: ", Goal, " Actual: ", current);
-    }
+    // Check for equivalent angles
 
+    if(current_pan > 0 && PanDegrees < 0){
+      current_pan = current_pan - 360;
+    }
+    else if(current_pan < 0 && PanDegrees > 0){
+      current_pan = current_pan + 360;
+    }
+    endif;
 
+    if(current_tilt > 0 && TiltDegrees < 0){
+      current_tilt = current_tilt - 360;
+    }
+    else if(current_tilt < 0 && TiltDegrees > 0){
+      current_tilt = current_tilt + 360;
+    }
+    endif;
+
+    // Check if resulting position is within tolerance
+
+    if(abs(current_pan - PanDegrees) <= tolerance &&
+       abs(current_tilt - TiltDegrees) <= tolerance) {
+      log_info ("PanTilt SUCCEEDED",
+                " PanDegrees: ", PanDegrees, " Actual: ", current_pan,
+                " TiltDegrees: ", TiltDegrees, " Actual: ", current_tilt);
+      Success = Success + 1;
+    }
+    else {
+      log_error ("PanTilt FAILED",
+                 " PanDegrees: ", PanDegrees, " Actual: ", current_pan,
+                 " TiltDegrees: ", TiltDegrees, " Actual: ", current_tilt);
+    }
 }

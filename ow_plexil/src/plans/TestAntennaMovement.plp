@@ -6,37 +6,37 @@
 
 #include "plan-interface.h"
 
-LibraryAction TestPanTilt (In Real Goal, In Real Action, InOut Integer TestSuccess);
+LibraryAction TestPanTilt (In Real PanDegrees, In Real TiltDegrees,
+                           InOut Integer Success);
 
 TestAntennaMovement: CheckedSequence
 {
   Integer TestCount = 0;
 
   //initial location
-  LibraryCall Tilt(Degrees = 0);
-  LibraryCall Pan(Degrees = 0);
+  LibraryCall PanTilt(PanDegrees = 0, TiltDegrees = 0);
 
   //Pan tests
-  LibraryCall TestPanTilt(Goal = 180, Action = "Pan", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = -180, Action = "Pan", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = 350, Action = "Pan", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = -350, Action = "Pan", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = -45, Action = "Pan", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = 10, Action = "Pan", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt (PanDegrees = 180, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = -180, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 350, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = -350, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = -45, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
 
   //Tilt tests
-  LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount); 
-  LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", TestSuccess = TestCount); 
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 10, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 20, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = -10, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
+  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 45, Success = TestCount);
+
 
   //Checks if all tests have succeeded
-  if(TestCount == 11){
+  if (TestCount == 11) {
     log_info("TestAntennaMovement: SUCCEEDED, 11/11 Tests Succeeded");
-  } 
-  else{
+  }
+  else {
     log_error("TestAntennaMovement: FAILED, ", TestCount, "/11 Tests Succeeded");
   }
- 
 }

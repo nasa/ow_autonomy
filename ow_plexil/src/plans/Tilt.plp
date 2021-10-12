@@ -6,7 +6,7 @@
 
 #include "plan-interface.h"
 
-Pan:
+Tilt:
 {
   In Real Degrees;
   LibraryCall PanTilt (PanDegrees = Lookup(PanDegrees), TiltDegrees = Degrees);
