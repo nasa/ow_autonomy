@@ -52,8 +52,8 @@ const double PanTiltTimeout = 15.0; // seconds, made up
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
-// Lander operation names.  In general these match those used in PLEXIL and
-// ow_lander.
+// Lander operation names.  These must match the action client and server names
+// used in ow_lander.
 
 const string Op_GuardedMove            = "GuardedMove";
 const string Op_DigCircular            = "DigCircular";
@@ -65,7 +65,7 @@ const string Op_Grind                  = "Grind";
 const string Op_Stow                   = "Stow";
 const string Op_Unstow                 = "Unstow";
 const string Op_TakePicture            = "TakePicture";
-const string Op_PanTiltAntenna         = "PanTiltAntenna";
+const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 
 
@@ -88,8 +88,8 @@ enum LanderOps {
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-  Op_PanAntenna, Op_TiltAntenna, Op_PanAntenna, Op_Grind, Op_Stow, Op_Unstow,
-  Op_TakePicture, Op_IdentifySampleLocation
+  Op_PanAntenna, Op_TiltAntenna, Op_PanTiltAntenna, Op_Grind,
+  Op_Stow, Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation
 };
 
 
@@ -539,13 +539,13 @@ void OwInterface::initialize()
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
     }
-    if (! m_panTiltClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Antenna pan/tilt action server did not connect!");
-    }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    }
+    if (! m_panTiltClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Antenna pan/tilt action server did not connect!");
     }
     if (! m_identifySampleLocationClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {

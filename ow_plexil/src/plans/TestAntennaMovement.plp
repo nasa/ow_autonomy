@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Simple plan to test Pan and Tilt functions
+// Simple plan to test antenna Pan and Tilt.
 
 #include "plan-interface.h"
 

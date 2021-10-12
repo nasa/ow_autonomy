@@ -19,6 +19,7 @@ Command log_error (...);
 
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
+LibraryAction PanTilt  (In Real PanDegrees, In Real TiltDegrees);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction GuardedMove (In Real X,

@@ -248,6 +248,17 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   send_ack_once(*cr);
 }
 
+static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
+{
+  double pan_degrees, tilt_degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (pan_degrees);
+  args[1].getValue (tilt_degrees);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
+  send_ack_once(*cr);
+}
+
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -298,6 +309,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);

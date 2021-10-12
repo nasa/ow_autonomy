@@ -14,6 +14,7 @@
 
 Command tilt_antenna (Real degrees);
 Command pan_antenna (Real degrees);
+Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 Command take_picture();
 
 Command dig_circular (Real x,
