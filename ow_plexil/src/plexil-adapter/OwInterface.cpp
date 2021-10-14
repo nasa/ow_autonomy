@@ -589,12 +589,21 @@ void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int i
   action_thread.detach();
 }
 
+static void check_normalized_degrees (double degrees, const char* desc)
+{
+  if (degrees < 0 || degrees > 360) {
+    ROS_WARN ("Non-normalized value: %d: %s", degrees, desc);
+  }
+}
+
 void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
                                         int id)
 {
   AntennaPanTiltGoal goal;
-  goal.pan = pan_degrees;
-  goal.tilt = tilt_degrees;
+  check_normalized_degrees (pan_degrees, "panTiltAntennaAction pan degrees");
+  check_normalized_degrees (tilt_degrees, "panTiltAntennaAction tilt degrees");
+  goal.pan = pan_degrees * D2R;
+  goal.tilt = tilt_degrees * D2R;
   runAction<actionlib::SimpleActionClient<AntennaPanTiltAction>,
             AntennaPanTiltGoal,
             AntennaPanTiltResultConstPtr,
