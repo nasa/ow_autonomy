@@ -9,7 +9,7 @@
 LibraryAction TestPanTilt (In Real PanDegrees, In Real TiltDegrees,
                            InOut Integer Success);
 
-TestAntennaMovement: CheckedSequence
+TestAntennaMovement:
 {
   Integer TestCount = 0;
 

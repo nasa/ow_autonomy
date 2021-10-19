@@ -17,6 +17,7 @@
 #include <map>
 #include <thread>
 #include <functional>
+#include <sstream>
 using std::set;
 using std::map;
 using std::vector;
@@ -592,7 +593,7 @@ void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int i
 static void check_normalized_degrees (double degrees, const char* desc)
 {
   if (degrees < 0 || degrees > 360) {
-    ROS_WARN ("Non-normalized value: %d: %s", degrees, desc);
+    ROS_WARN ("Non-normal value: %f: %s", degrees, desc);
   }
 }
 
@@ -600,16 +601,18 @@ void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
                                         int id)
 {
   AntennaPanTiltGoal goal;
-  check_normalized_degrees (pan_degrees, "panTiltAntennaAction pan degrees");
-  check_normalized_degrees (tilt_degrees, "panTiltAntennaAction tilt degrees");
+  check_normalized_degrees (pan_degrees, "panTiltAntennaAction() pan degrees");
+  check_normalized_degrees (tilt_degrees, "panTiltAntennaAction() tilt degrees");
   goal.pan = pan_degrees * D2R;
   goal.tilt = tilt_degrees * D2R;
+  std::stringstream args;
+  args << goal.pan << ", " << goal.tilt;
   runAction<actionlib::SimpleActionClient<AntennaPanTiltAction>,
             AntennaPanTiltGoal,
             AntennaPanTiltResultConstPtr,
             AntennaPanTiltFeedbackConstPtr>
     (Op_PanTiltAntenna, m_panTiltClient, goal, id,
-     default_action_active_cb (Op_PanTiltAntenna),
+     default_action_active_cb (Op_PanTiltAntenna, args.str()),
      default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTiltAntenna),
      default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
 }
