@@ -176,22 +176,22 @@ void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
 }
 
 void OwInterface::systemFaultMessageCallback
-(const  ow_faults::SystemFaults::ConstPtr& msg)
+(const  ow_faults_detection::SystemFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
-void OwInterface::armFaultCallback(const ow_faults::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback(const ow_faults_detection::ArmFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
-void OwInterface::powerFaultCallback (const ow_faults::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
-void OwInterface::antennaFaultCallback(const ow_faults::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback(const ow_faults_detection::PTFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }

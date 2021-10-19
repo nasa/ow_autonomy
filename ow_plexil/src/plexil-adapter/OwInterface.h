@@ -30,10 +30,10 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <ow_faults/SystemFaults.h>
-#include <ow_faults/ArmFaults.h>
-#include <ow_faults/PowerFaults.h>
-#include <ow_faults/PTFaults.h>
+#include <ow_faults_detection/SystemFaults.h>
+#include <ow_faults_detection/ArmFaults.h>
+#include <ow_faults_detection/PowerFaults.h>
+#include <ow_faults_detection/PTFaults.h>
 
 #include "PlexilInterface.h"
 
@@ -130,12 +130,12 @@ class OwInterface : public PlexilInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
+  void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
+  void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
+  void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
+  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
-  void systemFaultMessageCallback (const ow_faults::SystemFaults::ConstPtr&);
-  void armFaultCallback (const ow_faults::ArmFaults::ConstPtr&);
-  void powerFaultCallback (const ow_faults::PowerFaults::ConstPtr&);
-  void antennaFaultCallback (const ow_faults::PTFaults::ConstPtr&);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
