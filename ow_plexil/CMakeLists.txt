@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   geometry_msgs
   ow_lander
-  ow_faults
+  ow_faults_detection
   rqt_gui_py
   message_generation
   std_msgs
@@ -50,7 +50,7 @@ generate_messages(
 
 catkin_package(
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp roslib rospy ow_lander actionlib_msgs geometry_msgs ow_faults
+  CATKIN_DEPENDS roscpp roslib rospy ow_lander actionlib_msgs geometry_msgs ow_faults_detection
   CFG_EXTRAS ow_plexil-extras.cmake
 )
 
