@@ -10,4 +10,7 @@ DebugPanTilt:
 {
   LibraryCall PanTilt (PanDegrees = 0, TiltDegrees = 0);
   LibraryCall PanTilt (PanDegrees = 180, TiltDegrees = 0);
+  LibraryCall PanTilt (PanDegrees = 0, TiltDegrees = 0);
+  LibraryCall PanTilt (PanDegrees = 180, TiltDegrees = 0);
+  LibraryCall PanTilt (PanDegrees = 0, TiltDegrees = 0);
 }
