@@ -149,7 +149,7 @@ class IdentifySampleLocation:
       return None, None, None
 
     #find contours and sort them largest to smallest
-    _, contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours.sort(reverse=True, key=cv.contourArea)
     sample_points_2d = []
     contour_areas = []
