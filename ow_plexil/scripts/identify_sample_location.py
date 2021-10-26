@@ -60,7 +60,7 @@ class IdentifySampleLocation:
     The point with the largest contour is then projected to 3d and transformed to the base_link frame. Only the largest
     point will be sent back as a result and the outlined contour and corresponding 2d point on the original image is republished.'''
     #resetting our member variables
-    self.largest_area = None
+    self.largest_area = -1.0
     self.best_sample_location = None
     self.sample_location_image = None
     self.uv = None
@@ -77,7 +77,7 @@ class IdentifySampleLocation:
         sample_points_2d, contour_areas, cv_image = self.identify_sample_spots(i[0], goal.filter_type)
         sample_point_3d, sample_point_area, uv = self.get_3d_sample_point(i[1], sample_points_2d, contour_areas)
         #save the 3d point info with the largest contour area
-        if sample_point_area > self.largest_area and sample_point_3d is not None:
+        if sample_point_3d is not None and sample_point_area > self.largest_area:
           self.largest_area = sample_point_area
           self.best_sample_location = sample_point_3d
           self.sample_location_image = cv_image
