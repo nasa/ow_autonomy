@@ -9,11 +9,14 @@
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
+
 // If any fault is injected, the plan will pause and wait for resolution.
+
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
 // unstowing or stowing.
+
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
@@ -23,7 +26,6 @@
 // Otherwise the action will show as completed, even though it halted
 // before completing the task. This is due to some bugs in the simulator,
 // and the fact that ROS action states are not exposed to PLEXIL.
-
 
 #include "plan-interface.h"
 
