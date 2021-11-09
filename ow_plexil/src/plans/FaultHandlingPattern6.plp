@@ -77,7 +77,7 @@ FaultHandlingPattern6:
     LogPanError:
     {
       Start (!PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) ||
-                          (Lookup(StateOfCharge) < CriticallyLowCharge));
+                          (Lookup(StateOfCharge) < CriticallyLowCharge)));
     
       if Lookup(AntennaFault)
       {
@@ -100,7 +100,7 @@ FaultHandlingPattern6:
     {
       Start (PanDone &&
              !UnstowDone &&
-             (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK);
+             (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK));
     
       if Lookup(ArmFault)
       {
