@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 #The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 #Research and Simulation can be found in README.md in the root directory of
@@ -149,7 +149,7 @@ class IdentifySampleLocation:
       return None, None, None
 
     #find contours and sort them largest to smallest
-    _, contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours.sort(reverse=True, key=cv.contourArea)
     sample_points_2d = []
     contour_areas = []
