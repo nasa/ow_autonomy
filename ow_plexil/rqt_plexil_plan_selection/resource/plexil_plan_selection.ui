@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PlexilPlanSelection</class>
- <widget class="QWidget" name="PlexilPlanSelection">
+ <widget class="QWidget" name="Plexil Plan Selection">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>PlexilPlanSelection</string>
+   <string>Plexil Plan Selection</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>

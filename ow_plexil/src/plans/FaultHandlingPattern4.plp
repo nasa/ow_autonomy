@@ -30,15 +30,13 @@
 LibraryAction InitializeAntennaAndArm ();
 
 LibraryAction MissionSequence (InOut Boolean mission_in_progress,
-                       InOut Boolean pan_done,
-                       InOut Boolean unstow_done,
-                       InOut Boolean stow_done);
+                               InOut Boolean pan_done,
+                               InOut Boolean unstow_done,
+                               InOut Boolean stow_done);
 
 FaultHandlingPattern4:
 {
-
   Boolean MissionInProgress = true;
-
   Boolean PanDone = false;
   Boolean UnstowDone = false;
   Boolean StowDone = false;
@@ -49,7 +47,6 @@ FaultHandlingPattern4:
 
   RunMission: Concurrence
   {
-    
     End !MissionInProgress;
     log_info ("Starting Mission...");
 
@@ -78,12 +75,11 @@ FaultHandlingPattern4:
     }
 
     LibraryCall MissionSequence (mission_in_progress=MissionInProgress,
-                         pan_done=PanDone,
-                         unstow_done=UnstowDone,
-                         stow_done=StowDone);
+                                 pan_done=PanDone,
+                                 unstow_done=UnstowDone,
+                                 stow_done=StowDone);
 
   }
 
   log_info ("FaultHandlingPattern4 plan complete.");
-
 }

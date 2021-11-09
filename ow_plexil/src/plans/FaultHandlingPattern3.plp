@@ -19,6 +19,14 @@
 // Otherwise, the pausing will visually become apparent when the next
 // operation does not begin due to it.
 
+// NOTE: This plan does not always behave exactly as described above, for two
+// reasons.  First, the library plans Pan, Unstow, and Stow currently implement
+// a "permissive" kind of fault handling at that level, in that they _wait_ for
+// any fault in progress to resolve before commencing.  Second, aborted ROS
+// Actions, which result from faults, are not yet detectable in PLEXIL; PLEXIL
+// only knows when an action terminates.  These subtleties are subjects for
+// future work and refinement.
+
 #include "plan-interface.h"
 
 LibraryAction InitializeAntennaAndArm ();

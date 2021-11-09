@@ -2,8 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Pan in 15 degree increments as long as no antenna fault is present.
-// If an antenna fault is occurs, pause until the fault is removed.
+// Pan in 15 degree increments as long as no antenna fault is present.  If an
+// antenna fault is occurs, pause until the fault is removed.  This plan must be
+// terminated with an interrupt (e.g. Control-C).
 
 #include "plan-interface.h"
 
@@ -26,7 +27,5 @@ FaultHandlingPattern1:
 
     LibraryCall Pan (Degrees=NewAngle);
   }
-
-  log_info ("FaultHandlingPattern1 plan complete.");
 }
 
