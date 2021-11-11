@@ -596,6 +596,9 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
   goal.delivery.x = x;
   goal.delivery.y = y;
   goal.delivery.z = z;
+
+  ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+  
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
             DeliverResultConstPtr,
@@ -628,6 +631,10 @@ void OwInterface::digLinearAction (double x, double y,
   goal.length = length;
   goal.ground_position = ground_pos;
 
+  ROS_INFO ("Starting DigLinear"
+	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
+	    x, y, depth, length, ground_pos);
+  
   runAction<actionlib::SimpleActionClient<DigLinearAction>,
             DigLinearGoal,
             DigLinearResultConstPtr,
@@ -658,6 +665,10 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
+  ROS_INFO ("Starting DigCircular"
+	    "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
+	    x, y, depth, (parallel ? "true" : "false"), ground_pos);
+  
   runAction<actionlib::SimpleActionClient<DigCircularAction>,
             DigCircularGoal,
             DigCircularResultConstPtr,
@@ -733,6 +744,10 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.parallel = parallel;
   goal.ground_position = ground_pos;
 
+  ROS_INFO ("Starting Grind"
+	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
+	    x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
+  
   runAction<actionlib::SimpleActionClient<GrindAction>,
             GrindGoal,
             GrindResultConstPtr,
@@ -766,6 +781,11 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.normal.z = dir_z;
   goal.search_distance = search_dist;
 
+  ROS_INFO ("Starting GuardedMove"
+	    "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
+	    "dir_z=%.2f, search_dist=%.2f)",
+	    x, y, z, dir_x, dir_y, dir_z, search_dist);
+  
   runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
             GuardedMoveGoal,
             GuardedMoveResultConstPtr,
