@@ -106,7 +106,7 @@ class IdentifySampleLocation:
 
     #prevent our image history from getting too large saves most recent HISTORY_MAX_LENGTH images
     if len(self.image_history) > self.HISTORY_MAX_LENGTH:
-      self.image_history = self.image_history[-HISTORY_MAX_LENGTH:]
+      self.image_history = self.image_history[-self.HISTORY_MAX_LENGTH:]
 
   def publish_chosen_location_image(self):
     '''Publishes the original image with our drawn on contours and chosen sample location. 
