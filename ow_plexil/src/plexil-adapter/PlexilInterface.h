@@ -25,7 +25,7 @@ class PlexilInterface
   bool isLanderOperation (const std::string& name) const;
 
   bool markOperationRunning (const std::string& name, int id);
-  bool markOperationFinished (const std::string& name, int id);
+  void markOperationFinished (const std::string& name, int id);
 
   // Command feedback
   void setCommandStatusCallback (void (*callback) (int, bool));

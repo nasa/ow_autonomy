@@ -36,7 +36,7 @@ bool PlexilInterface::markOperationRunning (const string& name, int id)
   return true;
 }
 
-bool PlexilInterface::markOperationFinished (const string& name, int id)
+void PlexilInterface::markOperationFinished (const string& name, int id)
 {
   if (! m_runningOperations.at (name) == IDLE_ID) {
     ROS_WARN ("%s was not running. Should never happen.", name.c_str());
