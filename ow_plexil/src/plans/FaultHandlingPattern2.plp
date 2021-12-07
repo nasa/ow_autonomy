@@ -1,0 +1,48 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Action 1: Pan antenna in 15 degree increments.
+// Action 2: Unstow and stow the arm repeatedly.
+// If no faults are occurring, action 1 and 2 occur simultaneously.
+// If an antenna fault but no arm faults occurring, only action 2 occurs.
+// If an arm fault but no antenna faults occurring, only action 1 occurs.
+// If both antenna and arm faults occurring, the plan waits for resolution.
+// This plan must be terminated with an interrupt, e.g. Control-C.
+
+#include "plan-interface.h"
+
+LibraryAction InitializeAntennaAndArm ();
+
+FaultHandlingPattern2:
+{
+  Real NewAngle = 0;
+
+  log_info ("Starting FaultHandlingPattern2 plan...");
+
+  LibraryCall InitializeAntennaAndArm ();
+
+  Run: Concurrence
+  {
+
+    Pattern2Image:
+    {
+      Repeat true;
+      Start !Lookup(AntennaFault);
+
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+      LibraryCall Pan (Degrees=NewAngle);
+    }
+
+    Pattern2UnstowStow:
+    {
+      Repeat true;
+      Start !Lookup(ArmFault);
+      Invariant !Lookup(ArmFault);
+
+      LibraryCall Unstow();
+      LibraryCall Stow();
+    }
+  }
+}

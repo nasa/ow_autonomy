@@ -1,0 +1,40 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Simple demonstration plan that performs a panoramic image, a grind, and a dig.
+
+#include "plan-interface.h"
+
+LibraryAction TestAntennaCamera();
+
+Demo:
+{
+  log_info ("Starting autonomy demo...");
+
+  LibraryCall TestAntennaCamera();
+
+  log_info ("Unstowing arm...");
+  LibraryCall Unstow();
+
+  log_info ("A guarded move...");
+  LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
+                           DirX = 0, DirY = 0, DirZ = 1,
+                           SearchDistance = 0.5);
+  if (Lookup(GroundFound)) {
+    log_info ("A grind...");
+    LibraryCall Grind (X = 2.0, Y = 0, Depth = 0.05,
+                       Length = 0.3, Parallel = true,
+                       GroundPos = Lookup(GroundPosition));
+    log_info ("A circular dig...");
+    LibraryCall DigCircular (X = 2.0, Y = 0, Depth = 0.05,
+                             GroundPos = Lookup(GroundPosition),
+                             Parallel = true);
+  }
+  else log_error ("Failed to find ground, skipping grind and dig.");
+  endif
+  log_info ("Stowing arm...");
+  LibraryCall Unstow(); // For safety in stowing
+  LibraryCall Stow();
+  log_info ("Autonomy demo finished.");
+}

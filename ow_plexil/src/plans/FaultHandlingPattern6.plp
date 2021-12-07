@@ -1,0 +1,169 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pattern summary: Execute a sequence of actions. If a fault is injected
+// during a related action, the action will stop and end in the ABORTED state. 
+// As long as the action is stopped, a backup action will repeat but only if
+// the battery level is sufficient. If/when the fault is cleared, the original
+// action will automatically be attempted again.
+
+// More specifically: If no faults are occurring, this plan will pan 180 
+// degrees, and then unstow and stow the arm.
+
+// If a power fault is injected, any action occurring will stop and
+// end in the ABORTED state. If the power fault is resolved, they will
+// automatically restart.
+
+// If a relevant fault is injected, the plan will stop the current action.
+
+// If there is sufficient battery power, the plan will start repeating a
+// panning action as backup to the original action.
+
+// If a fault is injected during an operation, that operation will only
+// halt immediately if the fault injected is associated with it directly,
+// i.e. an antenna fault during panning or an arm fault during 
+// unstowing or stowing.
+
+// NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
+// will halt the panning action in this plan.
+
+// IMPORTANT NOTE: When injecting a fault during an arm operation,
+// you should wait until you see the action aborted, 
+// e.g. "Stow finished in state ABORTED" before clearing the fault.
+// Otherwise the action will show as completed, even though it halted
+// before completing the task. This is due to some bugs in the simulator,
+// and the fact that ROS action states are not exposed to PLEXIL.
+
+
+#include "plan-interface.h"
+
+LibraryAction InitializeAntennaAndArm ();
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MissionSequence2 (InOut Boolean mission_in_progress,
+                                InOut Boolean pan_done,
+                                InOut Boolean unstow_done,
+                                InOut Boolean stow_done);
+
+FaultHandlingPattern6:
+{
+  Boolean MissionInProgress = true;
+
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+  Real CriticallyLowCharge = 0.05;
+  Boolean BatteryOK = true; // Battery is okay at charge > 0.1
+
+  Boolean PanDone = false;
+  Boolean UnstowDone = false;
+  Boolean StowDone = false;
+
+  log_info ("Starting FaultHandlingPattern6 plan...");
+
+  LibraryCall InitializeAntennaAndArm ();
+
+  RunMission: Concurrence
+  {
+    End !MissionInProgress;
+    log_info ("Starting Mission...");
+
+    LogPanError:
+    {
+      Start (!PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) ||
+                          (Lookup(StateOfCharge) < CriticallyLowCharge)));
+    
+      if Lookup(AntennaFault)
+      {
+        log_error ("Panning halted due to an antenna fault.");
+      }
+
+      if Lookup(PowerFault)
+      {
+        log_error ("Panning halted due to a power fault.");
+      }
+      else if (Lookup(StateOfCharge) < CriticallyLowCharge)
+      {
+        log_error ("Panning halted due to the battery level being critically low.");
+      }
+      endif;
+
+    }
+
+    LogUnstowError:
+    {
+      Start (PanDone &&
+             !UnstowDone &&
+             (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK));
+    
+      if Lookup(ArmFault)
+      {
+        log_error ("Unstowing halted due to an arm fault.");
+      }
+
+      if Lookup(PowerFault)
+      {
+        log_error ("Unstowing halted due to a power fault.");
+      }
+      else if !BatteryOK
+      {
+        log_error ("Unstowing halted due to the battery level being low.");
+      }
+      endif;
+    }
+
+    LogStowError:
+    {
+      Start UnstowDone && !StowDone && (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK);
+
+      if Lookup(ArmFault)
+      {
+        log_error ("Stowing halted due to an arm fault.");
+      }
+
+      if Lookup(PowerFault)
+      {
+        log_error ("Stowing halted due to a power fault.");
+      }
+      else if !BatteryOK
+      {
+        log_error ("Stowing halted due to the battery level being low.");
+      }
+      endif;
+    }
+    
+    LibraryCall MonitorPower (continue = MissionInProgress,
+                              battery_temp_ok = BatteryTempOK,
+                              battery_life_ok = BatteryLifeOK,
+                              battery_charge_ok = BatteryChargeOK,
+                              all_ok = BatteryOK);
+
+    BackupPanning:
+    {
+      Real NewAngle;
+
+      Repeat MissionInProgress;
+      Start MissionInProgress && Lookup(ArmFault) && PanDone
+            && (Lookup(StateOfCharge) > CriticallyLowCharge)
+            && !Lookup(PowerFault);
+      Skip !MissionInProgress;
+
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+      LibraryCall Pan (Degrees=NewAngle);
+    }
+    
+    LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
+                                  pan_done=PanDone,
+                                  unstow_done=UnstowDone,
+                                  stow_done=StowDone);
+  }
+
+  log_info ("FaultHandlingPattern6 plan complete.");
+}

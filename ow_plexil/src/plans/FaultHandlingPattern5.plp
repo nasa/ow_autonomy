@@ -1,0 +1,102 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pattern summary: Execute a sequence of actions. If a fault is injected
+// during a related action, the action will stop and end in the ABORTED state. 
+// As long as the action is stopped, a backup action will repeat. If/when the 
+// fault is cleared, the original action will automatically be attempted again.
+
+// More specifically: If no faults are occurring, this plan will pan 180 
+// degrees, and then unstow and stow the arm.
+
+// If a relevant fault is injected, the plan will stop the current action 
+// and start repeating a panning action as backup to the original action.
+
+// If a fault is injected during an operation, that operation will only
+// halt immediately if the fault injected is associated with it directly,
+// i.e. an antenna fault during panning or an arm fault during 
+// unstowing or stowing.
+
+// NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
+// will halt the panning action in this plan.
+
+// IMPORTANT NOTE: When injecting a fault during an arm operation,
+// you should wait until you see the action aborted, 
+// e.g. "Stow finished in state ABORTED" before clearing the fault.
+// Otherwise the action will show as completed, even though it halted
+// before completing the task. This is due to some bugs in the simulator,
+// and the fact that ROS action states are not exposed to PLEXIL.
+
+
+#include "plan-interface.h"
+
+LibraryAction InitializeAntennaAndArm ();
+
+LibraryAction MissionSequence (InOut Boolean mission_in_progress,
+                               InOut Boolean pan_done,
+                               InOut Boolean unstow_done,
+                               InOut Boolean stow_done);
+
+FaultHandlingPattern5:
+{
+
+  Boolean MissionInProgress = true;
+
+  Boolean PanDone = false;
+  Boolean UnstowDone = false;
+  Boolean StowDone = false;
+
+  log_info ("Starting FaultHandlingPattern5 plan...");
+
+  LibraryCall InitializeAntennaAndArm ();
+
+  RunMission: Concurrence
+  {
+    
+    End !MissionInProgress;
+    log_info ("Starting Mission...");
+
+    LogPanError:
+    {
+      Start !PanDone && Lookup(AntennaFault);
+    
+      log_error ("Panning halted due to an antenna fault.");
+    }
+
+    LogUnstowError:
+    {
+      Start PanDone && !UnstowDone && Lookup(ArmFault);
+    
+      log_error ("Unstowing halted due to an arm fault.");
+    }
+
+    LogStowError:
+    {
+      Start UnstowDone && !StowDone && Lookup(ArmFault);
+    
+      log_error ("Stowing halted due to an arm fault.");
+    }
+
+    BackupPanning:
+    {
+      Real NewAngle;
+
+      Repeat MissionInProgress;
+      Start MissionInProgress && Lookup(ArmFault) && PanDone;
+      Skip !MissionInProgress;
+
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+      LibraryCall Pan (Degrees=NewAngle);
+    
+    }
+
+    LibraryCall MissionSequence (mission_in_progress=MissionInProgress,
+                         pan_done=PanDone,
+                         unstow_done=UnstowDone,
+                         stow_done=StowDone);
+  }
+
+  log_info ("FaultHandlingPattern5 plan complete.");
+}

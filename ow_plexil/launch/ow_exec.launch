@@ -1,0 +1,29 @@
+<!-- Launch the plexil_node and terminal selection node. -->
+
+<launch>
+  <arg name="plan" default="None"/>
+
+ <!-- Lets GUI know what plans to display -->
+  <param name="owlat_flag" type="boolean" value="False"/>
+
+
+  <node pkg="ow_plexil"
+        name="ow_exec_node"
+        type="ow_exec_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+  <node pkg="ow_plexil"
+        name="terminal_selection_node"
+        type="terminal_selection_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+
+  <node pkg="ow_plexil"
+        name="identify_sample_location"
+        type="identify_sample_location.py"
+        output="screen">
+  </node>
+
+</launch>

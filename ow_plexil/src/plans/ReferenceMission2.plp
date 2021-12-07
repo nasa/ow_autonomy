@@ -1,0 +1,186 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This illustrative and imperfect plan builds on ReferenceMission1 by adding
+// rudimentary battery health monitoring, fault detection, and uniform handling
+// of each.  The handling is simply pausing the mission sequence at
+// predetermined points, and resuming it when system health returns.
+//
+// A higher fidelity approach would interrupt and resume the plan at finer
+// levels: child (library) node execution, and lander commands.  This would
+// require a fair amount of coding and refactoring of the plans.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction MonitorFaults (In Boolean continue,
+                             InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite (In String InstanceName, In Boolean IgnoreCrash);
+
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos,
+                                    In String FilterType);
+
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+
+LibraryAction StartSampleAnalysis;
+
+ReferenceMission2: Concurrence
+{
+  // Guards for mission continuation
+  Boolean BatteryOK = true;
+  Boolean NoFaults  = true;
+  Boolean MissionInProgress = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  LibraryCall MonitorFaults (continue = MissionInProgress,
+                             all_ok = NoFaults);
+
+  WaitForHealth:
+  {
+    Repeat MissionInProgress;
+    Start MissionInProgress && !(BatteryOK && NoFaults);
+    Skip !MissionInProgress;
+
+    log_warning
+      ("System health issues, mission operations nominally paused...");
+    Wait 10;
+  }
+
+  Mission:
+  {
+
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    log_info ("Starting ReferenceMission2 plan...");
+
+    Image:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("** Imaging Landing Site **");
+      LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
+                                   IgnoreCrash = true);
+    }
+    Unstow:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("** Unstowing Arm **");
+      LibraryCall Unstow;
+    }
+    Search:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("** Identifying Sample Target **");
+      LibraryCall IdentifySampleTarget (X = trench_x,
+                                        Y = trench_y,
+                                        GroundPos = ground_pos,
+                                        Parallel = parallel,
+                                        FilterType = "Dark");
+    }
+    if (Lookup(GroundFound)) {
+      Dig:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("** Digging Trench **");
+        LibraryCall DigTrench (X = trench_x,
+                               Y = trench_y,
+                               GroundPos = ground_pos,
+                               Length = trench_length,
+                               BiteDepth = 0.05,
+                               NumPasses = 2,
+                               Parallel = parallel);
+      }
+      Clear:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("** Removing Tailings **");
+        LibraryCall RemoveTailings (X = trench_x,
+                                    Y = trench_y,
+                                    GroundPos = ground_pos,
+                                    Parallel = parallel);
+      }
+      Collect:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("** Collecting Sample **");
+        LibraryCall CollectSample (X = trench_x,
+                                   Y = trench_y,
+                                   GroundPos = ground_pos,
+                                   Depth = 0.11,
+                                   Length = trench_length,
+                                   Parallel = parallel);
+      }
+      Stow:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("** Stowing Arm **");
+        LibraryCall Unstow(); // For safety in stowing
+        LibraryCall Stow;
+      }
+      Analyze:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("** Analyzing Sample **");
+        LibraryCall StartSampleAnalysis;
+      }
+    }
+    else {
+     log_error ("Failed to find ground, aborting.");
+     FailStow:
+     {
+       Start BatteryOK && NoFaults;
+       log_info ("** Stowing Arm **");
+       LibraryCall Unstow(); // For safety in stowing
+       LibraryCall Stow;
+     }
+    }
+    endif;
+    log_info ("ReferenceMission2 plan complete.");
+    MissionInProgress = false;
+  }
+}

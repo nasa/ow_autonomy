@@ -1,0 +1,45 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This Test Sequence is found in the User Guide under section 3.13.1 and 3.14.1
+// It uses Test Sequence 2 for setup and uses TASK_SCOOP and TASK_DROPOFF
+
+
+#include "owlat-interface.h"
+
+LibraryAction OwlatPositionArm();
+
+OwlatTestSequence6:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real point[3] = #(0.0 0.0 0.1);
+  Real point2[3] = #(0.20 0.0 0.53);
+  Real normal[3] = #(0.0 0.0 -1.0);
+  Real max_depth = 0.3;
+  Real max_force = 10.0;
+
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence6");
+
+  // Change tool to the Scoop if not already
+  log_info("Changing end effector tool to the Scoop.");
+  LibraryCall OwlatArmSetTool(Tool=4);
+
+  // gets arm into position
+  LibraryCall OwlatPositionArm();
+
+  // Scoops ground
+  log_info("Performing scoop operation with TASK_SCOOP.");
+  LibraryCall OwlatTaskScoop(Frame=frame, Relative=relative, Point=point, Normal=normal);
+
+  // Return sample to sample dropoff point
+  log_info("Performing dropoff at specified sample dropoff point with TASK_DROPOFF.");
+  LibraryCall OwlatTaskDropoff(Frame=9, Relative=relative, Point=point2);
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence6");
+}
+
+

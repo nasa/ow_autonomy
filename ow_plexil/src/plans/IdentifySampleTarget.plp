@@ -1,0 +1,56 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Takes pictures of terrain in front of lander using stereo camera and sends
+// them to action server for processing.  Points of interest are determined by
+// FilterType: "Brown" finds brown areas, "Dark" finds dark areas.  The plan
+// chooses the best sample point and then uses guarded move to find the exact
+// ground position of that spot.
+
+#include "plan-interface.h"
+
+LibraryAction PanAndShoot (In Real PanAngle);
+
+IdentifySampleTarget:
+{
+  InOut Real X, Y, GroundPos;
+  InOut Boolean Parallel;
+  In String FilterType;
+  Real result[3];
+  Real c_pan = 70;
+  Real c_tilt = 50;
+  Real delta = 5;
+  Post Lookup (GroundFound);
+
+  // Take pictures in front of the lander for processing in
+  // identify_sample_location.  An alternative would be to create a new
+  // TakePicture command that waits for the pointcloud, or modifying the current
+  // one.
+  LibraryCall Tilt(Degrees = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan - delta);
+  LibraryCall PanAndShoot(PanAngle = c_pan);
+  LibraryCall PanAndShoot(PanAngle = c_pan + delta);
+  SynchronousCommand result = identify_sample_location(3, FilterType);
+
+  if (isKnown(result[2])){
+    // Guarded move is an attempt to find the ground position.  The chosen start
+    // position is based on the result from identify_sample_location.
+    LibraryCall Unstow();
+    LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
+                             DirX = 0, DirY = 0, DirZ = 1,
+                             SearchDistance = 0.5);
+
+    //check for ground position
+    if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
+    else log_warning ("GuardedMove failed to find ground.");
+    endif;
+
+    // The chosen X/Y sampling location, as well as choice for Parallel trench
+    X = result[0];
+    Y = result[1];
+    Parallel = true;  // arbitrary for now
+  }
+  endif;
+
+}

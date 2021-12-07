@@ -1,0 +1,31 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pan in 15 degree increments as long as no antenna fault is present.  If an
+// antenna fault is occurs, pause until the fault is removed.  This plan must be
+// terminated with an interrupt (e.g. Control-C).
+
+#include "plan-interface.h"
+
+LibraryAction InitializeAntennaAndArm ();
+
+FaultHandlingPattern1:
+{
+  Real NewAngle = 0;
+
+  log_info ("Starting FaultHandlingPattern1 plan...");
+
+  LibraryCall InitializeAntennaAndArm ();
+
+  Pattern1Image:
+  {
+    Repeat true;
+    Start !Lookup(AntennaFault);
+
+    NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+
+    LibraryCall Pan (Degrees=NewAngle);
+  }
+}
+

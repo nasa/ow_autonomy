@@ -1,0 +1,40 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Reset pan and tilt angles to 0 and stow the arm (if not already there)
+
+#include "plan-interface.h"
+
+InitializeAntennaAndArm:
+{
+  Start !Lookup(SystemFault);
+
+  log_info ("Initializing lander antenna and arm...");
+
+  ResetTilt:
+  {
+    Start !Lookup(AntennaFault);
+    log_info ("Resetting tilt angle to 0...");
+    LibraryCall Tilt (Degrees=0);
+  }
+
+  ResetPan:
+  {
+    Start !Lookup(AntennaFault);
+    log_info ("Resetting pan angle to 0...");
+    LibraryCall Pan (Degrees=0);
+  }
+
+  ResetArm:
+  {
+    Start !Lookup(ArmFault);
+    log_info ("Stowing the arm...");
+    LibraryCall Unstow();
+    LibraryCall Stow();
+  }
+
+  log_info ("Initialization complete.");
+
+}
+

@@ -1,0 +1,107 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Simplified version of the Europa Lander reference mission, Sol 0.  A portion
+// of the landing site is imaged; a sampling site is determined, along with
+// trenching parameters; a trench is dug; tailings are removed; the sample is
+// deposited into the receptacle; a (abstracted) sample analysis is performed.
+
+#include "plan-interface.h"
+
+LibraryAction MonitorPower (In Boolean continue,
+                            InOut Boolean battery_temp_ok,
+                            InOut Boolean battery_life_ok,
+                            InOut Boolean battery_charge_ok,
+                            InOut Boolean all_ok);
+
+LibraryAction ImageLandingSite(In String InstanceName,
+                               In Boolean IgnoreCrash);
+LibraryAction IdentifySampleTarget (InOut Real X,
+                                    InOut Real Y,
+                                    InOut Boolean Parallel,
+                                    InOut Real GroundPos,
+                                    In String FilterType);
+LibraryAction DigTrench (In Real X,
+                         In Real Y,
+                         In Real GroundPos,
+                         In Real Length,
+                         In Real BiteDepth,
+                         In Integer NumPasses,
+                         In Boolean Parallel);
+LibraryAction RemoveTailings (In Real X,
+                              In Real Y,
+                              In Real GroundPos,
+                              In Boolean Parallel);
+LibraryAction CollectSample (In Real X,
+                             In Real Y,
+                             In Real GroundPos,
+                             In Real Depth,
+                             In Real Length,
+                             In Boolean Parallel);
+LibraryAction StartSampleAnalysis;
+
+ReferenceMission1: Concurrence
+{
+  Boolean MissionInProgress = true;
+
+  // Not effectively used, but added for backwards-compatibility.  See
+  // ReferenceMission2.plp for example usage.
+  Boolean BatteryOK = true;
+
+  // Power monitoring
+  Boolean BatteryTempOK = true;
+  Boolean BatteryLifeOK = true;
+  Boolean BatteryChargeOK = true;
+
+  // NOTE: The return status BatteryOK is not used in this plan, but is used in
+  // ReferenceMission2.plp.
+  LibraryCall MonitorPower (continue = MissionInProgress,
+                            battery_temp_ok = BatteryTempOK,
+                            battery_life_ok = BatteryLifeOK,
+                            battery_charge_ok = BatteryChargeOK,
+                            all_ok = BatteryOK);
+
+  Mission:
+  {
+    // These 4 variables are assigned in the call to IdentifySampleTarget.
+    Real trench_x, trench_y, ground_pos;
+    Boolean parallel;
+
+    // Max length possible is twice the radius of the arm/scoop (.48), i.e. .96.
+    // However, the max value is generally not appropriate because the scoop
+    // should not be inserted so deep into the ground.  Here, estimating a
+    // reasonable value given the other trenching parameters used.
+    Real trench_length = 0.6;
+
+    log_info ("Starting Reference Mission 1, Sol 0 ...");
+    LibraryCall ImageLandingSite (InstanceName = "ReferenceMission1",
+                                  IgnoreCrash = true);
+    LibraryCall IdentifySampleTarget (X = trench_x,
+                                      Y = trench_y,
+                                      GroundPos = ground_pos,
+                                      Parallel = parallel,
+                                      FilterType = "Dark");
+    if (Lookup(GroundFound)) {
+      LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
+                             Length = trench_length, BiteDepth = 0.05,
+                             NumPasses = 2, Parallel = parallel);
+      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
+                                  GroundPos = ground_pos, Parallel = parallel);
+      LibraryCall CollectSample (X = trench_x, Y = trench_y,
+                                 GroundPos = ground_pos, Depth = 0.11,
+                                 Length = trench_length, Parallel = parallel);
+      LibraryCall Unstow(); // For safety in stowing
+      LibraryCall Stow();
+      LibraryCall StartSampleAnalysis;
+      Wait 2;  // Wait for (stubbed) sample analysis to finish.
+    }
+    else
+    {
+      log_error ("Failed to find ground, aborting.");
+    }
+    endif
+    MissionInProgress = false;
+    log_info ("Reference Mission 1, Sol 0 complete.");
+  }
+}

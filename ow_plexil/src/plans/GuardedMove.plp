@@ -1,0 +1,43 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform a guarded move with the given parameters.
+// A guarded move is typically used to find the ground.
+
+#include "plan-interface.h"
+
+GuardedMove:
+{
+  In Real X;
+  In Real Y;
+  In Real Z;
+  In Real DirX;
+  In Real DirY;
+  In Real DirZ;
+  In Real SearchDistance;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command guarded_move not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendGuardedMove:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending guarded_move command to lander...");
+    }
+
+    SynchronousCommand guarded_move (X, Y, Z, DirX, DirY, DirZ, SearchDistance);
+    Wait 5; // Add some delay to make sure the status has been updated
+  }
+  
+}

@@ -1,0 +1,58 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// If no faults are occurring, this plan will pan 180 degrees, 
+// and then unstow and stow the arm.
+
+// If any fault is injected, the plan will pause and wait for resolution.
+// Resolution is defined as the removal of the fault. 
+
+// Upon resolution, the halted action will not complete,
+// but the plan will continue to the next node.
+
+// If a fault is injected during an operation, that operation will only
+// halt immediately if the fault injected is associated with it directly,
+// i.e. an antenna fault during panning or an arm fault during 
+// unstowing or stowing.
+
+// Otherwise, the pausing will visually become apparent when the next
+// operation does not begin due to it.
+
+#include "plan-interface.h"
+
+LibraryAction InitializeAntennaAndArm ();
+
+FaultHandlingPattern3:
+{
+
+  log_info ("Starting FaultHandlingPattern3 plan...");
+
+  LibraryCall InitializeAntennaAndArm ();
+
+  Image:
+  {
+    Start !Lookup(AntennaFault);
+
+    LibraryCall Pan (Degrees=180);
+  }
+
+  Unstow:
+  {
+    Start !Lookup(ArmFault);
+
+    LibraryCall Unstow();
+
+  }
+
+  Stow:
+  {
+    Start !Lookup(ArmFault);
+
+    LibraryCall Stow();
+      
+  }
+
+  log_info ("FaultHandlingPattern3 plan complete.");
+
+}

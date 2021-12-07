@@ -1,0 +1,29 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This Test Sequence is found in the User Guide under section 3.9.1 Sequence 2
+// It tests ARM_UNSTOW, ARM_MOVE_CARTESIAN and is used in every subsequent test Sequence.
+
+
+#include "owlat-interface.h"
+
+LibraryAction OwlatPositionArm();
+
+OwlatTestSequence2:
+{
+
+  // End effector frame
+  Integer frame = 16;
+  Boolean relative = false;
+  Real position[3] = #(0.0 0.0 0.4);
+  Real orientation[4] = #(0.0 0.0 0.0 1.0);
+
+  LibraryCall PrintNodeStart(NodeName="OwlatTestSequence2");
+
+  log_info("Unstowing arm with ARM_UNSTOW.");
+  LibraryCall OwlatUnstow();
+  LibraryCall OwlatPositionArm();
+
+  LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence2");
+}

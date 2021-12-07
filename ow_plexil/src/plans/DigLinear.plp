@@ -1,0 +1,39 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform one pass of a linear digging action.
+
+#include "plan-interface.h"
+
+DigLinear:
+{
+  In Real X;
+  In Real Y;
+  In Real Depth;
+  In Real Length;
+  In Real GroundPos;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command dig_linear not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDigLinear:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending dig_linear command to lander...");
+    }
+
+    SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+  }
+
+}

@@ -1,0 +1,40 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform one pass with the grinding tool, using the given parameters.
+
+#include "plan-interface.h"
+
+Grind:
+{
+  In Real X;
+  In Real Y;
+  In Real Depth;
+  In Real Length;
+  In Real GroundPos;
+  In Boolean Parallel;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command grind not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendGrind:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending grind command to lander...");
+    }
+
+    SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+  }
+
+}

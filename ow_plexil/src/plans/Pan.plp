@@ -1,0 +1,35 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pan the antenna to specified degrees.
+
+#include "plan-interface.h"
+
+Pan:
+{
+  In Real Degrees;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(AntennaFault);
+
+  if Lookup(AntennaFault)
+  { 
+    log_error ("Command pan_antenna not sent to lander due to active antenna fault(s).");
+    FaultDetected = true;
+  }
+
+  SendPan:
+  {
+    Start !Lookup(AntennaFault);
+
+    if FaultDetected
+    {
+      log_info ("Antenna fault(s) resolved, sending pan_antenna command to lander...");
+    }
+
+    SynchronousCommand pan_antenna (Degrees);
+  }
+
+}

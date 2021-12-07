@@ -1,0 +1,78 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+
+// A very basic sequence of actions, used in the fault handling patterns.
+
+// NOTE: Since it is currently not possible to check the success/failure
+// of lander commands or the current arm position, we instead use the
+// temporary check "!Lookup(ArmFault)" (seen in UnstowArm and StowArm)
+// for when an arm fault is resolved to denote that the arm has
+// been unstowed or stowed.
+
+// The assumption is that if the above Unstow()/Stow() has completed
+// and there is no arm fault, unstow/stow is most likely successfully done.
+
+// Limitation: If the arm fault is cleared before Unstow() or Stow() finishes,
+// successfully or otherwise, this check will incorrectly indicate
+// completion of unstowing or stowing altogether.
+
+
+#include "plan-interface.h"
+
+MissionSequence: 
+{
+  InOut Boolean mission_in_progress;
+  InOut Boolean pan_done;
+  InOut Boolean unstow_done;
+  InOut Boolean stow_done;  
+
+  PanAntenna:
+  {
+    Real PanToleranceDegrees = 1.0;
+
+    Repeat !pan_done;
+    Start !Lookup(AntennaFault);
+    Skip pan_done;
+
+    LibraryCall Pan (Degrees=180);
+
+    if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
+    {
+      pan_done = true;
+    }
+    else log_info ("PanDegrees =", Lookup(PanDegrees));
+  }
+
+  UnstowArm:
+  {
+    Repeat !unstow_done;
+    Start !Lookup(ArmFault);
+    Skip unstow_done;
+
+    LibraryCall Unstow(); 
+      
+    // See NOTE above for an explanation of logic.
+
+    unstow_done = !Lookup(ArmFault);
+
+  }
+
+    
+  StowArm:
+  {
+    Repeat !stow_done;
+    Start !Lookup(ArmFault);
+    Skip stow_done;
+
+    LibraryCall Stow();
+
+    // See NOTE above for an explanation of logic.
+      
+    stow_done = !Lookup(ArmFault);
+  
+  }
+
+  mission_in_progress = false;
+}

@@ -1,0 +1,39 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Deliver material in the scoop to the given point.  This is used for both
+// delivering the sample to its receptacle (which has specific coordinates) and
+// dumping tailings from trench digging.
+
+#include "plan-interface.h"
+
+Deliver:
+{
+  In Real X;
+  In Real Y;
+  In Real Z;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  { 
+    log_error ("Command deliver not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDeliver:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending deliver command to lander...");
+    }
+
+    SynchronousCommand deliver (X, Y, Z);
+  }
+
+}

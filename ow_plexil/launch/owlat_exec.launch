@@ -1,0 +1,28 @@
+<!-- Launch the plexil_node and terminal selection node. -->
+
+<launch>
+
+  <!-- Lets GUI know what plans to display -->
+  <param name="owlat_flag" type="boolean" value="True"/>
+
+  <arg name="plan" default="None"/>
+
+  <node pkg="ow_plexil"
+        name="owlat_exec_node"
+        type="owlat_exec_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+  <node pkg="ow_plexil"
+        name="terminal_selection_node"
+        type="terminal_selection_node"
+        args="$(arg plan)"
+        output="screen">
+  </node>
+  <node pkg="rqt_gui"
+        name="rqt_gui"
+        type="rqt_gui"
+        args="-s rqt_plexil_plan_selection"
+  />
+
+</launch>
