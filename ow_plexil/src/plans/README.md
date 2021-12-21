@@ -51,6 +51,8 @@ See the comments inside all the plans for more information.
    sample targets. When a point is found the action server publishes two
    visualization topics which are described in testing plans below.
 
+9. FaultHandlingPatternN: A series of illustrative fault-handling patterns.
+
 Plan Details
 ============
 
@@ -93,3 +95,16 @@ need to first refresh the topic menu in RQT.
   IdentifySampleLocationDemo was succesful.
 - In rare cases no sample points can be found. If this happens success is
   defined by a graceful exit.
+
+### FaultHandlingPatternN ###
+
+Each plan contains comments that describe its behavior and how to test
+the pattern.  Note that these plans do not always behave exactly as
+described within, for two reasons.  First, the library plans Pan,
+Unstow, and Stow currently implement a "permissive" kind of fault
+handling at that level, in that they _wait_ for any fault in progress
+to resolve before commencing.  Second, aborted ROS Actions, which
+result from faults, are not yet detectable in PLEXIL; PLEXIL only
+knows when an action terminates.  These subtleties are subjects for
+future work and refinement.
+

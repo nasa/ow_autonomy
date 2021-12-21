@@ -10,16 +10,21 @@
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
+
 // If a power fault is injected, any action occurring will stop and
 // end in the ABORTED state. If the power fault is resolved, they will
 // automatically restart.
-// If a relevant fault is injected, the plan will stop the current action. 
+
+// If a relevant fault is injected, the plan will stop the current action.
+
 // If there is sufficient battery power, the plan will start repeating a
 // panning action as backup to the original action.
+
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
-// unstowing or stowing. 
+// unstowing or stowing.
+
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
@@ -48,7 +53,6 @@ LibraryAction MissionSequence2 (InOut Boolean mission_in_progress,
 
 FaultHandlingPattern6:
 {
-
   Boolean MissionInProgress = true;
 
   Boolean BatteryTempOK = true;
@@ -67,15 +71,13 @@ FaultHandlingPattern6:
 
   RunMission: Concurrence
   {
-    
     End !MissionInProgress;
     log_info ("Starting Mission...");
 
     LogPanError:
     {
-
-      Start !PanDone && (Lookup(AntennaFault) || Lookup(PowerFault)
-            || (Lookup(StateOfCharge) < CriticallyLowCharge));
+      Start (!PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) ||
+                          (Lookup(StateOfCharge) < CriticallyLowCharge)));
     
       if Lookup(AntennaFault)
       {
@@ -96,8 +98,9 @@ FaultHandlingPattern6:
 
     LogUnstowError:
     {
-
-      Start PanDone && !UnstowDone && (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK);
+      Start (PanDone &&
+             !UnstowDone &&
+             (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK));
     
       if Lookup(ArmFault)
       {
@@ -113,12 +116,10 @@ FaultHandlingPattern6:
         log_error ("Unstowing halted due to the battery level being low.");
       }
       endif;
-
     }
 
     LogStowError:
     {
-
       Start UnstowDone && !StowDone && (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK);
 
       if Lookup(ArmFault)
@@ -135,16 +136,13 @@ FaultHandlingPattern6:
         log_error ("Stowing halted due to the battery level being low.");
       }
       endif;
-
     }
-
     
     LibraryCall MonitorPower (continue = MissionInProgress,
                               battery_temp_ok = BatteryTempOK,
                               battery_life_ok = BatteryLifeOK,
                               battery_charge_ok = BatteryChargeOK,
                               all_ok = BatteryOK);
-
 
     BackupPanning:
     {
@@ -159,16 +157,13 @@ FaultHandlingPattern6:
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
       LibraryCall Pan (Degrees=NewAngle);
-    
     }
     
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
                                   pan_done=PanDone,
                                   unstow_done=UnstowDone,
                                   stow_done=StowDone);
-
   }
 
   log_info ("FaultHandlingPattern6 plan complete.");
-
 }

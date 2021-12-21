@@ -8,7 +8,7 @@
 // If an antenna fault but no arm faults occurring, only action 2 occurs.
 // If an arm fault but no antenna faults occurring, only action 1 occurs.
 // If both antenna and arm faults occurring, the plan waits for resolution.
-
+// This plan must be terminated with an interrupt, e.g. Control-C.
 
 #include "plan-interface.h"
 
@@ -43,10 +43,6 @@ FaultHandlingPattern2:
 
       LibraryCall Unstow();
       LibraryCall Stow();
-      
     }
-
   }
-
-  log_info ("FaultHandlingPattern2 plan complete.");
 }

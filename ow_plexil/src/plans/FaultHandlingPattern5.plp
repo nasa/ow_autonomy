@@ -9,12 +9,15 @@
 
 // More specifically: If no faults are occurring, this plan will pan 180 
 // degrees, and then unstow and stow the arm.
+
 // If a relevant fault is injected, the plan will stop the current action 
 // and start repeating a panning action as backup to the original action.
+
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during 
-// unstowing or stowing. 
+// unstowing or stowing.
+
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
@@ -31,9 +34,9 @@
 LibraryAction InitializeAntennaAndArm ();
 
 LibraryAction MissionSequence (InOut Boolean mission_in_progress,
-                       InOut Boolean pan_done,
-                       InOut Boolean unstow_done,
-                       InOut Boolean stow_done);
+                               InOut Boolean pan_done,
+                               InOut Boolean unstow_done,
+                               InOut Boolean stow_done);
 
 FaultHandlingPattern5:
 {
@@ -56,7 +59,6 @@ FaultHandlingPattern5:
 
     LogPanError:
     {
-
       Start !PanDone && Lookup(AntennaFault);
     
       log_error ("Panning halted due to an antenna fault.");
@@ -64,7 +66,6 @@ FaultHandlingPattern5:
 
     LogUnstowError:
     {
-
       Start PanDone && !UnstowDone && Lookup(ArmFault);
     
       log_error ("Unstowing halted due to an arm fault.");
@@ -72,7 +73,6 @@ FaultHandlingPattern5:
 
     LogStowError:
     {
-
       Start UnstowDone && !StowDone && Lookup(ArmFault);
     
       log_error ("Stowing halted due to an arm fault.");
@@ -96,9 +96,7 @@ FaultHandlingPattern5:
                          pan_done=PanDone,
                          unstow_done=UnstowDone,
                          stow_done=StowDone);
-
   }
 
   log_info ("FaultHandlingPattern5 plan complete.");
-
 }

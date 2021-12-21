@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 #The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 #Research and Simulation can be found in README.md in the root directory of
@@ -60,7 +60,7 @@ class IdentifySampleLocation:
     The point with the largest contour is then projected to 3d and transformed to the base_link frame. Only the largest
     point will be sent back as a result and the outlined contour and corresponding 2d point on the original image is republished.'''
     #resetting our member variables
-    self.largest_area = None
+    self.largest_area = -1.0
     self.best_sample_location = None
     self.sample_location_image = None
     self.uv = None
@@ -77,7 +77,7 @@ class IdentifySampleLocation:
         sample_points_2d, contour_areas, cv_image = self.identify_sample_spots(i[0], goal.filter_type)
         sample_point_3d, sample_point_area, uv = self.get_3d_sample_point(i[1], sample_points_2d, contour_areas)
         #save the 3d point info with the largest contour area
-        if sample_point_area > self.largest_area and sample_point_3d is not None:
+        if sample_point_3d is not None and sample_point_area > self.largest_area:
           self.largest_area = sample_point_area
           self.best_sample_location = sample_point_3d
           self.sample_location_image = cv_image
@@ -106,7 +106,7 @@ class IdentifySampleLocation:
 
     #prevent our image history from getting too large saves most recent HISTORY_MAX_LENGTH images
     if len(self.image_history) > self.HISTORY_MAX_LENGTH:
-      self.image_history = self.image_history[-HISTORY_MAX_LENGTH:]
+      self.image_history = self.image_history[-self.HISTORY_MAX_LENGTH:]
 
   def publish_chosen_location_image(self):
     '''Publishes the original image with our drawn on contours and chosen sample location. 
@@ -149,7 +149,7 @@ class IdentifySampleLocation:
       return None, None, None
 
     #find contours and sort them largest to smallest
-    _, contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     contours.sort(reverse=True, key=cv.contourArea)
     sample_points_2d = []
     contour_areas = []

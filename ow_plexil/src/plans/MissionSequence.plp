@@ -42,7 +42,7 @@ MissionSequence:
     {
       pan_done = true;
     }
-
+    else log_info ("PanDegrees =", Lookup(PanDegrees));
   }
 
   UnstowArm:
