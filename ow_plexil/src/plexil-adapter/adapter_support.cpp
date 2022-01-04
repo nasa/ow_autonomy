@@ -48,30 +48,37 @@ static void ack_command (Command* cmd,
   intf->notifyOfExternalEvent();
 }
 
-static void ack_success (Command* cmd, AdapterExecInterface* intf)
+void acknowledge_command_success (Command* cmd, AdapterExecInterface* intf)
 {
   ack_command (cmd, COMMAND_SUCCESS, intf);
 }
 
-static void ack_failure (Command* cmd, AdapterExecInterface* intf)
+static void acknowledge_command_failure (Command* cmd, AdapterExecInterface* intf)
 {
   ack_command (cmd, COMMAND_FAILED, intf);
 }
 
-
-static void ack_sent (Command* cmd, AdapterExecInterface* intf)
+void acknowledge_command_denied (Command* cmd, AdapterExecInterface* intf)
 {
-  ack_command (cmd, COMMAND_SENT_TO_SYSTEM, intf);
+  ack_command (cmd, COMMAND_DENIED, intf);
 }
 
-void send_ack_once(CommandRecord& cr, bool skip)
+void acknowledge_command_sent(CommandRecord& cr, bool skip)
 {
+  // Sends acknowledgment that command issued by a Plexil plan was
+  // sent to system, in a way that guarantees only one acknowledgment
+  // (acks are not idempotent).  NOTE: this thread safety is not
+  // provided in the other acknowledgment types above, and assumed not
+  // needed in them.
+
   std::lock_guard<mutex> g(g_shared_mutex);
   bool& sent_flag = get<CR_ACK_SENT>(cr);
   if (!sent_flag)
   {
     if (!skip) {
-      ack_sent(get<CR_COMMAND>(cr), get<CR_ADAPTER>(cr));
+      ack_command (get<CR_COMMAND>(cr),
+		   COMMAND_SENT_TO_SYSTEM,
+		   get<CR_ADAPTER>(cr));
     }
     sent_flag = true;
   }
@@ -86,13 +93,12 @@ void command_status_callback (int id, bool success)
                      << id);
     return;
   }
-
   unique_ptr<CommandRecord>& cr = it->second;
   Command* cmd = get<CR_COMMAND>(*cr);
   AdapterExecInterface* intf = get<CR_ADAPTER>(*cr);
-  send_ack_once(*cr, true);
-  if (success) ack_success (cmd, intf);
-  else ack_failure (cmd, intf);
+  acknowledge_command_sent(*cr, true);
+  if (success) acknowledge_command_success (cmd, intf);
+  else acknowledge_command_failure (cmd, intf);
 }
 
 static State create_state (const string& state_name, const vector<Value>& value)
@@ -166,23 +172,23 @@ static string log_string (const vector<Value>& args)
 void log_info (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_INFO("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
+  acknowledge_command_success (cmd, intf);
 }
 
 void log_warning (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_WARN("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
+  acknowledge_command_success (cmd, intf);
 }
 
 void log_error (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_ERROR("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
+  acknowledge_command_success (cmd, intf);
 }
 
 void log_debug (Command* cmd, AdapterExecInterface* intf)
 {
   ROS_DEBUG("%s", log_string(cmd->getArgValues()).c_str());
-  ack_success (cmd, intf);
+  acknowledge_command_success (cmd, intf);
 }

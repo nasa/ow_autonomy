@@ -88,8 +88,7 @@ class OwInterface : public PlexilInterface
   void stow (int id);
   void unstow (int id);
   void deliver (double x, double y, double z, int id);
-  void takePanorama (double elev_lo, double elev_hi,
-                     double lat_overlap, double vert_overlap);
+  void setLightIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
   double getTilt () const;

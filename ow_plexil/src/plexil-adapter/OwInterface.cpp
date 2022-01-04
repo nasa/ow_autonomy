@@ -598,7 +598,7 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
   goal.delivery.z = z;
 
   ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-  
+
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
             DeliverResultConstPtr,
@@ -634,7 +634,7 @@ void OwInterface::digLinearAction (double x, double y,
   ROS_INFO ("Starting DigLinear"
 	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
 	    x, y, depth, length, ground_pos);
-  
+
   runAction<actionlib::SimpleActionClient<DigLinearAction>,
             DigLinearGoal,
             DigLinearResultConstPtr,
@@ -668,7 +668,7 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   ROS_INFO ("Starting DigCircular"
 	    "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
 	    x, y, depth, (parallel ? "true" : "false"), ground_pos);
-  
+
   runAction<actionlib::SimpleActionClient<DigCircularAction>,
             DigCircularGoal,
             DigCircularResultConstPtr,
@@ -747,7 +747,7 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   ROS_INFO ("Starting Grind"
 	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
 	    x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
-  
+
   runAction<actionlib::SimpleActionClient<GrindAction>,
             GrindGoal,
             GrindResultConstPtr,
@@ -785,7 +785,7 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
 	    "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
 	    "dir_z=%.2f, search_dist=%.2f)",
 	    x, y, z, dir_x, dir_y, dir_z, search_dist);
-  
+
   runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
             GuardedMoveGoal,
             GuardedMoveResultConstPtr,
@@ -843,6 +843,12 @@ void OwInterface::identifySampleLocationAction (int num_images,
      identify_sample_location_done_cb<IdentifySampleLocation,
                                       ow_plexil::IdentifyLocationResultConstPtr>);
 }
+
+
+void OwInterface::setLightIntensity (const string& side, double intensity, int id)
+{
+}
+
 
 double OwInterface::getTilt () const
 {
