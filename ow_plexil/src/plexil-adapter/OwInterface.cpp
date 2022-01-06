@@ -7,6 +7,9 @@
 #include "subscriber.h"
 #include "joint_support.h"
 
+// OW - external
+#include <ow_lander/Light.h>
+
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -46,6 +49,44 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 }
 
 
+/////////////////// ROS Service support //////////////////////
+
+template<typename Service>
+void OwInterface::callService (ros::ServiceClient client, Service srv,
+			       string name, int id)
+{
+  // NOTE: arguments are copies because this function is called in a thread that
+  // outlives its caller.  Assumes that service is not already running; this is
+  // checked upstream.
+
+  ROS_INFO("  Starting ROS service %s", name.c_str());
+  if (client.call (srv)) { // blocks
+    ROS_INFO("  %s returned: %d, %s", name.c_str(), srv.response.success,
+             srv.response.message.c_str());  // make DEBUG later
+  }
+  else {
+    ROS_ERROR("Failed to call service %s", name.c_str());
+  }
+  markOperationFinished (name, id);
+}
+
+static bool check_service_client (ros::ServiceClient& client,
+                                  const string& name)
+{
+  if (! client.exists()) {
+    ROS_ERROR("Service client for %s does not exist!", name.c_str());
+    return false;
+  }
+
+  if (! client.isValid()) {
+    ROS_ERROR("Service client for %s is invalid!", name.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+
 //////////////////// Lander Operation Support ////////////////////////
 
 const double PanTiltTimeout = 15.0; // seconds, made up
@@ -66,6 +107,7 @@ const string Op_Stow              = "Stow";
 const string Op_Unstow            = "Unstow";
 const string Op_TakePicture       = "TakePicture";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
+const string Op_SetLightIntensity = "SetLightIntensity";
 
 
 // 1. Indices into subsequent vector
@@ -81,13 +123,14 @@ enum LanderOps {
   Stow,
   Unstow,
   TakePicture,
-  IdentifySampleLocation
+  IdentifySampleLocation,
+  SetLightIntensity
 };
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
   Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
-  Op_IdentifySampleLocation
+  Op_IdentifySampleLocation, Op_SetLightIntensity
 };
 
 
@@ -847,6 +890,24 @@ void OwInterface::identifySampleLocationAction (int num_images,
 
 void OwInterface::setLightIntensity (const string& side, double intensity, int id)
 {
+  if (! markOperationRunning (Op_SetLightIntensity, id)) return;
+
+  ros::ServiceClient client =
+    m_genericNodeHandle->serviceClient<ow_lander::Light>("/lander/light");
+
+  if (check_service_client (client, Op_SetLightIntensity)) {
+    ow_lander::Light srv;
+    srv.request.name = side;
+    srv.request.intensity = intensity;
+    //    thread service_thread (&OwInterface::callService<ow_lander::Light>,
+    //                           client, srv, Op_SetLightIntensity, id);
+    thread service_thread ([&] () {
+			     callService<ow_lander::Light> (client, srv,
+							    Op_SetLightIntensity,
+							    id);
+			   });
+    service_thread.detach();
+  }
 }
 
 

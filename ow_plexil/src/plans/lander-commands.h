@@ -8,9 +8,11 @@
 // All available PLEXIL commands to the lander.  This is essentially the
 // lander's command interface.
 
-// Note that PLEXIL commands are asynchronous by design.  In general, autonomy
-// plans should not call these directly, but rather user the Library interface
-// that wraps these commands; this is defined in plan-interface.h.
+// Note that in PLEXIL, commands are asynchronous by design.
+// Typically, OceanWATERS plans should not call the following commands
+// directly, but instead use the Library interface (defined in
+// plan-interface.h) that wraps these commands in a way that they
+// called synchronously.
 
 Command tilt_antenna (Real degrees);
 Command pan_antenna (Real degrees);
@@ -55,8 +57,13 @@ Command unstow();
 // Move from "ready" position to stowed position; requires unstow() first
 Command stow();
 
-//processes number of images already taken with the stereo camera to find the 3d point to sample
-//filter_type can either be Dark or Brown, (Dark chooses dark spots, brown chooses brown spots).
+// Processes number of images already taken with the stereo camera to
+// find the 3d point to sample.  filter_type can either be "Dark" or
+// "Brown".  (Dark chooses dark spots, brown chooses brown spots).
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
+
+// Set spotlight intensity
+Command set_light_intensity (String side,     // "left" or "right"
+			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif

@@ -263,12 +263,14 @@ static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (side);
   args[1].getValue (intensity);
-  if (side == "left" || side == "right") {
-    ROS_ERROR ("set_light_intensity: side should be 'left' or 'right'");
+  if (side != "left" && side != "right") {
+    ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
+	       side.c_str());
     valid_args = false;
   }
-  if (intensity >= 0.0 && intensity <= 1.0) {
-    ROS_ERROR ("set_light_intensity: intensity should be in range [0.0 1.0]");
+  if (intensity < 0.0 || intensity > 1.0) {
+    ROS_ERROR ("set_light_intensity: intensity was %f, "
+	       "should be in range [0.0 1.0]", intensity);
     valid_args = false;
   }
   if (valid_args) {

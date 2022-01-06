@@ -1,0 +1,7 @@
+#include "plan-interface.h"
+
+TestLanderLights:
+{
+  set_light_intensity ("left", 0.0);
+  //  set_light_intensity ("right", 1.0);
+}
