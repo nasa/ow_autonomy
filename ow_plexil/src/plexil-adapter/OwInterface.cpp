@@ -53,7 +53,7 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 
 template<typename Service>
 void OwInterface::callService (ros::ServiceClient client, Service srv,
-			       string name, int id)
+                               string name, int id)
 {
   // NOTE: arguments are copies because this function is called in a thread that
   // outlives its caller.  Assumes that service is not already running; this is
@@ -675,8 +675,8 @@ void OwInterface::digLinearAction (double x, double y,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting DigLinear"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
-	    x, y, depth, length, ground_pos);
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
+            x, y, depth, length, ground_pos);
 
   runAction<actionlib::SimpleActionClient<DigLinearAction>,
             DigLinearGoal,
@@ -709,8 +709,8 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   goal.parallel = parallel;
 
   ROS_INFO ("Starting DigCircular"
-	    "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, (parallel ? "true" : "false"), ground_pos);
+            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
+            x, y, depth, (parallel ? "true" : "false"), ground_pos);
 
   runAction<actionlib::SimpleActionClient<DigCircularAction>,
             DigCircularGoal,
@@ -788,8 +788,8 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting Grind"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
+            x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
 
   runAction<actionlib::SimpleActionClient<GrindAction>,
             GrindGoal,
@@ -825,9 +825,9 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.search_distance = search_dist;
 
   ROS_INFO ("Starting GuardedMove"
-	    "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
-	    "dir_z=%.2f, search_dist=%.2f)",
-	    x, y, z, dir_x, dir_y, dir_z, search_dist);
+            "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
+            "dir_z=%.2f, search_dist=%.2f)",
+            x, y, z, dir_x, dir_y, dir_z, search_dist);
 
   runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
             GuardedMoveGoal,
@@ -900,7 +900,7 @@ void OwInterface::setLightIntensity (const string& side, double intensity, int i
     srv.request.name = side;
     srv.request.intensity = intensity;
     thread service_thread (&OwInterface::callService<ow_lander::Light>,
-			   this, client, srv, Op_SetLightIntensity, id);
+                           this, client, srv, Op_SetLightIntensity, id);
     service_thread.detach();
   }
 }

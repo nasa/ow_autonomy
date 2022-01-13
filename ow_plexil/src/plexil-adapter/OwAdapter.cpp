@@ -265,12 +265,12 @@ static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue (intensity);
   if (side != "left" && side != "right") {
     ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
-	       side.c_str());
+               side.c_str());
     valid_args = false;
   }
   if (intensity < 0.0 || intensity > 1.0) {
     ROS_ERROR ("set_light_intensity: intensity was %f, "
-	       "should be in range [0.0 1.0]", intensity);
+               "should be in range [0.0 1.0]", intensity);
     valid_args = false;
   }
   if (valid_args) {
@@ -330,7 +330,7 @@ bool OwAdapter::initialize()
                                           identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);
   g_configuration->registerCommandHandler("set_light_intensity",
-					  set_light_intensity);
+                                          set_light_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
