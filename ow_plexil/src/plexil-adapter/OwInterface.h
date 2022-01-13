@@ -73,7 +73,7 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<double> identifySampleLocation (int num_images, 
+  std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
   void tiltAntenna (double degrees, int id);
@@ -88,8 +88,7 @@ class OwInterface : public PlexilInterface
   void stow (int id);
   void unstow (int id);
   void deliver (double x, double y, double z, int id);
-  void takePanorama (double elev_lo, double elev_hi,
-                     double lat_overlap, double vert_overlap);
+  void setLightIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
   double getTilt () const;
@@ -110,6 +109,9 @@ class OwInterface : public PlexilInterface
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
  private:
+  template<typename Service>
+  void callService (ros::ServiceClient, Service, std::string name, int id);
+  
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
@@ -117,7 +119,7 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
-  void identifySampleLocationAction (int num_images, 
+  void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
                           double ground_pos, bool parallel, int id);

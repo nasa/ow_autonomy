@@ -17,6 +17,8 @@ Command log_error (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction SetLightIntensity (In String Side,
+				 In Real Intensity);
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
 LibraryAction Stow ();
