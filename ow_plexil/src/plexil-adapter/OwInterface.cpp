@@ -59,9 +59,9 @@ void OwInterface::callService (ros::ServiceClient client, Service srv,
   // outlives its caller.  Assumes that service is not already running; this is
   // checked upstream.
 
-  ROS_INFO("  Starting ROS service %s", name.c_str());
+  ROS_INFO("Starting ROS service %s", name.c_str());
   if (client.call (srv)) { // blocks
-    ROS_INFO("  %s returned: %d, %s", name.c_str(), srv.response.success,
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
              srv.response.message.c_str());  // make DEBUG later
   }
   else {
@@ -486,7 +486,7 @@ void OwInterface::initialize()
 
   if (not initialized) {
 
-    for (auto name : LanderOpNames) {
+    for (const string& name : LanderOpNames) {
       registerLanderOperation (name);
     }
 
@@ -899,13 +899,8 @@ void OwInterface::setLightIntensity (const string& side, double intensity, int i
     ow_lander::Light srv;
     srv.request.name = side;
     srv.request.intensity = intensity;
-    //    thread service_thread (&OwInterface::callService<ow_lander::Light>,
-    //                           client, srv, Op_SetLightIntensity, id);
-    thread service_thread ([&] () {
-			     callService<ow_lander::Light> (client, srv,
-							    Op_SetLightIntensity,
-							    id);
-			   });
+    thread service_thread (&OwInterface::callService<ow_lander::Light>,
+			   this, client, srv, Op_SetLightIntensity, id);
     service_thread.detach();
   }
 }
