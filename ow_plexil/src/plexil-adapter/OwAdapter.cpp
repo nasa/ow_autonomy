@@ -228,6 +228,18 @@ static void deliver (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void discard (Command* cmd, AdapterExecInterface* intf)
+{
+  double x, y, z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(x);
+  args[1].getValue(y);
+  args[2].getValue(z);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->discard (x, y, z, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
 {
   double degrees;
@@ -324,6 +336,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
+  g_configuration->registerCommandHandler("discard", discard);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("identify_sample_location",

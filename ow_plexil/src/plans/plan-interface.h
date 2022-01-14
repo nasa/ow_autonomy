@@ -54,6 +54,10 @@ LibraryAction Deliver (In Real X,
                        In Real Y,
                        In Real Z);
 
+LibraryAction Discard (In Real X,
+                       In Real Y,
+                       In Real Z);
+
 // Lander queries
 
 Real Lookup StateOfCharge;

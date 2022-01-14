@@ -30,9 +30,11 @@ Command dig_linear (Real x,
                     Real length,
                     Real ground_pos);
 
-// This dumps the scoop at the given location; can be used for removing tailings
-// as well as delivering a sample to the receptacle.
 Command deliver (Real x,
+                 Real y,
+                 Real z);
+
+Command discard (Real x,
                  Real y,
                  Real z);
 
