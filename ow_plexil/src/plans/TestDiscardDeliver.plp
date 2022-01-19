@@ -1,0 +1,29 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A simple test that collects a sample, discards it, collects again,
+// and delivers it.
+
+#include "plan-interface.h"
+
+TestDiscardDeliver:
+{
+  Real GP = -0.155;  // Ground position
+  log_info ("Starting TestDiscardDeliver...");
+  LibraryCall Unstow();
+  LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
+                           SearchDistance=0.7);
+  LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
+                     Length = 0.5, Parallel = false,
+                     GroundPos = GP);
+  LibraryCall DigCircular (X = 1.75, Y = 0.1, Depth = 0.045,
+                           GroundPos = GP, Parallel = false);
+  LibraryCall Discard (X = 1.5, Y = 0.8, Z = 0.65);
+  LibraryCall DigCircular (X = 1.75, Y = 0.1, Depth = 0.045,
+                           GroundPos = GP, Parallel = false);
+  LibraryCall Deliver ();
+  LibraryCall Unstow(); // For safety in stowing
+  LibraryCall Stow();
+  log_info ("TestDiscardDeliver finished.");
+}
