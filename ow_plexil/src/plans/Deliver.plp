@@ -10,10 +10,6 @@
 
 Deliver:
 {
-  In Real X;
-  In Real Y;
-  In Real Z;
-
   Boolean FaultDetected = false;
 
   PostCondition !Lookup(ArmFault);
@@ -33,7 +29,7 @@ Deliver:
       log_info ("Arm fault(s) resolved, sending deliver command to lander...");
     }
 
-    SynchronousCommand deliver (X, Y, Z);
+    SynchronousCommand deliver ();
   }
 
 }

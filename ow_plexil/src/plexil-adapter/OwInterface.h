@@ -90,7 +90,7 @@ class OwInterface : public PlexilInterface
               bool parallel, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
-  void deliver (double x, double y, double z, int id);
+  void deliver (int id);
   void discard (double x, double y, double z, int id);
   void setLightIntensity (const std::string& side, double intensity, int id);
 
@@ -129,7 +129,7 @@ class OwInterface : public PlexilInterface
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
-  void deliverAction (double x, double y, double z, int id);
+  void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);

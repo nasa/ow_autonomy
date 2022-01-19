@@ -218,13 +218,8 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
 
 static void deliver (Command* cmd, AdapterExecInterface* intf)
 {
-  double x, y, z;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(z);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->deliver (x, y, z, CommandId);
+  OwInterface::instance()->deliver (CommandId);
   acknowledge_command_sent(*cr);
 }
 

@@ -50,9 +50,7 @@ LibraryAction DigLinear (In Real X,
                          In Real Length,
                          In Real GroundPos);
 
-LibraryAction Deliver (In Real X,
-                       In Real Y,
-                       In Real Z);
+LibraryAction Deliver ();
 
 LibraryAction Discard (In Real X,
                        In Real Y,

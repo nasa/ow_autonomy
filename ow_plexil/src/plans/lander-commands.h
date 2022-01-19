@@ -30,9 +30,7 @@ Command dig_linear (Real x,
                     Real length,
                     Real ground_pos);
 
-Command deliver (Real x,
-                 Real y,
-                 Real z);
+Command deliver ();
 
 Command discard (Real x,
                  Real y,

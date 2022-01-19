@@ -632,10 +632,10 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::deliver (double x, double y, double z, int id)
+void OwInterface::deliver (int id)
 {
   if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
+  thread action_thread (&OwInterface::deliverAction, this, id);
   action_thread.detach();
 }
 
@@ -647,14 +647,11 @@ void OwInterface::discard (double x, double y, double z, int id)
 }
 
 
-void OwInterface::deliverAction (double x, double y, double z, int id)
+void OwInterface::deliverAction (int id)
 {
   DeliverGoal goal;
-  goal.delivery.x = x;
-  goal.delivery.y = y;
-  goal.delivery.z = z;
 
-  ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+  ROS_INFO ("Starting Deliver()");
 
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
