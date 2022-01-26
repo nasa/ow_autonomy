@@ -100,6 +100,7 @@ const string Op_GuardedMove       = "GuardedMove";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
+const string Op_Discard           = "Discard";
 const string Op_PanAntenna        = "PanAntenna";
 const string Op_TiltAntenna       = "TiltAntenna";
 const string Op_Grind             = "Grind";
@@ -117,6 +118,7 @@ enum LanderOps {
   DigCircular,
   DigLinear,
   Deliver,
+  Discard,
   Pan,
   Tilt,
   Grind,
@@ -128,7 +130,7 @@ enum LanderOps {
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
+  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
   Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
   Op_IdentifySampleLocation, Op_SetLightIntensity
 };
@@ -556,6 +558,7 @@ void OwInterface::initialize()
     m_digCircularClient = make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_discardClient = make_unique<DiscardActionClient>(Op_Discard, true);
     m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
 
@@ -578,6 +581,10 @@ void OwInterface::initialize()
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
+    }
+    if (! m_discardClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Discard action server did not connect!");
     }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -625,22 +632,26 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::deliver (double x, double y, double z, int id)
+void OwInterface::deliver (int id)
 {
   if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
+  thread action_thread (&OwInterface::deliverAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::discard (double x, double y, double z, int id)
+{
+  if (! markOperationRunning (Op_Discard, id)) return;
+  thread action_thread (&OwInterface::discardAction, this, x, y, z, id);
   action_thread.detach();
 }
 
 
-void OwInterface::deliverAction (double x, double y, double z, int id)
+void OwInterface::deliverAction (int id)
 {
   DeliverGoal goal;
-  goal.delivery.x = x;
-  goal.delivery.y = y;
-  goal.delivery.z = z;
 
-  ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+  ROS_INFO ("Starting Deliver()");
 
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
@@ -650,6 +661,25 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
      default_action_active_cb (Op_Deliver),
      default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
      default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
+}
+
+void OwInterface::discardAction (double x, double y, double z, int id)
+{
+  DiscardGoal goal;
+  goal.discard.x = x;
+  goal.discard.y = y;
+  goal.discard.z = z;
+
+  ROS_INFO ("Starting Discard(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+
+  runAction<actionlib::SimpleActionClient<DiscardAction>,
+            DiscardGoal,
+            DiscardResultConstPtr,
+            DiscardFeedbackConstPtr>
+    (Op_Discard, m_discardClient, goal, id,
+     default_action_active_cb (Op_Discard),
+     default_action_feedback_cb<DiscardFeedbackConstPtr> (Op_Discard),
+     default_action_done_cb<DiscardResultConstPtr> (Op_Discard));
 }
 
 void OwInterface::digLinear (double x, double y,

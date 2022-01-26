@@ -110,9 +110,7 @@ CollectAndTransfer:
     {
       SkipCondition LastComplete >= 5;
 
-      // NOTE: the given coordinates are the predetermined location of the
-      // receptacle into which the sample is dumped.
-      LibraryCall Deliver (X = 0.55, Y = -0.3, Z = 0.84);
+      LibraryCall Deliver ();
       Wait 1;
       set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
