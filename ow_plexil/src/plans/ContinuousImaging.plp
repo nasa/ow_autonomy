@@ -1,0 +1,16 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Non-terminating plan, intended as a continuous operation test, that
+// repeatedly does panoramic imaging.
+
+#include "plan-interface.h"
+
+LibraryAction TestAntennaCamera();
+
+ContinuousImaging:
+{
+  Repeat true;
+  LibraryCall TestAntennaCamera();
+}
