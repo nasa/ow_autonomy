@@ -7,6 +7,9 @@
 #include "subscriber.h"
 #include "joint_support.h"
 
+// OW - external
+#include <ow_lander/Light.h>
+
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -47,6 +50,44 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 }
 
 
+/////////////////// ROS Service support //////////////////////
+
+template<typename Service>
+void OwInterface::callService (ros::ServiceClient client, Service srv,
+                               string name, int id)
+{
+  // NOTE: arguments are copies because this function is called in a thread that
+  // outlives its caller.  Assumes that service is not already running; this is
+  // checked upstream.
+
+  ROS_INFO("Starting ROS service %s", name.c_str());
+  if (client.call (srv)) { // blocks
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
+             srv.response.message.c_str());  // make DEBUG later
+  }
+  else {
+    ROS_ERROR("Failed to call service %s", name.c_str());
+  }
+  markOperationFinished (name, id);
+}
+
+static bool check_service_client (ros::ServiceClient& client,
+                                  const string& name)
+{
+  if (! client.exists()) {
+    ROS_ERROR("Service client for %s does not exist!", name.c_str());
+    return false;
+  }
+
+  if (! client.isValid()) {
+    ROS_ERROR("Service client for %s is invalid!", name.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+
 //////////////////// Lander Operation Support ////////////////////////
 
 const double PanTiltTimeout = 15.0; // seconds, made up
@@ -60,6 +101,7 @@ const string Op_GuardedMove            = "GuardedMove";
 const string Op_DigCircular            = "DigCircular";
 const string Op_DigLinear              = "DigLinear";
 const string Op_Deliver                = "Deliver";
+const string Op_Discard                = "Discard";
 const string Op_PanAntenna             = "PanAntenna";
 const string Op_TiltAntenna            = "TiltAntenna";
 const string Op_Grind                  = "Grind";
@@ -68,6 +110,7 @@ const string Op_Unstow                 = "Unstow";
 const string Op_TakePicture            = "TakePicture";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
+const string Op_SetLightIntensity      = "SetLightIntensity";
 
 
 // 1. Indices into subsequent vector
@@ -77,6 +120,7 @@ enum LanderOps {
   DigCircular,
   DigLinear,
   Deliver,
+  Discard,
   Pan,
   Tilt,
   PanTilt,
@@ -84,11 +128,12 @@ enum LanderOps {
   Stow,
   Unstow,
   TakePicture,
-  IdentifySampleLocation
+  IdentifySampleLocation,
+  SetLightIntensity
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
+  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
   Op_PanAntenna, Op_TiltAntenna, Op_PanTiltAntenna, Op_Grind,
   Op_Stow, Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation
 };
@@ -446,7 +491,7 @@ void OwInterface::initialize()
 
   if (not initialized) {
 
-    for (auto name : LanderOpNames) {
+    for (const string& name : LanderOpNames) {
       registerLanderOperation (name);
     }
 
@@ -517,6 +562,7 @@ void OwInterface::initialize()
     m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
     m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
+    m_discardClient = make_unique<DiscardActionClient>(Op_Discard, true);
     m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
 
@@ -539,6 +585,10 @@ void OwInterface::initialize()
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
+    }
+    if (! m_discardClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Discard action server did not connect!");
     }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -625,23 +675,27 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::deliver (double x, double y, double z, int id)
+void OwInterface::deliver (int id)
 {
   if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
+  thread action_thread (&OwInterface::deliverAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::discard (double x, double y, double z, int id)
+{
+  if (! markOperationRunning (Op_Discard, id)) return;
+  thread action_thread (&OwInterface::discardAction, this, x, y, z, id);
   action_thread.detach();
 }
 
 
-void OwInterface::deliverAction (double x, double y, double z, int id)
+void OwInterface::deliverAction (int id)
 {
   DeliverGoal goal;
-  goal.delivery.x = x;
-  goal.delivery.y = y;
-  goal.delivery.z = z;
 
-  ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-  
+  ROS_INFO ("Starting Deliver()");
+
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
             DeliverResultConstPtr,
@@ -650,6 +704,25 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
      default_action_active_cb (Op_Deliver),
      default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
      default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
+}
+
+void OwInterface::discardAction (double x, double y, double z, int id)
+{
+  DiscardGoal goal;
+  goal.discard.x = x;
+  goal.discard.y = y;
+  goal.discard.z = z;
+
+  ROS_INFO ("Starting Discard(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+
+  runAction<actionlib::SimpleActionClient<DiscardAction>,
+            DiscardGoal,
+            DiscardResultConstPtr,
+            DiscardFeedbackConstPtr>
+    (Op_Discard, m_discardClient, goal, id,
+     default_action_active_cb (Op_Discard),
+     default_action_feedback_cb<DiscardFeedbackConstPtr> (Op_Discard),
+     default_action_done_cb<DiscardResultConstPtr> (Op_Discard));
 }
 
 void OwInterface::digLinear (double x, double y,
@@ -675,9 +748,9 @@ void OwInterface::digLinearAction (double x, double y,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting DigLinear"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
-	    x, y, depth, length, ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
+            x, y, depth, length, ground_pos);
+
   runAction<actionlib::SimpleActionClient<DigLinearAction>,
             DigLinearGoal,
             DigLinearResultConstPtr,
@@ -709,9 +782,9 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   goal.parallel = parallel;
 
   ROS_INFO ("Starting DigCircular"
-	    "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, (parallel ? "true" : "false"), ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
+            x, y, depth, (parallel ? "true" : "false"), ground_pos);
+
   runAction<actionlib::SimpleActionClient<DigCircularAction>,
             DigCircularGoal,
             DigCircularResultConstPtr,
@@ -788,9 +861,9 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting Grind"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
+            x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
+
   runAction<actionlib::SimpleActionClient<GrindAction>,
             GrindGoal,
             GrindResultConstPtr,
@@ -825,10 +898,10 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.search_distance = search_dist;
 
   ROS_INFO ("Starting GuardedMove"
-	    "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
-	    "dir_z=%.2f, search_dist=%.2f)",
-	    x, y, z, dir_x, dir_y, dir_z, search_dist);
-  
+            "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
+            "dir_z=%.2f, search_dist=%.2f)",
+            x, y, z, dir_x, dir_y, dir_z, search_dist);
+
   runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
             GuardedMoveGoal,
             GuardedMoveResultConstPtr,
@@ -886,6 +959,25 @@ void OwInterface::identifySampleLocationAction (int num_images,
      identify_sample_location_done_cb<IdentifySampleLocation,
                                       ow_plexil::IdentifyLocationResultConstPtr>);
 }
+
+
+void OwInterface::setLightIntensity (const string& side, double intensity, int id)
+{
+  if (! markOperationRunning (Op_SetLightIntensity, id)) return;
+
+  ros::ServiceClient client =
+    m_genericNodeHandle->serviceClient<ow_lander::Light>("/lander/light");
+
+  if (check_service_client (client, Op_SetLightIntensity)) {
+    ow_lander::Light srv;
+    srv.request.name = side;
+    srv.request.intensity = intensity;
+    thread service_thread (&OwInterface::callService<ow_lander::Light>,
+                           this, client, srv, Op_SetLightIntensity, id);
+    service_thread.detach();
+  }
+}
+
 
 double OwInterface::getTilt () const
 {

@@ -2,34 +2,38 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Deliver material in the scoop to the given point.  This is used for both
-// delivering the sample to its receptacle (which has specific coordinates) and
+// Discard material in the scoop to the given point.  This is used for both
+// discarding the sample to its receptacle (which has specific coordinates) and
 // dumping tailings from trench digging.
 
 #include "plan-interface.h"
 
-Deliver:
+Discard:
 {
+  In Real X;
+  In Real Y;
+  In Real Z;
+
   Boolean FaultDetected = false;
 
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
   { 
-    log_error ("Command deliver not sent to lander due to active arm fault(s).");
+    log_error ("Command Discard not sent to lander due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendDeliver:
+  SendDiscard:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending deliver command to lander...");
+      log_info ("Arm fault(s) resolved, sending Discard command to lander...");
     }
 
-    SynchronousCommand deliver ();
+    SynchronousCommand discard (X, Y, Z);
   }
 
 }

@@ -23,9 +23,11 @@ RemoveTailings:
     log_info ("Removing tailings, pass ", pass, " of ", num_passes, "...");
     LibraryCall DigCircular (X = X, Y = Y, Depth = bite_depth * pass,
                              GroundPos = GroundPos, Parallel = Parallel);
-    // NOTE: the X/Y/Z values are known coordinates of a predetermined place to
-    // dump debris.  A real mission procedure would need to find an appropriate
-    // dump location.
-    LibraryCall Deliver (X = 1.5, Y = 0.8, Z = 0.65);
+    
+    // NOTE: these X/Y/Z values specify a predecided dump location
+    // that works in any of the provided simulation worlds.  A real
+    // mission procedure would need to find an appropriate dump
+    // location.
+    LibraryCall Discard (X = 1.5, Y = 0.8, Z = 0.65);
   }
 }
