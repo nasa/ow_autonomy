@@ -28,7 +28,8 @@ OwlatTestSequence6:
   log_info("Changing end effector tool to the Scoop.");
   LibraryCall OwlatArmSetTool(Tool=4);
 
-  // gets arm into position
+  // Initialize arm
+  LibraryCall OwlatUnstow();
   LibraryCall OwlatPositionArm();
 
   // Scoops ground
@@ -41,5 +42,3 @@ OwlatTestSequence6:
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence6");
 }
-
-

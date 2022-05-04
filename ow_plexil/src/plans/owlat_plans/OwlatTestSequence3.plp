@@ -21,10 +21,11 @@ OwlatTestSequence3:
   Real orientation[4] = #(0.0 0.0 0.0 1.0);
   Real force_threshold = 5.0;
   Real torque_threshold = 1.0;
-  
+
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence3");
 
-  // gets arm into position
+  // Initialize arm
+  LibraryCall OwlatUnstow();
   LibraryCall OwlatPositionArm();
 
   // Tare the force sensor
@@ -32,22 +33,22 @@ OwlatTestSequence3:
 
   // Approaches surface
   log_info("Approaching surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame, 
-                                           Relative=relative, 
-                                           Position=position1, 
-                                           Orientation=orientation, 
+  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
+                                           Relative=relative,
+                                           Position=position1,
+                                           Orientation=orientation,
                                            Retracting=false,
-                                           ForceThreshold=force_threshold, 
+                                           ForceThreshold=force_threshold,
                                            TorqueThreshold=torque_threshold);
 
   // Retracts from surface
   log_info("Retracting from surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame, 
-                                           Relative=relative, 
-                                           Position=position2, 
-                                           Orientation=orientation, 
+  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
+                                           Relative=relative,
+                                           Position=position2,
+                                           Orientation=orientation,
                                            Retracting=true,
-                                           ForceThreshold=force_threshold, 
+                                           ForceThreshold=force_threshold,
                                            TorqueThreshold=torque_threshold);
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence3");
