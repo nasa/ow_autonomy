@@ -82,7 +82,7 @@ ReferenceMission1: Concurrence
                                       GroundPos = ground_pos,
                                       Parallel = parallel,
                                       FilterType = "Dark");
-    if (Lookup(GroundFound)) {
+    if (isKnown(ground_pos)) {
       LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
                              Length = trench_length, BiteDepth = 0.05,
                              NumPasses = 2, Parallel = parallel);
@@ -98,7 +98,7 @@ ReferenceMission1: Concurrence
     }
     else
     {
-      log_error ("Failed to find ground, aborting.");
+      log_error ("Mission aborted because a sampling location was not found.");
     }
     endif
     MissionInProgress = false;
