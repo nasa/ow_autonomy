@@ -24,16 +24,16 @@ IdentifySampleTarget:
   Post Lookup (GroundFound);
 
   // Take pictures in front of the lander for processing in
-  // identify_sample_location.  An alternative would be to create a new
-  // TakePicture command that waits for the pointcloud, or modifying the current
-  // one.
+  // identify_sample_location.  An alternative would be to create a
+  // new TakePicture command that waits for the pointcloud, or
+  // modifying the current one.
   LibraryCall Tilt(Degrees = c_tilt);
   LibraryCall PanAndShoot(PanAngle = c_pan - delta);
   LibraryCall PanAndShoot(PanAngle = c_pan);
   LibraryCall PanAndShoot(PanAngle = c_pan + delta);
   SynchronousCommand result = identify_sample_location(3, FilterType);
 
-  if (isKnown(result[2])){
+  if (isKnown(result[0]) && isKnown(result[1]) && isKnown(result[2])) {
     // Guarded move is an attempt to find the ground position.  The chosen start
     // position is based on the result from identify_sample_location.
     LibraryCall Unstow();
@@ -43,7 +43,7 @@ IdentifySampleTarget:
 
     //check for ground position
     if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
-    else log_warning ("GuardedMove failed to find ground.");
+    else log_error ("IdentifySampleTarget: GuardedMove failed to find ground.");
     endif;
 
     // The chosen X/Y sampling location, as well as choice for Parallel trench
@@ -51,6 +51,7 @@ IdentifySampleTarget:
     Y = result[1];
     Parallel = true;  // arbitrary for now
   }
+  else log_error ("IdentifySampleTarget: failed to find one.");
   endif;
 
 }
