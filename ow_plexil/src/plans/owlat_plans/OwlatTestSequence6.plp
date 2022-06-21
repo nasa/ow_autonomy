@@ -34,10 +34,6 @@ OwlatTestSequence6:
   // Scoops ground
   log_info("Performing scoop operation with TASK_SCOOP.");
   LibraryCall OwlatTaskScoop(Frame=frame, Relative=relative, Point=point, Normal=normal);
-  
-  /** Return sample to sample dropoff point */
-  // log_info("Performing dropoff at specified sample dropoff point with TASK_DROPOFF.");
-  // LibraryCall OwlatTaskDropoff(Frame=9, Relative=relative, Point=point2);
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence6");
 }
