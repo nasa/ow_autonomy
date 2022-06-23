@@ -211,23 +211,6 @@ static void owlat_arm_tare_fs (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_task_dropoff (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  vector<double> const *point_vector = nullptr;
-  RealArray const *point = nullptr;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(point);
-  //change real array into a vector
-  point->getContentsVector(point_vector);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatTaskDropoff (frame, relative, *point_vector, 
-                                                CommandId);
-  acknowledge_command_sent(*cr);
-}
 
 static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
 {
@@ -377,8 +360,6 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_set_tool);
   g_configuration->registerCommandHandler("owlat_arm_stop", owlat_arm_stop);
   g_configuration->registerCommandHandler("owlat_arm_tare_fs", owlat_arm_tare_fs);
-  g_configuration->registerCommandHandler("owlat_task_dropoff",
-                                          owlat_task_dropoff);
   g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
