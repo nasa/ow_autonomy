@@ -32,7 +32,6 @@ const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
 const string Name_OwlatArmSetTool =       "/owlat_sim/ARM_SET_TOOL";
 const string Name_OwlatArmStop =          "/owlat_sim/ARM_STOP";
 const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
-const string Name_OwlatTaskDropoff =      "/owlat_sim/TASK_DROPOFF";
 const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 
@@ -49,7 +48,6 @@ enum class LanderOps {
   OwlatArmSetTool,
   OwlatArmStop,
   OwlatArmTareFS,
-  OwlatArmTaskDropoff,
   OwlatArmTaskPSP,
   OwlatArmTaskScoop
 };
@@ -66,7 +64,6 @@ static vector<string> LanderOpNames = {
     Name_OwlatArmSetTool,
     Name_OwlatArmStop,
     Name_OwlatArmTareFS,
-    Name_OwlatTaskDropoff,
     Name_OwlatTaskPSP,
     Name_OwlatTaskScoop
   };
@@ -179,8 +176,6 @@ void OwlatInterface::initialize()
       make_unique<OwlatArmStopActionClient>(Name_OwlatArmStop, true);
     m_owlatArmTareFSClient =
       make_unique<OwlatArmTareFSActionClient>(Name_OwlatArmTareFS, true);
-    m_owlatTaskDropoffClient =
-      make_unique<OwlatTaskDropoffActionClient>(Name_OwlatTaskDropoff, true);
     m_owlatTaskPSPClient =
       make_unique<OwlatTaskPSPActionClient>(Name_OwlatTaskPSP, true);
     m_owlatTaskScoopClient =
@@ -230,10 +225,6 @@ void OwlatInterface::initialize()
     if (! m_owlatArmTareFSClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_TARE_FS action server did not connect!");
-    }
-    if (! m_owlatTaskDropoffClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TASK_DROPOFF action server did not connect!");
     }
     if (! m_owlatTaskPSPClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -592,36 +583,6 @@ void OwlatInterface::owlatArmTareFSAction (int id)
      default_action_active_cb (opname),
      default_action_feedback_cb<ARM_TARE_FSFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_TARE_FSResultConstPtr> (opname));
-}
-
-void OwlatInterface::owlatTaskDropoff (int frame, bool relative,
-                                       const vector<double>& point, int id)
-{
-  if (! markOperationRunning (Name_OwlatTaskDropoff, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskDropoffAction,
-                        this, frame, relative, point, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::owlatTaskDropoffAction (int frame, bool relative,
-                                             const vector<double>& point, int id)
-{
-  TASK_DROPOFFGoal goal;
-  goal.frame.value = frame;
-  goal.relative = relative;
-  for(int i = 0; i < goal.point.size(); i++){
-    goal.point[i] = point[i];
-  }
-  string opname = Name_OwlatTaskDropoff;  // shorter version
-
-  runAction<actionlib::SimpleActionClient<TASK_DROPOFFAction>,
-            TASK_DROPOFFGoal,
-            TASK_DROPOFFResultConstPtr,
-            TASK_DROPOFFFeedbackConstPtr>
-    (opname, m_owlatTaskDropoffClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<TASK_DROPOFFFeedbackConstPtr> (opname),
-     default_action_done_cb<TASK_DROPOFFResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatTaskPSP (int frame, bool relative,
