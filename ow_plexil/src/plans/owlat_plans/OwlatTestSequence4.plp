@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 3.11.1
+// This Test Sequence is found in the User Guide under section 4.11.1
 // It uses Test Sequence 2 for setup and uses ARM_PLACE_TOOL
 
 
@@ -43,8 +43,11 @@ OwlatTestSequence4:
   // Retracts from surface
   log_info("Retracting from surface with ARM_PLACE_TOOL.");
   LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative, Position=position,
-                                Normal=normal, Distance=distance, Overdrive=overdrive, Retracting=true,
+                                Normal=normal, Distance=(-distance), Overdrive=overdrive, Retracting=true,
                                 ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
+  
+  // Unstows arm
+  LibraryCall OwlatUnstow();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence4");
 }
