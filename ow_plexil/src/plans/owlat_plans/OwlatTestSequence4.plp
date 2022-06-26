@@ -18,9 +18,9 @@ OwlatTestSequence4:
   Boolean relative = false;
   Real position[3] = #(0.0 0.0 0.1);
   Real normal[3] = #(0.0 0.0 -1.0);
-  Real distance = 0.15;
+  Real distance = 0.20;
   Real overdrive = 0.0;
-  Real force_threshold = 5.0;
+  Real force_threshold = 6.0;
   Real torque_threshold = 1.0;
 
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
