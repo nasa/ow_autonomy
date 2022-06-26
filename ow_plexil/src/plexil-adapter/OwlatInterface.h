@@ -27,6 +27,7 @@
 #include <owlat_sim_msgs/ARM_SET_TOOLAction.h>
 #include <owlat_sim_msgs/ARM_STOPAction.h>
 #include <owlat_sim_msgs/ARM_TARE_FSAction.h>
+#include <owlat_sim_msgs/TASK_DROPOFFAction.h>
 #include <owlat_sim_msgs/TASK_PSPAction.h>
 #include <owlat_sim_msgs/TASK_SCOOPAction.h>
 #include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
@@ -60,6 +61,8 @@ using OwlatArmStopActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOPAction>;
 using OwlatArmTareFSActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_TARE_FSAction>;
+using OwlatTaskDropoffActionClient =
+  actionlib::SimpleActionClient<owlat_sim_msgs::TASK_DROPOFFAction>;
 using OwlatTaskPSPActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::TASK_PSPAction>;
 using OwlatTaskScoopActionClient =
@@ -108,6 +111,10 @@ class OwlatInterface : public PlexilInterface
   void owlatArmSetTool (int tool, int id);
   void owlatArmStop (int id);
   void owlatArmTareFS (int id);
+  void owlatTaskDropoff (int frame,
+                         bool relative,
+                         const std::vector<double>& point,
+                         int id);
   void owlatTaskPSP (int frame, bool relative, const std::vector<double>& point, 
                      const std::vector<double>& normal, double max_depth,
                      double max_force, int id); 
@@ -157,6 +164,8 @@ class OwlatInterface : public PlexilInterface
   void owlatArmSetToolAction (int tool, int id);
   void owlatArmStopAction (int id);
   void owlatArmTareFSAction (int id);
+  void owlatTaskDropoffAction (int frame, bool relative,
+                               const std::vector<double>& point, int id);
   void owlatTaskPSPAction (int frame, bool relative,
                            const std::vector<double>& point, 
                            const std::vector<double>& normal, double max_depth,
@@ -204,6 +213,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<OwlatArmSetToolActionClient> m_owlatArmSetToolClient;
   std::unique_ptr<OwlatArmStopActionClient> m_owlatArmStopClient;
   std::unique_ptr<OwlatArmTareFSActionClient> m_owlatArmTareFSClient;
+  std::unique_ptr<OwlatTaskDropoffActionClient> m_owlatTaskDropoffClient;
   std::unique_ptr<OwlatTaskPSPActionClient> m_owlatTaskPSPClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
 
