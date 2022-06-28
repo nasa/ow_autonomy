@@ -19,8 +19,8 @@ TestAntennaMovement: UncheckedSequence
   //Pan tests
   LibraryCall TestPanTilt (PanDegrees = 180, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = -180, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 350, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = -350, TiltDegrees = 0, Success = TestCount);
+  //  LibraryCall TestPanTilt (PanDegrees = 350, TiltDegrees = 0, Success = TestCount);
+  //  LibraryCall TestPanTilt (PanDegrees = -350, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = -45, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
 
@@ -33,10 +33,10 @@ TestAntennaMovement: UncheckedSequence
 
 
   //Checks if all tests have succeeded
-  if (TestCount == 11) {
-    log_info("TestAntennaMovement: SUCCEEDED, 11/11 Tests Succeeded");
+  if (TestCount == 9) {
+    log_info("TestAntennaMovement: SUCCEEDED, 9/9 Tests Succeeded");
   }
   else {
-    log_error("TestAntennaMovement: FAILED, ", TestCount, "/11 Tests Succeeded");
+    log_error("TestAntennaMovement: FAILED, ", TestCount, "/9 Tests Succeeded");
   }
 }
