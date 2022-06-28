@@ -263,7 +263,7 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue (tilt_degrees);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)

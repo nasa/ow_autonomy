@@ -135,7 +135,6 @@ class OwInterface : public PlexilInterface
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
-  void deliverAction (double x, double y, double z, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
