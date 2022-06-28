@@ -211,7 +211,6 @@ static void owlat_arm_tare_fs (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-
 static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
