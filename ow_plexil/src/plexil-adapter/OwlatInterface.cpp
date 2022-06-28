@@ -1,6 +1,6 @@
-// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
-// Research and Simulation can be found in README.md in the root directory of
-// this repository.
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for
+// Exploration Research and Simulation can be found in README.md in
+// the root directory of this repository.
 
 #include <thread>
 #include <vector>
@@ -10,28 +10,30 @@
 #include "subscriber.h"
 
 using std::hash;
+using std::copy;
 using std::string;
 using std::thread;
 using std::string;
 using std::vector;
+using std::make_unique;
 using namespace owlat_sim_msgs;
 using namespace PLEXIL;
 
-const string Name_OwlatUnstow = "/owlat_sim/ARM_UNSTOW";
-const string Name_OwlatStow =   "/owlat_sim/ARM_STOW";
-const string Name_OwlatArmMoveCartesian =   "/owlat_sim/ARM_MOVE_CARTESIAN";
-const string Name_OwlatArmMoveCartesianGuarded =   "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
-const string Name_OwlatArmMoveJoint =   "/owlat_sim/ARM_MOVE_JOINT";
-const string Name_OwlatArmMoveJoints =   "/owlat_sim/ARM_MOVE_JOINTS";
-const string Name_OwlatArmMoveJointsGuarded =   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
-const string Name_OwlatArmPlaceTool =   "/owlat_sim/ARM_PLACE_TOOL";
-const string Name_OwlatArmSetTool =   "/owlat_sim/ARM_SET_TOOL";
-const string Name_OwlatArmStop =   "/owlat_sim/ARM_STOP";
-const string Name_OwlatArmTareFS =   "/owlat_sim/ARM_TARE_FS";
-const string Name_OwlatTaskDropoff =   "/owlat_sim/TASK_DROPOFF";
-const string Name_OwlatTaskPSP =   "/owlat_sim/TASK_PSP";
-const string Name_OwlatTaskScoop =   "/owlat_sim/TASK_SCOOP";
-const string Name_OwlatTaskShearBevameter =   "/owlat_sim/TASK_SHEAR_BEVAMETER";
+const string Name_OwlatUnstow =           "/owlat_sim/ARM_UNSTOW";
+const string Name_OwlatStow =             "/owlat_sim/ARM_STOW";
+const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
+const string Name_OwlatArmMoveCartesianGuarded =
+  "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
+const string Name_OwlatArmMoveJoint =     "/owlat_sim/ARM_MOVE_JOINT";
+const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
+const string Name_OwlatArmMoveJointsGuarded =
+  "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
+const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
+const string Name_OwlatArmSetTool =       "/owlat_sim/ARM_SET_TOOL";
+const string Name_OwlatArmStop =          "/owlat_sim/ARM_STOP";
+const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
+const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
+const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 
 // Used as indices into the subsequent vector.
 enum class LanderOps {
@@ -46,13 +48,11 @@ enum class LanderOps {
   OwlatArmSetTool,
   OwlatArmStop,
   OwlatArmTareFS,
-  OwlatArmTaskDropoff,
   OwlatArmTaskPSP,
-  OwlatArmTaskScoop,
-  OwlatArmTaskShearBevameter
+  OwlatArmTaskScoop
 };
 
-static std::vector<string> LanderOpNames = {
+static vector<string> LanderOpNames = {
     Name_OwlatUnstow,
     Name_OwlatStow,
     Name_OwlatArmMoveCartesian,
@@ -64,25 +64,9 @@ static std::vector<string> LanderOpNames = {
     Name_OwlatArmSetTool,
     Name_OwlatArmStop,
     Name_OwlatArmTareFS,
-    Name_OwlatTaskDropoff,
     Name_OwlatTaskPSP,
-    Name_OwlatTaskScoop,
-    Name_OwlatTaskShearBevameter
+    Name_OwlatTaskScoop
   };
-
-// Task Shear Bevameter Callback
-static double BevameterStopReasonVar = 0;
-template<int OpIndex, typename T>
-static void task_shear_bevameter_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const T& result)
-{
-  ROS_INFO("Shear Bevameter Stop Reason: : %d", result->stop_reason.value);
-  BevameterStopReasonVar = result->stop_reason.value;
-  publish("ShearBevameterStopReason", BevameterStopReasonVar);
-  ROS_INFO ("/owlat_sim/TASK_SHEAR_BEVAMETER finished in state %s", 
-            state.toString().c_str());
-}
 
 // Task PSP Callback
 static double PSPStopReasonVar = 0;
@@ -94,7 +78,7 @@ static void task_psp_done_cb
   ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
   PSPStopReasonVar = result->stop_reason.value;
   publish("PSPStopReason", PSPStopReasonVar);
-  ROS_INFO ("/owlat_sim/TASK_PSP finished in state %s", 
+  ROS_INFO ("/owlat_sim/TASK_PSP finished in state %s",
             state.toString().c_str());
 }
 
@@ -130,7 +114,7 @@ void OwlatInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
        &OwlatInterface::armJointAnglesCallback, this));
- 
+
     m_armJointAccelerationsSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
@@ -160,7 +144,7 @@ void OwlatInterface::initialize()
         (m_genericNodeHandle ->
          subscribe("/owlat_sim/ARM_POSE", qsize,
          &OwlatInterface::armPoseCallback, this));
-         
+
    m_armToolSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle ->
          subscribe("/owlat_sim/ARM_TOOL", qsize,
@@ -168,81 +152,87 @@ void OwlatInterface::initialize()
 
     // Initialize pointers
     m_owlatUnstowClient =
-      std::make_unique<OwlatUnstowActionClient>(Name_OwlatUnstow, true);
+      make_unique<OwlatUnstowActionClient>(Name_OwlatUnstow, true);
     m_owlatStowClient =
-      std::make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
+      make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
     m_owlatArmMoveCartesianClient =
-      std::make_unique<OwlatArmMoveCartesianActionClient>(Name_OwlatArmMoveCartesian, true);
+      make_unique<OwlatArmMoveCartesianActionClient>(Name_OwlatArmMoveCartesian,
+                                                     true);
     m_owlatArmMoveCartesianGuardedClient =
-      std::make_unique<OwlatArmMoveCartesianGuardedActionClient>(Name_OwlatArmMoveCartesianGuarded, true);
+      make_unique<OwlatArmMoveCartesianGuardedActionClient>
+      (Name_OwlatArmMoveCartesianGuarded, true);
     m_owlatArmMoveJointClient =
-      std::make_unique<OwlatArmMoveJointActionClient>(Name_OwlatArmMoveJoint, true);
+      make_unique<OwlatArmMoveJointActionClient>(Name_OwlatArmMoveJoint, true);
     m_owlatArmMoveJointsClient =
-      std::make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
+      make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
     m_owlatArmMoveJointsGuardedClient =
-      std::make_unique<OwlatArmMoveJointsGuardedActionClient>(Name_OwlatArmMoveJointsGuarded, true);
+      make_unique<OwlatArmMoveJointsGuardedActionClient>
+      (Name_OwlatArmMoveJointsGuarded, true);
     m_owlatArmPlaceToolClient =
-      std::make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
+      make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
     m_owlatArmSetToolClient =
-      std::make_unique<OwlatArmSetToolActionClient>(Name_OwlatArmSetTool, true);
+      make_unique<OwlatArmSetToolActionClient>(Name_OwlatArmSetTool, true);
     m_owlatArmStopClient =
-      std::make_unique<OwlatArmStopActionClient>(Name_OwlatArmStop, true);
+      make_unique<OwlatArmStopActionClient>(Name_OwlatArmStop, true);
     m_owlatArmTareFSClient =
-      std::make_unique<OwlatArmTareFSActionClient>(Name_OwlatArmTareFS, true);
-    m_owlatTaskDropoffClient =
-      std::make_unique<OwlatTaskDropoffActionClient>(Name_OwlatTaskDropoff, true);
+      make_unique<OwlatArmTareFSActionClient>(Name_OwlatArmTareFS, true);
     m_owlatTaskPSPClient =
-      std::make_unique<OwlatTaskPSPActionClient>(Name_OwlatTaskPSP, true);
+      make_unique<OwlatTaskPSPActionClient>(Name_OwlatTaskPSP, true);
     m_owlatTaskScoopClient =
-      std::make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
-    m_owlatTaskShearBevameterClient =
-      std::make_unique<OwlatTaskShearBevameterActionClient>(Name_OwlatTaskShearBevameter, true);
+      make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
     // Connect to action servers
-    if (! m_owlatUnstowClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatUnstowClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT UNSTOW action server did not connect!");
     }
-    if (! m_owlatStowClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatStowClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT STOW action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmMoveCartesianClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianGuardedClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmMoveCartesianGuardedClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmMoveJointClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmMoveJointClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINT action server did not connect!");
     }
-    if (! m_owlatArmMoveJointsClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmMoveJointsClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS action server did not connect!");
     }
-    if (! m_owlatArmMoveJointsGuardedClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmMoveJointsGuardedClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmPlaceToolClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmPlaceToolClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_PLACE_TOOL action server did not connect!");
     }
-    if (! m_owlatArmSetToolClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmSetToolClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_SET_TOOL action server did not connect!");
     }
-    if (! m_owlatArmStopClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmStopClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_STOP action server did not connect!");
     }
-    if (! m_owlatArmTareFSClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatArmTareFSClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_TARE_FS action server did not connect!");
     }
-    if (! m_owlatTaskDropoffClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TASK_DROPOFF action server did not connect!");
-    }
-    if (! m_owlatTaskPSPClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatTaskPSPClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_PSP action server did not connect!");
     }
-    if (! m_owlatTaskScoopClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! m_owlatTaskScoopClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT TASK_SCOOP action server did not connect!");
-    }
-    if (! m_owlatTaskShearBevameterClient->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TASK_SHEAR_BEVAMETER action server did not connect!");
     }
   }
 }
@@ -294,8 +284,8 @@ void OwlatInterface::owlatStowAction (int id)
      default_action_done_cb<ARM_STOWResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative, 
-                                            const vector<double>& position, 
+void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative,
+                                            const vector<double>& position,
                                             const vector<double>& orientation,
                                             int id)
 {
@@ -305,8 +295,8 @@ void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative, 
-                                                  const vector<double>& position, 
+void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative,
+                                                  const vector<double>& position,
                                                   const vector<double>& orientation,
                                                   int id)
 {
@@ -332,8 +322,8 @@ void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative,
      default_action_done_cb<ARM_MOVE_CARTESIANResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative, 
-                                                   const vector<double>& position, 
+void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative,
+                                                   const vector<double>& position,
                                                    const vector<double>& orientation,
                                                    bool retracting,
                                                    double force_threshold,
@@ -346,11 +336,11 @@ void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relative, 
-                                                         const vector<double>& position, 
+void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relative,
+                                                         const vector<double>& position,
                                                          const vector<double>& orientation,
-                                                         bool retracting, 
-                                                         double force_threshold, 
+                                                         bool retracting,
+                                                         double force_threshold,
                                                          double torque_threshold, int id)
 {
   ARM_MOVE_CARTESIAN_GUARDEDGoal goal;
@@ -378,9 +368,9 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
      default_action_done_cb<ARM_MOVE_CARTESIAN_GUARDEDResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoint (bool relative, 
-                                        int joint, double angle, 
-                                        int id) 
+void OwlatInterface::owlatArmMoveJoint (bool relative,
+                                        int joint, double angle,
+                                        int id)
 {
   if (! markOperationRunning (Name_OwlatArmMoveJoint, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointAction,
@@ -388,9 +378,9 @@ void OwlatInterface::owlatArmMoveJoint (bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointAction (bool relative, 
-                                              int joint, double angle, 
-                                              int id) 
+void OwlatInterface::owlatArmMoveJointAction (bool relative,
+                                              int joint, double angle,
+                                              int id)
 {
   ARM_MOVE_JOINTGoal goal;
   goal.relative = relative;
@@ -408,8 +398,9 @@ void OwlatInterface::owlatArmMoveJointAction (bool relative,
      default_action_done_cb<ARM_MOVE_JOINTResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoints (bool relative, const vector<double>& angles, 
-                                         int id) 
+void OwlatInterface::owlatArmMoveJoints (bool relative,
+                                         const vector<double>& angles,
+                                         int id)
 {
   if (! markOperationRunning (Name_OwlatArmMoveJoints, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointsAction,
@@ -417,14 +408,15 @@ void OwlatInterface::owlatArmMoveJoints (bool relative, const vector<double>& an
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointsAction (bool relative, const vector<double>& angles, 
+void OwlatInterface::owlatArmMoveJointsAction (bool relative,
+                                               const vector<double>& angles,
                                                int id)
 {
 
   ARM_MOVE_JOINTSGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles[i] = angles[i]; 
+    goal.angles[i] = angles[i];
   }
   string opname = Name_OwlatArmMoveJoints;  // shorter version
 
@@ -439,10 +431,10 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative, const vector<doubl
 }
 
 void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
-                                                const vector<double>& angles, 
+                                                const vector<double>& angles,
                                                 bool retracting,
                                                 double force_threshold,
-                                                double torque_threshold, 
+                                                double torque_threshold,
                                                 int id)
 {
   if (! markOperationRunning (Name_OwlatArmMoveJointsGuarded, id)) return;
@@ -453,17 +445,17 @@ void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
 }
 
 void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
-                                                      const vector<double>& angles, 
+                                                      const vector<double>& angles,
                                                       bool retracting,
                                                       double force_threshold,
-                                                      double torque_threshold, 
+                                                      double torque_threshold,
                                                       int id)
 {
 
   ARM_MOVE_JOINTS_GUARDEDGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles[i] = angles[i]; 
+    goal.angles[i] = angles[i];
   }
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
@@ -481,7 +473,7 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
 }
 
 void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
-                                        const vector<double>& position, 
+                                        const vector<double>& position,
                                         const vector<double>& normal,
                                         double distance, double overdrive,
                                         bool retracting, double force_threshold,
@@ -489,14 +481,14 @@ void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
 {
   if (! markOperationRunning (Name_OwlatArmPlaceTool, id)) return;
   thread action_thread (&OwlatInterface::owlatArmPlaceToolAction,
-                        this, frame, relative, position, normal, 
+                        this, frame, relative, position, normal,
                         distance, overdrive, retracting, force_threshold,
                         torque_threshold, id);
   action_thread.detach();
 }
 
 void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
-                                              const vector<double>& position, 
+                                              const vector<double>& position,
                                               const vector<double>& normal,
                                               double distance, double overdrive,
                                               bool retracting, double force_threshold,
@@ -506,7 +498,7 @@ void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
   goal.frame.value = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.position.size(); i++){
-    goal.position[i] = position[i]; 
+    goal.position[i] = position[i];
     goal.normal[i] = normal[i];
   }
   goal.distance = distance;
@@ -593,41 +585,11 @@ void OwlatInterface::owlatArmTareFSAction (int id)
      default_action_done_cb<ARM_TARE_FSResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatTaskDropoff (int frame, bool relative,
-                                       const vector<double>& point, int id) 
-{
-  if (! markOperationRunning (Name_OwlatTaskDropoff, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskDropoffAction,
-                        this, frame, relative, point, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::owlatTaskDropoffAction (int frame, bool relative,
-                                             const vector<double>& point, int id) 
-{
-  TASK_DROPOFFGoal goal;
-  goal.frame.value = frame;
-  goal.relative = relative;
-  for(int i = 0; i < goal.point.size(); i++){
-    goal.point[i] = point[i]; 
-  }
-  string opname = Name_OwlatTaskDropoff;  // shorter version
-
-  runAction<actionlib::SimpleActionClient<TASK_DROPOFFAction>,
-            TASK_DROPOFFGoal,
-            TASK_DROPOFFResultConstPtr,
-            TASK_DROPOFFFeedbackConstPtr>
-    (opname, m_owlatTaskDropoffClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<TASK_DROPOFFFeedbackConstPtr> (opname),
-     default_action_done_cb<TASK_DROPOFFResultConstPtr> (opname));
-}
-
 void OwlatInterface::owlatTaskPSP (int frame, bool relative,
-                                   const vector<double>& point, 
+                                   const vector<double>& point,
                                    const vector<double>& normal,
                                    double max_depth,
-                                   double max_force, int id) 
+                                   double max_force, int id)
 {
   if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskPSPAction,
@@ -637,16 +599,16 @@ void OwlatInterface::owlatTaskPSP (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
-                                         const vector<double>& point, 
+                                         const vector<double>& point,
                                          const vector<double>& normal,
                                          double max_depth,
-                                         double max_force, int id) 
+                                         double max_force, int id)
 {
   TASK_PSPGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.point.size(); i++){
-    goal.point[i] = point[i]; 
+    goal.point[i] = point[i];
     goal.normal[i] = normal[i];
   }
   goal.max_depth = max_depth;
@@ -665,8 +627,8 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
-                                     const vector<double>& point, 
-                                     const vector<double>& normal, int id) 
+                                     const vector<double>& point,
+                                     const vector<double>& normal, int id)
 {
   if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskScoopAction,
@@ -676,14 +638,14 @@ void OwlatInterface::owlatTaskScoop (int frame, bool relative,
 }
 
 void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
-                                           const vector<double>& point, 
-                                           const vector<double>& normal, int id) 
+                                           const vector<double>& point,
+                                           const vector<double>& normal, int id)
 {
   TASK_SCOOPGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.point.size(); i++){
-    goal.point[i] = point[i]; 
+    goal.point[i] = point[i];
     goal.normal[i] = normal[i];
   }
   string opname = Name_OwlatTaskScoop;  // shorter version
@@ -698,86 +660,51 @@ void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
      default_action_done_cb<TASK_SCOOPResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatTaskShearBevameter (int frame, bool relative,
-                                              const vector<double>& point, 
-                                              const vector<double>& normal,
-                                              double preload,
-                                              double max_torque, int id) 
+void OwlatInterface::armJointAnglesCallback
+(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
 {
-  if (! markOperationRunning (Name_OwlatTaskShearBevameter, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskShearBevameterAction,
-                        this, frame, relative, point, normal,
-                        preload, max_torque, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::owlatTaskShearBevameterAction (int frame, bool relative,
-                                                    const vector<double>& point, 
-                                                    const vector<double>& normal,
-                                                    double preload,
-                                                    double max_torque, int id) 
-{
-  TASK_SHEAR_BEVAMETERGoal goal;
-  goal.frame.value = frame;
-  goal.relative = relative; 
-  for(int i = 0; i < goal.point.size(); i++){
-    goal.point[i] = point[i]; 
-    goal.normal[i] = normal[i];
-  }  
-  goal.preload = preload;
-  goal.max_torque = max_torque;
-  string opname = Name_OwlatTaskShearBevameter;  // shorter version
-
-  runAction<actionlib::SimpleActionClient<TASK_SHEAR_BEVAMETERAction>,
-            TASK_SHEAR_BEVAMETERGoal,
-            TASK_SHEAR_BEVAMETERResultConstPtr,
-            TASK_SHEAR_BEVAMETERFeedbackConstPtr>
-    (opname, m_owlatTaskShearBevameterClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<TASK_SHEAR_BEVAMETERFeedbackConstPtr> (opname),
-     task_shear_bevameter_done_cb<
-     static_cast<int>(LanderOps::OwlatArmTaskShearBevameter),
-     TASK_SHEAR_BEVAMETERResultConstPtr>);
-}
-
-
-void OwlatInterface::armJointAnglesCallback(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
-{
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_angles.begin()); 
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_angles.begin());
   publish("ArmJointAngles", m_arm_joint_angles);
 }
 
-void OwlatInterface::armJointAccelerationsCallback(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg)
+void OwlatInterface::armJointAccelerationsCallback
+(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg)
 {
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin()); 
+  copy(msg->value.begin(), msg->value.end(),
+            m_arm_joint_accelerations.begin());
   publish("ArmJointAccelerations", m_arm_joint_accelerations);
 }
 
-void OwlatInterface::armJointTorquesCallback(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
+void OwlatInterface::armJointTorquesCallback
+(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
 {
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin()); 
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
   publish("ArmJointTorques", m_arm_joint_torques);
 }
 
-void OwlatInterface::armJointVelocitiesCallback(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg)
+void OwlatInterface::armJointVelocitiesCallback
+(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg)
 {
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin()); 
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
   publish("ArmJointVelocities", m_arm_joint_velocities);
 }
 
-void OwlatInterface::armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg)
+void OwlatInterface::armFTTorqueCallback
+(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg)
 {
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_ft_torque.begin()); 
+  copy(msg->value.begin(), msg->value.end(), m_arm_ft_torque.begin());
   publish("ArmFTTorque", m_arm_ft_torque);
 }
 
-void OwlatInterface::armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg)
+void OwlatInterface::armFTForceCallback
+(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg)
 {
-  std::copy(msg->value.begin(), msg->value.end(), m_arm_ft_force.begin()); 
+  copy(msg->value.begin(), msg->value.end(), m_arm_ft_force.begin());
   publish("ArmFTForce", m_arm_ft_force);
 }
 
-void OwlatInterface::armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
+void OwlatInterface::armPoseCallback
+(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
 {
   m_arm_pose[0] = msg->value.position.x;
   m_arm_pose[1] = msg->value.position.y;
@@ -789,7 +716,8 @@ void OwlatInterface::armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& m
   publish("ArmPose", m_arm_pose);
 }
 
-void OwlatInterface::armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
+void OwlatInterface::armToolCallback
+(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
 {
   m_arm_tool = msg->value.value;
   publish("ArmTool", m_arm_tool);
@@ -838,10 +766,5 @@ Value OwlatInterface::getArmTool()
 Value OwlatInterface::getPSPStopReason()
 {
   return(Value(PSPStopReasonVar));
-}
-
-Value OwlatInterface::getShearBevameterStopReason()
-{
-  return(Value(BevameterStopReasonVar));
 }
 
