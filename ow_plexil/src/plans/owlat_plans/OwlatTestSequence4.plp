@@ -41,12 +41,6 @@ OwlatTestSequence4:
                                 TorqueThreshold=torque_threshold);
 
   // Retracts from surface
-  log_info("Retracting from surface with ARM_PLACE_TOOL.");
-  LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative, Position=position,
-                                Normal=normal, Distance=(-distance), Overdrive=overdrive, Retracting=true,
-                                ForceThreshold=force_threshold, TorqueThreshold=torque_threshold);
-  
-  // Unstows arm
   LibraryCall OwlatUnstow();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence4");
