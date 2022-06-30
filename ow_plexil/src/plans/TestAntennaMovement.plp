@@ -19,8 +19,6 @@ TestAntennaMovement: UncheckedSequence
   //Pan tests
   LibraryCall TestPanTilt (PanDegrees = 180, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = -180, TiltDegrees = 0, Success = TestCount);
-  //  LibraryCall TestPanTilt (PanDegrees = 350, TiltDegrees = 0, Success = TestCount);
-  //  LibraryCall TestPanTilt (PanDegrees = -350, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = -45, TiltDegrees = 0, Success = TestCount);
   LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
 
