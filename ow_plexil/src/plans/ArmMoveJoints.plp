@@ -18,7 +18,7 @@ ArmMoveJoints:
 
   if Lookup(ArmFault)
   {
-    log_error("Command arm_move_joints not sent to lander due to active arm fault(s).");
+    log_error ("Command arm_move_joints not sent to lander due to active arm fault(s).");
     FaultDetected = true;
   }
 
@@ -31,7 +31,7 @@ ArmMoveJoints:
       log_info ("Arm fault(s) resolved, sending arm_move_joints command to lander...");
     }
     
-    SynchronousCommand arm_move_joints(Relative, Angles[6]);
+    SynchronousCommand arm_move_joints (Relative, Angles[6]);
   }
 
   SendArmMoveJointsParallel: Concurrence
