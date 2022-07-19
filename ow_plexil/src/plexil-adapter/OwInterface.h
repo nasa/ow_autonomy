@@ -18,6 +18,8 @@
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
+#include <ow_lander/ArmMoveJointAction.h>
+#include <ow_lander/ArmMoveJointsAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
@@ -46,6 +48,10 @@ using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
+using ArmMoveJointActionClient =
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
+using ArmMoveJointsActionClient = 
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
@@ -76,6 +82,11 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
+  void armMoveJoint (bool relative, int joint, double angle,
+                     int id);
+  void armMoveJoints (bool relative,
+                      const std::vector<double>& angles,
+                      int id); 
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
@@ -123,6 +134,10 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
+  void armMoveJointAction (bool relative, int joint, 
+                     double angle, int id);
+  void armMoveJointsAction (bool relative, const std::vector<double>& angles,
+                      int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
@@ -202,6 +217,8 @@ class OwInterface : public PlexilInterface
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
+  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
+  std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<UnstowActionClient> m_unstowClient;
   std::unique_ptr<StowActionClient> m_stowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;

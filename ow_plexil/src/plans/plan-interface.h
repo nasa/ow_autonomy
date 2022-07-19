@@ -31,6 +31,13 @@ LibraryAction GuardedMove (In Real X,
                            In Real DirZ,
                            In Real SearchDistance);
 
+LibraryAction ArmMoveJoint (In Boolean Relative,
+                            In Integer Joint,
+                            In Real Angle);
+
+LibraryAction ArmMoveJoints (In Boolean Relative,
+                             In Real Angles[6]);
+
 LibraryAction Grind (In Real X,
                      In Real Y,
                      In Real Depth,
