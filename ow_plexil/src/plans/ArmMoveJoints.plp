@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A test plan for the ROS action ArmMoveJoints
+// A plan for the ROS action ArmMoveJoints
 // that commands the 6 arm joints both sequentially and in parallel
 
 #include "plan-interface.h"
