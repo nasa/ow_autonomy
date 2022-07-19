@@ -31,7 +31,7 @@ ArmMoveJoints:
       log_info ("Arm fault(s) resolved, sending arm_move_joints command to lander...");
     }
     
-    SynchronousCommand arm_move_joints (Relative, Angles[6]);
+    SynchronousCommand arm_move_joints (Relative, Angles);
   }
 
   SendArmMoveJointsParallel: Concurrence
@@ -43,6 +43,6 @@ ArmMoveJoints:
       log_info ("Arm fault(s) resolved, sending arm_move_joints command to lander...");
     }
     
-    SynchronousCommand arm_move_joints (Relative, Angles[6]);
+    SynchronousCommand arm_move_joints (Relative, Angles);
   }
 }
