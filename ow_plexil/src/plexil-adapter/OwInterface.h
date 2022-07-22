@@ -135,9 +135,9 @@ class OwInterface : public PlexilInterface
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
   void armMoveJointAction (bool relative, int joint, 
-                     double angle, int id);
+                           double angle, int id);
   void armMoveJointsAction (bool relative, const std::vector<double>& angles,
-                      int id);
+                            int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
