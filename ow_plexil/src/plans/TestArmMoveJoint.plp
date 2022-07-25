@@ -12,17 +12,17 @@ TestArmMoveJoint:
   log_info ("Starting ArmMoveJoint demo...");
 
   // Moves the individuals joints to a certain angle (in radians)
-  LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.0);
+  LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
   
-  LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=-0.5);
+  LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=-0.5);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0.0);
+  LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=2.0);
+  LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=2.0);
+
+  LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
 
   LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
-
-  LibraryCall ArmMoveJoint (Relative=true, Joint=6, Angle=0.0);
 
   log_info ("ArmMoveJoint demo finished.");
 }
