@@ -5,24 +5,86 @@
 // A test plan for the ROS action ArmMoveJoint
 // that moves the individual arm joints
 
+// For reference: joint shou yaw (joint 0) limits are from -1.8 to 1.8
+// joint shou pitch (joint 1) is from 0.05 to 2.2
+// joint grinder is from -3.14 to 3.14 (although not relevant in this case)
+
 #include "plan-interface.h"
 
 TestArmMoveJoint:
 {
-  log_info ("Starting ArmMoveJoint demo...");
+  log_info ("Starting TestArmMoveJoint plan...);
+
+
 
   // Moves the individuals joints to a certain angle (in radians)
-  LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+  TestArmMoveJointSeq:
+  {
+    log_info ("Starting first ArmMoveJoint test...");
   
-  LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=-0.5);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=-1.0);
+  
+    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.5);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=2.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=3 Angle=0.03);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=4 Angle=0.0);
 
-  LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=5 Angle=0.0);
+  
+    log_info ("First test finished.");
+  }
 
-  log_info ("ArmMoveJoint demo finished.");
+
+  
+  // Moves a particular joint to a sequence of successive angles, 
+  // making this sequence of plan re-runnable by moving joint 
+  // back to angle 0.0 before it moves to another angle
+  // each time
+  TestArmMoveJointSuc:
+  {  
+    log_info ("Starting second ArmMoveJoint test...");
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.1);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.2);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.3);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+
+    log_info ("Second test finished.");
+  }
+  
+  
+  // Concurrence is added to all six joints commanded
+  TestArmMoveJointConc: Concurrence
+  {
+    log_info ("Starting final ArmMoveJoint test...");
+  
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=-1.0);
+  
+    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.5);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0.03);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
+  
+    log_info ("Final test finished.");
+  }
+
+
+  log_info ("TestArmMoveJoint plan finished.");
 }
