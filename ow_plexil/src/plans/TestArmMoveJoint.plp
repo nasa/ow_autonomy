@@ -28,11 +28,11 @@ TestArmMoveJoint:
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=3 Angle=0.03);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0.03);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=4 Angle=0.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=5 Angle=0.0);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
   
     log_info ("First test finished.");
   }
