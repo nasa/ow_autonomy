@@ -12,6 +12,7 @@ TestPanTilt: Sequence
     In Real PanDegrees;
     In Real TiltDegrees;
     InOut Integer Success;
+    // NOTE: Action server uses 0.05 radians (2.865 degrees)
     Real tolerance = 0.4;
     Real current_pan, current_tilt;
 
