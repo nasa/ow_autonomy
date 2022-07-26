@@ -13,7 +13,7 @@
 
 TestArmMoveJoint:
 {
-  log_info ("Starting TestArmMoveJoint plan...);
+  log_info ("Starting TestArmMoveJoint plan...");
 
 
 
