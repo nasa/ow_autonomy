@@ -35,6 +35,8 @@
 #include <ow_faults_detection/ArmFaults.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
+#include <ow_faults_detection/PanFaults.h>
+#include <ow_faults_detection/TiltFaults.h>
 
 #include "PlexilInterface.h"
 
@@ -106,6 +108,8 @@ class OwInterface : public PlexilInterface
   double groundPosition () const;
   bool   systemFault () const;
   bool   antennaFault () const;
+  bool   antennaPanFault () const;
+  bool   antennaTiltFault () const;
   bool   armFault () const;
   bool   powerFault () const;
 
@@ -141,6 +145,8 @@ class OwInterface : public PlexilInterface
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
+  void antennaPanFaultCallback (const ow_faults_detection::PanFaults::ConstPtr&);
+  void antennaTiltFaultCallback (const ow_faults_detection::TiltFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
 
@@ -181,6 +187,16 @@ class OwInterface : public PlexilInterface
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
 
+  FaultMap32 m_panErrors = {
+    {"HARDWARE_ERROR", std::make_pair(1, false)},
+    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  };
+
+  FaultMap32 m_TiltErrors = {
+    {"HARDWARE_ERROR", std::make_pair(1, false)},
+    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  };
+
   std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Publishers and subscribers
@@ -199,6 +215,8 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_panFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_tiltFaultMessagesSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;

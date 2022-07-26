@@ -241,6 +241,16 @@ void OwInterface::antennaFaultCallback(const ow_faults_detection::PTFaults::Cons
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
+void OwInterface::antennaPanFaultCallback(const ow_faults_detection::PanFaults::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_panErrors, "ANTENNA", "AntennaPanFault");
+}
+
+void OwInterface::antennaTiltFaultCallback(const ow_faults_detection::TiltFaults::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_TiltErrors, "ANTENNA", "AntennaTiltFault");
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -419,6 +429,16 @@ bool OwInterface::antennaFault () const
   return faultActive (m_panTiltErrors);
 }
 
+bool OwInterface::antennaPanFault () const
+{
+  return faultActive (m_panErrors);
+}
+
+bool OwInterface::antennaTiltFault () const
+{
+  return faultActive (m_TiltErrors);
+}
+
 bool OwInterface::armFault () const
 {
   return faultActive (m_armErrors);
@@ -549,6 +569,14 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/faults/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this));
+    m_panFaultMessagesSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/faults/pan_faults_status", qsize,
+                &OwInterface::antennaPanFaultCallback, this));
+    m_tiltFaultMessagesSubscriber = make_unique<ros::Subscriber>
+      (m_genericNodeHandle ->
+       subscribe("/faults/tilt_faults_status", qsize,
+                &OwInterface::antennaTiltFaultCallback, this));
 
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
