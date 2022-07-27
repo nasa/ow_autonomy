@@ -45,7 +45,7 @@ TestArmMoveJoint:
   // each time
   TestArmMoveJointSuc:
   {  
-    log_info ("Starting second ArmMoveJoint test...");
+    log_info ("Starting second and final ArmMoveJoint test...");
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
 
@@ -61,29 +61,9 @@ TestArmMoveJoint:
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
 
-    log_info ("Second test finished.");
+    log_info ("Second and final test finished.");
   }
-  
-  
-  // Concurrence is added to all six joints commanded
-  TestArmMoveJointConc: Concurrence
-  {
-    log_info ("Starting final ArmMoveJoint test...");
-  
-    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=-1.0);
-  
-    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.5);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
-
-    LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0.03);
-
-    LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
-
-    LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
-  
-    log_info ("Final test finished.");
-  }
 
 
   log_info ("TestArmMoveJoint plan finished.");
