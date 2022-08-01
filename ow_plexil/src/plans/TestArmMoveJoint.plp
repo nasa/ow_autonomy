@@ -26,7 +26,7 @@ TestArmMoveJoint:
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.5);
+    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.2);
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
 
