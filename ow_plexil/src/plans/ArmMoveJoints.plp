@@ -1,0 +1,36 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A plan for the ROS action ArmMoveJoints
+// that commands the 6 arm joints both sequentially and in parallel
+
+#include "plan-interface.h"
+
+ArmMoveJoints:
+{
+  In Boolean Relative;
+  In Real Angles[6];
+
+  Boolean FaultDetected = false;
+  
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  {
+    log_error ("Command arm_move_joints not sent to lander due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendArmMoveJoints:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending arm_move_joints command to lander...");
+    }
+    
+    SynchronousCommand arm_move_joints (Relative, Angles);
+  }
+}

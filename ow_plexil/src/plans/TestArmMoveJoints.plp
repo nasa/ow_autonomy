@@ -1,0 +1,30 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A test plan for the ROS action ArmMoveJoints
+// that commands the 6 arm joints both sequentially and in parallel
+
+#include "plan-interface.h"
+
+TestArmMoveJoints:
+{
+  // Three sets of angles for each joint
+  Real angles1[6] = #(-1.0 0.5 0.0 0.03 0.0 0.0);
+  Real angles2[6] = #(0.0 0.5 0.0 0.0 0.0 0.0);
+  Real angles3[6] = #(0.0 1.0 0.0 0.0 0.0 0.0);
+
+  log_info ("Starting TestArmMoveJoints plan...");
+
+  LibraryCall Stow();
+
+  LibraryCall ArmMoveJoints (Relative=false, Angles=angles1);
+
+  LibraryCall ArmMoveJoints (Relative=true, Angles=angles2);
+
+  LibraryCall ArmMoveJoints (Relative=true, Angles=angles3);
+
+  LibraryCall Stow();
+
+  log_info ("TestArmMoveJoints plan finished.");
+}

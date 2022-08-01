@@ -20,6 +20,8 @@
 #include <map>
 #include <thread>
 #include <functional>
+#include <algorithm> // for std::copy
+#include <inttypes.h> // for int64 support
 using std::set;
 using std::map;
 using std::vector;
@@ -97,6 +99,8 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // ow_lander.
 
 const string Op_GuardedMove       = "GuardedMove";
+const string Op_ArmMoveJoint      = "ArmMoveJoint";
+const string Op_ArmMoveJoints     = "ArmMoveJoints";
 const string Op_DigCircular       = "DigCircular";
 const string Op_DigLinear         = "DigLinear";
 const string Op_Deliver           = "Deliver";
@@ -115,6 +119,8 @@ const string Op_SetLightIntensity = "SetLightIntensity";
 //
 enum LanderOps {
   GuardedMove,
+  ArmMoveJoint,
+  ArmMoveJoints,
   DigCircular,
   DigLinear,
   Deliver,
@@ -130,7 +136,7 @@ enum LanderOps {
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
+  Op_GuardedMove, Op_ArmMoveJoint, Op_ArmMoveJoints, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
   Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
   Op_IdentifySampleLocation, Op_SetLightIntensity
 };
@@ -552,6 +558,10 @@ void OwInterface::initialize()
 
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
+    m_armMoveJointClient =
+      make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
+    m_armMoveJointsClient =
+      make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
     m_unstowClient = make_unique<UnstowActionClient>(Op_Unstow, true);
     m_stowClient = make_unique<StowActionClient>(Op_Stow, true);
     m_grindClient = make_unique<GrindActionClient>(Op_Grind, true);
@@ -569,6 +579,14 @@ void OwInterface::initialize()
     if (! m_stowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Stow action server did not connect!");
+    }
+    if (! m_armMoveJointClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS)))  {
+      ROS_ERROR ("ArmMoveJoint action server did not connect!");
+    }
+    if (! m_armMoveJointsClient ->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmMoveJoints action server did not connect!");
     }
     if (! m_digCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -867,6 +885,77 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
      default_action_active_cb (Op_GuardedMove),
      default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
      guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
+}
+
+void OwInterface::armMoveJoint (bool relative,
+                                int joint, double angle,
+                                int id)
+{
+  if (! markOperationRunning (Op_ArmMoveJoint, id)) return;
+  thread action_thread (&OwInterface::armMoveJointAction,
+                        this, relative, joint, angle, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveJointAction (bool relative,
+                                      int joint, double angle,
+                                      int id)
+{
+  ArmMoveJointGoal goal;
+  goal.relative = relative;
+  // NOTE: goal.joint is of type int64_t.  Assignment safe, but type
+  // should be either corrected all the way up the calling tree, or
+  // the message type should be changed to int32, which is more than
+  // sufficient and easiest to work with.
+  goal.joint = joint;
+  goal.angle = angle;
+
+  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%" PRId64 ", angle=%f)",
+            goal.relative, goal.joint, goal.angle);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
+            ArmMoveJointGoal,
+            ArmMoveJointResultConstPtr,
+            ArmMoveJointFeedbackConstPtr>
+    (Op_ArmMoveJoint, m_armMoveJointClient, goal, id,
+     default_action_active_cb (Op_ArmMoveJoint),
+     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (Op_ArmMoveJoint),
+     default_action_done_cb<ArmMoveJointResultConstPtr> (Op_ArmMoveJoint));
+}
+
+void OwInterface::armMoveJoints (bool relative,
+                                 const vector<double>& angles,
+                                 int id)
+{
+  if (! markOperationRunning (Op_ArmMoveJoints, id)) return;
+  thread action_thread (&OwInterface::armMoveJointsAction,
+                        this, relative, angles, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveJointsAction (bool relative,
+                                       const vector<double>& angles,
+                                       int id)
+{
+
+  ArmMoveJointsGoal goal;
+  goal.relative = relative;
+  std::copy(angles.begin(), angles.end(), back_inserter(goal.angles));
+
+  ROS_INFO ("Starting ArmMoveJoints"
+            "(relative=%d, angles=[%f, %f, %f, %f, %f, %f])",
+            goal.relative,
+            goal.angles[0], goal.angles[1], goal.angles[2],
+            goal.angles[3], goal.angles[4], goal.angles[5]);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveJointsAction>,
+            ArmMoveJointsGoal,
+            ArmMoveJointsResultConstPtr,
+            ArmMoveJointsFeedbackConstPtr>
+    (Op_ArmMoveJoints, m_armMoveJointsClient, goal, id,
+     default_action_active_cb (Op_ArmMoveJoints),
+     default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (Op_ArmMoveJoints),
+     default_action_done_cb<ArmMoveJointsResultConstPtr> (Op_ArmMoveJoints));
 }
 
 vector<double> OwInterface::identifySampleLocation (int num_images,

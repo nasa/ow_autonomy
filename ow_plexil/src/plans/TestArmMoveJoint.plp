@@ -1,0 +1,63 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A test plan for the ROS action ArmMoveJoint
+// that moves the individual arm joints
+
+// For reference: joint shou yaw (joint 0) limits are from -1.8 to 1.8
+// joint shou pitch (joint 1) is from 0.05 to 2.2
+// joint grinder is from -3.14 to 3.14 (although not relevant in this case)
+
+#include "plan-interface.h"
+
+TestArmMoveJoint:
+{
+  log_info ("Starting TestArmMoveJoint plan...");
+
+
+
+  // Moves the individuals joints to a certain angle (in radians)
+  TestArmMoveJointSeq:
+  {
+    log_info ("Starting first ArmMoveJoint test...");
+
+    LibraryCall Stow();
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0.2);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0.03);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0.0);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0.0);
+
+    log_info ("First test finished, stowing...");
+
+    LibraryCall Stow();
+  }
+
+  // Moves a single joint to a sequence of successive angles.
+  TestArmMoveJointSuc:
+  {
+    log_info ("Starting second and final ArmMoveJoint test...");
+
+    LibraryCall Stow();
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.1);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.2);
+
+    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.3);
+
+    log_info ("Second and final test finished, stowing...");
+
+    LibraryCall Stow();
+  }
+
+  log_info ("TestArmMoveJoint plan finished.");
+}
