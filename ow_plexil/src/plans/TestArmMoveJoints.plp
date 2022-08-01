@@ -24,5 +24,7 @@ TestArmMoveJoints:
 
   LibraryCall ArmMoveJoints (Relative=true, Angles=angles3);
 
+  LibraryCall Stow();
+
   log_info ("TestArmMoveJoints plan finished.");
 }

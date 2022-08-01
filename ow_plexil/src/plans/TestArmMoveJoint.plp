@@ -48,21 +48,15 @@ TestArmMoveJoint:
 
     LibraryCall Stow();
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
-
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.1);
-
-    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.2);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
-
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.3);
 
-    LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.0);
+    log_info ("Second and final test finished, stowing...");
 
-    log_info ("Second and final test finished.");
+    LibraryCall Stow();
   }
 
   log_info ("TestArmMoveJoint plan finished.");
