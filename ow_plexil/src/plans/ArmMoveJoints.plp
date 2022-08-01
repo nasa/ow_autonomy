@@ -33,16 +33,4 @@ ArmMoveJoints:
     
     SynchronousCommand arm_move_joints (Relative, Angles);
   }
-
-  SendArmMoveJointsParallel: Concurrence
-  {
-    Start !Lookup(ArmFault);
-
-    if FaultDetected
-    {
-      log_info ("Arm fault(s) resolved, sending arm_move_joints command to lander...");
-    }
-    
-    SynchronousCommand arm_move_joints (Relative, Angles);
-  }
 }

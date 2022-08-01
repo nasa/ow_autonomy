@@ -20,6 +20,8 @@
 #include <map>
 #include <thread>
 #include <functional>
+#include <algorithm> // for std::copy
+#include <inttypes.h> // for int64 support
 using std::set;
 using std::map;
 using std::vector;
@@ -558,7 +560,7 @@ void OwInterface::initialize()
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_armMoveJointClient =
       make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
-    m_armMoveJointsClient = 
+    m_armMoveJointsClient =
       make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
     m_unstowClient = make_unique<UnstowActionClient>(Op_Unstow, true);
     m_stowClient = make_unique<StowActionClient>(Op_Stow, true);
@@ -584,7 +586,7 @@ void OwInterface::initialize()
     }
     if (! m_armMoveJointsClient ->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveJoints action server did not connect!");  
+      ROS_ERROR ("ArmMoveJoints action server did not connect!");
     }
     if (! m_digCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -901,9 +903,16 @@ void OwInterface::armMoveJointAction (bool relative,
 {
   ArmMoveJointGoal goal;
   goal.relative = relative;
+  // NOTE: goal.joint is of type int64_t.  Assignment safe, but type
+  // should be either corrected all the way up the calling tree, or
+  // the message type should be changed to int32, which is more than
+  // sufficient and easiest to work with.
   goal.joint = joint;
   goal.angle = angle;
-  
+
+  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%" PRId64 ", angle=%f)",
+            goal.relative, goal.joint, goal.angle);
+
   runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
             ArmMoveJointGoal,
             ArmMoveJointResultConstPtr,
@@ -912,7 +921,7 @@ void OwInterface::armMoveJointAction (bool relative,
      default_action_active_cb (Op_ArmMoveJoint),
      default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (Op_ArmMoveJoint),
      default_action_done_cb<ArmMoveJointResultConstPtr> (Op_ArmMoveJoint));
-} 
+}
 
 void OwInterface::armMoveJoints (bool relative,
                                  const vector<double>& angles,
@@ -931,9 +940,13 @@ void OwInterface::armMoveJointsAction (bool relative,
 
   ArmMoveJointsGoal goal;
   goal.relative = relative;
-  for(int i = 0; i < goal.angles.size(); i++){
-    goal.angles[i] = angles[i];
-  }
+  std::copy(angles.begin(), angles.end(), back_inserter(goal.angles));
+
+  ROS_INFO ("Starting ArmMoveJoints"
+            "(relative=%d, angles=[%f, %f, %f, %f, %f, %f])",
+            goal.relative,
+            goal.angles[0], goal.angles[1], goal.angles[2],
+            goal.angles[3], goal.angles[4], goal.angles[5]);
 
   runAction<actionlib::SimpleActionClient<ArmMoveJointsAction>,
             ArmMoveJointsGoal,
