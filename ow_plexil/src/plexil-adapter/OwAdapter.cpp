@@ -131,6 +131,11 @@ static bool lookup (const string& state_name,
   else if (state_name == "PowerFault") {
     value_out = OwInterface::instance()->powerFault();
   }
+  else if (state_name == "ActionGoalStatus") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
   else retval = false;
 
   return retval;
