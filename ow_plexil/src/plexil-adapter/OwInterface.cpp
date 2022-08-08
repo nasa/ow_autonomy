@@ -186,7 +186,6 @@ static void update_action_goal_state (string action, int state)
       // update ActionGoalStatusMap only if the state is different from the current state
       if (ActionGoalStatusMap[action] != state) {
         ActionGoalStatusMap[action] = state; //ActionGoalStatusMap.find(action)->second = state;
-        ROS_INFO("%s action goal state updated to %s", action.c_str(), GoalStatus[state].c_str());
       }
     }
     else {
@@ -1209,6 +1208,5 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 
 int OwInterface::actionGoalStatus (const string& action_name) const
 {
-  ROS_INFO_STREAM("Here is the goal status: " << ActionGoalStatusMap[action_name]);
   return ActionGoalStatusMap[action_name];
 }
