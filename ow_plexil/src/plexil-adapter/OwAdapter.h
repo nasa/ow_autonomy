@@ -19,7 +19,6 @@ public:
   OwAdapter& operator= (const OwAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
 };
 
 extern "C" {
