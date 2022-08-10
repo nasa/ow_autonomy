@@ -48,6 +48,7 @@ static void stubbed_lookup (const string& name, const string& value)
     value_out = val;                            \
   }
 
+/**
 static bool lookup (const string& state_name,
                     const vector<PLEXIL::Value>& args,
                     PLEXIL::Value& value_out)
@@ -135,6 +136,9 @@ static bool lookup (const string& state_name,
 
   return retval;
 }
+*/
+
+//////////////////////////// Command Handlers /////////////////////////////////
 
 static void stow (Command* cmd, AdapterExecInterface* intf)
 {
@@ -345,6 +349,132 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+///////////////////////////// Lookup Handlers That Have Parameters /////////////////////////////////
+
+static void OwAdapter::hard_torque_limit_reached (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("OwAdapter:hardTorqueLimitReached",
+          "lookup called for " << state.name() << " with " << state.parameters().size() << " args");
+  string s;
+  args[0].getValue(s);
+  entry.update(OwInterface::instance()->softTorqueLimitReached(s));
+}
+
+static void OwAdapter::soft_torque_limit_reached (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("OwAdapter:softTorqueLimitReached",
+          "lookup called for " << state.name() << " with " << state.parameters().size() << " args");
+  string s;
+  args[0].getValue(s);
+  entry.update(OwInterface::instance()->softTorqueLimitReached(s));
+}
+
+static void OwAdapter::running_handler (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("OwAdapter:running",
+          "lookup called for " << state.name() << " with " << state.parameters().size() << " args");
+  string operation;
+  args[0].getValue(operation);
+  entry.update(OwInterface::instance()->running(operation));
+}
+
+static void OwAdapter::trench_length (const State& state, StateCacheEntry &entry)
+{
+  entry.update(10);
+}
+
+static void OwAdapter::trench_ground_position (const State& state, StateCacheEntry &entry)
+{
+  entry.update(-0.155);
+}
+
+static void OwAdapter::trench_width (const State& state, StateCacheEntry &entry)
+{
+  entry.update(10);
+}
+
+static void OwAdapter::trench_depth (const State& state, StateCacheEntry &entry)
+{
+  entry.update(2);
+}
+
+static void OwAdapter::trench_pitch (const State& state, StateCacheEntry &entry)
+{
+  entry.update(0);
+}
+
+static void OwAdapter::trench_yaw (const State& state, StateCacheEntry &entry)
+{
+  entry.update(0);
+}
+
+static void OwAdapter::trench_start_X (const State& state, StateCacheEntry &entry)
+{
+  entry.update(5);
+}
+
+static void OwAdapter::trench_start_Y (const State& state, StateCacheEntry &entry)
+{
+  entry.update(10);
+}
+
+static void OwAdapter::trench_start_Z (const State& state, StateCacheEntry &entry)
+{
+  entry.update(0);
+}
+
+static void OwAdapter::trench_dump_X (const State& state, StateCacheEntry &entry)
+{
+  entry.update(0);
+}
+
+static void OwAdapter::trench_dump_Y (const State& state, StateCacheEntry &entry)
+{
+  entry.update(0);
+}
+
+static void OwAdapter::trench_dump_Z (const State& state, StateCacheEntry &entry)
+{
+  entry.update(5);
+}
+
+static void OwAdapter::trench_identified (const State& state, StateCacheEntry &entry)
+{
+  entry.update(true);
+}
+
+static void OwAdapter::trench_target_timeout (const State& state, StateCacheEntry &entry)
+{
+  entry.update(60);
+}
+
+static void OwAdapter::excavation_timeout_one (const State& state, StateCacheEntry &entry) 
+{
+  entry.update(10);
+}
+
+static void OwAdapter::excavation_timeout_two (const State& state, StateCacheEntry &entry)
+{
+  entry.update(60);
+}
+
+static void OwAdapter::sample_good (const State& state, StateCacheEntry &entry)
+{
+  entry.update(true);
+}
+
+static void OwAdapter::collect_and_transfer_timeout (const State& state, StateCacheEntry &entry)
+{
+  entry.update(10);
+}
+
+static void OwAdapter::default_lookup_handler (const State& state)
+{
+  ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
+}
+
+///////////////////////////// Member functions //////////////////////////////////
+
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
   : CommonAdapter(execInterface, configXml)
@@ -355,6 +485,7 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 bool OwAdapter::initialize()
 {
   CommonAdapter::initialize();
+  // Register command handlers for each command
   g_configuration->registerCommandHandler("stow", stow);
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
@@ -372,11 +503,122 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("take_picture", take_picture);
   g_configuration->registerCommandHandler("set_light_intensity",
                                           set_light_intensity);
+  // Register a default command handler                                        
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
+
+  // Register lookup handlers for each state
+  g_configuration->registerLookupHandler("TiltDegrees", OwInterface::instance()->getTilt(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("PanDegrees", OwInterface::instance()->getPanDegrees(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("PanVelocity", OwInterface::instance()->getPanVelocity(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TiltVelocity", OwInterface::instance()->getTiltVelocity(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("HardTorqueLimitReached", OwAdapter::hard_torque_limit_reached,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("SoftTorqueLimitReached", OwAdapter::soft_torque_limit_reached,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("Running", OwAdapter::running_handler,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("StateOfCharge", OwInterface::instance()->getStateOfCharge(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("RemainingUsefulLife", OwInterface::instance()->getRemainingUsefulLife(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("BatteryTemperature", OwInterface::instance()->getBatteryTemperature(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("GroundFound", OwInterface::instance()->groundFound(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("GroundPosition", OwInterface::instance()->groundPosition(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("SystemFault", OwInterface::instance()->systemFault(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("AntennaFault", OwInterface::instance()->antennaFault(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("ArmFault", OwInterface::instance()->armFault(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("PowerFault", OwInterface::instance()->powerFault(),
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchLength", OwAdapter::trench_length,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchGroundPosition", OwAdapter::trench_ground_position,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchWidth", OwAdapter::trench_width,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchDepth", OwAdapter::trench_depth,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchPitch", OwAdapter::trench_pitch,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchYaw", OwAdapter::trench_yaw,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchStartX", OwAdapter::trench_start_X,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchStartY", OwAdapter::trench_start_Y,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);    
+  g_configuration->registerLookupHandler("TrenchStartZ", OwAdapter::trench_start_Z,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchDumpX", OwAdapter::trench_dump_X,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchDumpY", OwAdapter::trench_dump_Y,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchDumpZ", OwAdapter::trench_dump_Z,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchIdentified", OwAdapter::trench_identified,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("TrenchTargetTimeout", OwAdapter::trench_target_timeout,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("ExcavationTimeout", OwAdapter::excavation_timeout_one,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("ExcavationTimeout", OwAdapter::excavation_timeout_two,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("SampleGood", OwAdapter::sample_good,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  g_configuration->registerLookupHandler("collectAndTransferTimeout", OwAdapter::collect_and_transfer_timeout,
+                                        OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                        InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+  // Register a default lookup handler                                                                                                           
+  g_configuration->setDefaultLookupHandler(OwAdapter::defaultLookupHandler,
+                                          OwAdapter::subscribe, OwAdapter::unsubscribe,
+                                          InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
+
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
 
+/**
 void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 {
   debugMsg("OwAdapter:lookupNow", " called on " << state.name() << " with "
@@ -389,6 +631,7 @@ void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
   }
   entry.update(retval);
 }
+*/
 
 extern "C" {
   void initow_adapter() {
