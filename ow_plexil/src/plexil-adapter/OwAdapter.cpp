@@ -610,7 +610,7 @@ bool OwAdapter::initialize()
                                         OwAdapter::subscribe, OwAdapter::unsubscribe,
                                         InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
   // Register a default lookup handler                                                                                                           
-  g_configuration->setDefaultLookupHandler(OwAdapter::defaultLookupHandler,
+  g_configuration->setDefaultLookupHandler(OwAdapter::default_lookup_handler,
                                           OwAdapter::subscribe, OwAdapter::unsubscribe,
                                           InterfaceAdapter::setThresholds, InterfaceAdapter::setThresholds);
 
