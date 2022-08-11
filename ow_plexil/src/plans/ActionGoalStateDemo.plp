@@ -1,8 +1,7 @@
 // The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
-
-// Based on the FaultHandlingPattern2 plan. 
+ 
 // Unstow and stow the arm repeatedly. Pan the antenna
 // in 15 degree increments when 'Unstow' action goal status
 // is 'ACTIVE' and pan the antenna in 15 degree decrements 
@@ -11,11 +10,11 @@
 
 #include "plan-interface.h"
 
-FaultHandlingPattern2:
+ActionGoalStateDemo:
 {
   Real NewAngle = 0;
 
-  log_info ("Starting FaultHandlingPattern2 plan...");
+  log_info ("Starting ActionGoalStateDemo plan...");
 
   Run: Concurrence
   {
@@ -24,12 +23,12 @@ FaultHandlingPattern2:
       Repeat true;
       Start !Lookup(AntennaFault);
 
-      if (Lookup(ActionGoalStatus("Stow")) == 1) {
+      if (Lookup(ActionGoalStatus("Stow")) == 1)
+      {
         NewAngle = (Lookup(PanDegrees) - 15) mod 360;
       }
-      if (Lookup(ActionGoalStatus("Unstow")) == 1) {
-        NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-      }
+      else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+  
 
       LibraryCall Pan (Degrees=NewAngle);
     }
