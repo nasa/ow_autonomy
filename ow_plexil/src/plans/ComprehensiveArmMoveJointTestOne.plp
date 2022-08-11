@@ -12,8 +12,8 @@
 
 // This is a comprehensive test that moves
 // each joint to their lower and upper limits. Then,
-// each joint will move successively, then come back
-// to their original position
+// each joint will come back to their original position
+// before the next one moves
 
 #include "plan-interface.h"
 
