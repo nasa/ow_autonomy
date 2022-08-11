@@ -6,7 +6,7 @@
 // in 15 degree increments when 'Unstow' action goal status
 // is 'ACTIVE' and pan the antenna in 15 degree decrements 
 // when 'Stow' action goal status is 'ACTIVE'. 
-// This plan must be terminated with an interrupt, e.g. Control-C.
+// This plan will be terminated if any fault occurs.
 
 #include "plan-interface.h"
 
@@ -18,10 +18,12 @@ ActionGoalStateDemo:
 
   Run: Concurrence
   {
+    ExitCondition Lookup(SystemFault);
+
     Pattern2Image:
     {
-      Repeat true;
-      Start !Lookup(AntennaFault);
+      RepeatCondition true;
+      StartCondition !Lookup(AntennaFault);
 
       if (Lookup(ActionGoalStatus("Stow")) == 1)
       {
@@ -29,15 +31,14 @@ ActionGoalStateDemo:
       }
       else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
   
-
       LibraryCall Pan (Degrees=NewAngle);
     }
 
     Pattern2UnstowStow:
     {
-      Repeat true;
-      Start !Lookup(ArmFault);
-      Invariant !Lookup(ArmFault);
+      RepeatCondition true;
+      StartCondition !Lookup(ArmFault);
+      InvariantCondition !Lookup(ArmFault);
 
       LibraryCall Unstow();
       LibraryCall Stow();
