@@ -14,6 +14,7 @@
 
 // ROS Actions - OceanWATERS
 #include <actionlib/client/simple_action_client.h>
+#include <actionlib_msgs/GoalStatusArray.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
@@ -123,6 +124,8 @@ class OwInterface : public PlexilInterface
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
+  int actionGoalStatus (const std::string& action_name) const;
+
  private:
   template<typename Service>
   void callService (ros::ServiceClient, Service, std::string name, int id);
@@ -158,6 +161,7 @@ class OwInterface : public PlexilInterface
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
+  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&, const std::string);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -214,6 +218,16 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_unstowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_stowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_grindStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_guardedMoveStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointsStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digCircularStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digLinearStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;

@@ -91,6 +91,9 @@ Real    Lookup TiltDegrees;
 // fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
 
+// Query the goal status of the ROS action corresponding to a given library action
+Integer Lookup ActionGoalStatus (String action_name);
+
 //////// PLEXIL Utilities
 
 // Predefined, PLEXIL variable for current time.
