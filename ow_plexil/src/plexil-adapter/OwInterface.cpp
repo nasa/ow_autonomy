@@ -136,9 +136,9 @@ enum LanderOps {
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_ArmMoveJoint, Op_ArmMoveJoints, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
-  Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
-  Op_IdentifySampleLocation, Op_SetLightIntensity
+  Op_GuardedMove, Op_ArmMoveJoint, Op_ArmMoveJoints, Op_DigCircular, Op_DigLinear,
+  Op_Deliver, Op_Discard, Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow,
+  Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation, Op_SetLightIntensity
 };
 
 
@@ -183,9 +183,10 @@ static void update_action_goal_state (string action, int state)
   if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
     if (GoalStatus.find(state) != GoalStatus.end()) {
       
-      // update ActionGoalStatusMap only if the state is different from the current state
+      // update ActionGoalStatusMap only if the state is different
+      // from the current state
       if (ActionGoalStatusMap[action] != state) {
-        ActionGoalStatusMap[action] = state; //ActionGoalStatusMap.find(action)->second = state;
+        ActionGoalStatusMap[action] = state;
       }
     }
     else {
@@ -289,17 +290,20 @@ void OwInterface::systemFaultMessageCallback
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
-void OwInterface::armFaultCallback(const ow_faults_detection::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback
+(const ow_faults_detection::ArmFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
-void OwInterface::powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback
+(const ow_faults_detection::PowerFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
-void OwInterface::antennaFaultCallback(const ow_faults_detection::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback
+(const ow_faults_detection::PTFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
@@ -400,11 +404,13 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
     if(timeout == PointCloudTimeout){
       ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
     }
-    markOperationFinished (Op_TakePicture, m_runningOperations.at (Op_TakePicture));
+    markOperationFinished (Op_TakePicture,
+                           m_runningOperations.at (Op_TakePicture));
   }
 }
 
-void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& msg)
+void OwInterface::pointCloudCallback
+(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   // NOTE: the received pointcloud is ignored for now.
   if (operationRunning (Op_TakePicture)) {
@@ -512,7 +518,8 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 {
   return [&] (const actionlib::SimpleClientGoalState& state,
               const T& result) {
-    ROS_INFO ("%s finished in state %s", opname.c_str(), state.toString().c_str());
+    ROS_INFO ("%s finished in state %s", opname.c_str(),
+              state.toString().c_str());
     GroundFound = result->success;
     GroundPosition = result->final.z;
     publish ("GroundFound", GroundFound);
@@ -609,7 +616,8 @@ void OwInterface::initialize()
                  temperature_callback));
     m_rulSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
-       subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
+       subscribe("/power_system_node/remaining_useful_life", qsize,
+                 rul_callback));
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
@@ -660,7 +668,8 @@ void OwInterface::initialize()
       m_unstowStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/Unstow/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "Unstow")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Unstow")));
     }
     if (! m_stowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -680,7 +689,8 @@ void OwInterface::initialize()
       m_armMoveJointStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
             ("/ArmMoveJoint/status", qsize,
-            boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "ArmMoveJoint")));
+            boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                        "ArmMoveJoint")));
     }
     if (! m_armMoveJointsClient ->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -690,7 +700,8 @@ void OwInterface::initialize()
       m_armMoveJointsStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/ArmMoveJoints/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "ArmMoveJoints")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "ArmMoveJoints")));
     }
     if (! m_digCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -700,7 +711,8 @@ void OwInterface::initialize()
       m_digCircularStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/DigCircular/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "DigCircular")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "DigCircular")));
     }
     if (! m_digLinearClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -710,7 +722,8 @@ void OwInterface::initialize()
       m_digLinearStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/DigLinear/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "DigLinear")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "DigLinear")));
     }
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -720,7 +733,8 @@ void OwInterface::initialize()
       m_deliverStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/Deliver/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "Deliver")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Deliver")));
     }
     if (! m_discardClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -730,7 +744,8 @@ void OwInterface::initialize()
       m_discardStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/Discard/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "Discard")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Discard")));
     }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -740,7 +755,8 @@ void OwInterface::initialize()
       m_guardedMoveStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
               ("/GuardedMove/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "GuardedMove")));
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "GuardedMove")));
     }
     if (! m_identifySampleLocationClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -970,7 +986,8 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting Grind"
-            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, "
+            "parallel=%s, ground_pos=%.2f)",
             x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
 
   runAction<actionlib::SimpleActionClient<GrindAction>,

@@ -153,7 +153,8 @@ static void get_plexil_debug_config()
 
 bool OwExecutive::initialize (const string& config_file)
 {
-  // Get plan library directory from the environment variable set by the ow_plexil env-hooks
+  // Get plan library directory from the environment variable set by
+  // the ow_plexil env-hooks
   char *plexil_plan_dir_env = getenv("PLEXIL_PLAN_DIR");
   if(plexil_plan_dir_env == NULL) {
     ROS_ERROR("Environment variable $PLEXIL_PLAN_DIR is not set.");

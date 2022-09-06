@@ -161,7 +161,8 @@ class OwInterface : public PlexilInterface
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
-  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&, const std::string);
+  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
+                                 const std::string);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
