@@ -6,8 +6,8 @@ PLEXIL plans
 ============
 
 This directory contains PLEXIL plans that implement onboard autonomy for Ocean
-World landers, as supported by the OceanWATERS software testbed. All PLEXIL plans
-for the OWLAT testbed are kept in the owlat_plans subdirectory.
+World landers, as supported by the OceanWATERS software testbed. All PLEXIL
+plans for the OWLAT testbed are kept in the owlat_plans subdirectory.
 
 See ow_plexil/README.md for instructions for selecting and executing plans.
 
@@ -28,7 +28,7 @@ See the comments inside all the plans for more information.
 * EuropaMission: a variant of the above that includes some additional
   stubbed mission operations, as well as _checkpointing_, a new and
   experimental PLEXIL feature that supports robust plan resumption
-  after a reboot.  Checkpoint filers are saved to ~/.ros by default;
+  after a reboot.  Checkpoint files are saved to ~/.ros by default;
   the location can be customized in `ow-config.xml`.
 
 * Demo: Exercises a short sequence of arm and antenna operations.
