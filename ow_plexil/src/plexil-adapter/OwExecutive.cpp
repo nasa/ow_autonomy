@@ -45,7 +45,7 @@ OwExecutive* OwExecutive::instance ()
 
 bool OwExecutive::getPlanState()
 {
-	return PlexilApp->allPlansFinished();
+  return PlexilApp->allPlansFinished();
 }
 
 bool OwExecutive::runPlan (const string& filename)
@@ -75,10 +75,10 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-	// updates Exec so that multiple plans can be run even after first plan finishes
-  PlexilApp->notifyExec();
-  PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
-  PlexilApp->run();
+    // updates Exec so that multiple plans can be run even after first plan finishes
+    PlexilApp->notifyExec();
+    PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+    PlexilApp->run();
   }
   catch (const Error& e) {
     ostringstream s;

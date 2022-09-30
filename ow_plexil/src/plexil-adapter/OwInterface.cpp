@@ -98,21 +98,21 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-const string Op_GuardedMove       = "GuardedMove";
-const string Op_ArmMoveJoint      = "ArmMoveJoint";
-const string Op_ArmMoveJoints     = "ArmMoveJoints";
-const string Op_DigCircular       = "DigCircular";
-const string Op_DigLinear         = "DigLinear";
-const string Op_Deliver           = "Deliver";
-const string Op_Discard           = "Discard";
-const string Op_PanAntenna        = "PanAntenna";
-const string Op_TiltAntenna       = "TiltAntenna";
-const string Op_Grind             = "Grind";
-const string Op_Stow              = "Stow";
-const string Op_Unstow            = "Unstow";
-const string Op_TakePicture       = "TakePicture";
+const string Op_GuardedMove            = "GuardedMove";
+const string Op_ArmMoveJoint           = "ArmMoveJoint";
+const string Op_ArmMoveJoints          = "ArmMoveJoints";
+const string Op_DigCircular            = "DigCircular";
+const string Op_DigLinear              = "DigLinear";
+const string Op_Deliver                = "Deliver";
+const string Op_Discard                = "Discard";
+const string Op_PanAntenna             = "PanAntenna";
+const string Op_TiltAntenna            = "TiltAntenna";
+const string Op_Grind                  = "Grind";
+const string Op_Stow                   = "Stow";
+const string Op_Unstow                 = "Unstow";
+const string Op_TakePicture            = "TakePicture";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
-const string Op_SetLightIntensity = "SetLightIntensity";
+const string Op_SetLightIntensity      = "SetLightIntensity";
 
 
 // 1. Indices into subsequent vector
