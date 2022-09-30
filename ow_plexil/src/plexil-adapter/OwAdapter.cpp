@@ -131,6 +131,11 @@ static bool lookup (const string& state_name,
   else if (state_name == "PowerFault") {
     value_out = OwInterface::instance()->powerFault();
   }
+  else if (state_name == "ActionGoalStatus") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
   else retval = false;
 
   return retval;
@@ -140,7 +145,7 @@ static void stow (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->stow (CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 
 }
 
@@ -148,7 +153,7 @@ static void unstow (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->unstow (CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -165,7 +170,38 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  int joint;
+  double angle; // unit is radians
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValue(joint);
+  args[2].getValue(angle);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoint (relative, joint, angle,
+                                         CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *angles_vector = nullptr;
+  RealArray const *angles = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(angles);
+  //changes real array into a vector
+  angles->getContentsVector(angles_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoints (relative, *angles_vector,
+                                          CommandId);
+  acknowledge_command_sent(*cr);
 }
 
 static void grind (Command* cmd, AdapterExecInterface* intf)
@@ -182,7 +218,7 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
                                  CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void dig_circular (Command* cmd, AdapterExecInterface* intf)
@@ -198,7 +234,7 @@ static void dig_circular (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
                                        CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void dig_linear (Command* cmd, AdapterExecInterface* intf)
@@ -213,10 +249,17 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
                                      CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void deliver (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->deliver (CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void discard (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z;
   const vector<Value>& args = cmd->getArgValues();
@@ -224,8 +267,8 @@ static void deliver (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue(y);
   args[2].getValue(z);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->deliver (x, y, z, CommandId);
-  send_ack_once(*cr);
+  OwInterface::instance()->discard (x, y, z, CommandId);
+  acknowledge_command_sent(*cr);
 }
 
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -235,7 +278,7 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -245,14 +288,42 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (degrees);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panAntenna (degrees, CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->takePicture (CommandId);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
+}
+
+static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
+{
+  bool valid_args = true;
+  string side;
+  double intensity;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (side);
+  args[1].getValue (intensity);
+  if (side != "left" && side != "right") {
+    ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
+               side.c_str());
+    valid_args = false;
+  }
+  if (intensity < 0.0 || intensity > 1.0) {
+    ROS_ERROR ("set_light_intensity: intensity was %f, "
+               "should be in range [0.0 1.0]", intensity);
+    valid_args = false;
+  }
+  if (valid_args) {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->setLightIntensity (side, intensity, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+  else {
+    acknowledge_command_denied (cmd, intf);
+  }
 }
 
 static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
@@ -276,7 +347,7 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   // Contstruct a Value type vector for plexil before returning the result
   Value value_point_vector = Value(point_vector);
   intf->handleCommandReturn(cmd, value_point_vector);
-  send_ack_once(*cr);
+  acknowledge_command_sent(*cr);
 }
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
@@ -293,14 +364,19 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
+  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
+  g_configuration->registerCommandHandler("discard", discard);
   g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);
+  g_configuration->registerCommandHandler("set_light_intensity",
+                                          set_light_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;

@@ -7,6 +7,9 @@
 #include "subscriber.h"
 #include "joint_support.h"
 
+// OW - external
+#include <ow_lander/Light.h>
+
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -17,6 +20,8 @@
 #include <map>
 #include <thread>
 #include <functional>
+#include <algorithm> // for std::copy
+#include <inttypes.h> // for int64 support
 using std::set;
 using std::map;
 using std::vector;
@@ -46,6 +51,44 @@ static bool within_tolerance (double val1, double val2, double tolerance)
 }
 
 
+/////////////////// ROS Service support //////////////////////
+
+template<typename Service>
+void OwInterface::callService (ros::ServiceClient client, Service srv,
+                               string name, int id)
+{
+  // NOTE: arguments are copies because this function is called in a thread that
+  // outlives its caller.  Assumes that service is not already running; this is
+  // checked upstream.
+
+  ROS_INFO("Starting ROS service %s", name.c_str());
+  if (client.call (srv)) { // blocks
+    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
+             srv.response.message.c_str());  // make DEBUG later
+  }
+  else {
+    ROS_ERROR("Failed to call service %s", name.c_str());
+  }
+  markOperationFinished (name, id);
+}
+
+static bool check_service_client (ros::ServiceClient& client,
+                                  const string& name)
+{
+  if (! client.exists()) {
+    ROS_ERROR("Service client for %s does not exist!", name.c_str());
+    return false;
+  }
+
+  if (! client.isValid()) {
+    ROS_ERROR("Service client for %s is invalid!", name.c_str());
+    return false;
+  }
+
+  return true;
+}
+
+
 //////////////////// Lander Operation Support ////////////////////////
 
 const double PanTiltTimeout = 15.0; // seconds, made up
@@ -55,41 +98,105 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-const string Op_GuardedMove       = "GuardedMove";
-const string Op_DigCircular       = "DigCircular";
-const string Op_DigLinear         = "DigLinear";
-const string Op_Deliver           = "Deliver";
-const string Op_PanAntenna        = "PanAntenna";
-const string Op_TiltAntenna       = "TiltAntenna";
-const string Op_Grind             = "Grind";
-const string Op_Stow              = "Stow";
-const string Op_Unstow            = "Unstow";
-const string Op_TakePicture       = "TakePicture";
+const string Op_GuardedMove            = "GuardedMove";
+const string Op_ArmMoveJoint           = "ArmMoveJoint";
+const string Op_ArmMoveJoints          = "ArmMoveJoints";
+const string Op_DigCircular            = "DigCircular";
+const string Op_DigLinear              = "DigLinear";
+const string Op_Deliver                = "Deliver";
+const string Op_Discard                = "Discard";
+const string Op_PanAntenna             = "PanAntenna";
+const string Op_TiltAntenna            = "TiltAntenna";
+const string Op_Grind                  = "Grind";
+const string Op_Stow                   = "Stow";
+const string Op_Unstow                 = "Unstow";
+const string Op_TakePicture            = "TakePicture";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
+const string Op_SetLightIntensity      = "SetLightIntensity";
 
 
 // 1. Indices into subsequent vector
 //
 enum LanderOps {
   GuardedMove,
+  ArmMoveJoint,
+  ArmMoveJoints,
   DigCircular,
   DigLinear,
   Deliver,
+  Discard,
   Pan,
   Tilt,
   Grind,
   Stow,
   Unstow,
   TakePicture,
-  IdentifySampleLocation
+  IdentifySampleLocation,
+  SetLightIntensity
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver,
-  Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow, Op_Unstow, Op_TakePicture,
-  Op_IdentifySampleLocation
+  Op_GuardedMove, Op_ArmMoveJoint, Op_ArmMoveJoints, Op_DigCircular, Op_DigLinear,
+  Op_Deliver, Op_Discard, Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow,
+  Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation, Op_SetLightIntensity
 };
 
+
+///////////////////////// Action Goal Status Support /////////////////////////
+
+// Repeating GoalStatus defined in actionlib_msgs/GoalStatus.msg
+// with the addition of a NOGOAL status for when the action is not running.
+static map<int, string> GoalStatus {
+  // GoalID -> Goal Status
+
+  { -1, "NOGOAL" },
+  { 0, "PENDING" },
+  { 1, "ACTIVE" },
+  { 2, "PREEMPTED" },
+  { 3, "SUCCEEDED" },
+  { 4, "ABORTED" },
+  { 5, "REJECTED" },
+  { 6, "PREEMPTING" },
+  { 7, "RECALLING" },
+  { 8, "RECALLED" },
+  { 9, "LOST" }
+};
+
+static map<string, int> ActionGoalStatusMap {
+  // ROS action name -> Action goal status
+  // Assigning -1 as the default state
+
+  { "Stow", -1 },
+  { "Unstow", -1 },
+  { "Grind", -1 },
+  { "GuardedMove", -1 },
+  { "ArmMoveJoint", -1 },
+  { "ArmMoveJoints", -1 },
+  { "DigCircular", -1 },
+  { "DigLinear", -1 },
+  { "Deliver", -1 },
+  { "Discard", -1 }
+};
+
+static void update_action_goal_state (string action, int state)
+{
+  if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
+    if (GoalStatus.find(state) != GoalStatus.end()) {
+      
+      // update ActionGoalStatusMap only if the state is different
+      // from the current state
+      if (ActionGoalStatusMap[action] != state) {
+        ActionGoalStatusMap[action] = state;
+      }
+    }
+    else {
+      ROS_ERROR("Unknown goal status: %d", state);
+    }
+  }
+  else {
+    ROS_ERROR("Unknown action: %s", action.c_str());  
+  }
+}
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -175,23 +282,28 @@ void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
   }
 }
 
+///////////////////////// Subscriber Callbacks ///////////////////////////////
+
 void OwInterface::systemFaultMessageCallback
 (const  ow_faults_detection::SystemFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
-void OwInterface::armFaultCallback(const ow_faults_detection::ArmFaults::ConstPtr& msg)
+void OwInterface::armFaultCallback
+(const ow_faults_detection::ArmFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
-void OwInterface::powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr& msg)
+void OwInterface::powerFaultCallback
+(const ow_faults_detection::PowerFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
-void OwInterface::antennaFaultCallback(const ow_faults_detection::PTFaults::ConstPtr& msg)
+void OwInterface::antennaFaultCallback
+(const ow_faults_detection::PTFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
@@ -274,7 +386,6 @@ void OwInterface::managePanTilt (const string& opname,
   }
 }
 
-
 ///////////////////////// Antenna/Camera Support ///////////////////////////////
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
@@ -293,11 +404,13 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
     if(timeout == PointCloudTimeout){
       ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
     }
-    markOperationFinished (Op_TakePicture, m_runningOperations.at (Op_TakePicture));
+    markOperationFinished (Op_TakePicture,
+                           m_runningOperations.at (Op_TakePicture));
   }
 }
 
-void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& msg)
+void OwInterface::pointCloudCallback
+(const sensor_msgs::PointCloud2::ConstPtr& msg)
 {
   // NOTE: the received pointcloud is ignored for now.
   if (operationRunning (Op_TakePicture)) {
@@ -305,7 +418,6 @@ void OwInterface::pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr& 
     m_pointCloudRecieved = true;
   }
 }
-
 
 ///////////////////////// Power support /////////////////////////////////////
 
@@ -332,6 +444,23 @@ static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
   publish ("BatteryTemperature", BatteryTemperature);
 }
 
+//////////////////// Action Status support ////////////////////////////////
+void OwInterface::actionGoalStatusCallback
+(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
+  // Update ActionGoalStatusMap of action action_name with the status from first  
+  // goal in GoalStatusArray msg. This is based on the assumption that no action 
+  // will have more than one goal in our system.
+  
+{
+  if (msg->status_list.size() == 0) {
+    int status = -1;
+    update_action_goal_state (action_name, status);
+  }
+  else {
+    int status = msg->status_list[0].status;
+    update_action_goal_state (action_name, status);
+  }
+}
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -389,7 +518,8 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 {
   return [&] (const actionlib::SimpleClientGoalState& state,
               const T& result) {
-    ROS_INFO ("%s finished in state %s", opname.c_str(), state.toString().c_str());
+    ROS_INFO ("%s finished in state %s", opname.c_str(),
+              state.toString().c_str());
     GroundFound = result->success;
     GroundPosition = result->final.z;
     publish ("GroundFound", GroundFound);
@@ -443,7 +573,7 @@ void OwInterface::initialize()
 
   if (not initialized) {
 
-    for (auto name : LanderOpNames) {
+    for (const string& name : LanderOpNames) {
       registerLanderOperation (name);
     }
 
@@ -486,7 +616,8 @@ void OwInterface::initialize()
                  temperature_callback));
     m_rulSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
-       subscribe("/power_system_node/remaining_useful_life", qsize, rul_callback));
+       subscribe("/power_system_node/remaining_useful_life", qsize,
+                 rul_callback));
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
@@ -504,41 +635,128 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/faults/pt_faults_status", qsize,
                 &OwInterface::antennaFaultCallback, this));
-
+    // action servers and subscribers for action status
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
-    m_unstowClient = make_unique<UnstowActionClient>(Op_Unstow, true);
-    m_stowClient = make_unique<StowActionClient>(Op_Stow, true);
-    m_grindClient = make_unique<GrindActionClient>(Op_Grind, true);
-    m_digCircularClient = make_unique<DigCircularActionClient>(Op_DigCircular, true);
-    m_digLinearClient = make_unique<DigLinearActionClient>(Op_DigLinear, true);
-    m_deliverClient = make_unique<DeliverActionClient>(Op_Deliver, true);
-    m_identifySampleLocationClient = make_unique<IdentifySampleLocationActionClient>
+    m_armMoveJointClient =
+      make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
+    m_armMoveJointsClient =
+      make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
+    m_unstowClient =
+      make_unique<UnstowActionClient>(Op_Unstow, true);
+    m_stowClient =
+      make_unique<StowActionClient>(Op_Stow, true);
+    m_grindClient =
+      make_unique<GrindActionClient>(Op_Grind, true);
+    m_digCircularClient =
+      make_unique<DigCircularActionClient>(Op_DigCircular, true);
+    m_digLinearClient =
+      make_unique<DigLinearActionClient>(Op_DigLinear, true);
+    m_deliverClient =
+      make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_discardClient =
+      make_unique<DiscardActionClient>(Op_Discard, true);
+    m_identifySampleLocationClient =
+      make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
 
     if (! m_unstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
+    } 
+    else {
+      m_unstowStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/Unstow/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Unstow")));
     }
     if (! m_stowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Stow action server did not connect!");
     }
+    else {
+      m_stowStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+        ("/Stow/status", qsize,
+        boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "Stow")));
+    }
+    if (! m_armMoveJointClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS)))  {
+      ROS_ERROR ("ArmMoveJoint action server did not connect!");
+    }
+    else {
+      m_armMoveJointStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+            ("/ArmMoveJoint/status", qsize,
+            boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                        "ArmMoveJoint")));
+    }
+    if (! m_armMoveJointsClient ->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmMoveJoints action server did not connect!");
+    }
+    else {
+      m_armMoveJointsStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/ArmMoveJoints/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "ArmMoveJoints")));
+    }
     if (! m_digCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigCircular action server did not connect!");
+    }
+    else {
+      m_digCircularStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/DigCircular/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "DigCircular")));
     }
     if (! m_digLinearClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigLinear action server did not connect!");
     }
+    else {
+      m_digLinearStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/DigLinear/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "DigLinear")));
+    }
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
     }
+    else {
+      m_deliverStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/Deliver/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Deliver")));
+    }
+    if (! m_discardClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Discard action server did not connect!");
+    }
+    else {
+      m_discardStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/Discard/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "Discard")));
+    }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
+    }
+    else {
+      m_guardedMoveStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/GuardedMove/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "GuardedMove")));
     }
     if (! m_identifySampleLocationClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -582,23 +800,27 @@ void OwInterface::takePicture (int id)
   m_leftImageTriggerPublisher->publish (msg);
 }
 
-void OwInterface::deliver (double x, double y, double z, int id)
+void OwInterface::deliver (int id)
 {
   if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, x, y, z, id);
+  thread action_thread (&OwInterface::deliverAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::discard (double x, double y, double z, int id)
+{
+  if (! markOperationRunning (Op_Discard, id)) return;
+  thread action_thread (&OwInterface::discardAction, this, x, y, z, id);
   action_thread.detach();
 }
 
 
-void OwInterface::deliverAction (double x, double y, double z, int id)
+void OwInterface::deliverAction (int id)
 {
   DeliverGoal goal;
-  goal.delivery.x = x;
-  goal.delivery.y = y;
-  goal.delivery.z = z;
 
-  ROS_INFO ("Starting Deliver(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-  
+  ROS_INFO ("Starting Deliver()");
+
   runAction<actionlib::SimpleActionClient<DeliverAction>,
             DeliverGoal,
             DeliverResultConstPtr,
@@ -607,6 +829,25 @@ void OwInterface::deliverAction (double x, double y, double z, int id)
      default_action_active_cb (Op_Deliver),
      default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
      default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
+}
+
+void OwInterface::discardAction (double x, double y, double z, int id)
+{
+  DiscardGoal goal;
+  goal.discard.x = x;
+  goal.discard.y = y;
+  goal.discard.z = z;
+
+  ROS_INFO ("Starting Discard(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+
+  runAction<actionlib::SimpleActionClient<DiscardAction>,
+            DiscardGoal,
+            DiscardResultConstPtr,
+            DiscardFeedbackConstPtr>
+    (Op_Discard, m_discardClient, goal, id,
+     default_action_active_cb (Op_Discard),
+     default_action_feedback_cb<DiscardFeedbackConstPtr> (Op_Discard),
+     default_action_done_cb<DiscardResultConstPtr> (Op_Discard));
 }
 
 void OwInterface::digLinear (double x, double y,
@@ -632,9 +873,9 @@ void OwInterface::digLinearAction (double x, double y,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting DigLinear"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
-	    x, y, depth, length, ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
+            x, y, depth, length, ground_pos);
+
   runAction<actionlib::SimpleActionClient<DigLinearAction>,
             DigLinearGoal,
             DigLinearResultConstPtr,
@@ -666,9 +907,9 @@ void OwInterface::digCircularAction (double x, double y, double depth,
   goal.parallel = parallel;
 
   ROS_INFO ("Starting DigCircular"
-	    "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, (parallel ? "true" : "false"), ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
+            x, y, depth, (parallel ? "true" : "false"), ground_pos);
+
   runAction<actionlib::SimpleActionClient<DigCircularAction>,
             DigCircularGoal,
             DigCircularResultConstPtr,
@@ -745,9 +986,10 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.ground_position = ground_pos;
 
   ROS_INFO ("Starting Grind"
-	    "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, parallel=%s, ground_pos=%.2f)",
-	    x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
-  
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, "
+            "parallel=%s, ground_pos=%.2f)",
+            x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
+
   runAction<actionlib::SimpleActionClient<GrindAction>,
             GrindGoal,
             GrindResultConstPtr,
@@ -782,10 +1024,10 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
   goal.search_distance = search_dist;
 
   ROS_INFO ("Starting GuardedMove"
-	    "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
-	    "dir_z=%.2f, search_dist=%.2f)",
-	    x, y, z, dir_x, dir_y, dir_z, search_dist);
-  
+            "(x=%.2f, y=%.2f, z=%.2f, dir_x=%.2f, dir_y=%.2f,"
+            "dir_z=%.2f, search_dist=%.2f)",
+            x, y, z, dir_x, dir_y, dir_z, search_dist);
+
   runAction<actionlib::SimpleActionClient<GuardedMoveAction>,
             GuardedMoveGoal,
             GuardedMoveResultConstPtr,
@@ -794,6 +1036,77 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
      default_action_active_cb (Op_GuardedMove),
      default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
      guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
+}
+
+void OwInterface::armMoveJoint (bool relative,
+                                int joint, double angle,
+                                int id)
+{
+  if (! markOperationRunning (Op_ArmMoveJoint, id)) return;
+  thread action_thread (&OwInterface::armMoveJointAction,
+                        this, relative, joint, angle, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveJointAction (bool relative,
+                                      int joint, double angle,
+                                      int id)
+{
+  ArmMoveJointGoal goal;
+  goal.relative = relative;
+  // NOTE: goal.joint is of type int64_t.  Assignment safe, but type
+  // should be either corrected all the way up the calling tree, or
+  // the message type should be changed to int32, which is more than
+  // sufficient and easiest to work with.
+  goal.joint = joint;
+  goal.angle = angle;
+
+  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%" PRId64 ", angle=%f)",
+            goal.relative, goal.joint, goal.angle);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
+            ArmMoveJointGoal,
+            ArmMoveJointResultConstPtr,
+            ArmMoveJointFeedbackConstPtr>
+    (Op_ArmMoveJoint, m_armMoveJointClient, goal, id,
+     default_action_active_cb (Op_ArmMoveJoint),
+     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (Op_ArmMoveJoint),
+     default_action_done_cb<ArmMoveJointResultConstPtr> (Op_ArmMoveJoint));
+}
+
+void OwInterface::armMoveJoints (bool relative,
+                                 const vector<double>& angles,
+                                 int id)
+{
+  if (! markOperationRunning (Op_ArmMoveJoints, id)) return;
+  thread action_thread (&OwInterface::armMoveJointsAction,
+                        this, relative, angles, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveJointsAction (bool relative,
+                                       const vector<double>& angles,
+                                       int id)
+{
+
+  ArmMoveJointsGoal goal;
+  goal.relative = relative;
+  std::copy(angles.begin(), angles.end(), back_inserter(goal.angles));
+
+  ROS_INFO ("Starting ArmMoveJoints"
+            "(relative=%d, angles=[%f, %f, %f, %f, %f, %f])",
+            goal.relative,
+            goal.angles[0], goal.angles[1], goal.angles[2],
+            goal.angles[3], goal.angles[4], goal.angles[5]);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveJointsAction>,
+            ArmMoveJointsGoal,
+            ArmMoveJointsResultConstPtr,
+            ArmMoveJointsFeedbackConstPtr>
+    (Op_ArmMoveJoints, m_armMoveJointsClient, goal, id,
+     default_action_active_cb (Op_ArmMoveJoints),
+     default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (Op_ArmMoveJoints),
+     default_action_done_cb<ArmMoveJointsResultConstPtr> (Op_ArmMoveJoints));
 }
 
 vector<double> OwInterface::identifySampleLocation (int num_images,
@@ -844,6 +1157,25 @@ void OwInterface::identifySampleLocationAction (int num_images,
                                       ow_plexil::IdentifyLocationResultConstPtr>);
 }
 
+
+void OwInterface::setLightIntensity (const string& side, double intensity, int id)
+{
+  if (! markOperationRunning (Op_SetLightIntensity, id)) return;
+
+  ros::ServiceClient client =
+    m_genericNodeHandle->serviceClient<ow_lander::Light>("/lander/light");
+
+  if (check_service_client (client, Op_SetLightIntensity)) {
+    ow_lander::Light srv;
+    srv.request.name = side;
+    srv.request.intensity = intensity;
+    thread service_thread (&OwInterface::callService<ow_lander::Light>,
+                           this, client, srv, Op_SetLightIntensity, id);
+    service_thread.detach();
+  }
+}
+
+
 double OwInterface::getTilt () const
 {
   return m_currentTilt;
@@ -889,4 +1221,9 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 {
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
+}
+
+int OwInterface::actionGoalStatus (const string& action_name) const
+{
+  return ActionGoalStatusMap[action_name];
 }

@@ -52,9 +52,9 @@ new_command_record(PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
 // Registry of all commands currently in execution by testbed.
 extern std::map<int, std::unique_ptr<CommandRecord>> CommandRegistry;
 
-// Acknowledge a command issued by a Plexil plan, in a way that guarantees only
-// one acknowledgment (acks are not idempotent).
-void send_ack_once(CommandRecord&, bool skip=false);
+void acknowledge_command_sent(CommandRecord&, bool skip=false);
+
+void acknowledge_command_denied (PLEXIL::Command*, PLEXIL::AdapterExecInterface*);
 
 // Function to call when a command finishes execution in testbed.
 void command_status_callback (int id, bool success);

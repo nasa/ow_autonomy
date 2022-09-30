@@ -27,14 +27,14 @@ OwlatTestSequence5:
   log_info("Changing end effector tool to the Pressure Sinkage Plate.");
   LibraryCall OwlatArmSetTool(Tool=1);
 
-  // gets arm into position
+  // Initialize arm
+  LibraryCall OwlatUnstow();
   LibraryCall OwlatPositionArm();
 
   // Executes TASK_PSP
   log_info("Performing data collection of geophysical properties with TASK_PSP.");
-  LibraryCall OwlatTaskPSP(Frame=frame, Relative=relative, Point=point, 
+  LibraryCall OwlatTaskPSP(Frame=frame, Relative=relative, Point=point,
                            Normal=normal, MaxDepth=max_depth, MaxForce=max_force);
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence5");
 }
-

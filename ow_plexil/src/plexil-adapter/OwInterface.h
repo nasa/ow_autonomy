@@ -14,13 +14,17 @@
 
 // ROS Actions - OceanWATERS
 #include <actionlib/client/simple_action_client.h>
+#include <actionlib_msgs/GoalStatusArray.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
+#include <ow_lander/ArmMoveJointAction.h>
+#include <ow_lander/ArmMoveJointsAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
+#include <ow_lander/DiscardAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
 #include <control_msgs/JointControllerState.h>
@@ -45,12 +49,18 @@ using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
+using ArmMoveJointActionClient =
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
+using ArmMoveJointsActionClient = 
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using DiscardActionClient =
+  actionlib::SimpleActionClient<ow_lander::DiscardAction>;
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
@@ -73,7 +83,12 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  std::vector<double> identifySampleLocation (int num_images, 
+  void armMoveJoint (bool relative, int joint, double angle,
+                     int id);
+  void armMoveJoints (bool relative,
+                      const std::vector<double>& angles,
+                      int id); 
+  std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
   void tiltAntenna (double degrees, int id);
@@ -87,9 +102,9 @@ class OwInterface : public PlexilInterface
               bool parallel, double ground_pos, int id);
   void stow (int id);
   void unstow (int id);
-  void deliver (double x, double y, double z, int id);
-  void takePanorama (double elev_lo, double elev_hi,
-                     double lat_overlap, double vert_overlap);
+  void deliver (int id);
+  void discard (double x, double y, double z, int id);
+  void setLightIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
   double getTilt () const;
@@ -109,7 +124,12 @@ class OwInterface : public PlexilInterface
   bool hardTorqueLimitReached (const std::string& joint_name) const;
   bool softTorqueLimitReached (const std::string& joint_name) const;
 
+  int actionGoalStatus (const std::string& action_name) const;
+
  private:
+  template<typename Service>
+  void callService (ros::ServiceClient, Service, std::string name, int id);
+
   void unstowAction (int id);
   void stowAction (int id);
   void grindAction (double x, double y, double depth, double length,
@@ -117,13 +137,18 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
-  void identifySampleLocationAction (int num_images, 
+  void armMoveJointAction (bool relative, int joint, 
+                           double angle, int id);
+  void armMoveJointsAction (bool relative, const std::vector<double>& angles,
+                            int id);
+  void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
-  void deliverAction (double x, double y, double z, int id);
+  void deliverAction (int id);
+  void discardAction (double x, double y, double z, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
@@ -136,6 +161,8 @@ class OwInterface : public PlexilInterface
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
+  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
+                                 const std::string);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -192,15 +219,28 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_unstowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_stowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_grindStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_guardedMoveStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointsStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digCircularStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digLinearStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
+  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
+  std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<UnstowActionClient> m_unstowClient;
   std::unique_ptr<StowActionClient> m_stowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state - note that pan and tilt can be concurrent.

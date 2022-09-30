@@ -9,9 +9,9 @@ This directory contains the ROS package `ow_plexil`, which provides:
  - sample autonomy plans written in PLEXIL
  - code that interfaces the PLEXIL plans with the testbeds
 
-NOTE: OWLAT (Ocean Worlds Lander Autonomy Testbed) is a proprietery,
-closed-source simulator developed at JPL.  Instructions for use of this testbed
-are not provided with OceanWATERS.
+Note: OWLAT (Ocean Worlds Lander Autonomy Testbed) is a proprietery,
+closed-source simulator developed at JPL.  Instructions for use of
+this testbed are not provided with OceanWATERS.
 
 Contents
 --------
@@ -140,4 +140,4 @@ Caveats
 
 When using the OWLAT simulator, some operations, in particular the arm stow and
 unstow, may be reported as completed well before the arm has come to rest.  This
-is a known issue in the simulator and is to be fixed in its next release.
+is a known issue in the OWLAT simulator.

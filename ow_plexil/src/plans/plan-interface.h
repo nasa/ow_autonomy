@@ -17,6 +17,8 @@ Command log_error (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction SetLightIntensity (In String Side,
+				 In Real Intensity);
 LibraryAction Tilt (In Real Degrees);
 LibraryAction Pan  (In Real Degrees);
 LibraryAction Stow ();
@@ -28,6 +30,13 @@ LibraryAction GuardedMove (In Real X,
                            In Real DirY,
                            In Real DirZ,
                            In Real SearchDistance);
+
+LibraryAction ArmMoveJoint (In Boolean Relative,
+                            In Integer Joint,
+                            In Real Angle);
+
+LibraryAction ArmMoveJoints (In Boolean Relative,
+                             In Real Angles[6]);
 
 LibraryAction Grind (In Real X,
                      In Real Y,
@@ -48,7 +57,9 @@ LibraryAction DigLinear (In Real X,
                          In Real Length,
                          In Real GroundPos);
 
-LibraryAction Deliver (In Real X,
+LibraryAction Deliver ();
+
+LibraryAction Discard (In Real X,
                        In Real Y,
                        In Real Z);
 
@@ -79,6 +90,9 @@ Real    Lookup TiltDegrees;
 // defined in OwInterface.cpp.  Generally not needed, but supports more
 // fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
+
+// Query the goal status of the ROS action corresponding to a given library action
+Integer Lookup ActionGoalStatus (String action_name);
 
 //////// PLEXIL Utilities
 
