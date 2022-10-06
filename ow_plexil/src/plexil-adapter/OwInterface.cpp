@@ -285,7 +285,7 @@ void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
 
 void OwInterface::systemFaultMessageCallback
-(const  ow_faults_detection::SystemFaults::ConstPtr& msg)
+(const  owl_msgs::SystemFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
@@ -621,7 +621,7 @@ void OwInterface::initialize()
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
-       subscribe("/faults/system_faults_status", qsize,
+       subscribe("/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this));
     m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->

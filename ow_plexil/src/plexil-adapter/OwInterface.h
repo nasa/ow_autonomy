@@ -34,7 +34,7 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <ow_faults_detection/SystemFaults.h>
+#include <owl_msgs/SystemFaults.h>
 #include <ow_faults_detection/ArmFaults.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
@@ -155,7 +155,7 @@ class OwInterface : public PlexilInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
-  void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaults::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
@@ -176,9 +176,17 @@ class OwInterface : public PlexilInterface
 
   FaultMap64 m_systemErrors =
   {
+    {"NO_FAULT", std::make_pair(0,false)},
+    {"SYSTEM", std::make_pair(1,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(2,false)},
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(8,false)},
+    {"CAMERA_GOAL_ERROR", std::make_pair(16,false)},
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(32,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(64,false)}
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(128,false)}
+    {"LANDER_EXECUTION_ERROR", std::make_pair(256,false)}
     {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
-    {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
   };
 
   FaultMap32 m_armErrors = {
