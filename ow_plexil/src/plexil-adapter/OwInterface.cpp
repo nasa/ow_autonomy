@@ -291,19 +291,19 @@ void OwInterface::systemFaultMessageCallback
 }
 
 void OwInterface::armFaultCallback
-(const ow_faults_detection::ArmFaults::ConstPtr& msg)
+(const owl_msgs::ArmFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
 void OwInterface::powerFaultCallback
-(const ow_faults_detection::PowerFaults::ConstPtr& msg)
+(const owl_msgs::PowerFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
 void OwInterface::antennaFaultCallback
-(const ow_faults_detection::PTFaults::ConstPtr& msg)
+(const owl_msgs::PTFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
