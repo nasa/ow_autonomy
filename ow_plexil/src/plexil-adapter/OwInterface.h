@@ -34,7 +34,7 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <owl_msgs/SystemFaults.h>
+#include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaults.h>
 #include <owl_msgs/PowerFaults.h>
 #include <owl_msgs/PTFaults.h>
@@ -155,7 +155,7 @@ class OwInterface : public PlexilInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
-  void systemFaultMessageCallback (const owl_msgs::SystemFaults::ConstPtr&);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaults::ConstPtr&);
   void powerFaultCallback (const owl_msgs::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const owl_msgs::PTFaults::ConstPtr&);

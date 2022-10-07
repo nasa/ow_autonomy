@@ -285,7 +285,7 @@ void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
 
 void OwInterface::systemFaultMessageCallback
-(const  owl_msgs::SystemFaults::ConstPtr& msg)
+(const  owl_msgs::SystemFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
