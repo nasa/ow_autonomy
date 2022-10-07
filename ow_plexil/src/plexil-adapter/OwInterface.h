@@ -183,10 +183,10 @@ class OwInterface : public PlexilInterface
     {"TASK_GOAL_ERROR", std::make_pair(8,false)},
     {"CAMERA_GOAL_ERROR", std::make_pair(16,false)},
     {"CAMERA_EXECUTION_ERROR", std::make_pair(32,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(64,false)}
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(128,false)}
-    {"LANDER_EXECUTION_ERROR", std::make_pair(256,false)}
-    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(64,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(128,false)},
+    {"LANDER_EXECUTION_ERROR", std::make_pair(256,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)}
   };
 
   FaultMap32 m_armErrors = {
