@@ -285,25 +285,25 @@ void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
 
 void OwInterface::systemFaultMessageCallback
-(const  owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+(const  ow_faults_detection::SystemFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
 void OwInterface::armFaultCallback
-(const owl_msgs::ArmFaults::ConstPtr& msg)
+(const ow_faults_detection::ArmFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
 void OwInterface::powerFaultCallback
-(const owl_msgs::PowerFaults::ConstPtr& msg)
+(const ow_faults_detection::PowerFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
 void OwInterface::antennaFaultCallback
-(const owl_msgs::PTFaults::ConstPtr& msg)
+(const ow_faults_detection::PTFaults::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
