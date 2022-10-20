@@ -35,7 +35,7 @@
 #include <string>
 
 #include <ow_faults_detection/SystemFaults.h>
-#include <ow_faults_detection/ArmFaults.h>
+#include <owl_msgs/ArmFaultsStatus.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
 
@@ -156,7 +156,7 @@ class OwInterface : public PlexilInterface
                       double current, double goal,
                       const ros::Time& start);
   void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
-  void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
+  void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
