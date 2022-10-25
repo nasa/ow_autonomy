@@ -182,7 +182,7 @@ static void update_action_goal_state (string action, int state)
 {
   if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
     if (GoalStatus.find(state) != GoalStatus.end()) {
-      
+
       // update ActionGoalStatusMap only if the state is different
       // from the current state
       if (ActionGoalStatusMap[action] != state) {
@@ -194,7 +194,7 @@ static void update_action_goal_state (string action, int state)
     }
   }
   else {
-    ROS_ERROR("Unknown action: %s", action.c_str());  
+    ROS_ERROR("Unknown action: %s", action.c_str());
   }
 }
 
@@ -314,7 +314,21 @@ void OwInterface::jointStatesCallback
   // Publish all joint information for visibility to PLEXIL and handle any
   // joint-related faults.
 
-  for (int i = 0; i < JointMap.size(); i++) {
+  // Assume the size of the 'name' array is the size of all arrays in
+  // JointStates (this may be true by definition).  Also assuming a
+  // C++ vector or array under the hood, hence using size().
+  size_t msg_size = msg->name.size();
+
+  if (msg_size != JointMap.size()) {
+    ROS_ERROR_ONCE ("OwInterface::jointStatesCallback: "
+                    "Number of actual joints, %zu, "
+                    "doesn't match number of known joints, %zu. "
+                    "This should never happen.",
+                    msg_size, JointMap.size());
+    return;
+  }
+
+  for (auto i = 0; i < JointMap.size(); i++) {
     string ros_name = msg->name[i];
     if (JointMap.find (ros_name) != JointMap.end()) {
       Joint joint = JointMap[ros_name];
@@ -447,10 +461,10 @@ static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
 //////////////////// Action Status support ////////////////////////////////
 void OwInterface::actionGoalStatusCallback
 (const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
-  // Update ActionGoalStatusMap of action action_name with the status from first  
-  // goal in GoalStatusArray msg. This is based on the assumption that no action 
+  // Update ActionGoalStatusMap of action action_name with the status from first
+  // goal in GoalStatusArray msg. This is based on the assumption that no action
   // will have more than one goal in our system.
-  
+
 {
   if (msg->status_list.size() == 0) {
     int status = -1;
@@ -663,7 +677,7 @@ void OwInterface::initialize()
     if (! m_unstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
-    } 
+    }
     else {
       m_unstowStatusSubscriber = make_unique<ros::Subscriber>
         (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
