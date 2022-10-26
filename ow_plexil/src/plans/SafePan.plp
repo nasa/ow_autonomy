@@ -1,0 +1,27 @@
+// Pan in 15 degree increments as long as no antenna fault is present.
+// If an antenna fault occurs, pause until the fault is removed.  This
+// plan will run for the duration specified within.
+
+Boolean Lookup AntennaFault;
+Real    Lookup PanDegrees;
+Real    Lookup time;
+LibraryAction Pan  (In Real Degrees);
+
+SafePan:
+{
+  Real start_time;
+  Real duration = 60;
+
+  start_time = Lookup(time);
+  
+  DoPan:
+  {
+    Real angle = 0;
+
+    RepeatCondition Lookup(time) < start_time + duration;
+    StartCondition !Lookup(AntennaFault);
+
+    angle = (Lookup(PanDegrees) + 15) mod 180;
+    LibraryCall Pan (Degrees=angle);
+  }
+}

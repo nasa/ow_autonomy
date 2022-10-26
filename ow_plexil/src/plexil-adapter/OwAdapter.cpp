@@ -30,6 +30,10 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
+const float PanMinDegrees  = -183.346; // -3.2 radians
+const float PanMaxDegrees  =  183.346; //  3.2 radians
+const float TiltMinDegrees = -90.012;  // -pi/2 radians
+const float TiltMaxDegrees =  90.012;  //  pi/2 radians
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -276,9 +280,17 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < TiltMinDegrees || degrees > TiltMaxDegrees) {
+    ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, TiltMinDegrees, TiltMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tiltAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -286,9 +298,17 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < PanMinDegrees || degrees > PanMaxDegrees) {
+    ROS_WARN ("Requested pan %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, PanMinDegrees, PanMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)

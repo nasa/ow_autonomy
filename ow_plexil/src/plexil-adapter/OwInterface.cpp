@@ -91,7 +91,7 @@ static bool check_service_client (ros::ServiceClient& client,
 
 //////////////////// Lander Operation Support ////////////////////////
 
-const double PanTiltTimeout = 15.0; // seconds, made up
+const double PanTiltTimeout = 20.0; // seconds, made up
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -308,6 +308,19 @@ void OwInterface::antennaFaultCallback
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
+static double normalize_degrees (double angle)
+{
+  static double pi_degrees = R2D * M_PI;
+  static double tolerance_degrees = R2D * 0.01; // matching utils.py
+  while (angle > (pi_degrees + tolerance_degrees)) {
+    angle -= 2.0 * pi_degrees;
+  }
+  while (angle < -(pi_degrees + tolerance_degrees)) {
+    angle += 2.0 * pi_degrees;
+  }
+  return angle;
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -336,12 +349,12 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        m_currentPan = position * R2D;
+        m_currentPan = normalize_degrees (position * R2D);
         managePanTilt (Op_PanAntenna, m_currentPan, m_goalPan, m_panStart);
         publish ("PanDegrees", m_currentPan);
      }
       else if (joint == Joint::antenna_tilt) {
-        m_currentTilt = position * R2D;
+        m_currentTilt = normalize_degrees (position * R2D);
         managePanTilt (Op_TiltAntenna, m_currentTilt, m_goalTilt, m_tiltStart);
         publish ("TiltDegrees", m_currentTilt);
       }
@@ -366,6 +379,7 @@ void OwInterface::managePanTilt (const string& opname,
 
   int id = m_runningOperations.at (opname);
 
+ /*
   //if position is over 360 we want to bring it back within the
   //-360 to 360 range to check if goal position has been reached.
   if(fabs(current) > 360){
@@ -385,6 +399,7 @@ void OwInterface::managePanTilt (const string& opname,
   else if(current < 0 && goal > 0){
     current = current + 360;
   }
+ */
 
   // Antenna states of interest,
   bool reached = within_tolerance (current, goal, DegreeTolerance);
