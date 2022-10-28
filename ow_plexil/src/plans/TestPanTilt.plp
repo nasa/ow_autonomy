@@ -29,8 +29,6 @@ TestPanTilt:
     }
     endif;
 
-    //check if resulting position is within tolerance
-    //    if(abs(current - Goal) <= tolerance){
     if (Lookup (AnglesEquivalent(current, Goal, tolerance))) {
       log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
       TestSuccess = TestSuccess + 1;

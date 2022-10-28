@@ -86,7 +86,7 @@ static bool check_service_client (ros::ServiceClient& client,
 
 //////////////////// Lander Operation Support ////////////////////////
 
-const double PanTiltTimeout = 30.0; // seconds, made up
+const double PanTiltTimeout = 30.0; // seconds, matches simulator
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -306,11 +306,10 @@ void OwInterface::antennaFaultCallback
 static double normalize_degrees (double angle)
 {
   static double pi_degrees = R2D * M_PI;
-  static double tolerance_degrees = R2D * 0.01; // matching utils.py
-  while (angle > (pi_degrees + tolerance_degrees)) {
+  while (angle > pi_degrees) {
     angle -= 2.0 * pi_degrees;
   }
-  while (angle < -(pi_degrees + tolerance_degrees)) {
+  while (angle < -pi_degrees) {
     angle += 2.0 * pi_degrees;
   }
   return angle;
