@@ -20,18 +20,18 @@ TestAntennaMovement: CheckedSequence
   LibraryCall TestPanTilt(Goal = 183, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = -183, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = -45, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 10, Action = "Pan", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
 
   // Tilt tests
   LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 89.9, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -89.9, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 90, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = -90, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount);
 
   //Checks if all tests have succeeded
   if (TestCount == 13 ) {

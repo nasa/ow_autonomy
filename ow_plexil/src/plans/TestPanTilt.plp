@@ -6,13 +6,12 @@
 
 #include "plan-interface.h"
 
-TestPanTilt: Sequence
+TestPanTilt:
 {
 
     In Real Goal;
     In String Action;
     InOut Integer TestSuccess;
-    //    Real tolerance = 0.4;
     Real tolerance = 2.865;  // matches 0.05R used in simulator
     Real current = 0;
 
@@ -31,9 +30,9 @@ TestPanTilt: Sequence
     endif;
 
     //check if resulting position is within tolerance
-    if(abs(current - Goal) <= tolerance){
+    //    if(abs(current - Goal) <= tolerance){
+    if (Lookup (AnglesEquivalent(current, Goal, tolerance))) {
       log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
-      //if we succeed we increment the TestSuccess
       TestSuccess = TestSuccess + 1;
     }
     else{

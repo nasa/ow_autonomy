@@ -32,8 +32,8 @@ using std::unique_ptr;
 
 const float PanMinDegrees  = -183.346; // -3.2 radians
 const float PanMaxDegrees  =  183.346; //  3.2 radians
-const float TiltMinDegrees = -90.012;  // -pi/2 radians
-const float TiltMaxDegrees =  90.012;  //  pi/2 radians
+const float TiltMinDegrees = -90.0;    // -pi/2 radians
+const float TiltMaxDegrees =  90.0;    //  pi/2 radians
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -139,6 +139,13 @@ static bool lookup (const string& state_name,
     string s;
     args[0].getValue(s);
     value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
+  else if (state_name == "AnglesEquivalent") {
+    double deg1, deg2, tolerance;
+    args[0].getValue(deg1);
+    args[1].getValue(deg2);
+    args[2].getValue(tolerance);
+    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
   }
   else retval = false;
 
