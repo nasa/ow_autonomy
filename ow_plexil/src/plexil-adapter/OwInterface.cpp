@@ -32,18 +32,18 @@ using std::shared_ptr;
 using std::make_unique;
 
 // C
-#include <cmath>  // for M_PI and fabs
+#include <math.h>  // for M_PI, fabs, fmod
 
 using namespace ow_lander;
 
 //////////////////// Utilities ////////////////////////
 
 // Degree/Radian
-const double D2R = M_PI / 180.0 ;
-const double R2D = 180.0 / M_PI ;
+constexpr double D2R = M_PI / 180.0 ;
+constexpr double R2D = 180.0 / M_PI ;
 
 const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
-const double VelocityTolerance = 0.01; // made up, unitless
+const double VelocityTolerance       = 0.01;  // made up, unitless
 
 
 /////////////////// ROS Service support //////////////////////
@@ -305,14 +305,10 @@ void OwInterface::antennaFaultCallback
 
 static double normalize_degrees (double angle)
 {
-  static double pi_degrees = R2D * M_PI;
-  while (angle > pi_degrees) {
-    angle -= 2.0 * pi_degrees;
-  }
-  while (angle < -pi_degrees) {
-    angle += 2.0 * pi_degrees;
-  }
-  return angle;
+  static double pi = R2D * M_PI;
+  static double tau = pi * 2.0;
+
+  return fmod(angle + pi, tau) - pi;
 }
 
 void OwInterface::jointStatesCallback
@@ -343,12 +339,12 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        m_currentPan = normalize_degrees (position * R2D);
+        m_currentPan = position * R2D;
         managePanTilt (Op_PanAntenna, m_currentPan, m_goalPan, m_panStart);
         publish ("PanDegrees", m_currentPan);
      }
       else if (joint == Joint::antenna_tilt) {
-        m_currentTilt = normalize_degrees (position * R2D);
+        m_currentTilt = position * R2D;
         managePanTilt (Op_TiltAntenna, m_currentTilt, m_goalTilt, m_tiltStart);
         publish ("TiltDegrees", m_currentTilt);
       }
@@ -391,9 +387,7 @@ void OwInterface::managePanTilt (const string& opname,
 
 bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
 {
-  return (fabs(deg1 - deg2) <= tolerance ||
-          fabs((deg1 - 360) - deg2) <= tolerance ||
-          fabs((deg1 + 360) - deg2) <= tolerance);
+  return normalize_degrees(fabs(deg1 - deg2)) <= tolerance;
 }
 
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
