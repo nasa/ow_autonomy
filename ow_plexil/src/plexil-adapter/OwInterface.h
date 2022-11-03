@@ -176,28 +176,30 @@ class OwInterface : public PlexilInterface
 
   FaultMap64 m_systemErrors =
   {
-    {"NO_FAULT", std::make_pair(0,false)},
-    {"SYSTEM", std::make_pair(1,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(2,false)},
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(8,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(16,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(32,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(64,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(128,false)},
-    {"LANDER_EXECUTION_ERROR", std::make_pair(256,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)}
+    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
+    {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
   };
 
-  FaultMap32 m_armErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
-    {"COLLISION_ERROR", std::make_pair(3, false)},
-    {"ESTOP_ERROR", std::make_pair(4, false)},
-    {"POSITION_LIMIT_ERROR", std::make_pair(5, false)},
-    {"TORQUE_LIMIT_ERROR", std::make_pair(6, false)},
-    {"VELOCITY_LIMIT_ERROR", std::make_pair(7, false)},
-    {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
+  FaultMap64 m_armErrors = {
+    {"HARDWARE", std::make_pair(
+        owl_msgs::ArmFaultsStatus::HARDWARE, false)},
+    {"TRAJECTORY_GENERATION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::TRAJECTORY_GENERATION, false)},
+    {"COLLISION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::COLLISION, false)},
+    {"E_STOP", std::make_pair(
+        owl_msgs::ArmFaultsStatus::E_STOP, false)},
+    {"POSITION_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::POSITION_LIMIT, false)},
+    {"JOINT_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
+    {"VELOCITY_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
+    {"NO_FORCE_DATA_ERROR", std::make_pair(
+        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA_ERROR, false)},
+    {"FORCE_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
   FaultMap32 m_powerErrors = {
