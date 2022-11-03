@@ -175,16 +175,26 @@ class OwInterface : public PlexilInterface
   // System level faults:
 
   FaultMap64 m_systemErrors = {
-    {"SYSTEM", std::make_pair(1,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(2,false)},
-    {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(8,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(16,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(32,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(64,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(128,false)},
-    {"LANDER_EXECUTION_ERROR", std::make_pair(256,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)}
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAMERA_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"LANDER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
   FaultMap32 m_armErrors = {
