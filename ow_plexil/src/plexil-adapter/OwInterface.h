@@ -174,9 +174,7 @@ class OwInterface : public PlexilInterface
 
   // System level faults:
 
-  FaultMap64 m_systemErrors =
-  {
-    {"NONE", std::make_pair(0,false)},
+  FaultMap64 m_systemErrors = {
     {"SYSTEM", std::make_pair(1,false)},
     {"ARM_GOAL_ERROR", std::make_pair(2,false)},
     {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
