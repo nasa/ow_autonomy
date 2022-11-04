@@ -32,8 +32,9 @@ using std::unique_ptr;
 
 const float PanMinDegrees  = -183.346; // -3.2 radians
 const float PanMaxDegrees  =  183.346; //  3.2 radians
-const float TiltMinDegrees = -90.0;    // -pi/2 radians
-const float TiltMaxDegrees =  90.0;    //  pi/2 radians
+const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
+const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
+const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -287,7 +288,8 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (degrees < TiltMinDegrees || degrees > TiltMaxDegrees) {
+  if (degrees < TiltMinDegrees - PanTiltInputTolerance ||
+      degrees > TiltMaxDegrees + PanTiltInputTolerance) {
     ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
               "rejecting PLEXIL command.",
               degrees, TiltMinDegrees, TiltMaxDegrees);
@@ -305,7 +307,8 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (degrees < PanMinDegrees || degrees > PanMaxDegrees) {
+  if (degrees < PanMinDegrees - PanTiltInputTolerance ||
+      degrees > PanMaxDegrees + PanTiltInputTolerance) {
     ROS_WARN ("Requested pan %f out of valid range [%f %f], "
               "rejecting PLEXIL command.",
               degrees, PanMinDegrees, PanMaxDegrees);

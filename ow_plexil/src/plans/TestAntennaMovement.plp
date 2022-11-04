@@ -17,8 +17,8 @@ TestAntennaMovement: CheckedSequence
   LibraryCall Pan(Degrees = 0);
 
   // Pan tests
-  LibraryCall TestPanTilt(Goal = 183, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -183, Action = "Pan", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 183.346, Action = "Pan", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = -183.346, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = -45, Action = "Pan", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 10, Action = "Pan", TestSuccess = TestCount);
@@ -28,8 +28,8 @@ TestAntennaMovement: CheckedSequence
   LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 90, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -90, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 89.38, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = -89.38, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", TestSuccess = TestCount);
   LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount);
 

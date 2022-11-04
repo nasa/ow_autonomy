@@ -32,7 +32,7 @@ using std::shared_ptr;
 using std::make_unique;
 
 // C
-#include <math.h>  // for M_PI, fabs, fmod
+#include <cmath>  // for M_PI, fabs, fmod
 
 using namespace ow_lander;
 
