@@ -621,7 +621,7 @@ void OwInterface::initialize()
     // subscribers for fault messages
     m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
-       subscribe("/system_faults_status", qsize,
+       subscribe("/faults/system_faults_status", qsize,
                 &OwInterface::systemFaultMessageCallback, this));
     m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
