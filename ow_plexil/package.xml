@@ -12,6 +12,7 @@
   <depend>roslib</depend>
   <depend>ow_lander</depend>
   <depend>ow_faults_detection</depend>
+  <depend>owl_msgs</depend>
   <depend>actionlib_msgs</depend>
   <depend>actionlib</depend>
   <depend>std_msgs</depend>
