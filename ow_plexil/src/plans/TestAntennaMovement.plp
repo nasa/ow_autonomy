@@ -6,38 +6,40 @@
 
 #include "plan-interface.h"
 
-LibraryAction TestPanTilt (In Real Goal, In Real Action, InOut Integer TestSuccess);
+LibraryAction TestPanTilt (In Real Goal, In Real Action,
+                           InOut Integer Count, InOut Integer Wins);
 
 TestAntennaMovement: CheckedSequence
 {
-  Integer TestCount = 0;
+  Integer Count = 1;
+  Integer Wins = 0;
 
   // Initial location
   LibraryCall Tilt(Degrees = 0);
   LibraryCall Pan(Degrees = 0);
 
   // Pan tests
-  LibraryCall TestPanTilt(Goal = 183.346, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -183.346, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -45, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 10, Action = "Pan", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 183.346, Action = "Pan", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = -183.346, Action = "Pan", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = -45, Action = "Pan", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 10, Action = "Pan", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 0, Action = "Pan", Count = Count, Wins = Wins);
 
   // Tilt tests
-  LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 89.38, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = -89.38, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", TestSuccess = TestCount);
-  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", TestSuccess = TestCount);
+  LibraryCall TestPanTilt(Goal = 10, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 20, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = -10, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 89.38, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = -89.38, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", Count = Count, Wins = Wins);
 
   //Checks if all tests have succeeded
-  if (TestCount == 13 ) {
+  if (Wins == 13 ) {
     log_info("TestAntennaMovement: SUCCEEDED, 13/13 Tests Succeeded");
   }
   else {
-    log_error("TestAntennaMovement: FAILED, ", TestCount, "/13 Tests Succeeded");
+    log_error("TestAntennaMovement: FAILED, ", Wins, "/13 Tests Succeeded");
   }
 }

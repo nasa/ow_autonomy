@@ -8,15 +8,16 @@
 
 TestPanTilt:
 {
-
     In Real Goal;
     In String Action;
-    InOut Integer TestSuccess;
+    InOut Integer Count;
+    InOut Integer Wins;
+    
     Real tolerance = 2.865;  // matches 0.05R used in simulator
     Real current = 0;
 
-    //output test number
-    log_info("TEST: ", TestSuccess+1);
+    log_info("TEST: ", Count);
+    Count = Count + 1;
 
     //check for which command was passed
     if(Action == "Pan" || Action == "pan"){
@@ -31,7 +32,7 @@ TestPanTilt:
 
     if (Lookup (AnglesEquivalent(current, Goal, tolerance))) {
       log_info(Action, ": SUCCEEDED", " Goal: ", Goal, " Actual: ", current);
-      TestSuccess = TestSuccess + 1;
+      Wins = Wins + 1;
     }
     else{
       log_error(Action, ": FAILED", " Goal: ", Goal, " Actual: ", current);
