@@ -307,8 +307,9 @@ static double normalize_degrees (double angle)
 {
   static double pi = R2D * M_PI;
   static double tau = pi * 2.0;
-
-  return fmod(angle + pi, tau) - pi;
+  double x = fmod(angle + pi, tau);
+  if (x < 0) x += tau;
+  return x - pi;
 }
 
 void OwInterface::jointStatesCallback
