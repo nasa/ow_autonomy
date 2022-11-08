@@ -34,7 +34,7 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <ow_faults_detection/SystemFaults.h>
+#include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
@@ -155,7 +155,7 @@ class OwInterface : public PlexilInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
-  void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
@@ -174,11 +174,27 @@ class OwInterface : public PlexilInterface
 
   // System level faults:
 
-  FaultMap64 m_systemErrors =
-  {
-    {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
-    {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
+  FaultMap64 m_systemErrors = {
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAMERA_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"LANDER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
   FaultMap64 m_armErrors = {
@@ -196,8 +212,8 @@ class OwInterface : public PlexilInterface
         owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
     {"VELOCITY_LIMIT", std::make_pair(
         owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
-    {"NO_FORCE_DATA_ERROR", std::make_pair(
-        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA_ERROR, false)},
+    {"NO_FORCE_DATA", std::make_pair(
+        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA, false)},
     {"FORCE_TORQUE_LIMIT", std::make_pair(
         owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
