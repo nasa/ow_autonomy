@@ -51,7 +51,7 @@ using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
-using ArmMoveJointsActionClient = 
+using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
@@ -87,7 +87,7 @@ class OwInterface : public PlexilInterface
                      int id);
   void armMoveJoints (bool relative,
                       const std::vector<double>& angles,
-                      int id); 
+                      int id);
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
@@ -120,9 +120,9 @@ class OwInterface : public PlexilInterface
   bool   antennaFault () const;
   bool   armFault () const;
   bool   powerFault () const;
-
-  bool hardTorqueLimitReached (const std::string& joint_name) const;
-  bool softTorqueLimitReached (const std::string& joint_name) const;
+  bool   anglesEquivalent (double deg1, double deg2, double tolerance);
+  bool   hardTorqueLimitReached (const std::string& joint_name) const;
+  bool   softTorqueLimitReached (const std::string& joint_name) const;
 
   int actionGoalStatus (const std::string& action_name) const;
 
@@ -137,7 +137,7 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
-  void armMoveJointAction (bool relative, int joint, 
+  void armMoveJointAction (bool relative, int joint,
                            double angle, int id);
   void armMoveJointsAction (bool relative, const std::vector<double>& angles,
                             int id);
