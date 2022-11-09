@@ -11,7 +11,7 @@ LibraryAction TestPanTilt (In Real Goal, In Real Action,
 
 TestAntennaMovement: CheckedSequence
 {
-  Integer Count = 1;
+  Integer Count = 0;
   Integer Wins = 0;
 
   // Initial location
@@ -35,11 +35,13 @@ TestAntennaMovement: CheckedSequence
   LibraryCall TestPanTilt(Goal = 45, Action = "Tilt", Count = Count, Wins = Wins);
   LibraryCall TestPanTilt(Goal = 0, Action = "Tilt", Count = Count, Wins = Wins);
 
-  //Checks if all tests have succeeded
-  if (Wins == 13 ) {
-    log_info("TestAntennaMovement: SUCCEEDED, 13/13 Tests Succeeded");
+  if (Wins == Count ) {
+    log_info ("TestAntennaMovement: SUCCEEDED, ", Count, "/", Count,
+              " tests passed");
   }
   else {
-    log_error("TestAntennaMovement: FAILED, ", Wins, "/13 Tests Succeeded");
+    log_error ("TestAntennaMovement: FAILED, ", Wins, "/", Count,
+               " tests passed");
   }
+  endif
 }

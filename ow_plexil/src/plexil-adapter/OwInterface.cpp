@@ -388,7 +388,7 @@ void OwInterface::managePanTilt (const string& opname,
 
 bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
 {
-  return normalize_degrees(fabs(deg1 - deg2)) <= tolerance;
+  return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
 
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)

@@ -12,12 +12,12 @@ TestPanTilt:
     In String Action;
     InOut Integer Count;
     InOut Integer Wins;
-    
+
     Real tolerance = 2.865;  // matches 0.05R used in simulator
     Real current = 0;
 
-    log_info("TEST: ", Count);
     Count = Count + 1;
+    log_info("TEST: ", Count);
 
     //check for which command was passed
     if(Action == "Pan" || Action == "pan"){
