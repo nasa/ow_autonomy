@@ -30,6 +30,11 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
+const float PanMinDegrees  = -183.346; // -3.2 radians
+const float PanMaxDegrees  =  183.346; //  3.2 radians
+const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
+const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
+const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -135,6 +140,13 @@ static bool lookup (const string& state_name,
     string s;
     args[0].getValue(s);
     value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
+  else if (state_name == "AnglesEquivalent") {
+    double deg1, deg2, tolerance;
+    args[0].getValue(deg1);
+    args[1].getValue(deg2);
+    args[2].getValue(tolerance);
+    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
   }
   else retval = false;
 
@@ -276,9 +288,18 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < TiltMinDegrees - PanTiltInputTolerance ||
+      degrees > TiltMaxDegrees + PanTiltInputTolerance) {
+    ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, TiltMinDegrees, TiltMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tiltAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -286,9 +307,18 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < PanMinDegrees - PanTiltInputTolerance ||
+      degrees > PanMaxDegrees + PanTiltInputTolerance) {
+    ROS_WARN ("Requested pan %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, PanMinDegrees, PanMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)

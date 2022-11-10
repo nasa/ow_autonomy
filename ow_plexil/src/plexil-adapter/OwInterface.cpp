@@ -32,23 +32,18 @@ using std::shared_ptr;
 using std::make_unique;
 
 // C
-#include <cmath>  // for M_PI and fabs
+#include <cmath>  // for M_PI, fabs, fmod
 
 using namespace ow_lander;
 
 //////////////////// Utilities ////////////////////////
 
 // Degree/Radian
-const double D2R = M_PI / 180.0 ;
-const double R2D = 180.0 / M_PI ;
+constexpr double D2R = M_PI / 180.0 ;
+constexpr double R2D = 180.0 / M_PI ;
 
-const double DegreeTolerance = 0.4;    // made up, degees
-const double VelocityTolerance = 0.01; // made up, unitless
-
-static bool within_tolerance (double val1, double val2, double tolerance)
-{
-  return fabs (val1 - val2) <= tolerance;
-}
+const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
+const double VelocityTolerance       = 0.01;  // made up, unitless
 
 
 /////////////////// ROS Service support //////////////////////
@@ -91,7 +86,7 @@ static bool check_service_client (ros::ServiceClient& client,
 
 //////////////////// Lander Operation Support ////////////////////////
 
-const double PanTiltTimeout = 15.0; // seconds, made up
+const double PanTiltTimeout = 30.0; // seconds, matches simulator
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -308,6 +303,15 @@ void OwInterface::antennaFaultCallback
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
+static double normalize_degrees (double angle)
+{
+  static double pi = R2D * M_PI;
+  static double tau = pi * 2.0;
+  double x = fmod(angle + pi, tau);
+  if (x < 0) x += tau;
+  return x - pi;
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -366,28 +370,8 @@ void OwInterface::managePanTilt (const string& opname,
 
   int id = m_runningOperations.at (opname);
 
-  //if position is over 360 we want to bring it back within the
-  //-360 to 360 range to check if goal position has been reached.
-  if(fabs(current) > 360){
-    if(current < 0){
-      current = fmod(fabs(current),360.0)*-1;
-    }
-    else{
-      current = fmod(fabs(current), 360.0);
-    }
-  }
-
-  // We can't guarantee which way the antenna will move, so we have to check if
-  // the current angle is equivalent.Ex:-180 degrees == 180 degrees.
-  if(current > 0 && goal < 0){
-    current = current - 360;
-  }
-  else if(current < 0 && goal > 0){
-    current = current + 360;
-  }
-
   // Antenna states of interest,
-  bool reached = within_tolerance (current, goal, DegreeTolerance);
+  bool reached = anglesEquivalent (current, goal, PanTiltToleranceDegrees);
   bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
 
   if (reached || expired) {
@@ -401,6 +385,12 @@ void OwInterface::managePanTilt (const string& opname,
 }
 
 ///////////////////////// Antenna/Camera Support ///////////////////////////////
+
+bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
+{
+  return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
+}
+
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
