@@ -23,5 +23,5 @@ int main(int argc, char* argv[])
   terminal_interface.initialize();
   terminal_interface.start(plan_given);
   ros::spin();
-  return 0;  // We never actually get here!
+  return 0;
 }

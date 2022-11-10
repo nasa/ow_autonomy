@@ -32,6 +32,13 @@ LibraryAction GuardedMove (In Real X,
                            In Real DirZ,
                            In Real SearchDistance);
 
+LibraryAction ArmMoveJoint (In Boolean Relative,
+                            In Integer Joint,
+                            In Real Angle);
+
+LibraryAction ArmMoveJoints (In Boolean Relative,
+                             In Real Angles[6]);
+
 LibraryAction Grind (In Real X,
                      In Real Y,
                      In Real Depth,
@@ -84,6 +91,11 @@ Real    Lookup TiltDegrees;
 // defined in OwInterface.cpp.  Generally not needed, but supports more
 // fine-grained control of concurrency.
 Boolean Lookup Running (String operation_name);
+
+// Query the goal status of the ROS action corresponding to a given library action
+Integer Lookup ActionGoalStatus (String action_name);
+
+Boolean Lookup AnglesEquivalent (Real deg1, Real deg2, Real tolerance);
 
 //////// PLEXIL Utilities
 

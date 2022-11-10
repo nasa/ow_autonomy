@@ -30,6 +30,11 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
+const float PanMinDegrees  = -183.346; // -3.2 radians
+const float PanMaxDegrees  =  183.346; //  3.2 radians
+const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
+const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
+const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -131,6 +136,18 @@ static bool lookup (const string& state_name,
   else if (state_name == "PowerFault") {
     value_out = OwInterface::instance()->powerFault();
   }
+  else if (state_name == "ActionGoalStatus") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
+  else if (state_name == "AnglesEquivalent") {
+    double deg1, deg2, tolerance;
+    args[0].getValue(deg1);
+    args[1].getValue(deg2);
+    args[2].getValue(tolerance);
+    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
+  }
   else retval = false;
 
   return retval;
@@ -165,6 +182,37 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  int joint;
+  double angle; // unit is radians
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValue(joint);
+  args[2].getValue(angle);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoint (relative, joint, angle,
+                                         CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *angles_vector = nullptr;
+  RealArray const *angles = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(angles);
+  //changes real array into a vector
+  angles->getContentsVector(angles_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoints (relative, *angles_vector,
+                                          CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -240,9 +288,18 @@ static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < TiltMinDegrees - PanTiltInputTolerance ||
+      degrees > TiltMaxDegrees + PanTiltInputTolerance) {
+    ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, TiltMinDegrees, TiltMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tiltAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
@@ -250,9 +307,18 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (degrees < PanMinDegrees - PanTiltInputTolerance ||
+      degrees > PanMaxDegrees + PanTiltInputTolerance) {
+    ROS_WARN ("Requested pan %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.",
+              degrees, PanMinDegrees, PanMaxDegrees);
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panAntenna (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
@@ -339,6 +405,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
+  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);

@@ -14,10 +14,13 @@
 
 // ROS Actions - OceanWATERS
 #include <actionlib/client/simple_action_client.h>
+#include <actionlib_msgs/GoalStatusArray.h>
 #include <ow_lander/UnstowAction.h>
 #include <ow_lander/StowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
+#include <ow_lander/ArmMoveJointAction.h>
+#include <ow_lander/ArmMoveJointsAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
@@ -32,7 +35,7 @@
 #include <geometry_msgs/Point.h>
 #include <string>
 
-#include <ow_faults_detection/SystemFaults.h>
+#include <owl_msgs/SystemFaultsStatus.h>
 #include <ow_faults_detection/ArmFaults.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
@@ -47,6 +50,10 @@ using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
+using ArmMoveJointActionClient =
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
+using ArmMoveJointsActionClient =
+  actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
@@ -79,6 +86,11 @@ class OwInterface : public PlexilInterface
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
+  void armMoveJoint (bool relative, int joint, double angle,
+                     int id);
+  void armMoveJoints (bool relative,
+                      const std::vector<double>& angles,
+                      int id);
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
@@ -114,9 +126,11 @@ class OwInterface : public PlexilInterface
   bool   antennaFault () const;
   bool   armFault () const;
   bool   powerFault () const;
+  bool   anglesEquivalent (double deg1, double deg2, double tolerance);
+  bool   hardTorqueLimitReached (const std::string& joint_name) const;
+  bool   softTorqueLimitReached (const std::string& joint_name) const;
 
-  bool hardTorqueLimitReached (const std::string& joint_name) const;
-  bool softTorqueLimitReached (const std::string& joint_name) const;
+  int actionGoalStatus (const std::string& action_name) const;
 
  private:
   template<typename Service>
@@ -129,6 +143,10 @@ class OwInterface : public PlexilInterface
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
+  void armMoveJointAction (bool relative, int joint,
+                           double angle, int id);
+  void armMoveJointsAction (bool relative, const std::vector<double>& angles,
+                            int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
@@ -144,12 +162,14 @@ class OwInterface : public PlexilInterface
   void managePanTilt (const std::string& opname,
                       double current, double goal,
                       const ros::Time& start);
-  void systemFaultMessageCallback (const ow_faults_detection::SystemFaults::ConstPtr&);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
+  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
+                                 const std::string);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -161,11 +181,27 @@ class OwInterface : public PlexilInterface
 
   // System level faults:
 
-  FaultMap64 m_systemErrors =
-  {
-    {"ARM_EXECUTION_ERROR", std::make_pair(4,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(512,false)},
-    {"PT_EXECUTION_ERROR", std::make_pair(128,false)}
+  FaultMap64 m_systemErrors = {
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAMERA_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"LANDER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
   FaultMap32 m_armErrors = {
@@ -206,9 +242,21 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
   std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_unstowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_stowStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_grindStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_guardedMoveStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_armMoveJointsStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digCircularStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_digLinearStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
+  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
+  std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<UnstowActionClient> m_unstowClient;
   std::unique_ptr<StowActionClient> m_stowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;

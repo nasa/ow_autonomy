@@ -2,80 +2,38 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Simple plan to test Pan and Tilt functions
+// Test a specific Pan/Tilt combination.
 
 #include "plan-interface.h"
 
-TestPanTilt: Sequence
+TestPanTilt:
 {
+    In Real Pan;
+    In Real Tilt;
+    InOut Integer Count;
+    InOut Integer Wins;
 
-    In Real PanDegrees;
-    In Real TiltDegrees;
-    InOut Integer Success;
-    // NOTE: Action server uses 0.05 radians (2.865 degrees)
-    Real tolerance = 0.4;
+    Real tolerance = 2.865;  // matches 0.05R used in simulator
     Real current_pan, current_tilt;
 
-    //output test number
-    log_info("TEST: ", Success+1);
+    Count = Count + 1;
+    log_info("TEST: ", Count);
 
-    LibraryCall PanTilt(PanDegrees = PanDegrees, TiltDegrees = TiltDegrees);
-    current_pan  = Lookup(PanDegrees);
-    current_tilt = Lookup(TiltDegrees);
+    LibraryCall PanTilt (Pan = Pan, Tilt = Tilt);
+    current_pan  = Lookup(Pan);
+    current_tilt = Lookup(Tilt);
 
-    // TODO: simply much of the following, using library plans as needed
-
-    // Normalize between -360 and 360
-    if(abs(current_pan) > 360){
-      if(current_pan < 0){
-        current_pan = (abs(current_pan) % 360)*-1;
-      }
-      else{
-        current_pan = (abs(current_pan) % 360);
-      }
-    }
-    endif;
-
-    if(abs(current_tilt) > 360){
-      if(current_tilt < 0){
-        current_tilt = (abs(current_tilt) % 360)*-1;
-      }
-      else{
-        current_tilt = (abs(current_tilt) % 360);
-      }
-    }
-    endif;
-
-    // Check for equivalent angles
-
-    if(current_pan > 0 && PanDegrees < 0){
-      current_pan = current_pan - 360;
-    }
-    else if(current_pan < 0 && PanDegrees > 0){
-      current_pan = current_pan + 360;
-    }
-    endif;
-
-    if(current_tilt > 0 && TiltDegrees < 0){
-      current_tilt = current_tilt - 360;
-    }
-    else if(current_tilt < 0 && TiltDegrees > 0){
-      current_tilt = current_tilt + 360;
-    }
-    endif;
-
-    // Check if resulting position is within tolerance
-
-    if(abs(current_pan - PanDegrees) <= tolerance &&
-       abs(current_tilt - TiltDegrees) <= tolerance) {
-      log_info ("PanTilt SUCCEEDED",
-                " PanDegrees: ", PanDegrees, " Actual: ", current_pan,
-                " TiltDegrees: ", TiltDegrees, " Actual: ", current_tilt);
-      Success = Success + 1;
+    if (Lookup (AnglesEquivalent(current_pan, Pan, tolerance)) &&
+        Lookup (AnglesEquivalent(current_tilt, Tilt, tolerance))) {
+      log_info ("TestPanTilt SUCCEEDED",
+                " Pan: ", Pan, " Actual: ", current_pan,
+                " Tilt: ", Tilt, " Actual: ", current_tilt);
+      Wins = Wins + 1;
     }
     else {
-      log_error ("PanTilt FAILED",
-                 " PanDegrees: ", PanDegrees, " Actual: ", current_pan,
-                 " TiltDegrees: ", TiltDegrees, " Actual: ", current_tilt);
+      log_error ("TestPanTilt FAILED",
+                 " Pan: ", Pan, " Actual: ", current_pan,
+                 " Tilt: ", Tilt, " Actual: ", current_tilt);
     }
-}
+    endif
+      }

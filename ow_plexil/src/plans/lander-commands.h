@@ -19,6 +19,13 @@ Command pan_antenna (Real degrees);
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 Command take_picture();
 
+Command arm_move_joint (Boolean relative,
+                        Integer joint,
+                        Real angle);
+
+Command arm_move_joints (Boolean relative, 
+                         Real angles[6]);
+
 Command dig_circular (Real x,
                       Real y,
                       Real depth,

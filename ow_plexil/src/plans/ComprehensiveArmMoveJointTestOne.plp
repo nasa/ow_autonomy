@@ -1,0 +1,71 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// For reference: 
+// Shoulder yaw - lower limit: -1.56 (although is out of bounds), upper limit: 1.43
+// Shoulder pitch - lower limit: -0.4, upper limit: 2.2 (although is out of bounds)
+// Proximity pitch - lower limit: -3.14. upper limit: 3.14
+// Distance pitch - lower limit: -1.9, upper limit: 3.5 (although leads to no motion planning found error)
+// Hand yaw - lower limit: -3.14, upper limit: 3.14
+// Scoop yaw - lower limit: -3.14, upper limit: 3.14
+
+// This is a comprehensive test that moves
+// each joint to their lower and upper limits. Then,
+// each joint will come back to their original position
+// before the next one moves
+
+#include "plan-interface.h"
+
+
+ComprehensiveArmMoveJointTestOne:
+{
+    log_info ("Starting first comprehensive test for ArmMoveJoint...");
+
+    // Moves each joint to their lower and upper limits, 
+    // then back to origin angle
+    LowerUpperLimitTest:
+    {
+        log_info ("Starting lower and upper limit test...");
+
+        LibraryCall Stow();
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=-0.56);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=1.43);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=-0.4);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=1.2);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=1, Angle=0);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=-3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=2, Angle=0);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=-1.9);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=2.5);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=3, Angle=0);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=-3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=4, Angle=0);
+        
+        LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=-3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=3.14);
+
+        LibraryCall ArmMoveJoint (Relative=true, Joint=5, Angle=0);
+
+        log_info ("Lower and upper limit test finished.");
+    }
+}

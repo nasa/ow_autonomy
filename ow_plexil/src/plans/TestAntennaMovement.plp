@@ -2,39 +2,46 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Simple plan to test antenna Pan and Tilt.
+// Simple plan to test antenna Pan and Tilt.  Input is in degrees.
 
 #include "plan-interface.h"
 
-LibraryAction TestPanTilt (In Real PanDegrees, In Real TiltDegrees,
-                           InOut Integer Success);
+LibraryAction TestPanTilt (In Real Pan, In Real Tilt,
+                           InOut Integer Count, InOut Integer Wins);
 
 TestAntennaMovement: UncheckedSequence
 {
-  Integer TestCount = 0;
+  Integer Count = 0;
+  Integer Wins = 0;
 
-  //initial location
-  LibraryCall PanTilt(PanDegrees = 0, TiltDegrees = 0);
+  // Initial location
+  LibraryCall Tilt(Degrees = 0);
+  LibraryCall Pan(Degrees = 0);
 
-  //Pan tests
-  LibraryCall TestPanTilt (PanDegrees = 180, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = -180, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = -45, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
+  // Pan tests
+  LibraryCall TestPanTilt(Pan = 183.346, Tilt = 0, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = -183.346, Tilt = 0, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = 0, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = -45, Tilt = 0, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 10, Tilt = 0, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = 0, Count = Count, Wins = Wins);
 
-  //Tilt tests
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 10, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 20, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = -10, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 0, Success = TestCount);
-  LibraryCall TestPanTilt (PanDegrees = 10, TiltDegrees = 45, Success = TestCount);
+  // Tilt tests
+  LibraryCall TestPanTilt (Pan = 0, Tilt = 10, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt (Pan = 0, Tilt = 20, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt (Pan = 0, Tilt = -10, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = 89.38, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = -89.38, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = 45, Count = Count, Wins = Wins);
+  LibraryCall TestPanTilt(Pan = 0, Tilt = 0, Count = Count, Wins = Wins);
 
-
-  //Checks if all tests have succeeded
-  if (TestCount == 9) {
-    log_info("TestAntennaMovement: SUCCEEDED, 9/9 Tests Succeeded");
+  if (Wins == Count ) {
+    log_info ("TestAntennaMovement: SUCCEEDED, ", Count, "/", Count,
+              " tests passed");
   }
   else {
-    log_error("TestAntennaMovement: FAILED, ", TestCount, "/9 Tests Succeeded");
+    log_error ("TestAntennaMovement: FAILED, ", Wins, "/", Count,
+               " tests passed");
   }
+  endif
 }
