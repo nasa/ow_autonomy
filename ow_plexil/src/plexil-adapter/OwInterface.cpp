@@ -667,7 +667,7 @@ void OwInterface::initialize()
     m_identifySampleLocationClient =
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
-
+    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
     if (! m_unstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -765,9 +765,11 @@ void OwInterface::initialize()
               ("/GuardedMove/status", qsize,
               boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
                           "GuardedMove")));
+    }
     if (! m_panTiltClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Antenna pan/tilt action server did not connect!");
+    }
     if (! m_identifySampleLocationClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("IdentifySampleLocation action server did not connect!");
@@ -810,19 +812,10 @@ void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int i
   action_thread.detach();
 }
 
-static void check_normalized_degrees (double degrees, const char* desc)
-{
-  if (degrees < 0 || degrees > 360) {
-    ROS_WARN ("Non-normal value: %f: %s", degrees, desc);
-  }
-}
-
 void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
                                         int id)
 {
   AntennaPanTiltGoal goal;
-  check_normalized_degrees (pan_degrees, "panTiltAntennaAction() pan degrees");
-  check_normalized_degrees (tilt_degrees, "panTiltAntennaAction() tilt degrees");
   goal.pan = pan_degrees * D2R;
   goal.tilt = tilt_degrees * D2R;
   std::stringstream args;

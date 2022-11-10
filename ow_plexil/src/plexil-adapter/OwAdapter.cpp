@@ -283,16 +283,24 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static bool check_closed_range (const char* name, double val,
+                                double min, double max, double tolerance)
+{
+  if (val < min - tolerance || val > max + tolerance) {
+    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.", name, val, min, max);
+    return false;
+  }
+  return true;
+}
+
 static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
 {
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (degrees < TiltMinDegrees - PanTiltInputTolerance ||
-      degrees > TiltMaxDegrees + PanTiltInputTolerance) {
-    ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.",
-              degrees, TiltMinDegrees, TiltMaxDegrees);
+  if (! check_closed_range ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
+                            PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
@@ -307,11 +315,8 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (degrees < PanMinDegrees - PanTiltInputTolerance ||
-      degrees > PanMaxDegrees + PanTiltInputTolerance) {
-    ROS_WARN ("Requested pan %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.",
-              degrees, PanMinDegrees, PanMaxDegrees);
+  if (! check_closed_range ("pan", degrees, PanMinDegrees, PanMaxDegrees,
+                            PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
@@ -327,9 +332,17 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (pan_degrees);
   args[1].getValue (tilt_degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  if (! check_closed_range ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
+                            PanTiltInputTolerance) ||
+      ! check_closed_range ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
+                            PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
 static void take_picture (Command* cmd, AdapterExecInterface* intf)

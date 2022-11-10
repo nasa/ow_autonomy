@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test a specific Pan/Tilt combination.
+// Test a specific Pan/Tilt combination.  Input must be in degrees.
 
 #include "plan-interface.h"
 
@@ -19,21 +19,21 @@ TestPanTilt:
     Count = Count + 1;
     log_info("TEST: ", Count);
 
-    LibraryCall PanTilt (Pan = Pan, Tilt = Tilt);
-    current_pan  = Lookup(Pan);
-    current_tilt = Lookup(Tilt);
+    LibraryCall PanTilt (PanDegrees = Pan, TiltDegrees = Tilt);
+    current_pan  = Lookup(PanDegrees);
+    current_tilt = Lookup(TiltDegrees);
 
     if (Lookup (AnglesEquivalent(current_pan, Pan, tolerance)) &&
         Lookup (AnglesEquivalent(current_tilt, Tilt, tolerance))) {
-      log_info ("TestPanTilt SUCCEEDED",
-                " Pan: ", Pan, " Actual: ", current_pan,
-                " Tilt: ", Tilt, " Actual: ", current_tilt);
+      log_info ("TestPanTilt SUCCEEDED\n",
+                "  Pan: ", Pan, " Actual: ", current_pan,
+                "\n  Tilt: ", Tilt, " Actual: ", current_tilt);
       Wins = Wins + 1;
     }
     else {
-      log_error ("TestPanTilt FAILED",
-                 " Pan: ", Pan, " Actual: ", current_pan,
-                 " Tilt: ", Tilt, " Actual: ", current_tilt);
+      log_error ("TestPanTilt FAILED\n",
+                 "  Pan: ", Pan, " Actual: ", current_pan,
+                 "\n  Tilt: ", Tilt, " Actual: ", current_tilt);
     }
     endif
       }
