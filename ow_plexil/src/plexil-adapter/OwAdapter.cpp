@@ -294,38 +294,6 @@ static bool check_closed_range (const char* name, double val,
   return true;
 }
 
-static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
-{
-  double degrees;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
-  if (! check_closed_range ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
-                            PanTiltInputTolerance)) {
-    acknowledge_command_denied (cmd, intf);
-  }
-  else {
-    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->tiltAntenna (degrees, CommandId);
-    acknowledge_command_sent(*cr);
-  }
-}
-
-static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
-{
-  double degrees;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
-  if (! check_closed_range ("pan", degrees, PanMinDegrees, PanMaxDegrees,
-                            PanTiltInputTolerance)) {
-    acknowledge_command_denied (cmd, intf);
-  }
-  else {
-    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panAntenna (degrees, CommandId);
-    acknowledge_command_sent(*cr);
-  }
-}
-
 static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
 {
   double pan_degrees, tilt_degrees;
@@ -424,8 +392,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("discard", discard);
-  g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
-  g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);

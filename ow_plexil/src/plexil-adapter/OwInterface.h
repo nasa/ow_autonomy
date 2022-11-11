@@ -94,9 +94,6 @@ class OwInterface : public PlexilInterface
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
-  // Obsolete
-  void tiltAntenna (double degrees, int id);
-  void panAntenna (double degrees, int id);
 
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
   void takePicture (int id);
@@ -159,9 +156,6 @@ class OwInterface : public PlexilInterface
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
-  void managePanTilt (const std::string& opname,
-                      double current, double goal,
-                      const ros::Time& start);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);

@@ -87,7 +87,6 @@ static bool check_service_client (ros::ServiceClient& client,
 
 //////////////////// Lander Operation Support ////////////////////////
 
-const double PanTiltTimeout = 30.0; // seconds, matches simulator
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -101,8 +100,6 @@ const string Op_DigCircular            = "DigCircular";
 const string Op_DigLinear              = "DigLinear";
 const string Op_Deliver                = "Deliver";
 const string Op_Discard                = "Discard";
-const string Op_PanAntenna             = "PanAntenna";
-const string Op_TiltAntenna            = "TiltAntenna";
 const string Op_Grind                  = "Grind";
 const string Op_Stow                   = "Stow";
 const string Op_Unstow                 = "Unstow";
@@ -122,8 +119,6 @@ enum LanderOps {
   DigLinear,
   Deliver,
   Discard,
-  Pan,
-  Tilt,
   PanTilt,
   Grind,
   Stow,
@@ -134,9 +129,17 @@ enum LanderOps {
 };
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_DigCircular, Op_DigLinear, Op_Deliver, Op_Discard,
-  Op_PanAntenna, Op_TiltAntenna, Op_PanTiltAntenna, Op_Grind,
-  Op_Stow, Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation,
+  Op_GuardedMove,
+  Op_DigCircular,
+  Op_DigLinear,
+  Op_Deliver,
+  Op_Discard,
+  Op_PanTiltAntenna,
+  Op_Grind,
+  Op_Stow,
+  Op_Unstow,
+  Op_TakePicture,
+  Op_IdentifySampleLocation,
   Op_SetLightIntensity
 };
 
@@ -345,12 +348,10 @@ void OwInterface::jointStatesCallback
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
         m_currentPan = position * R2D;
-        managePanTilt (Op_PanAntenna, m_currentPan, m_goalPan, m_panStart);
         publish ("PanDegrees", m_currentPan);
      }
       else if (joint == Joint::antenna_tilt) {
         m_currentTilt = position * R2D;
-        managePanTilt (Op_TiltAntenna, m_currentTilt, m_goalTilt, m_tiltStart);
         publish ("TiltDegrees", m_currentTilt);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
@@ -365,28 +366,6 @@ void OwInterface::jointStatesCallback
   }
 }
 
-void OwInterface::managePanTilt (const string& opname,
-                                 double current, double goal,
-                                 const ros::Time& start)
-{
-  // We are only concerned when there is a pan/tilt in progress.
-  if (! operationRunning (opname)) return;
-
-  int id = m_runningOperations.at (opname);
-
-  // Antenna states of interest,
-  bool reached = anglesEquivalent (current, goal, PanTiltToleranceDegrees);
-  bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
-
-  if (reached || expired) {
-    markOperationFinished (opname, id);
-    if (expired) ROS_ERROR("%s timed out", opname.c_str());
-    if (! reached) {
-      ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
-                opname.c_str(), current, goal);
-    }
-  }
-}
 
 ///////////////////////// Antenna/Camera Support ///////////////////////////////
 
@@ -775,33 +754,6 @@ void OwInterface::initialize()
       ROS_ERROR ("IdentifySampleLocation action server did not connect!");
     }
   }
-}
-
-void OwInterface::antennaOp (const string& opname, double degrees,
-                             std::unique_ptr<ros::Publisher>& pub, int id)
-{
-  if (! markOperationRunning (opname, id)) {
-    return;
-  }
-  std_msgs::Float64 radians;
-  radians.data = degrees * D2R;
-  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
-            degrees, radians.data);
-  pub->publish (radians);
-}
-
-void OwInterface::tiltAntenna (double degrees, int id)
-{
-  m_goalTilt = degrees;
-  m_tiltStart = ros::Time::now();
-  antennaOp (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
-}
-
-void OwInterface::panAntenna (double degrees, int id)
-{
-  m_goalPan = degrees;
-  m_panStart = ros::Time::now();
-  antennaOp (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
 }
 
 void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)

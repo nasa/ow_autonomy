@@ -26,14 +26,14 @@ TestPanTilt:
     if (Lookup (AnglesEquivalent(current_pan, Pan, tolerance)) &&
         Lookup (AnglesEquivalent(current_tilt, Tilt, tolerance))) {
       log_info ("TestPanTilt SUCCEEDED\n",
-                "  Pan: ", Pan, " Actual: ", current_pan,
-                "\n  Tilt: ", Tilt, " Actual: ", current_tilt);
+                "  Pan goal: ", Pan, " Actual: ", current_pan,
+                "\n  Tilt goal: ", Tilt, " Actual: ", current_tilt);
       Wins = Wins + 1;
     }
     else {
       log_error ("TestPanTilt FAILED\n",
-                 "  Pan: ", Pan, " Actual: ", current_pan,
-                 "\n  Tilt: ", Tilt, " Actual: ", current_tilt);
+                 "  Pan goal: ", Pan, " Actual: ", current_pan,
+                 "\n  Tilt goal: ", Tilt, " Actual: ", current_tilt);
     }
     endif
       }
