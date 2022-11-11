@@ -28,8 +28,9 @@ IdentifySampleTarget:
   // new TakePicture command that waits for the pointcloud, or
   // modifying the current one.
 
-  // Tilt used to be done once.  Leaving this comment in during testing.
+  // Tilt used to be done once:
   //  LibraryCall Tilt(Degrees = c_tilt);
+  // Leaving this here for now in case there are problems with the repeated tilt.
 
   LibraryCall PanAndShoot(PanAngle = c_pan - delta, TiltAngle = c_tilt);
   LibraryCall PanAndShoot(PanAngle = c_pan, TiltAngle = c_tilt);

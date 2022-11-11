@@ -9,7 +9,6 @@
 
 String Lookup ToString(...);
 
-
 LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
                          In Real PanIncrement,
@@ -18,8 +17,6 @@ LibraryAction ImagePass (In Real PanLo,
                          InOut Real PanAngle,
                          InOut Boolean ReversePan);
 
-//LibraryAction Tilt (In Real Degrees);
-
 TiltAndImagePass:
 {
   In Real TiltAngle, PanIncrement, PanLo, PanHi;
@@ -27,7 +24,11 @@ TiltAndImagePass:
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
+  // Tilt used to done just once:
   //  LibraryCall Tilt (Degrees = TiltAngle);
+  // Leaving this here for now in case there are problems with the
+  // repeated tilts effected in the called plan.
+  
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = PanAngle,
