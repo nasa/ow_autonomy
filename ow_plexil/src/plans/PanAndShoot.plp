@@ -5,14 +5,14 @@
 // Auxiliary plan for TakePanorama.  Pans to specified angle and takes a picture.
 
 #include "plexil_defs.h"
+#include "plan-interface.h"
 
-LibraryAction Pan  (In Real Degrees);
 LibraryAction TakePicture ();
 
 PanAndShoot:
 {
-  In Real PanAngle;
+  In Real PanAngle, TiltAngle;
 
-  LibraryCall Pan (Degrees = PanAngle);
+  LibraryCall PanTilt (PanDegrees = PanAngle, TiltDegrees = TiltAngle);
   LibraryCall TakePicture();
 }
