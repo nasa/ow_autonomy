@@ -20,9 +20,10 @@
 #include <map>
 #include <thread>
 #include <functional>
-#include <sstream>
+//#include <sstream>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
+
 using std::set;
 using std::map;
 using std::vector;
@@ -108,28 +109,10 @@ const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 const string Op_SetLightIntensity      = "SetLightIntensity";
 
-
-// 1. Indices into subsequent vector
-//
-enum LanderOps {
-  GuardedMove,
-  ArmMoveJoint,
-  ArmMoveJoints,
-  DigCircular,
-  DigLinear,
-  Deliver,
-  Discard,
-  PanTilt,
-  Grind,
-  Stow,
-  Unstow,
-  TakePicture,
-  IdentifySampleLocation,
-  SetLightIntensity
-};
-
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
+  Op_ArmMoveJoint,
+  Op_ArmMoveJoints,
   Op_DigCircular,
   Op_DigLinear,
   Op_Deliver,
@@ -167,17 +150,20 @@ static map<int, string> GoalStatus {
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
   // Assigning -1 as the default state
-
-  { "Stow", -1 },
-  { "Unstow", -1 },
-  { "Grind", -1 },
-  { "GuardedMove", -1 },
-  { "ArmMoveJoint", -1 },
-  { "ArmMoveJoints", -1 },
-  { "DigCircular", -1 },
-  { "DigLinear", -1 },
-  { "Deliver", -1 },
-  { "Discard", -1 }
+  { Op_Stow, -1 },
+  { Op_Unstow, -1 },
+  { Op_Grind, -1 },
+  { Op_GuardedMove, -1 },
+  { Op_ArmMoveJoint, -1 },
+  { Op_ArmMoveJoints, -1 },
+  { Op_DigCircular, -1 },
+  { Op_DigLinear, -1 },
+  { Op_Deliver, -1 },
+  { Op_Discard, -1 },
+  { Op_TakePicture, -1 },
+  { Op_PanTiltAntenna, -1 },
+  { Op_IdentifySampleLocation, -1 },
+  { Op_SetLightIntensity, -1 }
 };
 
 static void update_action_goal_state (string action, int state)
@@ -519,7 +505,7 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 // guarded_move_done_cb above.
 static vector<double> SamplePoint;
 static bool GotSampleLocation = false;
-template<int OpIndex, typename T>
+template<typename T>
 static void identify_sample_location_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result)
@@ -1143,8 +1129,7 @@ void OwInterface::identifySampleLocationAction (int num_images,
      default_action_active_cb (Op_IdentifySampleLocation),
      default_action_feedback_cb<ow_plexil::IdentifyLocationFeedbackConstPtr>
      (Op_IdentifySampleLocation),
-     identify_sample_location_done_cb<IdentifySampleLocation,
-                                      ow_plexil::IdentifyLocationResultConstPtr>);
+     identify_sample_location_done_cb<ow_plexil::IdentifyLocationResultConstPtr>);
 }
 
 
