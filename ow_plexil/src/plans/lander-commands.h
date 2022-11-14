@@ -16,7 +16,7 @@
 
 Command tilt_antenna (Real degrees);
 Command pan_antenna (Real degrees);
-Command take_picture();
+Command camera_capture (Real exposure_secs);
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,
