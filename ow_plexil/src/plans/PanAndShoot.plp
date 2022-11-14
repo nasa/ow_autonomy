@@ -2,7 +2,14 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Auxiliary plan for TakePanorama.  Pans to specified angle and takes a picture.
+// Auxiliary plan for TakePanorama.  Pans and tilts to specified angle
+// and takes a picture.
+
+// NOTE: The recent addition of a TiltAngle input has made the file
+// and node names a misnomer.  However, in practice as of 11/14/22,
+// this node is used only to pan while maintaining the current tilt.
+// A renaming is pending discussion of re-introducing separate Pan and
+// Tilt commands.
 
 #include "plexil_defs.h"
 #include "plan-interface.h"

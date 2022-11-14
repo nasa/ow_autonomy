@@ -128,57 +128,45 @@ static vector<string> LanderOpNames = {
 
 ///////////////////////// Action Goal Status Support /////////////////////////
 
-// Repeating GoalStatus defined in actionlib_msgs/GoalStatus.msg
-// with the addition of a NOGOAL status for when the action is not running.
-static map<int, string> GoalStatus {
-  // GoalID -> Goal Status
-
-  { -1, "NOGOAL" },
-  { 0, "PENDING" },
-  { 1, "ACTIVE" },
-  { 2, "PREEMPTED" },
-  { 3, "SUCCEEDED" },
-  { 4, "ABORTED" },
-  { 5, "REJECTED" },
-  { 6, "PREEMPTING" },
-  { 7, "RECALLING" },
-  { 8, "RECALLED" },
-  { 9, "LOST" }
+// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
+// NOGOAL status for when the action is not running.
+//
+enum ActionGoalStatus {
+  NOGOAL = -1u,
+  PENDING = 0u,
+  ACTIVE = 1u,
+  PREEMPTED = 2u,
+  SUCCEEDED = 3u,
+  ABORTED = 4u,
+  REJECTED = 5u,
+  PREEMPTING = 6u,
+  RECALLING = 7u,
+  RECALLED = 8u,
+  LOST = 9u
 };
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
-  // Assigning -1 as the default state
-  { Op_Stow, -1 },
-  { Op_Unstow, -1 },
-  { Op_Grind, -1 },
-  { Op_GuardedMove, -1 },
-  { Op_ArmMoveJoint, -1 },
-  { Op_ArmMoveJoints, -1 },
-  { Op_DigCircular, -1 },
-  { Op_DigLinear, -1 },
-  { Op_Deliver, -1 },
-  { Op_Discard, -1 },
-  { Op_TakePicture, -1 },
-  { Op_PanTiltAntenna, -1 },
-  { Op_IdentifySampleLocation, -1 },
-  { Op_SetLightIntensity, -1 }
+  { Op_Stow, NOGOAL },
+  { Op_Unstow, NOGOAL },
+  { Op_Grind, NOGOAL },
+  { Op_GuardedMove, NOGOAL },
+  { Op_ArmMoveJoint, NOGOAL },
+  { Op_ArmMoveJoints, NOGOAL },
+  { Op_DigCircular, NOGOAL },
+  { Op_DigLinear, NOGOAL },
+  { Op_Deliver, NOGOAL },
+  { Op_Discard, NOGOAL },
+  { Op_TakePicture, NOGOAL },
+  { Op_PanTiltAntenna, NOGOAL },
+  { Op_IdentifySampleLocation, NOGOAL },
+  { Op_SetLightIntensity, NOGOAL }
 };
 
 static void update_action_goal_state (string action, int state)
 {
   if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
-    if (GoalStatus.find(state) != GoalStatus.end()) {
-
-      // update ActionGoalStatusMap only if the state is different
-      // from the current state
-      if (ActionGoalStatusMap[action] != state) {
-        ActionGoalStatusMap[action] = state;
-      }
-    }
-    else {
-      ROS_ERROR("Unknown goal status: %d", state);
-    }
+    ActionGoalStatusMap[action] = state;
   }
   else {
     ROS_ERROR("Unknown action: %s", action.c_str());
@@ -425,7 +413,7 @@ void OwInterface::actionGoalStatusCallback
 
 {
   if (msg->status_list.size() == 0) {
-    int status = -1;
+    int status = NOGOAL;
     update_action_goal_state (action_name, status);
   }
   else {

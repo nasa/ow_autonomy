@@ -31,9 +31,9 @@ TestPanTilt:
       Wins = Wins + 1;
     }
     else {
-      log_error ("TestPanTilt FAILED\n",
-                 "  Pan goal: ", Pan, " Actual: ", current_pan,
+      log_error ("TestPanTilt FAILED",
+                 "\n  Pan goal: ", Pan, " Actual: ", current_pan,
                  "\n  Tilt goal: ", Tilt, " Actual: ", current_tilt);
     }
-    endif
-      }
+    endif;
+}

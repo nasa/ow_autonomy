@@ -24,8 +24,8 @@ TiltAndImagePass:
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  // Tilt used to done just once:
-  //  LibraryCall Tilt (Degrees = TiltAngle);
+  // Tilt used to be done just once:
+  //   LibraryCall Tilt (Degrees = TiltAngle);
   // Leaving this here for now in case there are problems with the
   // repeated tilts effected in the called plan.
   
