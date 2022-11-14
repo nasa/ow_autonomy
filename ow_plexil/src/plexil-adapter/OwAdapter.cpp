@@ -321,10 +321,13 @@ static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
   }
 }
 
-static void take_picture (Command* cmd, AdapterExecInterface* intf)
+static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
+  double exposure_secs;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->takePicture (CommandId);
+  OwInterface::instance()->cameraCapture (exposure_secs, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -404,7 +407,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("take_picture", take_picture);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
   g_configuration->registerCommandHandler("set_light_intensity",
                                           set_light_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
