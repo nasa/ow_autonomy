@@ -132,17 +132,17 @@ static vector<string> LanderOpNames = {
 // NOGOAL status for when the action is not running.
 //
 enum ActionGoalStatus {
-  NOGOAL = -1u,
-  PENDING = 0u,
-  ACTIVE = 1u,
-  PREEMPTED = 2u,
-  SUCCEEDED = 3u,
-  ABORTED = 4u,
-  REJECTED = 5u,
-  PREEMPTING = 6u,
-  RECALLING = 7u,
-  RECALLED = 8u,
-  LOST = 9u
+  NOGOAL = -1,
+  PENDING = 0,
+  ACTIVE = 1,
+  PREEMPTED = 2,
+  SUCCEEDED = 3,
+  ABORTED = 4,
+  REJECTED = 5,
+  PREEMPTING = 6,
+  RECALLING = 7,
+  RECALLED = 8,
+  LOST = 9
 };
 
 static map<string, int> ActionGoalStatusMap {
