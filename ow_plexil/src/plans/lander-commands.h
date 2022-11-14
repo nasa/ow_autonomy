@@ -14,9 +14,9 @@
 // plan-interface.h) that wraps these commands in a way that they
 // called synchronously.
 
-Command tilt_antenna (Real degrees);
-Command pan_antenna (Real degrees);
 Command camera_capture (Real exposure_secs);
+
+Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,
