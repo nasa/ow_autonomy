@@ -26,6 +26,7 @@
 #include <ow_lander/DeliverAction.h>
 #include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_lander/DiscardAction.h>
+#include <ow_lander/CameraCaptureAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
 #include <control_msgs/JointControllerState.h>
@@ -64,6 +65,8 @@ using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using DiscardActionClient =
   actionlib::SimpleActionClient<ow_lander::DiscardAction>;
+using CameraCaptureActionClient =
+  actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
@@ -96,7 +99,7 @@ class OwInterface : public PlexilInterface
                                               int id);
 
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
-  void takePicture (int id);
+  void cameraCapture (double exposure_secs, int id);
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
   void digCircular (double x, double y, double depth,
@@ -153,6 +156,7 @@ class OwInterface : public PlexilInterface
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
+  void cameraCaptureAction (double exposure_secs, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
@@ -246,6 +250,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_digLinearStatusSubscriber;
   std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
   std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_cameraCaptureStatusSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
@@ -259,6 +264,8 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<DeliverActionClient> m_deliverClient;
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
+  std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
+
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state - note that pan and tilt can be concurrent.
