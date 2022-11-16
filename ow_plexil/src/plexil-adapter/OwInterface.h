@@ -265,7 +265,7 @@ class OwInterface : public PlexilInterface
 
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
-  // Antenna and camera state
+  // Antenna state
   double m_currentPan, m_currentTilt;
 };
 

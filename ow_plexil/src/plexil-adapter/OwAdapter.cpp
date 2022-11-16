@@ -285,6 +285,11 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
 
 static bool check_angle (const char* name, double val,
                          double min, double max, double tolerance)
+// NOTE: tolerance is needed because there is apparently loss of
+// precision in the angle on its way into Python.  This could be
+// because the ROS action uses 32-bit floats for the input angles.
+// They will be updated to 64 bit as part of the ongoing command
+// unification with OWLAT.
 {
   if (val < min - tolerance || val > max + tolerance) {
     ROS_WARN ("Requested %s %f out of valid range [%f %f], "
