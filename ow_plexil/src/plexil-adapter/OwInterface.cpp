@@ -22,6 +22,7 @@
 #include <functional>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
+
 using std::set;
 using std::map;
 using std::vector;
@@ -86,7 +87,6 @@ static bool check_service_client (ros::ServiceClient& client,
 
 //////////////////// Lander Operation Support ////////////////////////
 
-const double PanTiltTimeout = 30.0; // seconds, matches simulator
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -100,93 +100,73 @@ const string Op_DigCircular            = "DigCircular";
 const string Op_DigLinear              = "DigLinear";
 const string Op_Deliver                = "Deliver";
 const string Op_Discard                = "Discard";
-const string Op_PanAntenna             = "PanAntenna";
-const string Op_TiltAntenna            = "TiltAntenna";
 const string Op_Grind                  = "Grind";
 const string Op_Stow                   = "Stow";
 const string Op_Unstow                 = "Unstow";
 const string Op_TakePicture            = "TakePicture";
+const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 const string Op_SetLightIntensity      = "SetLightIntensity";
 
-
-// 1. Indices into subsequent vector
-//
-enum LanderOps {
-  GuardedMove,
-  ArmMoveJoint,
-  ArmMoveJoints,
-  DigCircular,
-  DigLinear,
-  Deliver,
-  Discard,
-  Pan,
-  Tilt,
-  Grind,
-  Stow,
-  Unstow,
-  TakePicture,
-  IdentifySampleLocation,
-  SetLightIntensity
-};
-
 static vector<string> LanderOpNames = {
-  Op_GuardedMove, Op_ArmMoveJoint, Op_ArmMoveJoints, Op_DigCircular, Op_DigLinear,
-  Op_Deliver, Op_Discard, Op_PanAntenna, Op_TiltAntenna, Op_Grind, Op_Stow,
-  Op_Unstow, Op_TakePicture, Op_IdentifySampleLocation, Op_SetLightIntensity
+  Op_GuardedMove,
+  Op_ArmMoveJoint,
+  Op_ArmMoveJoints,
+  Op_DigCircular,
+  Op_DigLinear,
+  Op_Deliver,
+  Op_Discard,
+  Op_PanTiltAntenna,
+  Op_Grind,
+  Op_Stow,
+  Op_Unstow,
+  Op_TakePicture,
+  Op_IdentifySampleLocation,
+  Op_SetLightIntensity
 };
 
 
 ///////////////////////// Action Goal Status Support /////////////////////////
 
-// Repeating GoalStatus defined in actionlib_msgs/GoalStatus.msg
-// with the addition of a NOGOAL status for when the action is not running.
-static map<int, string> GoalStatus {
-  // GoalID -> Goal Status
-
-  { -1, "NOGOAL" },
-  { 0, "PENDING" },
-  { 1, "ACTIVE" },
-  { 2, "PREEMPTED" },
-  { 3, "SUCCEEDED" },
-  { 4, "ABORTED" },
-  { 5, "REJECTED" },
-  { 6, "PREEMPTING" },
-  { 7, "RECALLING" },
-  { 8, "RECALLED" },
-  { 9, "LOST" }
+// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
+// NOGOAL status for when the action is not running.
+//
+enum ActionGoalStatus {
+  NOGOAL = -1,
+  PENDING = 0,
+  ACTIVE = 1,
+  PREEMPTED = 2,
+  SUCCEEDED = 3,
+  ABORTED = 4,
+  REJECTED = 5,
+  PREEMPTING = 6,
+  RECALLING = 7,
+  RECALLED = 8,
+  LOST = 9
 };
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
-  // Assigning -1 as the default state
-
-  { "Stow", -1 },
-  { "Unstow", -1 },
-  { "Grind", -1 },
-  { "GuardedMove", -1 },
-  { "ArmMoveJoint", -1 },
-  { "ArmMoveJoints", -1 },
-  { "DigCircular", -1 },
-  { "DigLinear", -1 },
-  { "Deliver", -1 },
-  { "Discard", -1 }
+  { Op_Stow, NOGOAL },
+  { Op_Unstow, NOGOAL },
+  { Op_Grind, NOGOAL },
+  { Op_GuardedMove, NOGOAL },
+  { Op_ArmMoveJoint, NOGOAL },
+  { Op_ArmMoveJoints, NOGOAL },
+  { Op_DigCircular, NOGOAL },
+  { Op_DigLinear, NOGOAL },
+  { Op_Deliver, NOGOAL },
+  { Op_Discard, NOGOAL },
+  { Op_TakePicture, NOGOAL },
+  { Op_PanTiltAntenna, NOGOAL },
+  { Op_IdentifySampleLocation, NOGOAL },
+  { Op_SetLightIntensity, NOGOAL }
 };
 
 static void update_action_goal_state (string action, int state)
 {
   if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
-    if (GoalStatus.find(state) != GoalStatus.end()) {
-
-      // update ActionGoalStatusMap only if the state is different
-      // from the current state
-      if (ActionGoalStatusMap[action] != state) {
-        ActionGoalStatusMap[action] = state;
-      }
-    }
-    else {
-      ROS_ERROR("Unknown goal status: %d", state);
-    }
+    ActionGoalStatusMap[action] = state;
   }
   else {
     ROS_ERROR("Unknown action: %s", action.c_str());
@@ -341,12 +321,10 @@ void OwInterface::jointStatesCallback
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
         m_currentPan = position * R2D;
-        managePanTilt (Op_PanAntenna, m_currentPan, m_goalPan, m_panStart);
         publish ("PanDegrees", m_currentPan);
      }
       else if (joint == Joint::antenna_tilt) {
         m_currentTilt = position * R2D;
-        managePanTilt (Op_TiltAntenna, m_currentTilt, m_goalTilt, m_tiltStart);
         publish ("TiltDegrees", m_currentTilt);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
@@ -361,28 +339,6 @@ void OwInterface::jointStatesCallback
   }
 }
 
-void OwInterface::managePanTilt (const string& opname,
-                                 double current, double goal,
-                                 const ros::Time& start)
-{
-  // We are only concerned when there is a pan/tilt in progress.
-  if (! operationRunning (opname)) return;
-
-  int id = m_runningOperations.at (opname);
-
-  // Antenna states of interest,
-  bool reached = anglesEquivalent (current, goal, PanTiltToleranceDegrees);
-  bool expired = ros::Time::now() > start + ros::Duration (PanTiltTimeout);
-
-  if (reached || expired) {
-    markOperationFinished (opname, id);
-    if (expired) ROS_ERROR("%s timed out", opname.c_str());
-    if (! reached) {
-      ROS_ERROR("%s failed. Ended at %f degrees, goal was %f.",
-                opname.c_str(), current, goal);
-    }
-  }
-}
 
 ///////////////////////// Antenna/Camera Support ///////////////////////////////
 
@@ -457,7 +413,7 @@ void OwInterface::actionGoalStatusCallback
 
 {
   if (msg->status_list.size() == 0) {
-    int status = -1;
+    int status = NOGOAL;
     update_action_goal_state (action_name, status);
   }
   else {
@@ -536,7 +492,7 @@ static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 // guarded_move_done_cb above.
 static vector<double> SamplePoint;
 static bool GotSampleLocation = false;
-template<int OpIndex, typename T>
+template<typename T>
 static void identify_sample_location_done_cb
 (const actionlib::SimpleClientGoalState& state,
  const T& result)
@@ -565,9 +521,9 @@ OwInterface* OwInterface::instance ()
 }
 
 OwInterface::OwInterface ()
-  : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
-    // m_panStart, m_tiltStart are deliberately uninitialized
+  : m_currentPan (0),
+    m_currentTilt (0),
+    m_pointCloudRecieved(false)
 {
 }
 
@@ -663,7 +619,7 @@ void OwInterface::initialize()
     m_identifySampleLocationClient =
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
-
+    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
     if (! m_unstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
@@ -762,6 +718,10 @@ void OwInterface::initialize()
               boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
                           "GuardedMove")));
     }
+    if (! m_panTiltClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("Antenna pan/tilt action server did not connect!");
+    }
     if (! m_identifySampleLocationClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("IdentifySampleLocation action server did not connect!");
@@ -769,31 +729,30 @@ void OwInterface::initialize()
   }
 }
 
-void OwInterface::antennaOp (const string& opname, double degrees,
-                             std::unique_ptr<ros::Publisher>& pub, int id)
+void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
 {
-  if (! markOperationRunning (opname, id)) {
-    return;
-  }
-  std_msgs::Float64 radians;
-  radians.data = degrees * D2R;
-  ROS_INFO ("Starting %s: %f degrees (%f radians)", opname.c_str(),
-            degrees, radians.data);
-  pub->publish (radians);
+  if (! markOperationRunning (Op_PanTiltAntenna, id)) return;
+  thread action_thread (&OwInterface::panTiltAntennaAction, this,
+                        pan_degrees, tilt_degrees, id);
+  action_thread.detach();
 }
 
-void OwInterface::tiltAntenna (double degrees, int id)
+void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
+                                        int id)
 {
-  m_goalTilt = degrees;
-  m_tiltStart = ros::Time::now();
-  antennaOp (Op_TiltAntenna, degrees, m_antennaTiltPublisher, id);
-}
-
-void OwInterface::panAntenna (double degrees, int id)
-{
-  m_goalPan = degrees;
-  m_panStart = ros::Time::now();
-  antennaOp (Op_PanAntenna, degrees, m_antennaPanPublisher, id);
+  AntennaPanTiltGoal goal;
+  goal.pan = pan_degrees * D2R;
+  goal.tilt = tilt_degrees * D2R;
+  std::stringstream args;
+  args << goal.pan << ", " << goal.tilt;
+  runAction<actionlib::SimpleActionClient<AntennaPanTiltAction>,
+            AntennaPanTiltGoal,
+            AntennaPanTiltResultConstPtr,
+            AntennaPanTiltFeedbackConstPtr>
+    (Op_PanTiltAntenna, m_panTiltClient, goal, id,
+     default_action_active_cb (Op_PanTiltAntenna, args.str()),
+     default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTiltAntenna),
+     default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
 }
 
 void OwInterface::takePicture (int id)
@@ -1157,8 +1116,7 @@ void OwInterface::identifySampleLocationAction (int num_images,
      default_action_active_cb (Op_IdentifySampleLocation),
      default_action_feedback_cb<ow_plexil::IdentifyLocationFeedbackConstPtr>
      (Op_IdentifySampleLocation),
-     identify_sample_location_done_cb<IdentifySampleLocation,
-                                      ow_plexil::IdentifyLocationResultConstPtr>);
+     identify_sample_location_done_cb<ow_plexil::IdentifyLocationResultConstPtr>);
 }
 
 

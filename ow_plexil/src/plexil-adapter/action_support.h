@@ -24,7 +24,8 @@ const auto ACTION_SERVER_TIMEOUT_SECS = 10.0;
 
 using t_action_active_cb = std::function<void ()>;
 
-t_action_active_cb default_action_active_cb (const std::string& operation_name);
+t_action_active_cb default_action_active_cb (const std::string& operation_name,
+                                             const std::string& info = "");
 
 template<typename T>
 using t_action_feedback_cb = std::function<void (const T& feedback)>;

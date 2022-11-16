@@ -7,27 +7,27 @@
 
 // NOTE: Since it is currently not possible to check the success/failure
 // of lander commands or the current arm position, we instead use the
-// temporary check "!Lookup(ArmFault) && !Lookup(PowerFault)" 
+// temporary check "!Lookup(ArmFault) && !Lookup(PowerFault)"
 // (seen in UnstowArm and StowArm) for when relevant faults are resolved
 // to denote that the arm has been unstowed or stowed.
 
 // The assumption is that if the above Unstow()/Stow() has completed
-// and there are no relevant faults, unstow/stow is most likely successfully 
+// and there are no relevant faults, unstow/stow is most likely successfully
 // done.
 
-// Limitation: If relevant faults are cleared before Unstow() or Stow() 
+// Limitation: If relevant faults are cleared before Unstow() or Stow()
 // finishes, successfully or otherwise, this check will incorrectly indicate
 // completion of unstowing or stowing altogether.
 
 
 #include "plan-interface.h"
 
-MissionSequence2: 
+MissionSequence2:
 {
   InOut Boolean mission_in_progress;
   InOut Boolean pan_done;
   InOut Boolean unstow_done;
-  InOut Boolean stow_done; 
+  InOut Boolean stow_done;
 
   PanAntenna:
   {
@@ -37,7 +37,7 @@ MissionSequence2:
     Start !Lookup(AntennaFault) && !Lookup(PowerFault);
     Skip pan_done;
 
-    LibraryCall Pan (Degrees=180);
+    LibraryCall PanTilt (PanDegrees=180, TiltDegrees=0);
 
     if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
     {
@@ -52,15 +52,15 @@ MissionSequence2:
     Start !Lookup(ArmFault) && !Lookup(PowerFault);
     Skip unstow_done;
 
-    LibraryCall Unstow(); 
-      
+    LibraryCall Unstow();
+
     // See NOTE above for an explanation of logic.
 
     unstow_done = (!Lookup(ArmFault) && !Lookup(PowerFault));
 
   }
 
-    
+
   StowArm:
   {
     Repeat !stow_done;
@@ -70,9 +70,9 @@ MissionSequence2:
     LibraryCall Stow();
 
     // See NOTE above for an explanation of logic.
-      
+
     stow_done = (!Lookup(ArmFault) && !Lookup(PowerFault));
-  
+
   }
 
   mission_in_progress = false;
