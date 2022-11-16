@@ -347,40 +347,6 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
 
-/*
-void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
-{
-  // NOTE: the received image is ignored for now.
-  m_pointCloudRecieved = false;
-  if (operationRunning (Op_CameraCapture)) {
-    ros::Rate rate(10);
-    int timeout = 0;
-    // We wait for the pointcloud as well or the 5 sec timeout before marking as
-    // finished.
-    while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
-        ros::spinOnce();
-        rate.sleep();
-        timeout+=1;
-    }
-    if(timeout == PointCloudTimeout){
-      ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
-    }
-    markOperationFinished (Op_CameraCapture,
-                           m_runningOperations.at (Op_CameraCapture));
-  }
-}
-*/
-
-void OwInterface::pointCloudCallback
-(const sensor_msgs::PointCloud2::ConstPtr& msg)
-{
-  // NOTE: the received pointcloud is ignored for now.
-  if (operationRunning (Op_CameraCapture)) {
-    //mark as recieved
-    m_pointCloudRecieved = true;
-  }
-}
-
 ///////////////////////// Power support /////////////////////////////////////
 
 static double StateOfCharge       = NAN;
@@ -524,7 +490,7 @@ OwInterface* OwInterface::instance ()
 
 OwInterface::OwInterface ()
   : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
+    m_goalPan (0), m_goalTilt (0)
     // m_panStart, m_tiltStart are deliberately uninitialized
 {
 }
@@ -561,16 +527,6 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
-    /*
-    m_cameraSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/StereoCamera/left/image_raw", qsize,
-                 &OwInterface::cameraCallback, this));
-    */
-    m_pointCloudSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/StereoCamera/points2", qsize,
-                 &OwInterface::pointCloudCallback, this));
     m_socSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
