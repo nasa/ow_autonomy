@@ -283,8 +283,8 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static bool check_closed_range (const char* name, double val,
-                                double min, double max, double tolerance)
+static bool check_angle (const char* name, double val,
+                         double min, double max, double tolerance)
 {
   if (val < min - tolerance || val > max + tolerance) {
     ROS_WARN ("Requested %s %f out of valid range [%f %f], "
@@ -300,10 +300,10 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (pan_degrees);
   args[1].getValue (tilt_degrees);
-  if (! check_closed_range ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
-                            PanTiltInputTolerance) ||
-      ! check_closed_range ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
-                            PanTiltInputTolerance)) {
+  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance) ||
+      ! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {

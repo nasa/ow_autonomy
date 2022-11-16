@@ -521,9 +521,9 @@ OwInterface* OwInterface::instance ()
 }
 
 OwInterface::OwInterface ()
-  : m_currentPan (0), m_currentTilt (0),
-    m_goalPan (0), m_goalTilt (0), m_pointCloudRecieved(false)
-    // m_panStart, m_tiltStart are deliberately uninitialized
+  : m_currentPan (0),
+    m_currentTilt (0),
+    m_pointCloudRecieved(false)
 {
 }
 
