@@ -347,6 +347,7 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
 
+/*
 void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
 {
   // NOTE: the received image is ignored for now.
@@ -368,6 +369,7 @@ void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
                            m_runningOperations.at (Op_CameraCapture));
   }
 }
+*/
 
 void OwInterface::pointCloudCallback
 (const sensor_msgs::PointCloud2::ConstPtr& msg)
@@ -559,10 +561,12 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
+    /*
     m_cameraSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/left/image_raw", qsize,
                  &OwInterface::cameraCallback, this));
+    */
     m_pointCloudSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/StereoCamera/points2", qsize,

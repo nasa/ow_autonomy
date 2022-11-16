@@ -24,9 +24,7 @@ IdentifySampleTarget:
   Post Lookup (GroundFound);
 
   // Take pictures in front of the lander for processing in
-  // identify_sample_location.  An alternative would be to create a
-  // new TakePicture command that waits for the pointcloud, or
-  // modifying the current one.
+  // identify_sample_location.
 
   // Tilt used to be done once:
   //  LibraryCall Tilt(Degrees = c_tilt);

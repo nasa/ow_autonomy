@@ -13,6 +13,7 @@
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
+Command log_debug (...);
 
 
 // PLEXIL library for lander operations.
@@ -60,6 +61,8 @@ LibraryAction Deliver ();
 LibraryAction Discard (In Real X,
                        In Real Y,
                        In Real Z);
+
+LibraryAction CameraCapture (In Real ExposureSecs);
 
 // Lander queries
 
@@ -109,7 +112,7 @@ Integer Lookup find_first_of(...);
 Integer Lookup find_last_of(...);
 
 // Checkpointing interface
-Command set_checkpoint(...);
+Command set_checkpoint(String,Boolean,String);
 Command flush_checkpoints;
 Command set_boot_ok();
 Integer Lookup CheckpointWhen(String);

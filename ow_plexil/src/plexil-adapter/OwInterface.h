@@ -158,7 +158,7 @@ class OwInterface : public PlexilInterface
   void discardAction (double x, double y, double z, int id);
   void cameraCaptureAction (double exposure_secs, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  void cameraCallback (const sensor_msgs::Image::ConstPtr&);
+  //  void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
@@ -231,7 +231,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
 
   std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
+  //  std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
   std::unique_ptr<ros::Subscriber> m_pointCloudSubscriber;
   std::unique_ptr<ros::Subscriber> m_socSubscriber;
   std::unique_ptr<ros::Subscriber> m_rulSubscriber;

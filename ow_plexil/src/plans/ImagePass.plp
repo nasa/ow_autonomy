@@ -5,12 +5,9 @@
 // Auxilliary plan for TakePanorama.  Performs a single pass, panning the camera
 // with specified increment, direction, and range.  Tilt is unchanged.
 
-Command log_debug (...);
-LibraryAction TakePicture ();
-LibraryAction PanAndShoot (In Real PanAngle, In Real TiltAngle);
+#include "plan-interface.h"
 
-Command set_checkpoint(String,Boolean,String);
-String Lookup ToString(...);
+LibraryAction PanAndShoot (In Real PanAngle, In Real TiltAngle);
 
 ImagePass: UncheckedSequence
 {
@@ -19,7 +16,7 @@ ImagePass: UncheckedSequence
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  LibraryCall TakePicture();
+  LibraryCall CameraCapture (ExposureSecs = 0);
   if (ReversePan) {
     log_debug ("Reverse pan. Pan =", PanAngle, "Lo=", PanLo,
                "Increment=", PanIncrement);
