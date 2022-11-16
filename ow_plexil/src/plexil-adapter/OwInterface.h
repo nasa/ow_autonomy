@@ -265,10 +265,8 @@ class OwInterface : public PlexilInterface
 
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
-  // Antenna state - note that pan and tilt can be concurrent.
+  // Antenna and camera state
   double m_currentPan, m_currentTilt;
-  double m_goalPan, m_goalTilt;      // commanded pan/tilt values
-  ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
 
 #endif
