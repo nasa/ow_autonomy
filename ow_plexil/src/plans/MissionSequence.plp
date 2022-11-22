@@ -21,12 +21,12 @@
 
 #include "plan-interface.h"
 
-MissionSequence: 
+MissionSequence:
 {
   InOut Boolean mission_in_progress;
   InOut Boolean pan_done;
   InOut Boolean unstow_done;
-  InOut Boolean stow_done;  
+  InOut Boolean stow_done;
 
   PanAntenna:
   {
@@ -36,7 +36,7 @@ MissionSequence:
     Start !Lookup(AntennaFault);
     Skip pan_done;
 
-    LibraryCall Pan (Degrees=180);
+    LibraryCall PanTilt (PanDegrees=180, TiltDegrees=0);
 
     if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
     {
@@ -51,15 +51,15 @@ MissionSequence:
     Start !Lookup(ArmFault);
     Skip unstow_done;
 
-    LibraryCall Unstow(); 
-      
+    LibraryCall Unstow();
+
     // See NOTE above for an explanation of logic.
 
     unstow_done = !Lookup(ArmFault);
 
   }
 
-    
+
   StowArm:
   {
     Repeat !stow_done;
@@ -69,9 +69,9 @@ MissionSequence:
     LibraryCall Stow();
 
     // See NOTE above for an explanation of logic.
-      
+
     stow_done = !Lookup(ArmFault);
-  
+
   }
 
   mission_in_progress = false;

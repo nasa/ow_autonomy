@@ -24,6 +24,7 @@
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
+#include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_lander/DiscardAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
@@ -59,6 +60,8 @@ using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using PanTiltActionClient =
+  actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using DiscardActionClient =
   actionlib::SimpleActionClient<ow_lander::DiscardAction>;
 using IdentifySampleLocationActionClient =
@@ -91,8 +94,8 @@ class OwInterface : public PlexilInterface
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
-  void tiltAntenna (double degrees, int id);
-  void panAntenna (double degrees, int id);
+
+  void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
   void takePicture (int id);
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
@@ -147,14 +150,12 @@ class OwInterface : public PlexilInterface
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
+  void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void cameraCallback (const sensor_msgs::Image::ConstPtr&);
   void pointCloudCallback (const sensor_msgs::PointCloud2::ConstPtr&);
-  void managePanTilt (const std::string& opname,
-                      double current, double goal,
-                      const ros::Time& start);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
@@ -266,14 +267,13 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
-  // Antenna state - note that pan and tilt can be concurrent.
+  // Antenna and camera state
   double m_currentPan, m_currentTilt;
-  double m_goalPan, m_goalTilt;      // commanded pan/tilt values
   bool m_pointCloudRecieved;
-  ros::Time m_panStart, m_tiltStart; // pan/tilt start times
 };
 
 #endif

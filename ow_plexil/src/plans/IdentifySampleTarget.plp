@@ -10,7 +10,7 @@
 
 #include "plan-interface.h"
 
-LibraryAction PanAndShoot (In Real PanAngle);
+LibraryAction PanAndShoot (In Real PanAngle, In Real TiltAngle);
 
 IdentifySampleTarget:
 {
@@ -27,10 +27,14 @@ IdentifySampleTarget:
   // identify_sample_location.  An alternative would be to create a
   // new TakePicture command that waits for the pointcloud, or
   // modifying the current one.
-  LibraryCall Tilt(Degrees = c_tilt);
-  LibraryCall PanAndShoot(PanAngle = c_pan - delta);
-  LibraryCall PanAndShoot(PanAngle = c_pan);
-  LibraryCall PanAndShoot(PanAngle = c_pan + delta);
+
+  // Tilt used to be done once:
+  //  LibraryCall Tilt(Degrees = c_tilt);
+  // Leaving this here for now in case there are problems with the repeated tilt.
+
+  LibraryCall PanAndShoot(PanAngle = c_pan - delta, TiltAngle = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan, TiltAngle = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan + delta, TiltAngle = c_tilt);
   SynchronousCommand result = identify_sample_location(3, FilterType);
 
   if (isKnown(result[0]) && isKnown(result[1]) && isKnown(result[2])) {

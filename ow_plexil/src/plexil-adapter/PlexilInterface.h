@@ -49,9 +49,9 @@ class PlexilInterface
                     t_action_done_cb<ResultPtr> done_cb)
   {
     if (ac) {
-      ROS_INFO ("Sending goal to action %s", opname.c_str());
+      ROS_DEBUG ("Sending goal to action %s", opname.c_str());
       ac->sendGoal (goal, done_cb, active_cb, feedback_cb);
-      ROS_INFO ("Sent goal to action %s", opname.c_str());
+      ROS_DEBUG ("Sent goal to action %s", opname.c_str());
     }
     else {
       ROS_ERROR ("%s action client was null!", opname.c_str());

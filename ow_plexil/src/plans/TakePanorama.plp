@@ -146,7 +146,7 @@ TakePanorama:
 
   log_info("Beginning panorama with name ",OurName);
   // Get to initial position
-  InitialPan: LibraryCall Pan (Degrees = pan);
+  InitialPan: LibraryCall PanTilt (PanDegrees = pan, TiltDegrees = tilt);
 
   // Iterate through tilt
   while (tilt < TiltHi) {

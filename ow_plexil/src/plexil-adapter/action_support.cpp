@@ -6,7 +6,10 @@
 
 // This is the only non-template function so far, which motivated this .cpp file.
 
-t_action_active_cb default_action_active_cb (const std::string& operation_name)
+t_action_active_cb default_action_active_cb (const std::string& operation_name,
+                                             const std::string& info)
 {
-  return [&] () { ROS_INFO ("%s started...", operation_name.c_str()); };
+  return [&] () {
+    ROS_INFO ("%s (%s) started...", operation_name.c_str(), info.c_str());
+  };
 }

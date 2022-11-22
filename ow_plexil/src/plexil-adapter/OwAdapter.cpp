@@ -283,40 +283,32 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
+static bool check_angle (const char* name, double val,
+                         double min, double max, double tolerance)
 {
-  double degrees;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
-  if (degrees < TiltMinDegrees - PanTiltInputTolerance ||
-      degrees > TiltMaxDegrees + PanTiltInputTolerance) {
-    ROS_WARN ("Requested tilt %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.",
-              degrees, TiltMinDegrees, TiltMaxDegrees);
-    acknowledge_command_denied (cmd, intf);
+  if (val < min - tolerance || val > max + tolerance) {
+    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.", name, val, min, max);
+    return false;
   }
-  else {
-    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->tiltAntenna (degrees, CommandId);
-    acknowledge_command_sent(*cr);
-  }
+  return true;
 }
 
-static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
+static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
 {
-  double degrees;
+  double pan_degrees, tilt_degrees;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
-  if (degrees < PanMinDegrees - PanTiltInputTolerance ||
-      degrees > PanMaxDegrees + PanTiltInputTolerance) {
-    ROS_WARN ("Requested pan %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.",
-              degrees, PanMinDegrees, PanMaxDegrees);
+  args[0].getValue (pan_degrees);
+  args[1].getValue (tilt_degrees);
+  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance) ||
+      ! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panAntenna (degrees, CommandId);
+    OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
     acknowledge_command_sent(*cr);
   }
 }
@@ -400,8 +392,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("discard", discard);
-  g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
-  g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("take_picture", take_picture);

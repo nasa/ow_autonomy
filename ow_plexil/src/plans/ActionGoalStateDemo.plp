@@ -31,7 +31,7 @@ ActionGoalStateDemo:
       }
       else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
   
-      LibraryCall Pan (Degrees=NewAngle);
+      LibraryCall PanTilt (PanDegrees=NewAngle, TiltDegrees=0);
     }
 
     Pattern2UnstowStow:
