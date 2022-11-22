@@ -103,7 +103,7 @@ const string Op_Discard                = "Discard";
 const string Op_Grind                  = "Grind";
 const string Op_Stow                   = "Stow";
 const string Op_Unstow                 = "Unstow";
-const string Op_TakePicture            = "TakePicture";
+const string Op_CameraCapture          = "CameraCapture";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 const string Op_SetLightIntensity      = "SetLightIntensity";
@@ -120,7 +120,7 @@ static vector<string> LanderOpNames = {
   Op_Grind,
   Op_Stow,
   Op_Unstow,
-  Op_TakePicture,
+  Op_CameraCapture,
   Op_IdentifySampleLocation,
   Op_SetLightIntensity
 };
@@ -157,7 +157,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_DigLinear, NOGOAL },
   { Op_Deliver, NOGOAL },
   { Op_Discard, NOGOAL },
-  { Op_TakePicture, NOGOAL },
+  { Op_CameraCapture, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
   { Op_IdentifySampleLocation, NOGOAL },
   { Op_SetLightIntensity, NOGOAL }
@@ -347,38 +347,6 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
 
-void OwInterface::cameraCallback (const sensor_msgs::Image::ConstPtr& msg)
-{
-  // NOTE: the received image is ignored for now.
-  m_pointCloudRecieved = false;
-  if (operationRunning (Op_TakePicture)) {
-    ros::Rate rate(10);
-    int timeout = 0;
-    // We wait for the pointcloud as well or the 5 sec timeout before marking as
-    // finished.
-    while(m_pointCloudRecieved == false && timeout < PointCloudTimeout){
-        ros::spinOnce();
-        rate.sleep();
-        timeout+=1;
-    }
-    if(timeout == PointCloudTimeout){
-      ROS_ERROR("Timeout Exceeded: Recieved an Image but no PointCloud2.");
-    }
-    markOperationFinished (Op_TakePicture,
-                           m_runningOperations.at (Op_TakePicture));
-  }
-}
-
-void OwInterface::pointCloudCallback
-(const sensor_msgs::PointCloud2::ConstPtr& msg)
-{
-  // NOTE: the received pointcloud is ignored for now.
-  if (operationRunning (Op_TakePicture)) {
-    //mark as recieved
-    m_pointCloudRecieved = true;
-  }
-}
-
 ///////////////////////// Power support /////////////////////////////////////
 
 static double StateOfCharge       = NAN;
@@ -520,12 +488,7 @@ OwInterface* OwInterface::instance ()
   return &instance;
 }
 
-OwInterface::OwInterface ()
-  : m_currentPan (0),
-    m_currentTilt (0),
-    m_pointCloudRecieved(false)
-{
-}
+OwInterface::OwInterface () : m_currentPan (0), m_currentTilt (0) { }
 
 void OwInterface::initialize()
 {
@@ -559,14 +522,6 @@ void OwInterface::initialize()
       (m_genericNodeHandle ->
        subscribe("/joint_states", qsize,
                  &OwInterface::jointStatesCallback, this));
-    m_cameraSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/StereoCamera/left/image_raw", qsize,
-                 &OwInterface::cameraCallback, this));
-    m_pointCloudSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/StereoCamera/points2", qsize,
-                 &OwInterface::pointCloudCallback, this));
     m_socSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
@@ -616,6 +571,8 @@ void OwInterface::initialize()
       make_unique<DeliverActionClient>(Op_Deliver, true);
     m_discardClient =
       make_unique<DiscardActionClient>(Op_Discard, true);
+    m_cameraCaptureClient =
+      make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
     m_identifySampleLocationClient =
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
@@ -707,6 +664,17 @@ void OwInterface::initialize()
               boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
                           "Discard")));
     }
+    if (! m_cameraCaptureClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("CameraCapture action server did not connect!");
+    }
+    else {
+      m_cameraCaptureStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/CameraCapture/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          "CameraCapture")));
+    }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
@@ -755,13 +723,31 @@ void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
      default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
 }
 
-void OwInterface::takePicture (int id)
+void OwInterface::cameraCapture (double exposure_secs, int id)
 {
-  if (! markOperationRunning (Op_TakePicture, id)) return;
-  std_msgs::Empty msg;
-  ROS_INFO ("Capturing stereo image using left image trigger.");
-  m_leftImageTriggerPublisher->publish (msg);
+  if (! markOperationRunning (Op_CameraCapture, id)) return;
+  thread action_thread (&OwInterface::cameraCaptureAction, this, exposure_secs, id);
+  action_thread.detach();
 }
+
+
+void OwInterface::cameraCaptureAction (double exposure_secs, int id)
+{
+  CameraCaptureGoal goal;
+  goal.exposure = exposure_secs;
+
+  ROS_INFO ("Starting CameraCapture(exposure_secs=%.2f)", exposure_secs);
+
+  runAction<actionlib::SimpleActionClient<CameraCaptureAction>,
+            CameraCaptureGoal,
+            CameraCaptureResultConstPtr,
+            CameraCaptureFeedbackConstPtr>
+    (Op_CameraCapture, m_cameraCaptureClient, goal, id,
+     default_action_active_cb (Op_CameraCapture),
+     default_action_feedback_cb<CameraCaptureFeedbackConstPtr> (Op_CameraCapture),
+     default_action_done_cb<CameraCaptureResultConstPtr> (Op_CameraCapture));
+}
+
 
 void OwInterface::deliver (int id)
 {

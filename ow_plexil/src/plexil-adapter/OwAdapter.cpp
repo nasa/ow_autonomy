@@ -285,6 +285,11 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
 
 static bool check_angle (const char* name, double val,
                          double min, double max, double tolerance)
+// NOTE: tolerance is needed because there is apparently loss of
+// precision in the angle on its way into Python.  This could be
+// because the ROS action uses 32-bit floats for the input angles.
+// They will be updated to 64 bit as part of the ongoing command
+// unification with OWLAT.
 {
   if (val < min - tolerance || val > max + tolerance) {
     ROS_WARN ("Requested %s %f out of valid range [%f %f], "
@@ -313,10 +318,13 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   }
 }
 
-static void take_picture (Command* cmd, AdapterExecInterface* intf)
+static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
+  double exposure_secs;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->takePicture (CommandId);
+  OwInterface::instance()->cameraCapture (exposure_secs, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -395,7 +403,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("take_picture", take_picture);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
   g_configuration->registerCommandHandler("set_light_intensity",
                                           set_light_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
