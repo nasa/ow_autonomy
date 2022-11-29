@@ -27,6 +27,7 @@
 #include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_lander/DiscardAction.h>
 #include <ow_lander/CameraCaptureAction.h>
+#include <ow_lander/LightSetIntensityAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
 #include <control_msgs/JointControllerState.h>
@@ -67,8 +68,13 @@ using DiscardActionClient =
   actionlib::SimpleActionClient<ow_lander::DiscardAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
+using LightSetIntensityActionClient =
+  actionlib::SimpleActionClient<ow_lander::LightSetIntensityAction>;
+
+// The only ow_plexil-defined action.
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
+
 
 // Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
@@ -110,7 +116,7 @@ class OwInterface : public PlexilInterface
   void unstow (int id);
   void deliver (int id);
   void discard (double x, double y, double z, int id);
-  void setLightIntensity (const std::string& side, double intensity, int id);
+  void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
   double getTilt () const;
@@ -157,6 +163,7 @@ class OwInterface : public PlexilInterface
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
   void cameraCaptureAction (double exposure_secs, int id);
+  void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
@@ -229,6 +236,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
 
   std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
+  std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
   std::unique_ptr<ros::Subscriber> m_pointCloudSubscriber;
   std::unique_ptr<ros::Subscriber> m_socSubscriber;
   std::unique_ptr<ros::Subscriber> m_rulSubscriber;
@@ -248,6 +256,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
   std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
   std::unique_ptr<ros::Subscriber> m_cameraCaptureStatusSubscriber;
+  std::unique_ptr<ros::Subscriber> m_lightSetIntensityStatusSubscriber;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
@@ -262,6 +271,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
+  std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
 
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 

@@ -106,7 +106,7 @@ const string Op_Unstow                 = "Unstow";
 const string Op_CameraCapture          = "CameraCapture";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
-const string Op_SetLightIntensity      = "SetLightIntensity";
+const string Op_LightSetIntensity      = "LightSetIntensity";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
@@ -122,7 +122,7 @@ static vector<string> LanderOpNames = {
   Op_Unstow,
   Op_CameraCapture,
   Op_IdentifySampleLocation,
-  Op_SetLightIntensity
+  Op_LightSetIntensity
 };
 
 
@@ -160,7 +160,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_CameraCapture, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
   { Op_IdentifySampleLocation, NOGOAL },
-  { Op_SetLightIntensity, NOGOAL }
+  { Op_LightSetIntensity, NOGOAL }
 };
 
 static void update_action_goal_state (string action, int state)
@@ -518,10 +518,8 @@ void OwInterface::initialize()
        ("/StereoCamera/left/image_trigger", qsize, latch));
 
     // Initialize subscribers
-    m_jointStatesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/joint_states", qsize,
-                 &OwInterface::jointStatesCallback, this));
+    m_genericNodeHandle -> subscribe("/joint_states", qsize,
+                                     &OwInterface::jointStatesCallback, this);
     m_socSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
        subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
@@ -573,6 +571,8 @@ void OwInterface::initialize()
       make_unique<DiscardActionClient>(Op_Discard, true);
     m_cameraCaptureClient =
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
+    m_lightSetIntensityClient =
+      make_unique<LightSetIntensityActionClient>(Op_LightSetIntensity, true);
     m_identifySampleLocationClient =
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
@@ -674,6 +674,17 @@ void OwInterface::initialize()
               ("/CameraCapture/status", qsize,
               boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
                           "CameraCapture")));
+    }
+    if (! m_lightSetIntensityClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("LightSetIntensity action server did not connect!");
+    }
+    else {
+      m_lightSetIntensityStatusSubscriber = make_unique<ros::Subscriber>
+        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+              ("/LightSetIntensity/status", qsize,
+              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
+                          Op_LightSetIntensity)));
     }
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -1106,21 +1117,36 @@ void OwInterface::identifySampleLocationAction (int num_images,
 }
 
 
-void OwInterface::setLightIntensity (const string& side, double intensity, int id)
+void OwInterface::lightSetIntensity (const string& side, double intensity,
+                                     int id)
 {
-  if (! markOperationRunning (Op_SetLightIntensity, id)) return;
+  if (! markOperationRunning (Op_LightSetIntensity, id)) return;
+  thread action_thread (&OwInterface::lightSetIntensityAction, this,
+                        side, intensity, id);
+  action_thread.detach();
+}
 
-  ros::ServiceClient client =
-    m_genericNodeHandle->serviceClient<ow_lander::Light>("/lander/light");
 
-  if (check_service_client (client, Op_SetLightIntensity)) {
-    ow_lander::Light srv;
-    srv.request.name = side;
-    srv.request.intensity = intensity;
-    thread service_thread (&OwInterface::callService<ow_lander::Light>,
-                           this, client, srv, Op_SetLightIntensity, id);
-    service_thread.detach();
-  }
+void OwInterface::lightSetIntensityAction (const string& side, double intensity,
+                                           int id)
+{
+  LightSetIntensityGoal goal;
+  goal.name = side;
+  goal.intensity = intensity;
+
+  ROS_INFO ("Starting LightSetIntensity(side=%s, intensity=%.2f)", side.c_str(),
+            intensity);
+
+  runAction<actionlib::SimpleActionClient<LightSetIntensityAction>,
+            LightSetIntensityGoal,
+            LightSetIntensityResultConstPtr,
+            LightSetIntensityFeedbackConstPtr>
+    (Op_LightSetIntensity, m_lightSetIntensityClient, goal, id,
+     default_action_active_cb (Op_LightSetIntensity),
+     default_action_feedback_cb<LightSetIntensityFeedbackConstPtr>
+     (Op_LightSetIntensity),
+     default_action_done_cb<LightSetIntensityResultConstPtr>
+     (Op_LightSetIntensity));
 }
 
 

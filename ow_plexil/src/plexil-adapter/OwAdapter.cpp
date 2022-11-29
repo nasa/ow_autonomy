@@ -328,7 +328,7 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
+static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
   string side;
@@ -337,18 +337,18 @@ static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (side);
   args[1].getValue (intensity);
   if (side != "left" && side != "right") {
-    ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
+    ROS_ERROR ("light_set_intensity: side was %s, should be 'left' or 'right'",
                side.c_str());
     valid_args = false;
   }
   if (intensity < 0.0 || intensity > 1.0) {
-    ROS_ERROR ("set_light_intensity: intensity was %f, "
+    ROS_ERROR ("light_set_intensity: intensity was %f, "
                "should be in range [0.0 1.0]", intensity);
     valid_args = false;
   }
   if (valid_args) {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->setLightIntensity (side, intensity, CommandId);
+    OwInterface::instance()->lightSetIntensity (side, intensity, CommandId);
     acknowledge_command_sent(*cr);
   }
   else {
@@ -404,8 +404,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("camera_capture", camera_capture);
-  g_configuration->registerCommandHandler("set_light_intensity",
-                                          set_light_intensity);
+  g_configuration->registerCommandHandler("light_set_intensity",
+                                          light_set_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
