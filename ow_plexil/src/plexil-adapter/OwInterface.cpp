@@ -266,7 +266,7 @@ void OwInterface::systemFaultMessageCallback
 }
 
 void OwInterface::armFaultCallback
-(const ow_faults_detection::ArmFaults::ConstPtr& msg)
+(const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
@@ -585,7 +585,7 @@ void OwInterface::initialize()
                 &OwInterface::systemFaultMessageCallback, this));
     m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
-       subscribe("/faults/arm_faults_status", qsize,
+       subscribe("/arm_faults_status", qsize,
                 &OwInterface::armFaultCallback, this));
     m_powerFaultMessagesSubscriber = make_unique<ros::Subscriber>
       (m_genericNodeHandle ->
