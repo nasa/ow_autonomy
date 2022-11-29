@@ -139,6 +139,7 @@ class OwInterface : public PlexilInterface
   int actionGoalStatus (const std::string& action_name) const;
 
  private:
+  void addSubscriber (const std::string& topic, const std::string& operation);
   template<typename Service>
   void callService (ros::ServiceClient, Service, std::string name, int id);
 
@@ -235,28 +236,9 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
   std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
 
-  std::unique_ptr<ros::Subscriber> m_jointStatesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_cameraSubscriber;
-  std::unique_ptr<ros::Subscriber> m_pointCloudSubscriber;
-  std::unique_ptr<ros::Subscriber> m_socSubscriber;
-  std::unique_ptr<ros::Subscriber> m_rulSubscriber;
-  std::unique_ptr<ros::Subscriber> m_batteryTempSubscriber;
-  std::unique_ptr<ros::Subscriber> m_systemFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_powerFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_ptFaultMessagesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_unstowStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_stowStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_grindStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_guardedMoveStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armMoveJointStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armMoveJointsStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_digCircularStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_digLinearStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_deliverStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_discardStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_cameraCaptureStatusSubscriber;
-  std::unique_ptr<ros::Subscriber> m_lightSetIntensityStatusSubscriber;
+  // Generic container because the subscribers are not referenced;
+  // only their callback functions are of use.
+  std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
   // Action clients
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;

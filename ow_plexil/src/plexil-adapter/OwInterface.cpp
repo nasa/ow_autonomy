@@ -373,12 +373,17 @@ static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
 }
 
 //////////////////// Action Status support ////////////////////////////////
+
+/// Queue size for subscribers is a guess at adequacy.
+const int QSize = 3;
+
 void OwInterface::actionGoalStatusCallback
 (const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
-  // Update ActionGoalStatusMap of action action_name with the status from first
-  // goal in GoalStatusArray msg. This is based on the assumption that no action
-  // will have more than one goal in our system.
 
+// Update ActionGoalStatusMap of action action_name with the status
+// from first goal in GoalStatusArray msg. This is based on the
+// assumption that no action will have more than one goal in our
+// system.
 {
   if (msg->status_list.size() == 0) {
     int status = NOGOAL;
@@ -502,53 +507,8 @@ void OwInterface::initialize()
 
     m_genericNodeHandle = make_unique<ros::NodeHandle>();
 
-    // Initialize publishers.  Queue size is a guess at adequacy.  For now,
-    // latching in lieu of waiting for publishers.
+    // Initialize action clients
 
-    const int qsize = 3;
-    const bool latch = true;
-    m_antennaTiltPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", qsize, latch));
-    m_antennaPanPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", qsize, latch));
-    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", qsize, latch));
-
-    // Initialize subscribers
-    m_genericNodeHandle -> subscribe("/joint_states", qsize,
-                                     &OwInterface::jointStatesCallback, this);
-    m_socSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/power_system_node/state_of_charge", qsize, soc_callback));
-    m_batteryTempSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/power_system_node/battery_temperature", qsize,
-                 temperature_callback));
-    m_rulSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/power_system_node/remaining_useful_life", qsize,
-                 rul_callback));
-    // subscribers for fault messages
-    m_systemFaultMessagesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/system_faults_status", qsize,
-                &OwInterface::systemFaultMessageCallback, this));
-    m_armFaultMessagesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/faults/arm_faults_status", qsize,
-                &OwInterface::armFaultCallback, this));
-    m_powerFaultMessagesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/faults/power_faults_status", qsize,
-                &OwInterface::powerFaultCallback, this));
-    m_ptFaultMessagesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/faults/pt_faults_status", qsize,
-                &OwInterface::antennaFaultCallback, this));
-    // action servers and subscribers for action status
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_armMoveJointClient =
@@ -577,126 +537,139 @@ void OwInterface::initialize()
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
     m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
+
+    // Initialize publishers.  For now, latching in lieu of waiting
+    // for publishers.
+
+    const bool latch = true;
+    m_antennaTiltPublisher = make_unique<ros::Publisher>
+      (m_genericNodeHandle->advertise<std_msgs::Float64>
+       ("/ant_tilt_position_controller/command", QSize, latch));
+    m_antennaPanPublisher = make_unique<ros::Publisher>
+      (m_genericNodeHandle->advertise<std_msgs::Float64>
+       ("/ant_pan_position_controller/command", QSize, latch));
+    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
+      (m_genericNodeHandle->advertise<std_msgs::Empty>
+       ("/StereoCamera/left/image_trigger", QSize, latch));
+
+    // Initialize subscribers
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle -> subscribe("/joint_states", QSize,
+                                         &OwInterface::jointStatesCallback,
+                                         this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/power_system_node/state_of_charge", QSize, soc_callback)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/power_system_node/battery_temperature", QSize,
+                  temperature_callback)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/power_system_node/remaining_useful_life", QSize,
+                  rul_callback)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/system_faults_status", QSize,
+                  &OwInterface::systemFaultMessageCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/faults/arm_faults_status", QSize,
+                  &OwInterface::armFaultCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/faults/power_faults_status", QSize,
+                  &OwInterface::powerFaultCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/faults/pt_faults_status", QSize,
+                  &OwInterface::antennaFaultCallback, this)));
+
+    // Connect action clients to servers and add subscribers for
+    // action status.
+
     if (! m_unstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Unstow action server did not connect!");
     }
-    else {
-      m_unstowStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/Unstow/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "Unstow")));
-    }
+    else addSubscriber ("/Unstow/status", Op_Unstow);
+
     if (! m_stowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Stow action server did not connect!");
     }
-    else {
-      m_stowStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-        ("/Stow/status", qsize,
-        boost::bind(&OwInterface::actionGoalStatusCallback, this, _1, "Stow")));
-    }
+    else addSubscriber ("/Stow/status", Op_Stow);
+
     if (! m_armMoveJointClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS)))  {
       ROS_ERROR ("ArmMoveJoint action server did not connect!");
     }
-    else {
-      m_armMoveJointStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-            ("/ArmMoveJoint/status", qsize,
-            boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                        "ArmMoveJoint")));
-    }
+    else addSubscriber ("/ArmMoveJoint/status", Op_ArmMoveJoint);
+
     if (! m_armMoveJointsClient ->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmMoveJoints action server did not connect!");
     }
-    else {
-      m_armMoveJointsStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/ArmMoveJoints/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "ArmMoveJoints")));
-    }
+    else addSubscriber ("/ArmMoveJoints/status", Op_ArmMoveJoints);
+
     if (! m_digCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigCircular action server did not connect!");
     }
-    else {
-      m_digCircularStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/DigCircular/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "DigCircular")));
-    }
+    else addSubscriber ("/DigCircular/status", Op_DigCircular);
+
     if (! m_digLinearClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("DigLinear action server did not connect!");
     }
-    else {
-      m_digLinearStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/DigLinear/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "DigLinear")));
-    }
+    else addSubscriber ("/DigLinear/status", Op_DigLinear);
+
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Deliver action server did not connect!");
     }
-    else {
-      m_deliverStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/Deliver/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "Deliver")));
-    }
+    else addSubscriber ("/Deliver/status", Op_Deliver);
+
     if (! m_discardClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Discard action server did not connect!");
     }
-    else {
-      m_discardStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/Discard/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "Discard")));
-    }
+    else addSubscriber ("/Discard/status", Op_Discard);
+
     if (! m_cameraCaptureClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("CameraCapture action server did not connect!");
     }
-    else {
-      m_cameraCaptureStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/CameraCapture/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "CameraCapture")));
-    }
+    else addSubscriber ("/CameraCapture/status", Op_CameraCapture);
+
     if (! m_lightSetIntensityClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("LightSetIntensity action server did not connect!");
     }
-    else {
-      m_lightSetIntensityStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/LightSetIntensity/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          Op_LightSetIntensity)));
-    }
+    else addSubscriber ("/LightSetIntensity/status", Op_LightSetIntensity);
+
     if (! m_guardedMoveClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("GuardedMove action server did not connect!");
     }
-    else {
-      m_guardedMoveStatusSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-              ("/GuardedMove/status", qsize,
-              boost::bind(&OwInterface::actionGoalStatusCallback, this, _1,
-                          "GuardedMove")));
-    }
+    else addSubscriber ("/GuardedMove/status", Op_GuardedMove);
+
     if (! m_panTiltClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Antenna pan/tilt action server did not connect!");
@@ -707,6 +680,18 @@ void OwInterface::initialize()
     }
   }
 }
+
+
+void OwInterface::addSubscriber (const string& topic, const string& operation)
+{
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+      (topic, QSize,
+       boost::bind(&OwInterface::actionGoalStatusCallback,
+                   this, _1, operation))));
+}
+
 
 void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
 {
