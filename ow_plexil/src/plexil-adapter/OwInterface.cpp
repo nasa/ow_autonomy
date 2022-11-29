@@ -47,44 +47,6 @@ const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulato
 const double VelocityTolerance       = 0.01;  // made up, unitless
 
 
-/////////////////// ROS Service support //////////////////////
-
-template<typename Service>
-void OwInterface::callService (ros::ServiceClient client, Service srv,
-                               string name, int id)
-{
-  // NOTE: arguments are copies because this function is called in a thread that
-  // outlives its caller.  Assumes that service is not already running; this is
-  // checked upstream.
-
-  ROS_INFO("Starting ROS service %s", name.c_str());
-  if (client.call (srv)) { // blocks
-    ROS_INFO("%s returned: %d, %s", name.c_str(), srv.response.success,
-             srv.response.message.c_str());  // make DEBUG later
-  }
-  else {
-    ROS_ERROR("Failed to call service %s", name.c_str());
-  }
-  markOperationFinished (name, id);
-}
-
-static bool check_service_client (ros::ServiceClient& client,
-                                  const string& name)
-{
-  if (! client.exists()) {
-    ROS_ERROR("Service client for %s does not exist!", name.c_str());
-    return false;
-  }
-
-  if (! client.isValid()) {
-    ROS_ERROR("Service client for %s is invalid!", name.c_str());
-    return false;
-  }
-
-  return true;
-}
-
-
 //////////////////// Lander Operation Support ////////////////////////
 
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
