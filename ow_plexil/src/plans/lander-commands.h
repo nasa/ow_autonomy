@@ -70,7 +70,7 @@ Command stow();
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
 
 // Set spotlight intensity
-Command set_light_intensity (String side,     // "left" or "right"
+Command light_set_intensity (String side,     // "left" or "right"
 			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif
