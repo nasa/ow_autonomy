@@ -81,8 +81,14 @@ static bool lookup (const string& state_name,
   else STATE_STUB(SampleGood, true)
   else STATE_STUB(CollectAndTransferTimeout, 10)
 
+  else if (state_name == "TiltRadians") {
+    value_out = OwInterface::instance()->getTiltRadians();
+  }
   else if (state_name == "TiltDegrees") {
-    value_out = OwInterface::instance()->getTilt();
+    value_out = OwInterface::instance()->getTiltDegrees();
+  }
+  else if (state_name == "PanRadians") {
+    value_out = OwInterface::instance()->getPanRadians();
   }
   else if (state_name == "PanDegrees") {
     value_out = OwInterface::instance()->getPanDegrees();

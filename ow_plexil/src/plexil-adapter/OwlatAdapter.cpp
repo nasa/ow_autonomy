@@ -341,6 +341,9 @@ OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
 bool OwlatAdapter::initialize()
 {
   CommonAdapter::initialize();
+
+  // Commands
+  
   g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
@@ -363,6 +366,8 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
 
+  // Telemetry
+  
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
   g_configuration->registerLookupHandler("ArmJointAccelerations",
                                          armJointAccelerations);

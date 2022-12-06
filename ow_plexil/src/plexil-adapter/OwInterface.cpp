@@ -282,12 +282,14 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        m_currentPan = position * R2D;
-        publish ("PanDegrees", m_currentPan);
+        m_currentPanRadians = position;
+        publish ("PanRadians", m_currentPanRadians);
+        publish ("PanDegrees", m_currentPanRadians * R2D);
      }
       else if (joint == Joint::antenna_tilt) {
-        m_currentTilt = position * R2D;
-        publish ("TiltDegrees", m_currentTilt);
+        m_currentTiltRadians = position;
+        publish ("TiltRadians", m_currentTiltRadians);
+        publish ("TiltDegrees", m_currentTiltRadians * R2D);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
@@ -455,7 +457,10 @@ OwInterface* OwInterface::instance ()
   return &instance;
 }
 
-OwInterface::OwInterface () : m_currentPan (0), m_currentTilt (0) { }
+OwInterface::OwInterface ()
+  : m_currentPanRadians (0),
+    m_currentTiltRadians (0)
+{ }
 
 void OwInterface::initialize()
 {
@@ -1097,14 +1102,24 @@ void OwInterface::lightSetIntensityAction (const string& side, double intensity,
 }
 
 
-double OwInterface::getTilt () const
+double OwInterface::getTiltRadians () const
 {
-  return m_currentTilt;
+  return m_currentTiltRadians;
+}
+
+double OwInterface::getTiltDegrees () const
+{
+  return m_currentTiltRadians * R2D;
+}
+
+double OwInterface::getPanRadians () const
+{
+  return m_currentPanRadians;
 }
 
 double OwInterface::getPanDegrees () const
 {
-  return m_currentPan;
+  return m_currentPanRadians * R2D;
 }
 
 double OwInterface::getPanVelocity () const
