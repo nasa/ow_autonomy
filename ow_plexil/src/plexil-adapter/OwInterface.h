@@ -230,8 +230,6 @@ class OwInterface : public PlexilInterface
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
 
-  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
-
   // Publishers and subscribers
 
   std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;

@@ -9,6 +9,11 @@
 // simulators and testbeds.
 
 #include "action_support.h"
+#include <cmath>  // for M_PI, fabs, fmod
+
+// Degree/Radian conversion used in subclasses
+constexpr double D2R = M_PI / 180.0 ;
+constexpr double R2D = 180.0 / M_PI ;
 
 class PlexilInterface
 {
@@ -62,6 +67,13 @@ class PlexilInterface
     bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
     markOperationFinished (opname, id);
   }
+
+  // Node handle reused much.
+  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
+
+  // Subscribers: generic container because the subscribers are not
+  // referenced; only their callback functions are of use.
+  std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
  private:
   // Callback function in PLEXIL adapter for success/failure of given command.

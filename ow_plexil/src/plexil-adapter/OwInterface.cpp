@@ -32,16 +32,9 @@ using std::string;
 using std::shared_ptr;
 using std::make_unique;
 
-// C
-#include <cmath>  // for M_PI, fabs, fmod
-
 using namespace ow_lander;
 
 //////////////////// Utilities ////////////////////////
-
-// Degree/Radian
-constexpr double D2R = M_PI / 180.0 ;
-constexpr double R2D = 180.0 / M_PI ;
 
 const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
 const double VelocityTolerance       = 0.01;  // made up, unitless

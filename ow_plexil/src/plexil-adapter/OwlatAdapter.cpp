@@ -59,7 +59,7 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatArmMoveCartesian (frame, relative,
-                                                     *position_vector, 
+                                                     *position_vector,
                                                      *orientation_vector,
                                                      CommandId);
   acknowledge_command_sent(*cr);
@@ -87,9 +87,9 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd,
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveCartesianGuarded (frame, relative, 
+  OwlatInterface::instance()->owlatArmMoveCartesianGuarded (frame, relative,
                                                             *position_vector,
-                                                            *orientation_vector, 
+                                                            *orientation_vector,
                                                             retracting,
                                                             force_threshold,
                                                             torque_threshold,
@@ -146,8 +146,8 @@ static void owlat_arm_move_joints_guarded (Command* cmd,
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative,
                                                          *angles_vector,
-                                                         retracting, 
-                                                         force_threshold, 
+                                                         retracting,
+                                                         force_threshold,
                                                          torque_threshold,
                                                          CommandId);
   acknowledge_command_sent(*cr);
@@ -176,9 +176,9 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   position->getContentsVector(position_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmPlaceTool (frame, relative, 
+  OwlatInterface::instance()->owlatArmPlaceTool (frame, relative,
                                                  *position_vector,
-                                                 *normal_vector, 
+                                                 *normal_vector,
                                                  distance, overdrive,
                                                  retracting,
                                                  force_threshold,
@@ -322,6 +322,13 @@ static void pspStopReason (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getPSPStopReason());
 }
 
+static void panTiltPosition (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("PanTiltPosition ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getPanTiltPosition());
+}
+
 static void getDefaultLookupHandler (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getDefaultLookupHandler", "lookup called for " << state.name()
@@ -343,7 +350,7 @@ bool OwlatAdapter::initialize()
   CommonAdapter::initialize();
 
   // Commands
-  
+
   g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
   g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
@@ -367,7 +374,7 @@ bool OwlatAdapter::initialize()
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
 
   // Telemetry
-  
+
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
   g_configuration->registerLookupHandler("ArmJointAccelerations",
                                          armJointAccelerations);
@@ -380,6 +387,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("ArmPose", armPose);
   g_configuration->registerLookupHandler("ArmTool", armTool);
   g_configuration->registerLookupHandler("PSPStopReason", pspStopReason);
+  g_configuration->registerLookupHandler("PanTiltPosition", panTiltPosition);
   g_configuration->setDefaultLookupHandler(getDefaultLookupHandler);
 
   debugMsg("OwlatAdapter", " initialized.");
