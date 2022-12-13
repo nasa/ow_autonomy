@@ -11,6 +11,9 @@
 #include <memory>
 #include <ros/ros.h>
 
+// owl_msgs
+#include <owl_msgs/PanTiltPosition.h>
+
 // ow_plexil
 #include <Value.hh>
 #include "PlexilInterface.h"
@@ -182,6 +185,7 @@ class OwlatInterface : public PlexilInterface
   void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
   void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
+  void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
   // Action Clients
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
@@ -207,6 +211,8 @@ class OwlatInterface : public PlexilInterface
   std::vector<double> m_arm_ft_force;
   std::vector<double> m_arm_pose;
   double m_arm_tool;
+  double m_pan_radians;
+  double m_tilt_radians;
 };
 
 #endif

@@ -741,8 +741,8 @@ void OwlatInterface::armToolCallback
 void OwlatInterface::panTiltCallback
 (const owl_msgs::PanTiltPosition::ConstPtr& msg)
 {
-  m_pan_radians = msg->value.value[0];
-  m_tilt_radians = msg->value.value[1];
+  m_pan_radians = msg->value[0];
+  m_tilt_radians = msg->value[1];
   publish("PanRadians", m_pan_radians);
   publish("TiltRadians", m_tilt_radians);
 }
@@ -792,22 +792,22 @@ Value OwlatInterface::getPSPStopReason() const
   return(Value(PSPStopReasonVar));
 }
 
-Value getPanDegrees() const
-{
-  return m_pan_radians * R2D;
-}
-
-Value getPanRadians() const
+Value OwlatInterface::getPanRadians() const
 {
   return m_pan_radians;
 }
 
-Value getTiltRadians() const
+Value OwlatInterface::getPanDegrees() const
+{
+  return m_pan_radians * R2D;
+}
+
+Value OwlatInterface::getTiltRadians() const
 {
   return m_tilt_radians;
 }
 
-Value getTiltDegrees() const
+Value OwlatInterface::getTiltDegrees() const
 {
   return m_tilt_radians * R2D;
 }

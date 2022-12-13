@@ -322,11 +322,32 @@ static void pspStopReason (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getPSPStopReason());
 }
 
-static void panTiltPosition (const State& state, StateCacheEntry &entry)
+static void panRadians (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("PanTiltPosition ", "lookup called for " << state.name()
+  debugMsg("PanRadians ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getPanTiltPosition());
+  entry.update(OwlatInterface::instance()->getPanRadians());
+}
+
+static void panDegrees (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("PanDegrees ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getPanDegrees());
+}
+
+static void tiltRadians (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("TiltRadians ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getTiltRadians());
+}
+
+static void tiltDegrees (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("TiltDegrees ", "lookup called for " << state.name()
+           << " with " << state.parameters().size() << " args");
+  entry.update(OwlatInterface::instance()->getTiltDegrees());
 }
 
 static void getDefaultLookupHandler (const State& state, StateCacheEntry &entry)
@@ -387,7 +408,10 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("ArmPose", armPose);
   g_configuration->registerLookupHandler("ArmTool", armTool);
   g_configuration->registerLookupHandler("PSPStopReason", pspStopReason);
-  g_configuration->registerLookupHandler("PanTiltPosition", panTiltPosition);
+  g_configuration->registerLookupHandler("PanRadians", panRadians);
+  g_configuration->registerLookupHandler("PanDegrees", panDegrees);
+  g_configuration->registerLookupHandler("TiltRadians", tiltRadians);
+  g_configuration->registerLookupHandler("TiltDegrees", tiltDegrees);
   g_configuration->setDefaultLookupHandler(getDefaultLookupHandler);
 
   debugMsg("OwlatAdapter", " initialized.");
