@@ -744,7 +744,9 @@ void OwlatInterface::panTiltCallback
   m_pan_radians = msg->value[0];
   m_tilt_radians = msg->value[1];
   publish("PanRadians", m_pan_radians);
+  publish("PanDegrees", m_pan_radians * R2D);
   publish("TiltRadians", m_tilt_radians);
+  publish("TiltDegrees", m_tilt_radians * R2D);
 }
 
 Value OwlatInterface::getArmJointAngles() const
