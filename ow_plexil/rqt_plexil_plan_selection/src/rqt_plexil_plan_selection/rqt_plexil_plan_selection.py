@@ -55,9 +55,10 @@ class PlexilPlanSelectionGUI(Plugin):
     self.monitor_signal[str].connect(self.monitor_status)
 
     #populates the plan list, shows different plans based off of what launch file is running
+    unified_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'),
+                                    'src', 'plans', 'unified')
     if rospy.get_param('owlat_flag', False):
       owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat_plans')
-      unified_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'unified')
       self.populate_plan_list([owlat_plan_dir, unified_plan_dir])
     else:
       ow_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')

@@ -25,7 +25,7 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
   if(initial_plan.compare("None") != 0) {
     plan_array.push_back(initial_plan);
   }
-  //workaround for the getPlanState not returning correctly for first plan
+  //workaround for the allPlansFinished not returning correctly for first plan
   m_first_plan = true;
 
   //initialize service
@@ -71,7 +71,7 @@ void PlexilPlanSelection::waitForPlan(){
   std_msgs::String status;
   ros::Rate rate(10); // 10 Hz for overall rate we are spinning
   //wait for current plan to finish before running next plan
-  while(!OwExecutive::instance()->getPlanState() && m_first_plan == false){
+  while(!OwExecutive::instance()->allPlansFinished() && m_first_plan == false){
     ros::spinOnce();
     rate.sleep();
   }
@@ -84,40 +84,58 @@ void PlexilPlanSelection::waitForPlan(){
 void PlexilPlanSelection::runCurrentPlan(){
   std_msgs::String status;
   ros::Rate rate(10); // 10 Hz for overall rate we are spinning
-  //try to run the plan
-  if(OwExecutive::instance()->runPlan(plan_array[0].c_str())){
-    //workaround for getPlanState not working on first plan
-    if(m_first_plan == true){
-      m_first_plan = false;
-    }
+
+  if (OwExecutive::instance()->runPlan(plan_array[0].c_str())) {
+
+/* Skipping these checks for now, because they don't work if the plan
+   finishes execution very quickly.  Seeking a solution from the
+   PLEXIL team as of 12/16/22.
+
+    // Workaround for allPlansFinished() not working on first plan.
+    if (m_first_plan) m_first_plan = false;
+
     // Times out after 3 seconds or the plan is registered as running.
     int timeout = 0;
-    while(OwExecutive::instance()->getPlanState() && timeout < 30){
+    while(OwExecutive::instance()->allPlansFinished() && timeout < 30){
       ros::spinOnce();
       rate.sleep();
       timeout+=1;
       if(timeout % 10 == 0){
-        ROS_ERROR("Plan not responding, timing out in %i seconds", (3 - timeout/10));
+        ROS_ERROR("Plan not responding, timing out in %i seconds",
+                  (3 - timeout/10));
       }
     }
-      //if timed out we set plan as failed for GUI
-      if(timeout == 30){
-        ROS_INFO ("Plan timed out, try again.");
-        status.data = "FAILED:" + plan_array[0];
-        m_planSelectionStatusPublisher->publish(status);
-      }
-      //otherwise we set it as running
-      else{
-          status.data = "SUCCESS:" + plan_array[0];
-          m_planSelectionStatusPublisher->publish(status);
-      }
-  }
-  //if error from run() we set as failed for GUI
-  else{
+
+    // If timed out we set plan as failed for GUI.
+    if(timeout == 30){
+      ROS_INFO ("Plan timed out, try again.");
       status.data = "FAILED:" + plan_array[0];
       m_planSelectionStatusPublisher->publish(status);
+    }
+    //otherwise we set it as running
+    else{
+      status.data = "SUCCESS:" + plan_array[0];
+      m_planSelectionStatusPublisher->publish(status);
+    }
   }
-  //delete the plan we just ran from plan array
+*/
+    // Workaround for allPlansFinished() not working on first plan.
+    if (m_first_plan) m_first_plan = false;
+
+    // Wait for the plan to start running (assumes success)
+    ros::spinOnce();
+    rate.sleep();
+    
+    status.data = "SUCCESS:" + plan_array[0];
+    m_planSelectionStatusPublisher->publish(status);
+  }
+  else {
+    // Unable to run the plan for some reason.
+    status.data = "FAILED:" + plan_array[0];
+    m_planSelectionStatusPublisher->publish(status);
+  }
+
+  // Delete the plan we just ran from plan array.
   plan_array.erase(plan_array.begin());
 }
 
