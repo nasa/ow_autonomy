@@ -39,7 +39,7 @@
 
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaultsStatus.h>
-#include <ow_faults_detection/PowerFaults.h>
+#include <owl_msgs/PowerFaultsStatus.h>
 #include <ow_faults_detection/PTFaults.h>
 
 #include "PlexilInterface.h"
@@ -168,7 +168,7 @@ class OwInterface : public PlexilInterface
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
-  void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
+  void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
   void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
@@ -230,7 +230,12 @@ class OwInterface : public PlexilInterface
   };
 
   FaultMap32 m_powerErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)}
+    {"LOW_STATE_OF_CHARGE", std::make_pair(
+        owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
+    {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
+        owl_msgs::PowerFaultsStatus::INSTANTANEOUS_CAPACITY_LOSS, false)},
+    {"THERMAL_FAULT", std::make_pair(
+        owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
   FaultMap32 m_panTiltErrors = {
