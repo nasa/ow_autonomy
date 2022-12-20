@@ -285,6 +285,11 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
 
 static bool check_angle (const char* name, double val,
                          double min, double max, double tolerance)
+// NOTE: tolerance is needed because there is apparently loss of
+// precision in the angle on its way into Python.  This could be
+// because the ROS action uses 32-bit floats for the input angles.
+// They will be updated to 64 bit as part of the ongoing command
+// unification with OWLAT.
 {
   if (val < min - tolerance || val > max + tolerance) {
     ROS_WARN ("Requested %s %f out of valid range [%f %f], "
@@ -313,14 +318,17 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   }
 }
 
-static void take_picture (Command* cmd, AdapterExecInterface* intf)
+static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
+  double exposure_secs;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->takePicture (CommandId);
+  OwInterface::instance()->cameraCapture (exposure_secs, CommandId);
   acknowledge_command_sent(*cr);
 }
 
-static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
+static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
   string side;
@@ -329,18 +337,18 @@ static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (side);
   args[1].getValue (intensity);
   if (side != "left" && side != "right") {
-    ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
+    ROS_ERROR ("light_set_intensity: side was %s, should be 'left' or 'right'",
                side.c_str());
     valid_args = false;
   }
   if (intensity < 0.0 || intensity > 1.0) {
-    ROS_ERROR ("set_light_intensity: intensity was %f, "
+    ROS_ERROR ("light_set_intensity: intensity was %f, "
                "should be in range [0.0 1.0]", intensity);
     valid_args = false;
   }
   if (valid_args) {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->setLightIntensity (side, intensity, CommandId);
+    OwInterface::instance()->lightSetIntensity (side, intensity, CommandId);
     acknowledge_command_sent(*cr);
   }
   else {
@@ -395,9 +403,9 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("take_picture", take_picture);
-  g_configuration->registerCommandHandler("set_light_intensity",
-                                          set_light_intensity);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
+  g_configuration->registerCommandHandler("light_set_intensity",
+                                          light_set_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;

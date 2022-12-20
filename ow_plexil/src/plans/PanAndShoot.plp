@@ -14,12 +14,10 @@
 #include "plexil_defs.h"
 #include "plan-interface.h"
 
-LibraryAction TakePicture ();
-
 PanAndShoot:
 {
   In Real PanAngle, TiltAngle;
 
   LibraryCall PanTilt (PanDegrees = PanAngle, TiltDegrees = TiltAngle);
-  LibraryCall TakePicture();
+  LibraryCall CameraCapture (ExposureSecs = 0);
 }

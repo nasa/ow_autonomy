@@ -14,10 +14,9 @@
 // plan-interface.h) that wraps these commands in a way that they
 // called synchronously.
 
-Command tilt_antenna (Real degrees);
-Command pan_antenna (Real degrees);
+Command camera_capture (Real exposure_secs);
+
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
-Command take_picture();
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,
@@ -71,7 +70,7 @@ Command stow();
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
 
 // Set spotlight intensity
-Command set_light_intensity (String side,     // "left" or "right"
+Command light_set_intensity (String side,     // "left" or "right"
 			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif

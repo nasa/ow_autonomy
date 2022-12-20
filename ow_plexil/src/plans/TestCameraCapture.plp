@@ -1,0 +1,47 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform a sequence of camera captures, testing various exposures.
+// Verification of this test requires inspecting the images, e.g. in
+// RQT's image viewer.  A simulation world (e.g. atacama_y1a) that has
+// interesting features at the chosen pan/tilt will also help.
+
+#include "plan-interface.h"
+
+TestCameraCapture: UncheckedSequence
+{
+  log_info ("Beginning TestCameraCapture...");
+
+  log_info ("Aiming camera at some terrain...");
+  LibraryCall PanTilt (PanDegrees = 35, TiltDegrees = 35);
+
+  log_info ("Taking image using default exposure (0.05 secs)...");
+  LibraryCall CameraCapture (ExposureSecs = 0);
+  Wait 3;
+
+  log_info ("Taking image with 0.02 second exposure (should be very dark)...");
+  LibraryCall CameraCapture (ExposureSecs = 0.02);
+  Wait 3;
+
+  log_info ("Taking image with 0.07 second exposure (should be bright)...");
+  LibraryCall CameraCapture (ExposureSecs = 0.07);
+  Wait 3;
+
+  log_info ("Taking image with previous exposure time...");
+  LibraryCall CameraCapture (ExposureSecs = -1);
+  Wait 3;
+
+  log_info ("Taking image with 1 second exposure (should be almost white)...");
+  LibraryCall CameraCapture (ExposureSecs = 1);
+  Wait 3;
+
+  log_info ("Taking image with previous exposure time...");
+  LibraryCall CameraCapture (ExposureSecs = 0);
+  Wait 3;
+
+  log_info ("Taking image with 0.05 second exposure (camera default)...");
+  LibraryCall CameraCapture (ExposureSecs = 0.05);
+
+  log_info ("TestCameraCapture finished.");
+}

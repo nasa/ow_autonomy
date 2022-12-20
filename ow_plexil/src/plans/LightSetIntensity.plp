@@ -1,0 +1,9 @@
+#include "lander-commands.h"
+
+LightSetIntensity:
+{
+  In String Side;
+  In Real Intensity;
+
+  SynchronousCommand light_set_intensity (Side, Intensity);
+}
