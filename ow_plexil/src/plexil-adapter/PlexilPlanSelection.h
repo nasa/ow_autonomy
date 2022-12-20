@@ -26,8 +26,9 @@ class PlexilPlanSelection{
 
     std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
     std::unique_ptr<ros::ServiceServer> m_planSelectionService;
-    std::unique_ptr<ros::Publisher> m_planSelectionStatusPublisher;
-    std::vector<std::string> plan_array;
+  std::unique_ptr<ros::Publisher> m_planSelectionStatusPublisher;
+    // TODO: consider replacing vector with queue:
+    std::vector<std::string> m_plan_array;
     bool m_first_plan;
  
 };

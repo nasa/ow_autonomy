@@ -132,7 +132,7 @@ void OwlatInterface::initialize()
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
         subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
-                  &OwlatInterface::armJointAnglesCallback, this)));
+                  &OwlatInterface::armJointVelocitiesCallback, this)));
 
 
     m_subscribers.push_back
