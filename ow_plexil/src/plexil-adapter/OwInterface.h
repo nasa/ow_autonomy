@@ -119,7 +119,9 @@ class OwInterface : public PlexilInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getTilt () const;
+  double getTiltRadians () const;
+  double getTiltDegrees () const;
+  double getPanRadians () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
@@ -228,8 +230,6 @@ class OwInterface : public PlexilInterface
     {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
   };
 
-  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
-
   // Publishers and subscribers
 
   std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
@@ -258,7 +258,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state
-  double m_currentPan, m_currentTilt;
+  double m_currentPanRadians, m_currentTiltRadians;
 };
 
 #endif
