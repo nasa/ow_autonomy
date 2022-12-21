@@ -27,14 +27,15 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
   if(initial_plan.compare("None") != 0) {
     m_plan_array.push_back(initial_plan);
   }
+  
   //workaround for the allPlansFinished not returning correctly for first plan
   m_first_plan = true;
 
   //initialize service
   m_planSelectionService = std::make_unique<ros::ServiceServer>
-      (m_genericNodeHandle->
-       advertiseService("/plexil_plan_selection",
-       &PlexilPlanSelection::planSelectionServiceCallback, this));
+    (m_genericNodeHandle->
+     advertiseService("/plexil_plan_selection",
+                      &PlexilPlanSelection::planSelectionServiceCallback, this));
 
   //initialize publisher
   m_planSelectionStatusPublisher = std::make_unique<ros::Publisher>
@@ -90,39 +91,39 @@ void PlexilPlanSelection::runCurrentPlan(){
 
   if (OwExecutive::instance()->runPlan(m_plan_array[0].c_str())) {
 
-/* Skipping these checks for now, because they don't work if the plan
-   finishes execution very quickly.  Seeking a solution from the
-   PLEXIL team as of 12/16/22.
+    /* Skipping these checks for now, because they don't work if the plan
+       finishes execution very quickly.  Seeking a solution from the
+       PLEXIL team as of 12/16/22.
 
-    // Workaround for allPlansFinished() not working on first plan.
-    if (m_first_plan) m_first_plan = false;
+       // Workaround for allPlansFinished() not working on first plan.
+       if (m_first_plan) m_first_plan = false;
 
-    // Times out, or the plan is registered as running.
-    int timeout = 0;
-    while(OwExecutive::instance()->allPlansFinished() && 
-          timeout < TIMEOUT * LOOP_RATE) {
-      ros::spinOnce();
-      rate.sleep();
-      timeout+=1;
-      if(timeout % LOOP_RATE == 0){
-        ROS_ERROR("Plan not responding, timing out in %i seconds",
-                  (TIMEOUT - timeout/LOOP_RATE));
-      }
-    }
+       // Times out, or the plan is registered as running.
+       int timeout = 0;
+       while(OwExecutive::instance()->allPlansFinished() && 
+       timeout < TIMEOUT * LOOP_RATE) {
+       ros::spinOnce();
+       rate.sleep();
+       timeout+=1;
+       if(timeout % LOOP_RATE == 0){
+       ROS_ERROR("Plan not responding, timing out in %i seconds",
+       (TIMEOUT - timeout/LOOP_RATE));
+       }
+       }
 
-    // If timed out we set plan as failed for GUI.
-    if(timeout == TIMEOUT * LOOP_RATE){
-      ROS_INFO ("Plan timed out, try again.");
-      status.data = "FAILED:" + m_plan_array[0];
-      m_planSelectionStatusPublisher->publish(status);
-    }
-    //otherwise we set it as running
-    else{
-      status.data = "SUCCESS:" + m_plan_array[0];
-      m_planSelectionStatusPublisher->publish(status);
-    }
-  }
-*/
+       // If timed out we set plan as failed for GUI.
+       if(timeout == TIMEOUT * LOOP_RATE){
+       ROS_INFO ("Plan timed out, try again.");
+       status.data = "FAILED:" + m_plan_array[0];
+       m_planSelectionStatusPublisher->publish(status);
+       }
+       //otherwise we set it as running
+       else{
+       status.data = "SUCCESS:" + m_plan_array[0];
+       m_planSelectionStatusPublisher->publish(status);
+       }
+       }
+    */
     // Workaround for allPlansFinished() not working on first plan.
     if (m_first_plan) m_first_plan = false;
 
