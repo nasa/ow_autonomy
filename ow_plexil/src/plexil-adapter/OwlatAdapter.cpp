@@ -15,6 +15,10 @@ using namespace PLEXIL;
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
 
+// C++
+#include <map>
+
+
 // PLEXIL API
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
@@ -350,14 +354,29 @@ static void tiltDegrees (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getTiltDegrees());
 }
 
-static void getDefaultLookupHandler (const State& state, StateCacheEntry &entry)
+static void joint_velocity (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("getDefaultLookupHandler", "lookup called for " << state.name()
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_velocity ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->getJointVelocity(joint));
+}
+
+static void default_lookup_handler (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("default_lookup_handler", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
   debugMsg("Invalid State: ", state.name());
   entry.update(Unknown);
 }
 
+/*
+static std::map<string, auto> LookupHandlers {
+  { "JointVelocity", joint_velocity }
+};
+*/
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
@@ -412,12 +431,14 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("PanDegrees", panDegrees);
   g_configuration->registerLookupHandler("TiltRadians", tiltRadians);
   g_configuration->registerLookupHandler("TiltDegrees", tiltDegrees);
-  g_configuration->setDefaultLookupHandler(getDefaultLookupHandler);
+  g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
+  g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
   return true;
 }
 
+/*
 void OwlatAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 {
   debugMsg("OwlatAdapter:lookupNow", " called on " << state.name() << " with "
@@ -430,7 +451,7 @@ void OwlatAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 
   entry.update(retval);
 }
-
+*/
 
 extern "C" {
   void initowlat_adapter() {

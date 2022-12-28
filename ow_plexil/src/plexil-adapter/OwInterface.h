@@ -137,6 +137,7 @@ class OwInterface : public PlexilInterface
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
+  double jointVelocity (int joint) const;
 
   int actionGoalStatus (const std::string& action_name) const;
 

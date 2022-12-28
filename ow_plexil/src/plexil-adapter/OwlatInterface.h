@@ -131,7 +131,8 @@ class OwlatInterface : public PlexilInterface
   PLEXIL::Value getPanRadians() const;
   PLEXIL::Value getTiltRadians() const;
   PLEXIL::Value getTiltDegrees() const;
-
+  PLEXIL::Value getJointVelocity(int joint) const;
+  
  private:
 
   // Actions

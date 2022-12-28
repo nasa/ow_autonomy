@@ -813,3 +813,8 @@ Value OwlatInterface::getTiltDegrees() const
 {
   return m_tilt_radians * R2D;
 }
+
+Value OwlatInterface::getJointVelocity (int joint) const
+{
+  return 0; // stub
+}

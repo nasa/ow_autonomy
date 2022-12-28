@@ -1156,3 +1156,8 @@ int OwInterface::actionGoalStatus (const string& action_name) const
 {
   return ActionGoalStatusMap[action_name];
 }
+
+double OwInterface::jointVelocity (int joint) const
+{
+  return 0; // stub
+}
