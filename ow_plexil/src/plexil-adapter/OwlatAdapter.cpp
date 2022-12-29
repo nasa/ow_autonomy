@@ -364,6 +364,26 @@ static void joint_velocity (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getJointVelocity(joint));
 }
 
+static void joint_position (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_position ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->getJointPosition(joint));
+}
+
+static void joint_effort (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_effort ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->getJointEffort(joint));
+}
+
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 {
   debugMsg("default_lookup_handler", "lookup called for " << state.name()
@@ -432,6 +452,8 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("TiltRadians", tiltRadians);
   g_configuration->registerLookupHandler("TiltDegrees", tiltDegrees);
   g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
+  g_configuration->registerLookupHandler("JointPosition", joint_position);
+  g_configuration->registerLookupHandler("JointEffort", joint_effort);
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");

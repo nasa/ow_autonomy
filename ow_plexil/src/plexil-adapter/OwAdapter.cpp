@@ -152,6 +152,16 @@ static bool lookup (const string& state_name,
     args[0].getValue(joint);
     value_out = OwInterface::instance()->jointVelocity(joint);
   }
+  else if (state_name == "JointEffort") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->jointEffort(joint);
+  }
+  else if (state_name == "JointPosition") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->jointPosition(joint);
+  }
   else if (state_name == "AnglesEquivalent") {
     double deg1, deg2, tolerance;
     args[0].getValue(deg1);

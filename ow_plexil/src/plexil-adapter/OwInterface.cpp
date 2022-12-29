@@ -289,6 +289,10 @@ void OwInterface::jointStatesCallback
       publish (plexil_name + "Position", position);
       publish (plexil_name + "Velocity", velocity);
       publish (plexil_name + "Effort", effort);
+      // New interface
+      publish ("JointPosition", position, i);
+      publish ("JointVelocity", velocity, i);
+      publish ("JointEffort", effort, i);
       handle_joint_fault (joint, i, msg);
     }
     else ROS_ERROR("jointStatesCallback: unsupported joint %s",
@@ -1158,6 +1162,16 @@ int OwInterface::actionGoalStatus (const string& action_name) const
 }
 
 double OwInterface::jointVelocity (int joint) const
+{
+  return 0; // stub
+}
+
+double OwInterface::jointPosition (int joint) const
+{
+  return 0; // stub
+}
+
+double OwInterface::jointEffort (int joint) const
 {
   return 0; // stub
 }

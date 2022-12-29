@@ -138,6 +138,8 @@ class OwInterface : public PlexilInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointVelocity (int joint) const;
+  double jointPosition (int joint) const;
+  double jointEffort (int joint) const;
 
   int actionGoalStatus (const std::string& action_name) const;
 

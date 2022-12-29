@@ -818,3 +818,13 @@ Value OwlatInterface::getJointVelocity (int joint) const
 {
   return 0; // stub
 }
+
+Value OwlatInterface::getJointPosition (int joint) const
+{
+  return 0; // stub
+}
+
+Value OwlatInterface::getJointEffort (int joint) const
+{
+  return 0; // stub
+}
