@@ -9,10 +9,17 @@
 // ever be needed in the current autonomy scheme, which has one autonomy
 // executive per lander.
 
-#include <memory>
-#include <ros/ros.h>
+// ow_plexil
+#include "PlexilInterface.h"
+#include "joint_support.h"
 
-// ROS Actions - OceanWATERS
+// ow_simulator
+#include <owl_msgs/SystemFaultsStatus.h>
+#include <ow_faults_detection/ArmFaults.h>
+#include <ow_faults_detection/PowerFaults.h>
+#include <ow_faults_detection/PTFaults.h>
+
+// ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
 #include <ow_lander/UnstowAction.h>
@@ -30,19 +37,17 @@
 #include <ow_lander/LightSetIntensityAction.h>
 #include <ow_plexil/IdentifyLocationAction.h>
 
+// ROS
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
+#include <ros/ros.h>
+
+// C++
 #include <string>
-
-#include <owl_msgs/SystemFaultsStatus.h>
-#include <ow_faults_detection/ArmFaults.h>
-#include <ow_faults_detection/PowerFaults.h>
-#include <ow_faults_detection/PTFaults.h>
-
-#include "PlexilInterface.h"
+#include <memory>
 
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
@@ -137,10 +142,7 @@ class OwInterface : public PlexilInterface
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
-  double jointVelocity (int joint) const;
-  double jointPosition (int joint) const;
-  double jointEffort (int joint) const;
-
+  double jointTelemetry (int joint, TelemetryType type) const;
   int actionGoalStatus (const std::string& action_name) const;
 
  private:

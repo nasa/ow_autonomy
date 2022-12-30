@@ -5,7 +5,6 @@
 // ow_plexil
 #include "OwInterface.h"
 #include "subscriber.h"
-#include "joint_support.h"
 
 // OW - external
 #include <ow_lander/Light.h>
@@ -17,6 +16,7 @@
 
 // C++
 #include <set>
+#include <vector>
 #include <map>
 #include <thread>
 #include <functional>
@@ -133,47 +133,34 @@ static void update_action_goal_state (string action, int state)
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
 
-static map<string, Joint> JointMap {
-  // ROS JointStates message name -> type
-  { "j_shou_yaw", Joint::shoulder_yaw },
-  { "j_shou_pitch", Joint::shoulder_pitch },
-  { "j_prox_pitch", Joint::proximal_pitch },
-  { "j_dist_pitch", Joint::distal_pitch },
-  { "j_hand_yaw", Joint::hand_yaw },
-  { "j_scoop_yaw", Joint::scoop_yaw },
-  { "j_ant_pan", Joint::antenna_pan },
-  { "j_ant_tilt", Joint::antenna_tilt },
-  { "j_grinder", Joint::grinder }
+static vector<JointProperties> JointProps {
+  // NOTE: Torque limits are made up, as no reference specs are yet
+  // known, and only magnitude is provided for now.
+
+  { "AntennaPan", 30, 30 },
+  { "AntennaTilt", 30, 30 },
+  { "DistalPitch", 60, 80 },
+  { "Grinder", 30, 30 },
+  { "HandYaw", 60, 80 },
+  { "ProximalPitch", 60, 80 },
+  { "ScoopYaw", 60, 80 },
+  { "ShoulderPitch", 60, 80 },
+  { "ShoulderYaw", 60, 80 }
 };
 
-static map<Joint, JointProperties> JointPropMap {
-  // NOTE: Torque limits are made up, and there may be a better place for these
-  // later.  Assuming that only magnitude matters.
+static vector<JointTelemetry> JointTelemetries (KnownJoints, { 0, 0, 0 });
 
-  { Joint::shoulder_yaw,   { "j_shou_yaw", "ShoulderYaw", 60, 80 }},
-  { Joint::shoulder_pitch, { "j_shou_pitch", "ShoulderPitch", 60, 80 }},
-  { Joint::proximal_pitch, { "j_prox_pitch", "ProximalPitch", 60, 80 }},
-  { Joint::distal_pitch,   { "j_dist_pitch", "DistalPitch", 60, 80 }},
-  { Joint::hand_yaw,       { "j_hand_yaw", "HandYaw", 60, 80 }},
-  { Joint::scoop_yaw,      { "j_scoop_yaw", "ScoopYaw", 60, 80 }},
-  { Joint::antenna_pan,    { "j_ant_pan", "AntennaPan", 30, 30 }},
-  { Joint::antenna_tilt,   { "j_ant_tilt", "AntennaTilt", 30, 30 }},
-  { Joint::grinder,        { "j_grinder", "Grinder", 30, 30 }}
-};
-
-static map<Joint, JointTelemetry> JointTelemetryMap { };
-
-static void handle_overtorque (Joint joint, double effort)
+static void handle_overtorque (int joint, double effort)
 {
   // For now, torque is just effort (Newton-meter), and overtorque is specific
   // to the joint.
 
-  string joint_name = JointPropMap[joint].plexilName;
+  string joint_name = JointProps[joint].plexilName;
 
-  if (fabs(effort) >= JointPropMap[joint].hardTorqueLimit) {
+  if (fabs(effort) >= JointProps[joint].hardTorqueLimit) {
     JointsAtHardTorqueLimit.insert (joint_name);
   }
-  else if (fabs(effort) >= JointPropMap[joint].softTorqueLimit) {
+  else if (fabs(effort) >= JointProps[joint].softTorqueLimit) {
     JointsAtSoftTorqueLimit.insert(joint_name);
   }
   else {
@@ -182,11 +169,11 @@ static void handle_overtorque (Joint joint, double effort)
   }
 }
 
-static void handle_joint_fault (Joint joint, int joint_index,
+static void handle_joint_fault (int joint_index,
                                 const sensor_msgs::JointState::ConstPtr& msg)
 {
   // NOTE: For now, the only fault is overtorque.
-  handle_overtorque (joint, msg->effort[joint_index]);
+  handle_overtorque (joint_index, msg->effort[joint_index]);
 }
 
 template <typename T1, typename T2>
@@ -258,45 +245,34 @@ void OwInterface::jointStatesCallback
   // C++ vector or array under the hood, hence using size().
   size_t msg_size = msg->name.size();
 
-  if (msg_size != JointMap.size()) {
+  if (msg_size != KnownJoints) {
     ROS_ERROR_ONCE ("OwInterface::jointStatesCallback: "
                     "Number of actual joints, %zu, "
                     "doesn't match number of known joints, %zu. "
                     "This should never happen.",
-                    msg_size, JointMap.size());
+                    msg_size, KnownJoints);
     return;
   }
 
-  for (auto i = 0; i < JointMap.size(); i++) {
-    string ros_name = msg->name[i];
-    if (JointMap.find (ros_name) != JointMap.end()) {
-      Joint joint = JointMap[ros_name];
-      double position = msg->position[i];
-      double velocity = msg->velocity[i];
-      double effort = msg->effort[i];
-      if (joint == Joint::antenna_pan) {
-        m_currentPanRadians = position;
-        publish ("PanRadians", m_currentPanRadians);
-        publish ("PanDegrees", m_currentPanRadians * R2D);
-     }
-      else if (joint == Joint::antenna_tilt) {
-        m_currentTiltRadians = position;
-        publish ("TiltRadians", m_currentTiltRadians);
-        publish ("TiltDegrees", m_currentTiltRadians * R2D);
-      }
-      JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
-      string plexil_name = JointPropMap[joint].plexilName;
-      publish (plexil_name + "Position", position);
-      publish (plexil_name + "Velocity", velocity);
-      publish (plexil_name + "Effort", effort);
-      // New interface
-      publish ("JointPosition", position, i);
-      publish ("JointVelocity", velocity, i);
-      publish ("JointEffort", effort, i);
-      handle_joint_fault (joint, i, msg);
+  for (auto i = 0; i < msg_size; i++) {
+    double position = msg->position[i];
+    double velocity = msg->velocity[i];
+    double effort = msg->effort[i];
+    if (i == ANTENNA_PAN) {
+      m_currentPanRadians = position;
+      publish ("PanRadians", m_currentPanRadians);
+      publish ("PanDegrees", m_currentPanRadians * R2D);
     }
-    else ROS_ERROR("jointStatesCallback: unsupported joint %s",
-                   ros_name.c_str());
+    else if (i == ANTENNA_TILT) {
+      m_currentTiltRadians = position;
+      publish ("TiltRadians", m_currentTiltRadians);
+      publish ("TiltDegrees", m_currentTiltRadians * R2D);
+    }
+    JointTelemetries[i] = JointTelemetry (position, velocity, effort);
+    publish ("JointPosition", position, i);
+    publish ("JointVelocity", velocity, i);
+    publish ("JointEffort", effort, i);
+    handle_joint_fault (i, msg);
   }
 }
 
@@ -1121,12 +1097,12 @@ double OwInterface::getPanDegrees () const
 
 double OwInterface::getPanVelocity () const
 {
-  return JointTelemetryMap[Joint::antenna_pan].velocity;
+  return JointTelemetries[ANTENNA_PAN].velocity;
 }
 
 double OwInterface::getTiltVelocity () const
 {
-  return JointTelemetryMap[Joint::antenna_tilt].velocity;
+  return JointTelemetries[ANTENNA_TILT].velocity;
 }
 
 double OwInterface::getStateOfCharge () const
@@ -1161,17 +1137,20 @@ int OwInterface::actionGoalStatus (const string& action_name) const
   return ActionGoalStatusMap[action_name];
 }
 
-double OwInterface::jointVelocity (int joint) const
+double OwInterface::jointTelemetry (int joint, TelemetryType type) const
 {
-  return 0; // stub
-}
-
-double OwInterface::jointPosition (int joint) const
-{
-  return 0; // stub
-}
-
-double OwInterface::jointEffort (int joint) const
-{
-  return 0; // stub
+  if (joint >= 0 && joint < KnownJoints) {
+    switch (type) {
+      case TelemetryType::Position: return JointTelemetries[joint].position;
+      case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
+      case TelemetryType::Effort: return JointTelemetries[joint].effort;
+    default:
+      ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
+      break;
+    }
+  }
+  else {
+    ROS_ERROR ("jointVelocity: invalid joint index %d", joint);
+  }
+  return 0;
 }

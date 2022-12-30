@@ -21,8 +21,10 @@ TestTelemetry:
   log_info ("Tilt degees: ", Lookup(TiltDegrees));
   log_info ("Tilt radians: ", Lookup(TiltRadians));
 
-  // Arm joint telemetry
-  log_info ("Distal pitch velocity: ", Lookup(JointVelocity(DISTAL_PITCH)));
-  log_info ("Antenna pan position: ", Lookup(JointPosition(ANTENNA_PAN)));
-  log_info ("Shoulder Yaw effort: ", Lookup(JointEffort(SHOULDER_YAW)));
+  // Joint telemetry
+  for (Integer j = 0; j < 9; j + 1) {
+    log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
+    log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));
+    log_info ("Effort of joint ", j, " = ", Lookup(JointEffort(j)));
+  }
 }
