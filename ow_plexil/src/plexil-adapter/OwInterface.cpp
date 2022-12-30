@@ -1144,13 +1144,17 @@ double OwInterface::jointTelemetry (int joint, TelemetryType type) const
       case TelemetryType::Position: return JointTelemetries[joint].position;
       case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
       case TelemetryType::Effort: return JointTelemetries[joint].effort;
+      case TelemetryType::Acceleration: {
+        ROS_WARN ("jointTelemetry: acceleration not yet implemented.");
+        break;
+      }
     default:
       ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
       break;
     }
   }
   else {
-    ROS_ERROR ("jointVelocity: invalid joint index %d", joint);
+    ROS_ERROR ("jointTelemetry: invalid joint index %d", joint);
   }
   return 0;
 }

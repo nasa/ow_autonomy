@@ -17,6 +17,7 @@
 // ow_plexil
 #include <Value.hh>
 #include "PlexilInterface.h"
+#include "joint_support.h"
 
 // OWLAT Sim (installation required)
 #include <owlat_sim_msgs/ARM_UNSTOWAction.h>
@@ -131,9 +132,7 @@ class OwlatInterface : public PlexilInterface
   PLEXIL::Value getPanRadians() const;
   PLEXIL::Value getTiltRadians() const;
   PLEXIL::Value getTiltDegrees() const;
-  PLEXIL::Value getJointVelocity(int joint) const;
-  PLEXIL::Value getJointPosition(int joint) const;
-  PLEXIL::Value getJointEffort(int joint) const;
+  PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
 
  private:
 

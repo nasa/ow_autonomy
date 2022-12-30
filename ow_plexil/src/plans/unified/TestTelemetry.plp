@@ -26,5 +26,6 @@ TestTelemetry:
     log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
     log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));
     log_info ("Effort of joint ", j, " = ", Lookup(JointEffort(j)));
+    log_info ("Acceleration of joint ", j, " = ", Lookup(JointAcceleration(j)));
   }
 }

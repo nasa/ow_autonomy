@@ -8,6 +8,7 @@
 #include "OwlatAdapter.h"
 #include "OwlatInterface.h"
 #include "adapter_support.h"
+#include "joint_support.h"
 #include "subscriber.h"
 using namespace PLEXIL;
 
@@ -361,7 +362,8 @@ static void joint_velocity (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->getJointVelocity(joint));
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Velocity));
 }
 
 static void joint_position (const State& state, StateCacheEntry &entry)
@@ -371,7 +373,8 @@ static void joint_position (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->getJointPosition(joint));
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Position));
 }
 
 static void joint_effort (const State& state, StateCacheEntry &entry)
@@ -381,7 +384,19 @@ static void joint_effort (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->getJointEffort(joint));
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Effort));
+}
+
+static void joint_acceleration (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_effort ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Acceleration));
 }
 
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
@@ -391,12 +406,6 @@ static void default_lookup_handler (const State& state, StateCacheEntry &entry)
   debugMsg("Invalid State: ", state.name());
   entry.update(Unknown);
 }
-
-/*
-static std::map<string, auto> LookupHandlers {
-  { "JointVelocity", joint_velocity }
-};
-*/
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
@@ -454,6 +463,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
   g_configuration->registerLookupHandler("JointPosition", joint_position);
   g_configuration->registerLookupHandler("JointEffort", joint_effort);
+  g_configuration->registerLookupHandler("JointAcceleration", joint_acceleration);
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");

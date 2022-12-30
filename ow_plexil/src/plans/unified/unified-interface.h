@@ -33,8 +33,9 @@ Real Lookup TiltRadians;
 Real Lookup TiltDegrees;
 
 // Arm
-Real Lookup JointVelocity (Integer joint);
-Real Lookup JointPosition (Integer joint);
-Real Lookup JointEffort   (Integer joint);
+Real Lookup JointAcceleration (Integer joint);
+Real Lookup JointVelocity     (Integer joint);
+Real Lookup JointPosition     (Integer joint);
+Real Lookup JointEffort       (Integer joint);
 
 #endif
