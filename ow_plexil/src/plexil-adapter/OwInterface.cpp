@@ -42,7 +42,7 @@ const double VelocityTolerance       = 0.01;  // made up, unitless
 
 //////////////////// Lander Operation Support ////////////////////////
 
-// Index into /joint_states message and JointTelmetries vector.
+// Index into /joint_states message and JointTelemetries vector.
 const size_t ArmJointStartIndex = 2;
 
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
