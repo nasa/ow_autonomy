@@ -15,8 +15,8 @@
 
 const size_t KnownJoints = 9;
 
-// NOTE: we could use the names in /joint_states, but these seem more readable.
 enum Joint {
+  // NOTE: we could use the names in /joint_states, but these seem more readable.
   ANTENNA_PAN = 0,
   ANTENNA_TILT = 1,
   DISTAL_PITCH = 2,
@@ -30,6 +30,8 @@ enum Joint {
 
 struct JointProperties
 {
+  // A structure to store useful static properties about joints.
+
   // Use compiler's default methods.
   std::string plexilName; // human-readable, no spaces
   double softTorqueLimit;
@@ -38,6 +40,8 @@ struct JointProperties
 
 struct JointTelemetry
 {
+  // Structure to store the latest joint telemetry readings.
+
   JointTelemetry (double p = 0, double v = 0, double e = 0, double a = 0)
   : position(p),
     velocity(v),

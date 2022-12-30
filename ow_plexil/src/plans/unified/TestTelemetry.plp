@@ -22,6 +22,12 @@ TestTelemetry:
   log_info ("Tilt radians: ", Lookup(TiltRadians));
 
   // Joint telemetry
+
+  // This is coded for the 9 joints in OceanWATERS (7 arm, 2 antenna),
+  // while OWLAT has a total of 6 joints, all arm.  Nonetheless, this
+  // code will do the "right" thing on each testbed, which includes
+  // producing warnings/errors for invalid indices and options.
+  
   for (Integer j = 0; j < 9; j + 1) {
     log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
     log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));

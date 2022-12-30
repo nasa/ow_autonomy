@@ -19,7 +19,6 @@ public:
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
-  //  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
 };
 
 extern "C" {
