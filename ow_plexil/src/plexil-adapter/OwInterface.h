@@ -12,9 +12,11 @@
 // ow_plexil
 #include "PlexilInterface.h"
 #include "joint_support.h"
+#include <ow_plexil/IdentifyLocationAction.h>
 
 // ow_simulator
 #include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmJointAccelerations.h>
 #include <ow_faults_detection/ArmFaults.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <ow_faults_detection/PTFaults.h>
@@ -35,7 +37,6 @@
 #include <ow_lander/DiscardAction.h>
 #include <ow_lander/CameraCaptureAction.h>
 #include <ow_lander/LightSetIntensityAction.h>
-#include <ow_plexil/IdentifyLocationAction.h>
 
 // ROS
 #include <control_msgs/JointControllerState.h>
@@ -173,6 +174,7 @@ class OwInterface : public PlexilInterface
   void cameraCaptureAction (double exposure_secs, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);

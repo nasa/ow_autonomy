@@ -38,16 +38,19 @@ struct JointProperties
 
 struct JointTelemetry
 {
-  JointTelemetry (double p = 0, double v = 0, double e = 0)
+  JointTelemetry (double p = 0, double v = 0, double e = 0, double a = 0)
   : position(p),
     velocity(v),
-    effort(e) { }
+    effort(e),
+    acceleration(a)
+  { }
 
   // Use compiler's copy constructor, destructor, assignment.
 
   double position;
   double velocity;
   double effort;
+  double acceleration;
 };
 
 enum class TelemetryType {

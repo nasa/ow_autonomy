@@ -42,6 +42,9 @@ const double VelocityTolerance       = 0.01;  // made up, unitless
 
 //////////////////// Lander Operation Support ////////////////////////
 
+// Index into /joint_states message and JointTelmetries vector.
+const size_t ArmJointStartIndex = 2;
+
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
@@ -148,7 +151,7 @@ static vector<JointProperties> JointProps {
   { "ShoulderYaw", 60, 80 }
 };
 
-static vector<JointTelemetry> JointTelemetries (KnownJoints, { 0, 0, 0 });
+static vector<JointTelemetry> JointTelemetries (KnownJoints, { 0, 0, 0, 0 });
 
 static void handle_overtorque (int joint, double effort)
 {
@@ -234,17 +237,38 @@ static double normalize_degrees (double angle)
   return x - pi;
 }
 
+void OwInterface::armJointAccelerationsCb
+(const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
+{
+  // Joint acceleration is computed only for arm joints and not the
+  // two antenna joints, so appropiate sanity check.
+  size_t arm_joints = KnownJoints - ArmJointStartIndex;
+  size_t msg_size = msg->value.size();
+  if (msg_size != arm_joints) {
+    ROS_ERROR_ONCE ("OwInterface::armJointAccelerationsCb: "
+                    "Number of actual joints, %zu, "
+                    "doesn't match number of known arm joints, %zu. "
+                    "This should never happen.",
+                    msg_size, ArmJointStartIndex);
+    return;
+  }
+
+  for (int i = 0; i < msg_size; i++) {
+    double acceleration = msg->value[i];
+    JointTelemetries[i + ArmJointStartIndex].acceleration = acceleration;
+    publish ("JointAcceleration", acceleration, i + ArmJointStartIndex);
+  }
+}
+
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
   // Publish all joint information for visibility to PLEXIL and handle any
   // joint-related faults.
 
-  // Assume the size of the 'name' array is the size of all arrays in
-  // JointStates (this may be true by definition).  Also assuming a
-  // C++ vector or array under the hood, hence using size().
   size_t msg_size = msg->name.size();
 
+  // Sanity check
   if (msg_size != KnownJoints) {
     ROS_ERROR_ONCE ("OwInterface::jointStatesCallback: "
                     "Number of actual joints, %zu, "
@@ -254,7 +278,7 @@ void OwInterface::jointStatesCallback
     return;
   }
 
-  for (auto i = 0; i < msg_size; i++) {
+  for (int i = 0; i < msg_size; i++) {
     double position = msg->position[i];
     double velocity = msg->velocity[i];
     double effort = msg->effort[i];
@@ -496,10 +520,14 @@ void OwInterface::initialize()
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
-       (m_genericNodeHandle -> subscribe("/joint_states", QSize,
-                                         &OwInterface::jointStatesCallback,
-                                         this)));
-
+       (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+                                        &OwInterface::jointStatesCallback,
+                                        this)));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
+                                        &OwInterface::armJointAccelerationsCb,
+                                        this)));
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
@@ -1145,12 +1173,15 @@ double OwInterface::jointTelemetry (int joint, TelemetryType type) const
       case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
       case TelemetryType::Effort: return JointTelemetries[joint].effort;
       case TelemetryType::Acceleration: {
-        ROS_WARN ("jointTelemetry: acceleration not yet implemented.");
-        break;
+        if (joint < ArmJointStartIndex) {
+          ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
+          break;
+        }
+        else return JointTelemetries[joint].acceleration;
       }
-    default:
-      ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
-      break;
+      default:
+        ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
+        break;
     }
   }
   else {
