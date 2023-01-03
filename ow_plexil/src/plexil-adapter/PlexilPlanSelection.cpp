@@ -121,8 +121,9 @@ void PlexilPlanSelection::runCurrentPlan(){
   plan_array.erase(plan_array.begin());
 }
 
-bool PlexilPlanSelection::planSelectionServiceCallback(ow_plexil::PlanSelection::Request &req,
-                                                       ow_plexil::PlanSelection::Response &res)
+bool PlexilPlanSelection::planSelectionServiceCallback
+(ow_plexil::PlanSelection::Request &req,
+ ow_plexil::PlanSelection::Response &res)
 {
   //if command is ADD we add given plans to the plan_array
   if(req.command.compare("ADD") == 0){
@@ -132,7 +133,8 @@ bool PlexilPlanSelection::planSelectionServiceCallback(ow_plexil::PlanSelection:
   //if command is RESET  delete all plans in the plan_array
   else if(req.command.compare("RESET") == 0){
     plan_array.clear();
-    ROS_INFO ("Plan list cleared, current plan will finish execution before stopping");
+    ROS_INFO ("Plan list cleared, "
+              "current plan will finish execution before stopping");
     res.success = true;
   }
   else{

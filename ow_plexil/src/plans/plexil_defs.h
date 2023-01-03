@@ -31,11 +31,11 @@
 #define VERT_FOV  10       // Easy value for testing.  Should be 15.
 #define HORIZ_FOV 10       // Easy value for testing.  Should be 21
 
-// All values in degrees.  Made up constraints -- will adjust as needed.
-#define PAN_MIN   0
-#define PAN_MAX   359
-#define TILT_MIN  -45
-#define TILT_MAX  45
+// Copied in OwAdapter.cpp
+#define PAN_MIN   -183.346
+#define PAN_MAX   183.346
+#define TILT_MIN  -89.38
+#define TILT_MAX  89.38
 
 // Maximum number of crashes before assuming something has gone very wrong and
 // attempting to offload all data

@@ -30,6 +30,11 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
+const float PanMinDegrees  = -183.346; // -3.2 radians
+const float PanMaxDegrees  =  183.346; //  3.2 radians
+const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
+const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
+const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
@@ -137,6 +142,18 @@ static bool lookup (const string& state_name,
   else if (state_name == "PowerFault") {
     value_out = OwInterface::instance()->powerFault();
   }
+  else if (state_name == "ActionGoalStatus") {
+    string s;
+    args[0].getValue(s);
+    value_out = OwInterface::instance()->actionGoalStatus(s);
+  }
+  else if (state_name == "AnglesEquivalent") {
+    double deg1, deg2, tolerance;
+    args[0].getValue(deg1);
+    args[1].getValue(deg2);
+    args[2].getValue(tolerance);
+    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
+  }
   else retval = false;
 
   return retval;
@@ -171,6 +188,37 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  int joint;
+  double angle; // unit is radians
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValue(joint);
+  args[2].getValue(angle);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoint (relative, joint, angle,
+                                         CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *angles_vector = nullptr;
+  RealArray const *angles = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(angles);
+  //changes real array into a vector
+  angles->getContentsVector(angles_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJoints (relative, *angles_vector,
+                                          CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -241,34 +289,52 @@ static void discard (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void tilt_antenna (Command* cmd, AdapterExecInterface* intf)
+static bool check_angle (const char* name, double val,
+                         double min, double max, double tolerance)
+// NOTE: tolerance is needed because there is apparently loss of
+// precision in the angle on its way into Python.  This could be
+// because the ROS action uses 32-bit floats for the input angles.
+// They will be updated to 64 bit as part of the ongoing command
+// unification with OWLAT.
 {
-  double degrees;
+  if (val < min - tolerance || val > max + tolerance) {
+    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.", name, val, min, max);
+    return false;
+  }
+  return true;
+}
+
+static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
+{
+  double pan_degrees, tilt_degrees;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->tiltAntenna (degrees, CommandId);
-  acknowledge_command_sent(*cr);
+  args[0].getValue (pan_degrees);
+  args[1].getValue (tilt_degrees);
+  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance) ||
+      ! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
 }
 
-static void pan_antenna (Command* cmd, AdapterExecInterface* intf)
+static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
-  double degrees;
+  double exposure_secs;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (degrees);
+  args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panAntenna (degrees, CommandId);
+  OwInterface::instance()->cameraCapture (exposure_secs, CommandId);
   acknowledge_command_sent(*cr);
 }
 
-static void take_picture (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->takePicture (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
+static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
   string side;
@@ -277,18 +343,18 @@ static void set_light_intensity (Command* cmd, AdapterExecInterface* intf)
   args[0].getValue (side);
   args[1].getValue (intensity);
   if (side != "left" && side != "right") {
-    ROS_ERROR ("set_light_intensity: side was %s, should be 'left' or 'right'",
+    ROS_ERROR ("light_set_intensity: side was %s, should be 'left' or 'right'",
                side.c_str());
     valid_args = false;
   }
   if (intensity < 0.0 || intensity > 1.0) {
-    ROS_ERROR ("set_light_intensity: intensity was %f, "
+    ROS_ERROR ("light_set_intensity: intensity was %f, "
                "should be in range [0.0 1.0]", intensity);
     valid_args = false;
   }
   if (valid_args) {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->setLightIntensity (side, intensity, CommandId);
+    OwInterface::instance()->lightSetIntensity (side, intensity, CommandId);
     acknowledge_command_sent(*cr);
   }
   else {
@@ -334,17 +400,18 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("unstow", unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
+  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
+  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("discard", discard);
-  g_configuration->registerCommandHandler("tilt_antenna", tilt_antenna);
-  g_configuration->registerCommandHandler("pan_antenna", pan_antenna);
+  g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("take_picture", take_picture);
-  g_configuration->registerCommandHandler("set_light_intensity",
-                                          set_light_intensity);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
+  g_configuration->registerCommandHandler("light_set_intensity",
+                                          light_set_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;

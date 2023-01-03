@@ -6,8 +6,8 @@ PLEXIL plans
 ============
 
 This directory contains PLEXIL plans that implement onboard autonomy for Ocean
-World landers, as supported by the OceanWATERS software testbed. All PLEXIL plans
-for the OWLAT testbed are kept in the owlat_plans subdirectory.
+World landers, as supported by the OceanWATERS software testbed. All PLEXIL
+plans for the OWLAT testbed are kept in the owlat_plans subdirectory.
 
 See ow_plexil/README.md for instructions for selecting and executing plans.
 
@@ -19,39 +19,85 @@ top.
 Descriptions of some key plans, and other files of interest, are as follows.
 See the comments inside all the plans for more information.
 
-1. ReferenceMission1, ReferenceMission2 : both plans model a portion of Sol 0 of
-   the Europa Lander reference mission defined by JPL.  The second plan is the
-   same as the first one except it adds simple checks for the battery and
-   implements basic fault detection and handling.
+* ReferenceMission1, ReferenceMission2 : both plans model a portion of
+  Sol 0 of the Europa Lander reference mission defined by JPL.  The
+  second plan is the same as the first one except it adds simple
+  checks for the battery and implements basic fault detection and
+  handling.
 
-2. EuropaMission: a variant of the above that includes some additional stubbed
-   mission operations, as well as _checkpointing_, a new and experimental PLEXIL
-   feature that supports robust plan resumption after a reboot.  Checkpoint
-   filers are saved to ~/.ros by default; the location can be customized in
-   `ow-config.xml`.
+* EuropaMission: a variant of the above that includes some additional
+  stubbed mission operations, as well as _checkpointing_, a new and
+  experimental PLEXIL feature that supports robust plan resumption
+  after a reboot.  Checkpoint files are saved to ~/.ros by default;
+  the location can be customized in `ow-config.xml`.
 
-3. Demo: Exercises a short sequence of arm and antenna operations.
+* Demo: Exercises a short sequence of arm and antenna operations.
 
-4. TestAntennaCamera: A short panoramic imaging demo.
+* TestAntennaCamera: A short panoramic imaging demo.
 
-5. TestAntennaMovement: A more thorough test of pan/tilt operations.
+* TestAntennaMovement: A more thorough test of pan/tilt operations.
 
-6. TorqueTest: Overtorque detection.  This plan attempts to push the scoop into
-   the ground, which creates joint over-torquing warnings and errors.
+* TorqueTest: Overtorque detection.  This plan attempts to push the
+  scoop into the ground, which creates joint over-torquing warnings
+  and errors.
 
-7. Continuous: non-terminating plan that performs continuous operations, useful
-   as a stress/load test.
+* Continuous: non-terminating plan that performs continuous operations, useful
+  as a stress/load test.
 
-8. IdentifySampleLocationDemo: This plan demonstrates the IdentifySampleTarget
-   plan which uses the stereocamera to find a desirable sample location. It runs
-   two tests, one with the "Brown" filter and one with the "Dark" filter. These
-   filters find areas in the workspace that have the highest color concentration
-   (Brown or Dark colors based on the filter used) and returns a 3d point that
-   represents the sample target.  The plan then makes a guarded move to these
-   sample targets. When a point is found the action server publishes two
-   visualization topics which are described in testing plans below.
+* IdentifySampleLocationDemo: This plan demonstrates the
+  IdentifySampleTarget plan which uses the stereocamera to find a
+  desirable sample location. It runs two tests, one with the "Brown"
+  filter and one with the "Dark" filter. These filters find areas in
+  the workspace that have the highest color concentration (Brown or
+  Dark colors based on the filter used) and returns a 3d point that
+  represents the sample target.  The plan then makes a guarded move to
+  these sample targets. When a point is found the action server
+  publishes two visualization topics which are described in testing
+  plans below.
 
-9. FaultHandlingPatternN: A series of illustrative fault-handling patterns.
+* FaultHandlingPatternN: A series of illustrative fault-handling patterns.
+
+* Lander operation library.  There is a (library) plan for each lander
+  operation, and each takes the arguments (interface variables) as
+  required for the operation.  While these operations can be directly
+  invoked as PLEXIL commands, these library plans wrap the command to
+  provide the following features:
+
+  - The command is invoked as a SynchronousCommand, which means the
+    plan waits for it to complete before the plan itself finishes.
+
+  - A check is made for relevant faults prior to executing the
+    command.  The plan waits for an existing fault to clear before
+    executing the command.  NOTE: an existing fault will block the
+    calling plan; this can be worked around by customizing these
+    plans, e.g. adding a timeout.  The lander operation library plans
+    at the time of this writing are the following.
+
+    - ArmMoveJoint.plp
+    - ArmMoveJoints.plp
+    - Deliver.plp
+    - DigCircular.plp
+    - DigLinear.plp
+    - Discard.plp
+    - Grind.plp
+    - GuardedMove.plp
+    - Pan.plp
+    - Stow.plp
+    - TakePicture.plp
+    - Tilt.plp
+    - Unstow.plp
+
+* Plan interface.  The entire lander interface available to PLEXIL,
+  which includes the operations listed in the previous section,
+  telemetry lookups, and other useful features such as logging
+  functions, are encoded in `plan-interface.h`, which may be included
+  (using a C `#include` statement) in any plan for convenience.
+
+* Misc files.  `plexil-defs.h` contains constants used in various
+  plans.  `ow-config.xml` is the PLEXIL configuration file for this
+  application.  It does not need editing for general use of this
+  package.
+
 
 Plan Details
 ============
@@ -107,4 +153,3 @@ to resolve before commencing.  Second, aborted ROS Actions, which
 result from faults, are not yet detectable in PLEXIL; PLEXIL only
 knows when an action terminates.  These subtleties are subjects for
 future work and refinement.
-

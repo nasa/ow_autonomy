@@ -2,13 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Pan the antenna to specified degrees.
+// Pan and tilt the antenna to specified degrees.
 
 #include "plan-interface.h"
 
-Pan:
+PanTilt:
 {
-  In Real Degrees;
+  In Real PanDegrees, TiltDegrees;
 
   Boolean FaultDetected = false;
 
@@ -16,20 +16,20 @@ Pan:
 
   if Lookup(AntennaPanFault)
   { 
-    log_error ("Command pan_antenna not sent to lander due to active antenna pan fault(s).");
+    log_error ("Command pan_tilt not sent to lander due to active antenna fault(s).");
     FaultDetected = true;
   }
 
-  SendPan:
+  SendPanTilt:
   {
     Start !Lookup(AntennaPanFault);
 
     if FaultDetected
     {
-      log_info ("Antenna fault(s) resolved, sending pan_antenna command to lander...");
+      log_info ("Antenna fault(s) resolved, sending pan_tilt command to lander...");
     }
 
-    SynchronousCommand pan_antenna (Degrees);
+    SynchronousCommand pan_tilt (PanDegrees, TiltDegrees);
   }
 
 }

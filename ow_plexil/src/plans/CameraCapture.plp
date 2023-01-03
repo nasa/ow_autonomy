@@ -2,11 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Take a picture with the stereo camera.
+// Capture an image with the stereo camera.
 
 #include "lander-commands.h"
 
-TakePicture:
+CameraCapture:
 {
-  SynchronousCommand take_picture();
+  In Real ExposureSecs;
+  SynchronousCommand camera_capture (ExposureSecs);
 }
