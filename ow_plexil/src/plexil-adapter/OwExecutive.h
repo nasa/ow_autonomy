@@ -23,7 +23,7 @@ class OwExecutive
   static OwExecutive* instance();
 
   bool initialize (const std::string& config_file);
-  bool getPlanState(); // returns true if current plan is finished executing
+  bool allPlansFinished(); // See warning in implementation.
   bool runPlan (const std::string& filename);
 };
 
