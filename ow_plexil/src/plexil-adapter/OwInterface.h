@@ -40,7 +40,7 @@
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <ow_faults_detection/PowerFaults.h>
-#include <ow_faults_detection/PTFaults.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
 
 #include "PlexilInterface.h"
 
@@ -169,7 +169,7 @@ class OwInterface : public PlexilInterface
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
-  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
+  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
@@ -233,9 +233,11 @@ class OwInterface : public PlexilInterface
     {"HARDWARE_ERROR", std::make_pair(1, false)}
   };
 
-  FaultMap32 m_panTiltErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  FaultMap64 m_panTiltErrors = {
+    {"PAN_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
+    {"TILT_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
 
   std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;

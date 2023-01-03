@@ -240,7 +240,7 @@ void OwInterface::powerFaultCallback
 }
 
 void OwInterface::antennaFaultCallback
-(const ow_faults_detection::PTFaults::ConstPtr& msg)
+(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
@@ -560,7 +560,7 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/faults/pt_faults_status", QSize,
+        subscribe("/pan_tilt_faults_status", QSize,
                   &OwInterface::antennaFaultCallback, this)));
 
     // Connect action clients to servers and add subscribers for
