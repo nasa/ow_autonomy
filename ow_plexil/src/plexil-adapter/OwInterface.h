@@ -119,7 +119,9 @@ class OwInterface : public PlexilInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getTilt () const;
+  double getTiltRadians () const;
+  double getTiltDegrees () const;
+  double getPanRadians () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
@@ -236,23 +238,11 @@ class OwInterface : public PlexilInterface
   };
 
   FaultMap64 m_panTiltErrors = {
-    {"PAN_JOINT_LOCKED", std::make_pair(
+    {"PanFault", std::make_pair(
       owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
-    {"TILT_JOINT_LOCKED", std::make_pair(
+    {"TiltFault", std::make_pair(
       owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
-
-  FaultMap32 m_panErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
-  };
-
-  FaultMap32 m_TiltErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
-  };
-
-  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Publishers and subscribers
 
@@ -282,7 +272,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state
-  double m_currentPan, m_currentTilt;
+  double m_currentPanRadians, m_currentTiltRadians;
 };
 
 #endif

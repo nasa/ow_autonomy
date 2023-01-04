@@ -43,8 +43,13 @@ OwExecutive* OwExecutive::instance ()
   return &instance;
 }
 
-bool OwExecutive::getPlanState()
+bool OwExecutive::allPlansFinished()
 {
+  // WARNING: The called function returns true iff the PLEXIL
+  // executive has executed at least one plan, and no plans are
+  // currently running.  This is NOT accurate enough for the callers
+  // of this method.  The PLEXIL team has been consulted for a better
+  // approach on 12/16/22.
   return PlexilApp->allPlansFinished();
 }
 
