@@ -151,7 +151,7 @@ static vector<JointProperties> JointProps {
   { "ShoulderYaw", 60, 80 }
 };
 
-static vector<JointTelemetry> JointTelemetries (KnownJoints, { 0, 0, 0, 0 });
+static vector<JointTelemetry> JointTelemetries (NumJoints, { 0, 0, 0, 0 });
 
 static void handle_overtorque (int joint, double effort)
 {
@@ -242,7 +242,7 @@ void OwInterface::armJointAccelerationsCb
 {
   // Joint acceleration is computed only for arm joints and not the
   // two antenna joints, so appropiate sanity check.
-  size_t arm_joints = KnownJoints - ArmJointStartIndex;
+  size_t arm_joints = NumJoints - ArmJointStartIndex;
   size_t msg_size = msg->value.size();
   if (msg_size != arm_joints) {
     ROS_ERROR_ONCE ("OwInterface::armJointAccelerationsCb: "
@@ -269,12 +269,12 @@ void OwInterface::jointStatesCallback
   size_t msg_size = msg->name.size();
 
   // Sanity check
-  if (msg_size != KnownJoints) {
+  if (msg_size != NumJoints) {
     ROS_ERROR_ONCE ("OwInterface::jointStatesCallback: "
                     "Number of actual joints, %zu, "
                     "doesn't match number of known joints, %zu. "
                     "This should never happen.",
-                    msg_size, KnownJoints);
+                    msg_size, NumJoints);
     return;
   }
 
@@ -1167,17 +1167,15 @@ int OwInterface::actionGoalStatus (const string& action_name) const
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const
 {
-  if (joint >= 0 && joint < KnownJoints) {
+  if (joint >= 0 && joint < NumJoints) {
     switch (type) {
       case TelemetryType::Position: return JointTelemetries[joint].position;
       case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
       case TelemetryType::Effort: return JointTelemetries[joint].effort;
       case TelemetryType::Acceleration: {
-        if (joint < ArmJointStartIndex) {
-          ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
-          break;
-        }
-        else return JointTelemetries[joint].acceleration;
+        if (joint >= ArmJointStartIndex) return JointTelemetries[joint].acceleration;
+        ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
+        break;
       }
       default:
         ROS_ERROR ("jointTelemetry: unsupported telemetry type.");

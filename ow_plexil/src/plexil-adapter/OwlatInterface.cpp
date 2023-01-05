@@ -820,13 +820,12 @@ Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
 {
   if (joint >= 0 && joint < OwlatJoints) {
     switch (type) {
-    case TelemetryType::Position: return m_arm_joint_angles[joint];
+      case TelemetryType::Position: return m_arm_joint_angles[joint];
       case TelemetryType::Velocity: return m_arm_joint_velocities[joint];
       case TelemetryType::Effort: return m_arm_joint_torques[joint];
       case TelemetryType::Acceleration: return m_arm_joint_accelerations[joint];
     default:
       ROS_ERROR ("getJointTelemetry: unsupported telemetry type.");
-      break;
     }
   }
   else {
