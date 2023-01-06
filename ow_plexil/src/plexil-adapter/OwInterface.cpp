@@ -292,7 +292,7 @@ void OwInterface::jointStatesCallback
       publish ("TiltRadians", m_currentTiltRadians);
       publish ("TiltDegrees", m_currentTiltRadians * R2D);
     }
-    JointTelemetries[i] = JointTelemetry (position, velocity, effort);
+    JointTelemetries[i] = JointTelemetry {position, velocity, effort};
     publish ("JointPosition", position, i);
     publish ("JointVelocity", velocity, i);
     publish ("JointEffort", effort, i);

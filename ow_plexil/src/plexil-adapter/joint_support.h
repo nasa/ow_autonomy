@@ -44,19 +44,12 @@ struct JointTelemetry
 {
   // Structure to store the latest joint telemetry readings.
 
-  JointTelemetry (double p = 0, double v = 0, double e = 0, double a = 0)
-  : position(p),
-    velocity(v),
-    effort(e),
-    acceleration(a)
-  { }
+  // Use compiler's default methods.
 
-  // Use compiler's copy constructor, destructor, assignment.
-
-  double position;
-  double velocity;
-  double effort;
-  double acceleration;
+  double position = 0;
+  double velocity = 0;
+  double effort = 0;
+  double acceleration = 0;
 };
 
 enum class TelemetryType {
