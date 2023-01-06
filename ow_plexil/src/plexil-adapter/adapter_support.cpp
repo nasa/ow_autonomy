@@ -142,7 +142,13 @@ void receiveString (const string& state_name, const string& val)
              vector<Value> (1, val));
 }
 
-void receiveBoolString (const string& state_name, bool val, const string& arg)
+void receiveBoolFromString (const string& state_name, bool val, const string& arg)
+{
+  propagate (create_state(state_name, vector<Value> (1, arg)),
+             vector<Value> (1, val));
+}
+
+void receiveDoubleFromInt (const string& state_name, double val, int arg)
 {
   propagate (create_state(state_name, vector<Value> (1, arg)),
              vector<Value> (1, val));

@@ -35,6 +35,8 @@ const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
 const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 
+const size_t OwlatJoints = 6;
+
 // Used as indices into the subsequent vector.
 enum class LanderOps {
   OwlatUnstow,
@@ -812,4 +814,22 @@ Value OwlatInterface::getTiltRadians() const
 Value OwlatInterface::getTiltDegrees() const
 {
   return m_tilt_radians * R2D;
+}
+
+Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
+{
+  if (joint >= 0 && joint < OwlatJoints) {
+    switch (type) {
+      case TelemetryType::Position: return m_arm_joint_angles[joint];
+      case TelemetryType::Velocity: return m_arm_joint_velocities[joint];
+      case TelemetryType::Effort: return m_arm_joint_torques[joint];
+      case TelemetryType::Acceleration: return m_arm_joint_accelerations[joint];
+    default:
+      ROS_ERROR ("getJointTelemetry: unsupported telemetry type.");
+    }
+  }
+  else {
+    ROS_ERROR ("getJointTelemetry: invalid joint index %d", joint);
+  }
+  return 0;
 }
