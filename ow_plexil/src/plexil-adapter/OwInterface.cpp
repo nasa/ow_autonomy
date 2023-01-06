@@ -217,7 +217,7 @@ void OwInterface::armFaultCallback
 }
 
 void OwInterface::powerFaultCallback
-(const ow_faults_detection::PowerFaults::ConstPtr& msg)
+(const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
