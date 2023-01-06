@@ -9,10 +9,19 @@
 // ever be needed in the current autonomy scheme, which has one autonomy
 // executive per lander.
 
-#include <memory>
-#include <ros/ros.h>
+// ow_plexil
+#include "PlexilInterface.h"
+#include "joint_support.h"
+#include <ow_plexil/IdentifyLocationAction.h>
 
-// ROS Actions - OceanWATERS
+// ow_simulator
+#include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmJointAccelerations.h>
+#include <owl_msgs/ArmFaultsStatus.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
+#include <ow_faults_detection/PowerFaults.h>
+
+// ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
 #include <ow_lander/UnstowAction.h>
@@ -28,21 +37,22 @@
 #include <ow_lander/DiscardAction.h>
 #include <ow_lander/CameraCaptureAction.h>
 #include <ow_lander/LightSetIntensityAction.h>
-#include <ow_plexil/IdentifyLocationAction.h>
 
+// ROS
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
-#include <string>
-
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <ow_faults_detection/PowerFaults.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
+#include <ros/ros.h>
 
-#include "PlexilInterface.h"
+// C++
+#include <string>
+#include <memory>
 
 using UnstowActionClient =
   actionlib::SimpleActionClient<ow_lander::UnstowAction>;
@@ -139,7 +149,7 @@ class OwInterface : public PlexilInterface
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
-
+  double jointTelemetry (int joint, TelemetryType type) const;
   int actionGoalStatus (const std::string& action_name) const;
 
  private:
@@ -170,6 +180,7 @@ class OwInterface : public PlexilInterface
   void cameraCaptureAction (double exposure_secs, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
+  void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);

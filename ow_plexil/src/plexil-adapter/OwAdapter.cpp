@@ -153,6 +153,30 @@ static bool lookup (const string& state_name,
     args[0].getValue(s);
     value_out = OwInterface::instance()->actionGoalStatus(s);
   }
+  else if (state_name == "JointVelocity") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->
+      jointTelemetry(joint, TelemetryType::Velocity);
+  }
+  else if (state_name == "JointEffort") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->
+      jointTelemetry(joint, TelemetryType::Effort);
+  }
+  else if (state_name == "JointPosition") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->
+      jointTelemetry(joint, TelemetryType::Position);
+  }
+  else if (state_name == "JointAcceleration") {
+    int joint;
+    args[0].getValue(joint);
+    value_out = OwInterface::instance()->
+      jointTelemetry(joint, TelemetryType::Acceleration);
+  }
   else if (state_name == "AnglesEquivalent") {
     double deg1, deg2, tolerance;
     args[0].getValue(deg1);
