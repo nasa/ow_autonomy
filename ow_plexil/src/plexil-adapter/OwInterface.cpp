@@ -32,16 +32,9 @@ using std::string;
 using std::shared_ptr;
 using std::make_unique;
 
-// C
-#include <cmath>  // for M_PI, fabs, fmod
-
 using namespace ow_lander;
 
 //////////////////// Utilities ////////////////////////
-
-// Degree/Radian
-constexpr double D2R = M_PI / 180.0 ;
-constexpr double R2D = 180.0 / M_PI ;
 
 const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
 const double VelocityTolerance       = 0.01;  // made up, unitless
@@ -240,7 +233,7 @@ void OwInterface::powerFaultCallback
 }
 
 void OwInterface::antennaFaultCallback
-(const ow_faults_detection::PTFaults::ConstPtr& msg)
+(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
@@ -282,12 +275,14 @@ void OwInterface::jointStatesCallback
       double velocity = msg->velocity[i];
       double effort = msg->effort[i];
       if (joint == Joint::antenna_pan) {
-        m_currentPan = position * R2D;
-        publish ("PanDegrees", m_currentPan);
+        m_currentPanRadians = position;
+        publish ("PanRadians", m_currentPanRadians);
+        publish ("PanDegrees", m_currentPanRadians * R2D);
      }
       else if (joint == Joint::antenna_tilt) {
-        m_currentTilt = position * R2D;
-        publish ("TiltDegrees", m_currentTilt);
+        m_currentTiltRadians = position;
+        publish ("TiltRadians", m_currentTiltRadians);
+        publish ("TiltDegrees", m_currentTiltRadians * R2D);
       }
       JointTelemetryMap[joint] = JointTelemetry (position, velocity, effort);
       string plexil_name = JointPropMap[joint].plexilName;
@@ -455,7 +450,10 @@ OwInterface* OwInterface::instance ()
   return &instance;
 }
 
-OwInterface::OwInterface () : m_currentPan (0), m_currentTilt (0) { }
+OwInterface::OwInterface ()
+  : m_currentPanRadians (0),
+    m_currentTiltRadians (0)
+{ }
 
 void OwInterface::initialize()
 {
@@ -560,7 +558,7 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/faults/pt_faults_status", QSize,
+        subscribe("/pan_tilt_faults_status", QSize,
                   &OwInterface::antennaFaultCallback, this)));
 
     // Connect action clients to servers and add subscribers for
@@ -1097,14 +1095,24 @@ void OwInterface::lightSetIntensityAction (const string& side, double intensity,
 }
 
 
-double OwInterface::getTilt () const
+double OwInterface::getTiltRadians () const
 {
-  return m_currentTilt;
+  return m_currentTiltRadians;
+}
+
+double OwInterface::getTiltDegrees () const
+{
+  return m_currentTiltRadians * R2D;
+}
+
+double OwInterface::getPanRadians () const
+{
+  return m_currentPanRadians;
 }
 
 double OwInterface::getPanDegrees () const
 {
-  return m_currentPan;
+  return m_currentPanRadians * R2D;
 }
 
 double OwInterface::getPanVelocity () const

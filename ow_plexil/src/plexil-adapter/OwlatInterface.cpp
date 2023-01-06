@@ -70,10 +70,10 @@ static vector<string> LanderOpNames = {
 
 // Task PSP Callback
 static double PSPStopReasonVar = 0;
+
 template<int OpIndex, typename T>
-static void task_psp_done_cb
-(const actionlib::SimpleClientGoalState& state,
- const T& result)
+static void task_psp_done_cb (const actionlib::SimpleClientGoalState& state,
+                              const T& result)
 {
   ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
   PSPStopReasonVar = result->stop_reason.value;
@@ -110,45 +110,60 @@ void OwlatInterface::initialize()
     m_arm_tool = 0;
 
     const int qsize = 3;
-    m_armJointAnglesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
-       &OwlatInterface::armJointAnglesCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
+                  &OwlatInterface::armJointAnglesCallback, this)));
 
-    m_armJointAccelerationsSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
-       &OwlatInterface::armJointAccelerationsCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
+                  &OwlatInterface::armJointAccelerationsCallback, this)));
 
-    m_armJointTorquesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/owlat_sim/ARM_JOINT_TORQUES", qsize,
-       &OwlatInterface::armJointTorquesCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_JOINT_TORQUES", qsize,
+                  &OwlatInterface::armJointTorquesCallback, this)));
 
-    m_armJointVelocitiesSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
-       &OwlatInterface::armJointAnglesCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
+                  &OwlatInterface::armJointVelocitiesCallback, this)));
 
-    m_armFTTorqueSubscriber = make_unique<ros::Subscriber>
-      (m_genericNodeHandle ->
-       subscribe("/owlat_sim/ARM_FT_TORQUE", qsize,
-       &OwlatInterface::armFTTorqueCallback, this));
 
-   m_armFTForceSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle ->
-         subscribe("/owlat_sim/ARM_FT_FORCE", qsize,
-         &OwlatInterface::armFTForceCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_FT_TORQUE", qsize,
+                  &OwlatInterface::armFTTorqueCallback, this)));
 
-   m_armPoseSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle ->
-         subscribe("/owlat_sim/ARM_POSE", qsize,
-         &OwlatInterface::armPoseCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_FT_FORCE", qsize,
+                  &OwlatInterface::armFTForceCallback, this)));
 
-   m_armToolSubscriber = make_unique<ros::Subscriber>
-        (m_genericNodeHandle ->
-         subscribe("/owlat_sim/ARM_TOOL", qsize,
-         &OwlatInterface::armToolCallback, this));
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_POSE", qsize,
+                  &OwlatInterface::armPoseCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_TOOL", qsize,
+                  &OwlatInterface::armToolCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owl_msgs/pan_tilt_position", qsize,
+                  &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
     m_owlatUnstowClient =
@@ -723,48 +738,78 @@ void OwlatInterface::armToolCallback
   publish("ArmTool", m_arm_tool);
 }
 
-Value OwlatInterface::getArmJointAngles()
+void OwlatInterface::panTiltCallback
+(const owl_msgs::PanTiltPosition::ConstPtr& msg)
+{
+  m_pan_radians = msg->value[0];
+  m_tilt_radians = msg->value[1];
+  publish("PanRadians", m_pan_radians);
+  publish("PanDegrees", m_pan_radians * R2D);
+  publish("TiltRadians", m_tilt_radians);
+  publish("TiltDegrees", m_tilt_radians * R2D);
+}
+
+Value OwlatInterface::getArmJointAngles() const
 {
   return(Value(m_arm_joint_angles));
 }
 
-Value OwlatInterface::getArmJointAccelerations()
+Value OwlatInterface::getArmJointAccelerations() const
 {
   return(Value(m_arm_joint_accelerations));
 }
 
-Value OwlatInterface::getArmJointTorques()
+Value OwlatInterface::getArmJointTorques() const
 {
   return(Value(m_arm_joint_torques));
 }
 
-Value OwlatInterface::getArmJointVelocities()
+Value OwlatInterface::getArmJointVelocities() const
 {
   return(Value(m_arm_joint_velocities));
 }
 
-Value OwlatInterface::getArmFTTorque()
+Value OwlatInterface::getArmFTTorque() const
 {
   return(Value(m_arm_ft_torque));
 }
 
-Value OwlatInterface::getArmFTForce()
+Value OwlatInterface::getArmFTForce() const
 {
   return(Value(m_arm_ft_force));
 }
 
-Value OwlatInterface::getArmPose()
+Value OwlatInterface::getArmPose() const
 {
   return(Value(m_arm_pose));
 }
 
-Value OwlatInterface::getArmTool()
+Value OwlatInterface::getArmTool() const
 {
   return(Value(m_arm_tool));
 }
 
-Value OwlatInterface::getPSPStopReason()
+Value OwlatInterface::getPSPStopReason() const
 {
   return(Value(PSPStopReasonVar));
 }
 
+Value OwlatInterface::getPanRadians() const
+{
+  return m_pan_radians;
+}
+
+Value OwlatInterface::getPanDegrees() const
+{
+  return m_pan_radians * R2D;
+}
+
+Value OwlatInterface::getTiltRadians() const
+{
+  return m_tilt_radians;
+}
+
+Value OwlatInterface::getTiltDegrees() const
+{
+  return m_tilt_radians * R2D;
+}

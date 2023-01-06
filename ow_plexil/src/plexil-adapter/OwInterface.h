@@ -40,7 +40,7 @@
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PowerFaultsStatus.h>
-#include <ow_faults_detection/PTFaults.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
 
 #include "PlexilInterface.h"
 
@@ -119,7 +119,9 @@ class OwInterface : public PlexilInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getTilt () const;
+  double getTiltRadians () const;
+  double getTiltDegrees () const;
+  double getPanRadians () const;
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
@@ -169,7 +171,7 @@ class OwInterface : public PlexilInterface
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
-  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
+  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
@@ -229,7 +231,7 @@ class OwInterface : public PlexilInterface
         owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
-  FaultMap32 m_powerErrors = {
+  FaultMap64 m_powerErrors = {
     {"LOW_STATE_OF_CHARGE", std::make_pair(
         owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
     {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
@@ -238,12 +240,12 @@ class OwInterface : public PlexilInterface
         owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
-  FaultMap32 m_panTiltErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  FaultMap64 m_panTiltErrors = {
+    {"PAN_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
+    {"TILT_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
-
-  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
 
   // Publishers and subscribers
 
@@ -273,7 +275,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state
-  double m_currentPan, m_currentTilt;
+  double m_currentPanRadians, m_currentTiltRadians;
 };
 
 #endif
