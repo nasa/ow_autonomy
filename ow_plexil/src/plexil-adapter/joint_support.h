@@ -7,24 +7,34 @@
 
 // Support for lander joints, based on ROS /joint_states message.
 
+// NOTE: This package (ow_plexil) is implemented for the lander in the
+// ow_simulator package.  Specifically, the joints and joint ordering
+// (in /joint_states) is assumed fixed, and is often hardcoded.
+
 #include <string>
 
-enum class Joint {
-  shoulder_yaw,
-  shoulder_pitch,
-  proximal_pitch,
-  distal_pitch,
-  hand_yaw,
-  scoop_yaw,
-  antenna_pan,
-  antenna_tilt,
-  grinder
+const size_t NumJoints = 9;
+
+enum Joint {
+  // This enumeration must list all joints and in the same order as
+  // the topic /joint_states, which is alphabetical by joint name.
+  // The names used here are different but more readable.
+  ANTENNA_PAN = 0,
+  ANTENNA_TILT = 1,
+  DISTAL_PITCH = 2,
+  GRINDER = 3,
+  HAND_YAW = 4,
+  PROXIMAL_PITCH = 5,
+  SCOOP_YAW = 6,
+  SHOULDER_PITCH = 7,
+  SHOULDER_YAW = 8
 };
 
 struct JointProperties
 {
+  // A structure to store useful static properties about joints.
+
   // Use compiler's default methods.
-  std::string rosName;
   std::string plexilName; // human-readable, no spaces
   double softTorqueLimit;
   double hardTorqueLimit;
@@ -32,16 +42,21 @@ struct JointProperties
 
 struct JointTelemetry
 {
-  JointTelemetry (double p = 0, double v = 0, double e = 0)
-  : position(p),
-    velocity(v),
-    effort(e) { }
+  // Structure to store the latest joint telemetry readings.
 
-  // Use compiler's copy constructor, destructor, assignment.
+  // Use compiler's default methods.
 
-  double position;
-  double velocity;
-  double effort;
+  double position = 0;
+  double velocity = 0;
+  double effort = 0;
+  double acceleration = 0;
+};
+
+enum class TelemetryType {
+  Position,
+  Velocity,
+  Effort,
+  Acceleration
 };
 
 #endif

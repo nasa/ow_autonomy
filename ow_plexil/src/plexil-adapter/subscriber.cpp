@@ -3,22 +3,27 @@
 // this repository.
 
 #include "subscriber.h"
-using std::vector;
 
-// The subscribers.  Their naming convention is:
+// The subscribers.
+// The naming convention for Lookups without parameters is:
 //   Subscribe<value-type><param-type>...
+// The naming convention for Lookups with parameters is:
+//   Subscribe<value-type>From<param-type>...
+// where value-type and param-type are ad hoc, CamelCase names.
 
 static SubscribeBool SubscriberBool = nullptr;
 static SubscribeDouble SubscriberDouble = nullptr;
 static SubscribeString SubscriberString = nullptr;
-static SubscribeBoolString SubscriberBoolString = nullptr;
 static SubscribeDoubleVector SubscriberDoubleVector = nullptr;
+static SubscribeBoolFromString SubscriberBoolFromString = nullptr;
+static SubscribeDoubleFromInt SubscriberDoubleFromInt = nullptr;
 
 void setSubscriber (SubscribeBool s) { SubscriberBool = s; }
 void setSubscriber (SubscribeDouble s) { SubscriberDouble = s; }
 void setSubscriber (SubscribeString s) { SubscriberString = s; }
-void setSubscriber (SubscribeBoolString s) { SubscriberBoolString = s; }
+void setSubscriber (SubscribeBoolFromString s) { SubscriberBoolFromString = s; }
 void setSubscriber (SubscribeDoubleVector s) { SubscriberDoubleVector = s; }
+void setSubscriber (SubscribeDoubleFromInt s) { SubscriberDoubleFromInt = s; }
 
 // The overloaded publish function, one for each value/parameter combination
 // found in this application.
@@ -38,12 +43,17 @@ void publish (const string& state_name, const string& val)
   SubscriberString (state_name, val);
 }
 
-void publish (const std::string& state_name, bool val, const std::string& arg)
-{
-  SubscriberBoolString (state_name, val, arg);
-}
-
 void publish (const std::string& state_name, vector<double> vals)
 {
   SubscriberDoubleVector (state_name, vals);
+}
+
+void publish (const std::string& state_name, bool val, const std::string& arg)
+{
+  SubscriberBoolFromString (state_name, val, arg);
+}
+
+void publish (const string& state_name, double val, int arg)
+{
+  SubscriberDoubleFromInt (state_name, val, arg);
 }

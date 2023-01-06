@@ -8,12 +8,17 @@
 #include "OwlatAdapter.h"
 #include "OwlatInterface.h"
 #include "adapter_support.h"
+#include "joint_support.h"
 #include "subscriber.h"
 using namespace PLEXIL;
 
 // ROS
 #include <ros/ros.h>
 #include <geometry_msgs/Point.h>
+
+// C++
+#include <map>
+
 
 // PLEXIL API
 #include <AdapterConfiguration.hh>
@@ -350,14 +355,57 @@ static void tiltDegrees (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getTiltDegrees());
 }
 
-static void getDefaultLookupHandler (const State& state, StateCacheEntry &entry)
+static void joint_velocity (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("getDefaultLookupHandler", "lookup called for " << state.name()
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_velocity ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Velocity));
+}
+
+static void joint_position (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_position ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Position));
+}
+
+static void joint_effort (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_effort ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Effort));
+}
+
+static void joint_acceleration (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  debugMsg("joint_effort ", "lookup called for " << state.name()
+           << " with " << args.size() << " args");
+  int joint;
+  args[0].getValue(joint);
+  entry.update(OwlatInterface::instance()->
+               getJointTelemetry(joint, TelemetryType::Acceleration));
+}
+
+static void default_lookup_handler (const State& state, StateCacheEntry &entry)
+{
+  debugMsg("default_lookup_handler", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
   debugMsg("Invalid State: ", state.name());
   entry.update(Unknown);
 }
-
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
@@ -412,25 +460,15 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("PanDegrees", panDegrees);
   g_configuration->registerLookupHandler("TiltRadians", tiltRadians);
   g_configuration->registerLookupHandler("TiltDegrees", tiltDegrees);
-  g_configuration->setDefaultLookupHandler(getDefaultLookupHandler);
+  g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
+  g_configuration->registerLookupHandler("JointPosition", joint_position);
+  g_configuration->registerLookupHandler("JointEffort", joint_effort);
+  g_configuration->registerLookupHandler("JointAcceleration", joint_acceleration);
+  g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
   return true;
 }
-
-void OwlatAdapter::lookupNow (const State& state, StateCacheEntry& entry)
-{
-  debugMsg("OwlatAdapter:lookupNow", " called on " << state.name() << " with "
-           << state.parameters().size() << " arguments");
-
-  Value retval = Unknown;  // the value of the queried state
-
-  // At the moment there are no lookups defined for OWLAT.
-  ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
-
-  entry.update(retval);
-}
-
 
 extern "C" {
   void initowlat_adapter() {

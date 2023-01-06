@@ -63,9 +63,10 @@ void command_status_callback (int id, bool success);
 void receiveBool (const std::string& state_name, bool val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
-void receiveBoolString (const std::string& state_name,
-                        bool val,
-                        const std::string& arg);
+void receiveBoolFromString (const std::string& state_name,
+                            bool val,
+                            const std::string& arg);
+void receiveDoubleFromInt (const std::string& state_name, double val, int arg);
 void receiveDoubleVector (const std::string& state_name, vector<double> vals);
 
 
