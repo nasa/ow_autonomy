@@ -17,8 +17,8 @@ const size_t NumJoints = 9;
 
 enum Joint {
   // This enumeration must list all joints and in the same order as
-  // the topic /joint_states, which is alphabetical by joint name
-  // there.  The names used here are different but more readable.
+  // the topic /joint_states, which is alphabetical by joint name.
+  // The names used here are different but more readable.
   ANTENNA_PAN = 0,
   ANTENNA_TILT = 1,
   DISTAL_PITCH = 2,
