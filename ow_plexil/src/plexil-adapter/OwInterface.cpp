@@ -843,8 +843,7 @@ void OwInterface::unstow (int id)  // as action
 
 void OwInterface::unstowAction (int id)
 {
-  UnstowGoal goal;
-  goal.goal = 0;  // Arbitrary, meaningless value
+  UnstowGoal goal; // empty/undefined
 
   runAction<actionlib::SimpleActionClient<UnstowAction>,
             UnstowGoal,
@@ -865,8 +864,7 @@ void OwInterface::stow (int id)  // as action
 
 void OwInterface::stowAction (int id)
 {
-  StowGoal goal;
-  goal.goal = 0;  // Arbitrary, meaningless value
+  StowGoal goal; // empty/undefined
 
   runAction<actionlib::SimpleActionClient<StowAction>,
             StowGoal,
