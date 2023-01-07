@@ -12,7 +12,7 @@ PanTilt:
 
   Boolean FaultDetected = false;
 
-  PostCondition !Lookup(AntennaPanFault);
+  PostCondition !Lookup(AntennaFault);
 
   if Lookup(AntennaPanFault)
   { 
@@ -22,7 +22,7 @@ PanTilt:
 
   SendPanTilt:
   {
-    Start !Lookup(AntennaPanFault);
+    Start !Lookup(AntennaFault);
 
     if FaultDetected
     {
