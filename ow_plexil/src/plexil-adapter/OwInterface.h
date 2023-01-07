@@ -19,7 +19,7 @@
 #include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
-#include <ow_faults_detection/PowerFaults.h>
+#include <owl_msgs/PowerFaultsStatus.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
