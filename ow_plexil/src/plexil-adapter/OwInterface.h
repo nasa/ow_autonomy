@@ -256,7 +256,7 @@ class OwInterface : public PlexilInterface
   FaultMap64 m_panTiltErrors = {
     {"PAN_JOINT_LOCKED", std::make_pair(
       owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
-    {"TiltFault", std::make_pair(
+    {"TILT_JOINT_LOCKED", std::make_pair(
       owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
 
