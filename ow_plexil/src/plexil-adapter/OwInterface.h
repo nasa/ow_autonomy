@@ -21,7 +21,6 @@
 #include <owl_msgs/PowerFaultsStatus.h>
 #include <owl_msgs/SystemFaultsStatus.h>
 
-
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
