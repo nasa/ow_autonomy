@@ -60,8 +60,8 @@ const string Op_DigLinear              = "DigLinear";
 const string Op_Deliver                = "Deliver";
 const string Op_Discard                = "Discard";
 const string Op_Grind                  = "Grind";
-const string Op_Stow                   = "Stow";
-const string Op_Unstow                 = "Unstow";
+const string Op_ArmStow                = "ArmStow";
+const string Op_ArmUnstow              = "ArmUnstow";
 const string Op_CameraCapture          = "CameraCapture";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
@@ -77,8 +77,8 @@ static vector<string> LanderOpNames = {
   Op_Discard,
   Op_PanTiltAntenna,
   Op_Grind,
-  Op_Stow,
-  Op_Unstow,
+  Op_ArmStow,
+  Op_ArmUnstow,
   Op_CameraCapture,
   Op_IdentifySampleLocation,
   Op_LightSetIntensity
@@ -106,8 +106,8 @@ enum ActionGoalStatus {
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
-  { Op_Stow, NOGOAL },
-  { Op_Unstow, NOGOAL },
+  { Op_ArmStow, NOGOAL },
+  { Op_ArmUnstow, NOGOAL },
   { Op_Grind, NOGOAL },
   { Op_GuardedMove, NOGOAL },
   { Op_ArmMoveJoint, NOGOAL },
@@ -480,10 +480,10 @@ void OwInterface::initialize()
       make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
     m_armMoveJointsClient =
       make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
-    m_unstowClient =
-      make_unique<UnstowActionClient>(Op_Unstow, true);
-    m_stowClient =
-      make_unique<StowActionClient>(Op_Stow, true);
+    m_armUnstowClient =
+      make_unique<ArmUnstowActionClient>(Op_ArmUnstow, true);
+    m_armStowClient =
+      make_unique<ArmStowActionClient>(Op_ArmStow, true);
     m_grindClient =
       make_unique<GrindActionClient>(Op_Grind, true);
     m_digCircularClient =
@@ -573,17 +573,17 @@ void OwInterface::initialize()
     // Connect action clients to servers and add subscribers for
     // action status.
 
-    if (! m_unstowClient->
+    if (! m_armUnstowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Unstow action server did not connect!");
+      ROS_ERROR ("ArmUnstow action server did not connect!");
     }
-    else addSubscriber ("/Unstow/status", Op_Unstow);
+    else addSubscriber ("/ArmUnstow/status", Op_ArmUnstow);
 
-    if (! m_stowClient->
+    if (! m_armStowClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Stow action server did not connect!");
+      ROS_ERROR ("ArmStow action server did not connect!");
     }
-    else addSubscriber ("/Stow/status", Op_Stow);
+    else addSubscriber ("/ArmStow/status", Op_ArmStow);
 
     if (! m_armMoveJointClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS)))  {
@@ -835,46 +835,46 @@ void OwInterface::digCircularAction (double x, double y, double depth,
 }
 
 
-void OwInterface::unstow (int id)  // as action
+void OwInterface::armUnstow (int id)  // as action
 {
-  if (! markOperationRunning (Op_Unstow, id)) return;
-  thread action_thread (&OwInterface::unstowAction, this, id);
+  if (! markOperationRunning (Op_ArmUnstow, id)) return;
+  thread action_thread (&OwInterface::armUnstowAction, this, id);
   action_thread.detach();
 }
 
-void OwInterface::unstowAction (int id)
+void OwInterface::armUnstowAction (int id)
 {
-  UnstowGoal goal; // empty/undefined
+  ArmUnstowGoal goal; // empty/undefined
 
-  runAction<actionlib::SimpleActionClient<UnstowAction>,
-            UnstowGoal,
-            UnstowResultConstPtr,
-            UnstowFeedbackConstPtr>
-    (Op_Unstow, m_unstowClient, goal, id,
-     default_action_active_cb (Op_Unstow),
-     default_action_feedback_cb<UnstowFeedbackConstPtr> (Op_Unstow),
-     default_action_done_cb<UnstowResultConstPtr> (Op_Unstow));
+  runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
+            ArmUnstowGoal,
+            ArmUnstowResultConstPtr,
+            ArmUnstowFeedbackConstPtr>
+    (Op_ArmUnstow, m_armUnstowClient, goal, id,
+     default_action_active_cb (Op_ArmUnstow),
+     default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (Op_ArmUnstow),
+     default_action_done_cb<ArmUnstowResultConstPtr> (Op_ArmUnstow));
 }
 
-void OwInterface::stow (int id)  // as action
+void OwInterface::armStow (int id)  // as action
 {
-  if (! markOperationRunning (Op_Stow, id)) return;
-  thread action_thread (&OwInterface::stowAction, this, id);
+  if (! markOperationRunning (Op_ArmStow, id)) return;
+  thread action_thread (&OwInterface::armStowAction, this, id);
   action_thread.detach();
 }
 
-void OwInterface::stowAction (int id)
+void OwInterface::armStowAction (int id)
 {
-  StowGoal goal; // empty/undefined
+  ArmStowGoal goal; // empty/undefined
 
-  runAction<actionlib::SimpleActionClient<StowAction>,
-            StowGoal,
-            StowResultConstPtr,
-            StowFeedbackConstPtr>
-    (Op_Stow, m_stowClient, goal, id,
-     default_action_active_cb (Op_Stow),
-     default_action_feedback_cb<StowFeedbackConstPtr> (Op_Stow),
-     default_action_done_cb<StowResultConstPtr> (Op_Stow));
+  runAction<actionlib::SimpleActionClient<ArmStowAction>,
+            ArmStowGoal,
+            ArmStowResultConstPtr,
+            ArmStowFeedbackConstPtr>
+    (Op_ArmStow, m_armStowClient, goal, id,
+     default_action_active_cb (Op_ArmStow),
+     default_action_feedback_cb<ArmStowFeedbackConstPtr> (Op_ArmStow),
+     default_action_done_cb<ArmStowResultConstPtr> (Op_ArmStow));
 }
 
 void OwInterface::grind (double x, double y, double depth, double length,

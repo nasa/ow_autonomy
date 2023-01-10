@@ -183,18 +183,18 @@ static bool lookup (const string& state_name,
   return retval;
 }
 
-static void stow (Command* cmd, AdapterExecInterface* intf)
+static void arm_stow (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->stow (CommandId);
+  OwInterface::instance()->armStow (CommandId);
   acknowledge_command_sent(*cr);
 
 }
 
-static void unstow (Command* cmd, AdapterExecInterface* intf)
+static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->unstow (CommandId);
+  OwInterface::instance()->armUnstow (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -420,8 +420,8 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 bool OwAdapter::initialize()
 {
   CommonAdapter::initialize();
-  g_configuration->registerCommandHandler("stow", stow);
-  g_configuration->registerCommandHandler("unstow", unstow);
+  g_configuration->registerCommandHandler("stow", arm_stow);
+  g_configuration->registerCommandHandler("unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
