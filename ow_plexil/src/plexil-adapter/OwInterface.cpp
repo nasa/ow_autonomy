@@ -394,7 +394,17 @@ bool OwInterface::systemFault () const
 
 bool OwInterface::antennaFault () const
 {
-  return faultActive (m_panTiltErrors);
+  return antennaPanFault() || antennaTiltFault();
+}
+
+bool OwInterface::antennaPanFault () const
+{
+  return m_panTiltErrors.at("PanFault").second;
+}
+
+bool OwInterface::antennaTiltFault () const
+{
+  return m_panTiltErrors.at("TiltFault").second;
 }
 
 bool OwInterface::armFault () const

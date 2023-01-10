@@ -136,6 +136,12 @@ static bool lookup (const string& state_name,
   else if (state_name == "AntennaFault") {
     value_out = OwInterface::instance()->antennaFault();
   }
+  else if (state_name == "AntennaPanFault") {
+    value_out = OwInterface::instance()->antennaPanFault();
+  }
+  else if (state_name == "AntennaTiltFault") {
+    value_out = OwInterface::instance()->antennaTiltFault();
+  }
   else if (state_name == "ArmFault") {
     value_out = OwInterface::instance()->armFault();
   }

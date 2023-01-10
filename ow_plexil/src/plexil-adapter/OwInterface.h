@@ -19,7 +19,7 @@
 #include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
-#include <ow_faults_detection/PowerFaults.h>
+#include <owl_msgs/PowerFaultsStatus.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
@@ -142,6 +142,8 @@ class OwInterface : public PlexilInterface
   double groundPosition () const;
   bool   systemFault () const;
   bool   antennaFault () const;
+  bool   antennaPanFault () const;
+  bool   antennaTiltFault () const;
   bool   armFault () const;
   bool   powerFault () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
