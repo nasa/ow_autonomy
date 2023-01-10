@@ -24,8 +24,8 @@
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
-#include <ow_lander/UnstowAction.h>
-#include <ow_lander/StowAction.h>
+#include <owl_msgs/UnstowAction.h>
+#include <owl_msgs/StowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
@@ -51,9 +51,9 @@
 #include <memory>
 
 using UnstowActionClient =
-  actionlib::SimpleActionClient<ow_lander::UnstowAction>;
+  actionlib::SimpleActionClient<owl_msgs::UnstowAction>;
 using StowActionClient =
-  actionlib::SimpleActionClient<ow_lander::StowAction>;
+  actionlib::SimpleActionClient<owl_msgs::StowAction>;
 using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =

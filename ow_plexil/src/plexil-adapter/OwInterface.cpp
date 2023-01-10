@@ -33,6 +33,7 @@ using std::shared_ptr;
 using std::make_unique;
 
 using namespace ow_lander;
+using namespace owl_msgs;
 
 //////////////////// Utilities ////////////////////////
 
