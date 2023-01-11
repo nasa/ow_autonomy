@@ -19,5 +19,5 @@ PanAndShoot:
   In Real PanAngle, TiltAngle;
 
   LibraryCall PanTilt (PanDegrees = PanAngle, TiltDegrees = TiltAngle);
-  LibraryCall CameraCapture (ExposureSecs = 0);
+  LibraryCall CameraCapture ();
 }
