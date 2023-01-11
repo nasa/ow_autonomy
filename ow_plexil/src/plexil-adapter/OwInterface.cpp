@@ -543,7 +543,7 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/state_of_charge", QSize, soc_callback)));
+        subscribe("/battery_state_of_charge", QSize, soc_callback)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
@@ -554,7 +554,7 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/remaining_useful_life", QSize,
+        subscribe("/battery_remaining_useful_life", QSize,
                   rul_callback)));
 
     m_subscribers.push_back
