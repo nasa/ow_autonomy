@@ -24,8 +24,8 @@
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
-#include <ow_lander/UnstowAction.h>
-#include <ow_lander/StowAction.h>
+#include <owl_msgs/ArmUnstowAction.h>
+#include <owl_msgs/ArmStowAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
@@ -50,10 +50,10 @@
 #include <string>
 #include <memory>
 
-using UnstowActionClient =
-  actionlib::SimpleActionClient<ow_lander::UnstowAction>;
-using StowActionClient =
-  actionlib::SimpleActionClient<ow_lander::StowAction>;
+using ArmUnstowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
+using ArmStowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using GrindActionClient =
   actionlib::SimpleActionClient<ow_lander::GrindAction>;
 using GuardedMoveActionClient =
@@ -118,8 +118,8 @@ class OwInterface : public PlexilInterface
                     double ground_pos, bool parallel, int id);
   void grind (double x, double y, double depth, double length,
               bool parallel, double ground_pos, int id);
-  void stow (int id);
-  void unstow (int id);
+  void armStow (int id);
+  void armUnstow (int id);
   void deliver (int id);
   void discard (double x, double y, double z, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
@@ -151,8 +151,8 @@ class OwInterface : public PlexilInterface
   template<typename Service>
   void callService (ros::ServiceClient, Service, std::string name, int id);
 
-  void unstowAction (int id);
-  void stowAction (int id);
+  void armStowAction (int id);
+  void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
                     bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
@@ -251,8 +251,8 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
-  std::unique_ptr<UnstowActionClient> m_unstowClient;
-  std::unique_ptr<StowActionClient> m_stowClient;
+  std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
+  std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
