@@ -8,10 +8,12 @@
 
 // OW - external
 #include <ow_lander/Light.h>
+#include <owl_msgs/BatteryTemperature.h>
+#include <owl_msgs/RemainingUsefulLife.h>
+#include <owl_msgs/StateOfCharge.h>
 
 // ROS
 #include <std_msgs/Float64.h>
-#include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
 
 // C++
@@ -314,22 +316,22 @@ static double StateOfCharge       = NAN;
 static double RemainingUsefulLife = NAN;
 static double BatteryTemperature  = NAN;
 
-static void soc_callback (const std_msgs::Float64::ConstPtr& msg)
+static void soc_callback (const owl_msgs::StateOfCharge::ConstPtr& msg)
 {
-  StateOfCharge = msg->data;
+  StateOfCharge = msg->value;
   publish ("StateOfCharge", StateOfCharge);
 }
 
-static void rul_callback (const std_msgs::Int16::ConstPtr& msg)
+static void rul_callback (const owl_msgs::RemainingUsefulLife::ConstPtr& msg)
 {
   // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
-  RemainingUsefulLife = msg->data;
+  RemainingUsefulLife = msg->value;
   publish ("RemainingUsefulLife", RemainingUsefulLife);
 }
 
-static void temperature_callback (const std_msgs::Float64::ConstPtr& msg)
+static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& msg)
 {
-  BatteryTemperature = msg->data;
+  BatteryTemperature = msg->value;
   publish ("BatteryTemperature", BatteryTemperature);
 }
 
@@ -541,18 +543,18 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/power_system_node/state_of_charge", QSize, soc_callback)));
+        subscribe("/battery_state_of_charge", QSize, soc_callback)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/power_system_node/battery_temperature", QSize,
+        subscribe("/battery_temperature", QSize,
                   temperature_callback)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/power_system_node/remaining_useful_life", QSize,
+        subscribe("/battery_remaining_useful_life", QSize,
                   rul_callback)));
 
     m_subscribers.push_back

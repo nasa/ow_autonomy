@@ -15,11 +15,11 @@
 #include <ow_plexil/IdentifyLocationAction.h>
 
 // ow_simulator
-#include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
 #include <owl_msgs/PowerFaultsStatus.h>
+#include <owl_msgs/SystemFaultsStatus.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
@@ -44,10 +44,6 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/Point.h>
-#include <owl_msgs/SystemFaultsStatus.h>
-#include <owl_msgs/ArmFaultsStatus.h>
-#include <owl_msgs/PowerFaultsStatus.h>
-#include <owl_msgs/PanTiltFaultsStatus.h>
 #include <ros/ros.h>
 
 // C++
