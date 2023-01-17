@@ -158,7 +158,7 @@ void OwlatInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_TOOL", qsize,
+        subscribe("/arm_tool", qsize,
                   &OwlatInterface::armToolCallback, this)));
 
     m_subscribers.push_back
@@ -734,7 +734,7 @@ void OwlatInterface::armPoseCallback
 }
 
 void OwlatInterface::armToolCallback
-(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
+(const owl_msgs::ArmTool::ConstPtr& msg)
 {
   m_arm_tool = msg->value.value;
   publish("ArmTool", m_arm_tool);
