@@ -152,7 +152,7 @@ void OwlatInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_POSE", qsize,
+        subscribe("/arm_pose", qsize,
                   &OwlatInterface::armPoseCallback, this)));
 
     m_subscribers.push_back
@@ -164,7 +164,7 @@ void OwlatInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owl_msgs/pan_tilt_position", qsize,
+        subscribe("/pan_tilt_position", qsize,
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
@@ -721,7 +721,7 @@ void OwlatInterface::armFTForceCallback
 }
 
 void OwlatInterface::armPoseCallback
-(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
+(const owl_msgs::ArmPose::ConstPtr& msg)
 {
   m_arm_pose[0] = msg->value.position.x;
   m_arm_pose[1] = msg->value.position.y;
