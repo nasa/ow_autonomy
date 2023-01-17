@@ -185,7 +185,7 @@ class OwlatInterface : public PlexilInterface
   (const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
   void armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg);
   void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
-  void armPoseCallback(const owl_msgs::ArmTool::ConstPtr& msg);
+  void armPoseCallback(const owl_msgs::ArmPose::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
