@@ -8,6 +8,5 @@
 
 CameraCapture:
 {
-  In Real ExposureSecs;
-  SynchronousCommand camera_capture (ExposureSecs);
+  SynchronousCommand camera_capture ();
 }
