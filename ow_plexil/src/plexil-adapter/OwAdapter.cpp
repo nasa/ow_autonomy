@@ -30,6 +30,9 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
+// C
+#include <math.h>  // for NAN
+
 const float PanMinDegrees  = -183.346; // -3.2 radians
 const float PanMaxDegrees  =  183.346; //  3.2 radians
 const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
@@ -348,6 +351,38 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   }
 }
 
+static void pan (Command* cmd, AdapterExecInterface* intf)
+{
+  double pan_degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (pan_degrees);
+  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->panAntenna (pan_degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
+static void tilt (Command* cmd, AdapterExecInterface* intf)
+{
+  double tilt_degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (tilt_degrees);
+  if (! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tiltAntenna (tilt_degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
 static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
   double exposure_secs;
@@ -431,6 +466,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("discard", discard);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
+  g_configuration->registerCommandHandler("pan", pan);
+  g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("camera_capture", camera_capture);

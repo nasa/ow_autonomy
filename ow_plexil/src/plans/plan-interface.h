@@ -19,7 +19,9 @@ Command log_debug (...);
 // PLEXIL library for lander operations.
 
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
-LibraryAction PanTilt  (In Real PanDegrees, In Real TiltDegrees);
+LibraryAction PanTilt (In Real PanDegrees, In Real TiltDegrees);
+LibraryAction Pan (In Real PanDegrees);
+LibraryAction Tilt (In Real TiltDegrees);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction GuardedMove (In Real X,
