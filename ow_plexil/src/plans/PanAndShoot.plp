@@ -2,8 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Auxiliary plan for TakePanorama.  Pans to specified angle and takes
-// a picture.
+// Auxiliary plan for TakePanorama.  Pan to specified angle and capture image.
 
 #include "plexil_defs.h"
 #include "plan-interface.h"
@@ -13,5 +12,5 @@ PanAndShoot:
   In Real PanAngle;
 
   LibraryCall Pan (PanDegrees = PanAngle);
-  LibraryCall CameraCapture (ExposureSecs = 0);
+  LibraryCall CameraCapture ();
 }

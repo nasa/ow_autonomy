@@ -385,11 +385,18 @@ static void tilt (Command* cmd, AdapterExecInterface* intf)
 
 static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->cameraCapture (CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void camera_set_exposure (Command* cmd, AdapterExecInterface* intf)
+{
   double exposure_secs;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->cameraCapture (exposure_secs, CommandId);
+  OwInterface::instance()->cameraSetExposure (exposure_secs, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -471,6 +478,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("camera_capture", camera_capture);
+  g_configuration->registerCommandHandler("camera_set_exposure",
+                                          camera_set_exposure);
   g_configuration->registerCommandHandler("light_set_intensity",
                                           light_set_intensity);
   OwInterface::instance()->setCommandStatusCallback (command_status_callback);

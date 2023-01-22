@@ -64,7 +64,8 @@ LibraryAction Discard (In Real X,
                        In Real Y,
                        In Real Z);
 
-LibraryAction CameraCapture (In Real ExposureSecs);
+LibraryAction CameraSetExposure (In Real Seconds);
+LibraryAction CameraCapture ();
 
 // Lander queries
 
