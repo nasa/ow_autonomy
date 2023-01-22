@@ -63,6 +63,7 @@ const string Op_Grind                  = "Grind";
 const string Op_ArmStow                = "ArmStow";
 const string Op_ArmUnstow              = "ArmUnstow";
 const string Op_CameraCapture          = "CameraCapture";
+const string Op_CameraSetExposure      = "CameraSetExposure";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 const string Op_LightSetIntensity      = "LightSetIntensity";
@@ -80,6 +81,7 @@ static vector<string> LanderOpNames = {
   Op_ArmStow,
   Op_ArmUnstow,
   Op_CameraCapture,
+  Op_CameraSetExposure,
   Op_IdentifySampleLocation,
   Op_LightSetIntensity
 };
@@ -117,6 +119,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_Deliver, NOGOAL },
   { Op_Discard, NOGOAL },
   { Op_CameraCapture, NOGOAL },
+  { Op_CameraSetExposure, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
   { Op_IdentifySampleLocation, NOGOAL },
   { Op_LightSetIntensity, NOGOAL }
@@ -496,6 +499,8 @@ void OwInterface::initialize()
       make_unique<DiscardActionClient>(Op_Discard, true);
     m_cameraCaptureClient =
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
+    m_cameraSetExposureClient =
+      make_unique<CameraSetExposureActionClient>(Op_CameraSetExposure, true);
     m_lightSetIntensityClient =
       make_unique<LightSetIntensityActionClient>(Op_LightSetIntensity, true);
     m_identifySampleLocationClient =
@@ -627,6 +632,12 @@ void OwInterface::initialize()
     }
     else addSubscriber ("/CameraCapture/status", Op_CameraCapture);
 
+    if (! m_cameraSetExposureClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("CameraSetExposure action server did not connect!");
+    }
+    else addSubscriber ("/CameraSetExposure/status", Op_CameraSetExposure);
+
     if (! m_lightSetIntensityClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("LightSetIntensity action server did not connect!");
@@ -688,20 +699,19 @@ void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
      default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
 }
 
-void OwInterface::cameraCapture (double exposure_secs, int id)
+void OwInterface::cameraCapture (int id)
 {
   if (! markOperationRunning (Op_CameraCapture, id)) return;
-  thread action_thread (&OwInterface::cameraCaptureAction, this, exposure_secs, id);
+  thread action_thread (&OwInterface::cameraCaptureAction, this, id);
   action_thread.detach();
 }
 
 
-void OwInterface::cameraCaptureAction (double exposure_secs, int id)
+void OwInterface::cameraCaptureAction (int id)
 {
   CameraCaptureGoal goal;
-  goal.exposure = exposure_secs;
 
-  ROS_INFO ("Starting CameraCapture(exposure_secs=%.2f)", exposure_secs);
+  ROS_INFO ("Starting CameraCapture()");
 
   runAction<actionlib::SimpleActionClient<CameraCaptureAction>,
             CameraCaptureGoal,
@@ -711,6 +721,32 @@ void OwInterface::cameraCaptureAction (double exposure_secs, int id)
      default_action_active_cb (Op_CameraCapture),
      default_action_feedback_cb<CameraCaptureFeedbackConstPtr> (Op_CameraCapture),
      default_action_done_cb<CameraCaptureResultConstPtr> (Op_CameraCapture));
+}
+
+
+void OwInterface::cameraSetExposure (double exposure_secs, int id)
+{
+  if (! markOperationRunning (Op_CameraSetExposure, id)) return;
+  thread action_thread (&OwInterface::cameraSetExposureAction, this, exposure_secs, id);
+  action_thread.detach();
+}
+
+
+void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
+{
+  CameraSetExposureGoal goal;
+  goal.exposure = exposure_secs;
+
+  ROS_INFO ("Starting CameraSetExposure(exposure_secs=%.2f)", exposure_secs);
+
+  runAction<actionlib::SimpleActionClient<CameraSetExposureAction>,
+            CameraSetExposureGoal,
+            CameraSetExposureResultConstPtr,
+            CameraSetExposureFeedbackConstPtr>
+    (Op_CameraSetExposure, m_cameraSetExposureClient, goal, id,
+     default_action_active_cb (Op_CameraSetExposure),
+     default_action_feedback_cb<CameraSetExposureFeedbackConstPtr> (Op_CameraSetExposure),
+     default_action_done_cb<CameraSetExposureResultConstPtr> (Op_CameraSetExposure));
 }
 
 

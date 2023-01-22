@@ -14,7 +14,8 @@
 // plan-interface.h) that wraps these commands in a way that they
 // called synchronously.
 
-Command camera_capture (Real exposure_secs);
+Command camera_set_exposure (Real seconds);
+Command camera_capture ();
 
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 
@@ -22,7 +23,7 @@ Command arm_move_joint (Boolean relative,
                         Integer joint,
                         Real angle);
 
-Command arm_move_joints (Boolean relative, 
+Command arm_move_joints (Boolean relative,
                          Real angles[6]);
 
 Command dig_circular (Real x,

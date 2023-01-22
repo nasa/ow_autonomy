@@ -16,7 +16,7 @@ ImagePass: UncheckedSequence
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  LibraryCall CameraCapture (ExposureSecs = 0);
+  LibraryCall CameraCapture ();
   if (ReversePan) {
     log_debug ("Reverse pan. Pan =", PanAngle, "Lo=", PanLo,
                "Increment=", PanIncrement);

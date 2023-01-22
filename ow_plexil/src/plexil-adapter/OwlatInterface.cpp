@@ -164,7 +164,7 @@ void OwlatInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owl_msgs/pan_tilt_position", qsize,
+        subscribe("/pan_tilt_position", qsize,
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
