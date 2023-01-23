@@ -18,6 +18,8 @@ Command camera_set_exposure (Real seconds);
 Command camera_capture ();
 
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
+Command pan (Real pan_degrees);
+Command tilt (Real tilt_degrees);
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,

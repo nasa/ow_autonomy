@@ -30,9 +30,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
-// C
-#include <math.h>  // for NAN
-
 const float PanMinDegrees  = -183.346; // -3.2 radians
 const float PanMaxDegrees  =  183.346; //  3.2 radians
 const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2

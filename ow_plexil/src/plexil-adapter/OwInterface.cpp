@@ -23,6 +23,9 @@
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
 
+// C
+#include <math.h>  // for NAN
+
 using std::set;
 using std::map;
 using std::vector;
@@ -65,6 +68,8 @@ const string Op_ArmUnstow              = "ArmUnstow";
 const string Op_CameraCapture          = "CameraCapture";
 const string Op_CameraSetExposure      = "CameraSetExposure";
 const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
+const string Op_PanAntenna             = "AntennaPan";
+const string Op_TiltAntenna            = "AntennaTilt";
 const string Op_IdentifySampleLocation = "IdentifySampleLocation";
 const string Op_LightSetIntensity      = "LightSetIntensity";
 
@@ -77,6 +82,8 @@ static vector<string> LanderOpNames = {
   Op_Deliver,
   Op_Discard,
   Op_PanTiltAntenna,
+  Op_PanAntenna,
+  Op_TiltAntenna,
   Op_Grind,
   Op_ArmStow,
   Op_ArmUnstow,
@@ -121,6 +128,8 @@ static map<string, int> ActionGoalStatusMap {
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
+  { Op_PanAntenna, NOGOAL },
+  { Op_TiltAntenna, NOGOAL },
   { Op_IdentifySampleLocation, NOGOAL },
   { Op_LightSetIntensity, NOGOAL }
 };
@@ -672,6 +681,21 @@ void OwInterface::addSubscriber (const string& topic, const string& operation)
                    this, _1, operation))));
 }
 
+void OwInterface::panAntenna (double pan_degrees, int id)
+{
+  if (! markOperationRunning (Op_PanAntenna, id)) return;
+  thread action_thread (&OwInterface::panTiltAntennaAction, this,
+                        pan_degrees, NAN, id);
+  action_thread.detach();
+}
+
+void OwInterface::tiltAntenna (double tilt_degrees, int id)
+{
+  if (! markOperationRunning (Op_TiltAntenna, id)) return;
+  thread action_thread (&OwInterface::panTiltAntennaAction, this,
+                        NAN, tilt_degrees, id);
+  action_thread.detach();
+}
 
 void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
 {

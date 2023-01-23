@@ -114,6 +114,8 @@ class OwInterface : public PlexilInterface
                                               int id);
 
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
+  void panAntenna (double pan_degrees, int id);
+  void tiltAntenna (double tilt_degrees, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
   void digLinear (double x, double y, double depth, double length,
