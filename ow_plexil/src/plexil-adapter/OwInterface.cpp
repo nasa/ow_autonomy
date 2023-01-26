@@ -483,6 +483,8 @@ void OwInterface::initialize()
 
     // Initialize action clients
 
+    m_armMoveCartesianClient =
+      make_unique<ArmMoveCartesianActionClient>(Op_ArmMoveCartesian, true);
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_armMoveJointClient =
@@ -655,6 +657,12 @@ void OwInterface::initialize()
       ROS_ERROR ("GuardedMove action server did not connect!");
     }
     else addSubscriber ("/GuardedMove/status", Op_GuardedMove);
+
+    if (! m_armMoveCartesianClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmMoveCartesian action server did not connect!");
+    }
+    else addSubscriber ("/ArmMoveCartesian/status", Op_ArmMoveCartesian);
 
     if (! m_panTiltClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -971,24 +979,24 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double x, double y, double z,
 				    double orient_x, double orient_y,
-				    double orient_z, double orient_w, int id)
+				    double orient_z, int id)
 {
   if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
   thread action_thread (&OwInterface::armMoveCartesianAction, this,
 			frame, relative, x, y, z,
-                        orient_x, orient_y, orient_z, orient_w, id);
+                        orient_x, orient_y, orient_z, id);
   action_thread.detach();
 }
 
 void OwInterface::armMoveCartesianAction (int frame, bool relative,
 					  double x, double y, double z,
 					  double orient_x, double orient_y,
-					  double orient_z, orient_w, int id)
+					  double orient_z, int id)
 {
-  geometry_msgs::Point point;
+  geometry_msgs::Point point {x,y,z};
   point.x = x; point.y = y; point.z = z;
-  geometry_msgs::Quaternion quat (orient_x, orient_y, orient_z, orient_w);
-  geometry_msgs::Pose pose (point, quat);
+  geometry_msgs::Quaternion quat; // { orient_x, orient_y, orient_z, orient_w };
+  geometry_msgs::Pose pose; // { point, quat };
   ArmMoveCartesianGoal goal;
   goal.frame = frame;
   goal.relative = relative;
@@ -1001,7 +1009,7 @@ void OwInterface::armMoveCartesianAction (int frame, bool relative,
             ArmMoveCartesianGoal,
             ArmMoveCartesianResultConstPtr,
             ArmMoveCartesianFeedbackConstPtr>
-	    (Op_ArmMoveCartesian, m_armMoveJointClient, goal, id,
+	    (Op_ArmMoveCartesian, m_armMoveCartesianClient, goal, id,
 	     default_action_active_cb (Op_ArmMoveCartesian),
 	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr>
 	     (Op_ArmMoveCartesian),

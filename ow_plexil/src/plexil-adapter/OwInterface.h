@@ -24,6 +24,7 @@
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
+#include <owl_msgs/ArmMoveCartesianAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
 #include <ow_lander/GrindAction.h>
@@ -51,6 +52,8 @@
 #include <string>
 #include <memory>
 
+using ArmMoveCartesianActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using ArmStowActionClient =
@@ -154,11 +157,11 @@ class OwInterface : public PlexilInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointTelemetry (int joint, TelemetryType type) const;
-  int actionGoalStatus (const std::string& action_name) const;
+  int    actionGoalStatus (const std::string& action_name) const;
 
  private:
   void addSubscriber (const std::string& topic, const std::string& operation);
-  
+
   void armMoveCartesianAction (int frame, bool relative,
 			       double x, double y, double z,
 			       double orient_x, double orient_y,
@@ -263,6 +266,7 @@ class OwInterface : public PlexilInterface
   std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
   // Action clients
+  std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
