@@ -22,7 +22,6 @@
 #include <vector>
 #include <map>
 #include <thread>
-//#include <functional>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
 
@@ -962,19 +961,6 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
      default_action_done_cb<GrindResultConstPtr> (Op_Grind));
 }
 
-/*
-void OwInterface::armMoveCartesian (int frame, bool relative,
-				    double x, double y, double z,
-				    double orient_x, double orient_y,
-				    double orient_z, int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
-  thread action_thread (&OwInterface::armMoveCartesianAction, this,
-			frame, relative, x, y, z,
-                        orient_x, orient_y, orient_z, id);
-  action_thread.detach();
-}
-*/
 
 void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double x, double y, double z,
@@ -982,21 +968,45 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double orient_z, int id)
 {
   if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
+  /*
   thread action_thread (&OwInterface::armMoveCartesianAction, this,
 			frame, relative, x, y, z,
                         orient_x, orient_y, orient_z, id);
+  action_thread.detach();
+  */
+}
+
+
+void OwInterface::armMoveCartesian (int frame, bool relative,
+				    double x, double y, double z,
+				    double orient_x, double orient_y,
+				    double orient_z, double orient_w, int id)
+{
+  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
+
+  geometry_msgs::Point p;
+  p.x = x;
+  p.y = y;
+  p.z = z;
+
+  geometry_msgs::Quaternion q;
+  q.x = orient_x;
+  q.y = orient_y;
+  q.z = orient_z;
+  q.w = orient_w;
+
+  geometry_msgs::Pose pose;
+  pose.position = p;
+  pose.orientation = q;
+
+  thread action_thread (&OwInterface::armMoveCartesianAction, this,
+			frame, relative, pose, id);
   action_thread.detach();
 }
 
 void OwInterface::armMoveCartesianAction (int frame, bool relative,
-					  double x, double y, double z,
-					  double orient_x, double orient_y,
-					  double orient_z, int id)
+                                          geometry_msgs::Pose pose, int id)
 {
-  geometry_msgs::Point point {x,y,z};
-  point.x = x; point.y = y; point.z = z;
-  geometry_msgs::Quaternion quat; // { orient_x, orient_y, orient_z, orient_w };
-  geometry_msgs::Pose pose; // { point, quat };
   ArmMoveCartesianGoal goal;
   goal.frame = frame;
   goal.relative = relative;

@@ -108,7 +108,6 @@ class OwInterface : public PlexilInterface
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
 			 double orient_z, int id);
-
   void armMoveCartesian (int frame, bool relative,
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
@@ -162,14 +161,14 @@ class OwInterface : public PlexilInterface
  private:
   void addSubscriber (const std::string& topic, const std::string& operation);
 
-  void armMoveCartesianAction (int frame, bool relative,
-			       double x, double y, double z,
-			       double orient_x, double orient_y,
-			       double orient_z, int id);
-  void armMoveCartesianAction (int frame, bool relative,
-			       double x, double y, double z,
-			       double orient_x, double orient_y,
-			       double orient_z, double orient_w, int id);
+  //  void armMoveCartesianAction (int frame, bool relative,
+  //			       double x, double y, double z,
+  //			       double orient_x, double orient_y,
+  //			       double orient_z, int id);
+  void armMoveCartesianAction (int frame,
+                               bool relative,
+                               geometry_msgs::Pose pose,
+                               int id);
   void armStowAction (int id);
   void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
