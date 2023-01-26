@@ -101,14 +101,20 @@ class OwInterface : public PlexilInterface
 
   // Operational interface
 
+  void armMoveCartesian (int frame, bool relative,
+			 double x, double y, double z,
+			 double orient_x, double orient_y,
+			 double orient_z, int id);
+
+  void armMoveCartesian (int frame, bool relative,
+			 double x, double y, double z,
+			 double orient_x, double orient_y,
+			 double orient_z, double orient_w, int id);
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  void armMoveJoint (bool relative, int joint, double angle,
-                     int id);
-  void armMoveJoints (bool relative,
-                      const std::vector<double>& angles,
-                      int id);
+  void armMoveJoint (bool relative, int joint, double angle, int id);
+  void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
@@ -152,9 +158,15 @@ class OwInterface : public PlexilInterface
 
  private:
   void addSubscriber (const std::string& topic, const std::string& operation);
-  template<typename Service>
-  void callService (ros::ServiceClient, Service, std::string name, int id);
-
+  
+  void armMoveCartesianAction (int frame, bool relative,
+			       double x, double y, double z,
+			       double orient_x, double orient_y,
+			       double orient_z, int id);
+  void armMoveCartesianAction (int frame, bool relative,
+			       double x, double y, double z,
+			       double orient_x, double orient_y,
+			       double orient_z, double orient_w, int id);
   void armStowAction (int id);
   void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,

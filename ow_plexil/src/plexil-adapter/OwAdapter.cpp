@@ -215,6 +215,49 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
+					     orient_x, orient_y, orient_z,
+					     CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_cartesian_q (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z, orient_w;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  args[8].getValue(orient_w);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
+					     orient_x, orient_y, orient_z,
+					     orient_w, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
 {
   bool relative;
@@ -430,6 +473,10 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("stow", arm_stow);
   g_configuration->registerCommandHandler("unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);
+  g_configuration->registerCommandHandler("arm_move_cartesian",
+					  arm_move_cartesian);
+  g_configuration->registerCommandHandler("arm_move_cartesian_q",
+					  arm_move_cartesian_q);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);

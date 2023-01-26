@@ -18,6 +18,19 @@ Command log_debug (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction ArmMoveCartesian (In Integer Frame,
+				In Boolean Relative,
+				In Real X, In Real Y, In Real Z,
+				In Real OrientX,
+				In Real OrientY,
+				In Real OrientZ);
+
+LibraryAction ArmMoveCartesian_Q (In Integer Frame,
+				  In Boolean Felative,
+				  In Real X, In Real Y, In Real Z,
+				  In Real OrientX, In Real OrientY,
+				  In Real OrientZ, In Real OrientW);
+
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 LibraryAction PanTilt  (In Real PanDegrees, In Real TiltDegrees);
 LibraryAction Stow ();

@@ -19,6 +19,19 @@ Command camera_capture ();
 
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 
+Command arm_move_cartesian (Integer frame,
+			    Boolean relative,
+			    Real x, Real y, Real z,
+			    // Orientation in Euler angle
+			    Real orient_x, Real orient_y, Real orient_z);
+
+// Quaternion version of previous
+Command arm_move_cartesian_q (Integer frame,
+			      Boolean relative,
+			      Real x, Real y, Real z,
+			      Real orient_x, Real orient_y, Real orient_z,
+			      Real orient_w);
+
 Command arm_move_joint (Boolean relative,
                         Integer joint,
                         Real angle);

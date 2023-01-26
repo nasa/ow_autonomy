@@ -13,13 +13,16 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
 
 // C++
 #include <set>
 #include <vector>
 #include <map>
 #include <thread>
-#include <functional>
+//#include <functional>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
 
@@ -53,6 +56,7 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // ow_lander.
 
 const string Op_GuardedMove            = "GuardedMove";
+const string Op_ArmMoveCartesian       = "ArmMoveCartesian";
 const string Op_ArmMoveJoint           = "ArmMoveJoint";
 const string Op_ArmMoveJoints          = "ArmMoveJoints";
 const string Op_DigCircular            = "DigCircular";
@@ -70,6 +74,7 @@ const string Op_LightSetIntensity      = "LightSetIntensity";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
+  Op_ArmMoveCartesian,
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
   Op_DigCircular,
@@ -108,6 +113,7 @@ enum ActionGoalStatus {
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
+  { Op_ArmMoveCartesian, NOGOAL },
   { Op_ArmStow, NOGOAL },
   { Op_ArmUnstow, NOGOAL },
   { Op_Grind, NOGOAL },
@@ -947,6 +953,62 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
      default_action_feedback_cb<GrindFeedbackConstPtr> (Op_Grind),
      default_action_done_cb<GrindResultConstPtr> (Op_Grind));
 }
+
+/*
+void OwInterface::armMoveCartesian (int frame, bool relative,
+				    double x, double y, double z,
+				    double orient_x, double orient_y,
+				    double orient_z, int id)
+{
+  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
+  thread action_thread (&OwInterface::armMoveCartesianAction, this,
+			frame, relative, x, y, z,
+                        orient_x, orient_y, orient_z, id);
+  action_thread.detach();
+}
+*/
+
+void OwInterface::armMoveCartesian (int frame, bool relative,
+				    double x, double y, double z,
+				    double orient_x, double orient_y,
+				    double orient_z, double orient_w, int id)
+{
+  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
+  thread action_thread (&OwInterface::armMoveCartesianAction, this,
+			frame, relative, x, y, z,
+                        orient_x, orient_y, orient_z, orient_w, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveCartesianAction (int frame, bool relative,
+					  double x, double y, double z,
+					  double orient_x, double orient_y,
+					  double orient_z, orient_w, int id)
+{
+  geometry_msgs::Point point;
+  point.x = x; point.y = y; point.z = z;
+  geometry_msgs::Quaternion quat (orient_x, orient_y, orient_z, orient_w);
+  geometry_msgs::Pose pose (point, quat);
+  ArmMoveCartesianGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.pose = pose;
+
+  // Fill this out.
+  ROS_INFO ("Starting ArmMoveCartesian (frame=%d, relative=%d)", frame, relative);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveCartesianAction>,
+            ArmMoveCartesianGoal,
+            ArmMoveCartesianResultConstPtr,
+            ArmMoveCartesianFeedbackConstPtr>
+	    (Op_ArmMoveCartesian, m_armMoveJointClient, goal, id,
+	     default_action_active_cb (Op_ArmMoveCartesian),
+	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr>
+	     (Op_ArmMoveCartesian),
+	     default_action_done_cb<ArmMoveCartesianResultConstPtr>
+	     (Op_ArmMoveCartesian));
+}
+
 
 void OwInterface::guardedMove (double x, double y, double z,
                                double dir_x, double dir_y, double dir_z,
