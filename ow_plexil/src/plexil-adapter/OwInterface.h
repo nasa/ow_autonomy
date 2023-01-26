@@ -32,7 +32,7 @@
 #include <ow_lander/ArmMoveJointsAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
-#include <ow_lander/DeliverAction.h>
+#include <owl_msgs/TaskDeliverSampleAction.h>
 #include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_lander/DiscardAction.h>
 #include <ow_lander/CameraCaptureAction.h>
@@ -67,8 +67,8 @@ using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
-using DeliverActionClient =
-  actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using TaskDeliverSampleActionClient =
+  actionlib::SimpleActionClient<ow_lander::TaskDeliverSampleAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using DiscardActionClient =
@@ -124,7 +124,7 @@ class OwInterface : public PlexilInterface
               bool parallel, double ground_pos, int id);
   void armStow (int id);
   void armUnstow (int id);
-  void deliver (int id);
+  void taskDeliverSample (int id);
   void discard (double x, double y, double z, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
@@ -173,7 +173,7 @@ class OwInterface : public PlexilInterface
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
-  void deliverAction (int id);
+  void taskDeliverSampleAction (int id);
   void discardAction (double x, double y, double z, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
@@ -261,7 +261,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<GrindActionClient> m_grindClient;
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
-  std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
