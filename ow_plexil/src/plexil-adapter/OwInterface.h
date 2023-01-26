@@ -68,7 +68,7 @@ using DigCircularActionClient =
 using DigLinearActionClient =
   actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
 using TaskDeliverSampleActionClient =
-  actionlib::SimpleActionClient<ow_lander::TaskDeliverSampleAction>;
+  actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using DiscardActionClient =
