@@ -16,6 +16,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // C++
 #include <set>
@@ -968,12 +969,25 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double orient_z, int id)
 {
   if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
-  /*
+
+  geometry_msgs::Point p;
+  p.x = x;
+  p.y = y;
+  p.z = z;
+
+  tf2::Quaternion q;
+  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
+  q.normalize();  // Recommended in ROS docs, not sure if needed here.
+
+  geometry_msgs::Quaternion qm = tf2::toMsg(q);
+  
+  geometry_msgs::Pose pose;
+  pose.position = p;
+  pose.orientation = qm;
+
   thread action_thread (&OwInterface::armMoveCartesianAction, this,
-			frame, relative, x, y, z,
-                        orient_x, orient_y, orient_z, id);
+			frame, relative, pose, id);
   action_thread.detach();
-  */
 }
 
 
@@ -1005,7 +1019,7 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 }
 
 void OwInterface::armMoveCartesianAction (int frame, bool relative,
-                                          geometry_msgs::Pose pose, int id)
+                                          const geometry_msgs::Pose& pose, int id)
 {
   ArmMoveCartesianGoal goal;
   goal.frame = frame;

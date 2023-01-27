@@ -167,7 +167,7 @@ class OwInterface : public PlexilInterface
   //			       double orient_z, int id);
   void armMoveCartesianAction (int frame,
                                bool relative,
-                               geometry_msgs::Pose pose,
+                               const geometry_msgs::Pose& pose,
                                int id);
   void armStowAction (int id);
   void armUnstowAction (int id);
