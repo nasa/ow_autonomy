@@ -45,7 +45,7 @@
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
 #include <ros/ros.h>
 
 // C++
@@ -161,10 +161,9 @@ class OwInterface : public PlexilInterface
  private:
   void addSubscriber (const std::string& topic, const std::string& operation);
 
-  //  void armMoveCartesianAction (int frame, bool relative,
-  //			       double x, double y, double z,
-  //			       double orient_x, double orient_y,
-  //			       double orient_z, int id);
+  void armMoveCartesianAux (int frame, bool relative,
+                            double x, double y, double z,
+                            const geometry_msgs::Quaternion& q, int id);
   void armMoveCartesianAction (int frame,
                                bool relative,
                                const geometry_msgs::Pose& pose,

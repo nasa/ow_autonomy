@@ -13,9 +13,8 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Empty.h>
-#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Pose.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // C++
@@ -968,26 +967,13 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double orient_x, double orient_y,
 				    double orient_z, int id)
 {
-  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
-
-  geometry_msgs::Point p;
-  p.x = x;
-  p.y = y;
-  p.z = z;
-
   tf2::Quaternion q;
   q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
   q.normalize();  // Recommended in ROS docs, not sure if needed here.
 
   geometry_msgs::Quaternion qm = tf2::toMsg(q);
-  
-  geometry_msgs::Pose pose;
-  pose.position = p;
-  pose.orientation = qm;
 
-  thread action_thread (&OwInterface::armMoveCartesianAction, this,
-			frame, relative, pose, id);
-  action_thread.detach();
+  armMoveCartesianAux (frame, relative, x, y, z, qm, id);
 }
 
 
@@ -996,18 +982,25 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double orient_x, double orient_y,
 				    double orient_z, double orient_w, int id)
 {
+  geometry_msgs::Quaternion q;
+  q.x = orient_x;
+  q.y = orient_y;
+  q.z = orient_z;
+  q.w = orient_w;
+
+  armMoveCartesianAux (frame, relative, x, y, z, q, id);
+}
+
+void OwInterface::armMoveCartesianAux (int frame, bool relative,
+                                       double x, double y, double z,
+                                       const geometry_msgs::Quaternion& q, int id)
+{
   if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
 
   geometry_msgs::Point p;
   p.x = x;
   p.y = y;
   p.z = z;
-
-  geometry_msgs::Quaternion q;
-  q.x = orient_x;
-  q.y = orient_y;
-  q.z = orient_z;
-  q.w = orient_w;
 
   geometry_msgs::Pose pose;
   pose.position = p;
@@ -1017,6 +1010,8 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 			frame, relative, pose, id);
   action_thread.detach();
 }
+
+
 
 void OwInterface::armMoveCartesianAction (int frame, bool relative,
                                           const geometry_msgs::Pose& pose, int id)
