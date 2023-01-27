@@ -9,6 +9,10 @@
 
 #include "lander-commands.h"
 
+// Constants
+#define BASE_LINK 0
+#define SCOOP_TIP 1
+
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
@@ -26,7 +30,7 @@ LibraryAction ArmMoveCartesian (In Integer Frame,
 				In Real OrientZ);
 
 LibraryAction ArmMoveCartesian_Q (In Integer Frame,
-				  In Boolean Felative,
+				  In Boolean Relative,
 				  In Real X, In Real Y, In Real Z,
 				  In Real OrientX, In Real OrientY,
 				  In Real OrientZ, In Real OrientW);
