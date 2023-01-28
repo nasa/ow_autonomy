@@ -24,6 +24,7 @@
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
+#include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/ArmMoveCartesianAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
@@ -52,6 +53,8 @@
 #include <string>
 #include <memory>
 
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using ArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
 using ArmUnstowActionClient =
@@ -104,6 +107,11 @@ class OwInterface : public PlexilInterface
 
   // Operational interface
 
+  void armFindSurface (int frame, bool relative,
+                       double pos_x, double pos_y, double z,
+                       double norm_x, double norm_y, double norm_z,
+                       double distance, double overdrive,
+                       double force_threshold, double torque_threshold, int id);
   void armMoveCartesian (int frame, bool relative,
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
@@ -160,7 +168,12 @@ class OwInterface : public PlexilInterface
 
  private:
   void addSubscriber (const std::string& topic, const std::string& operation);
-
+  void armFindSurfaceAction (int frame, bool relative,
+                             const geometry_msgs::Point& pos,
+                             const geometry_msgs::Vector3& normal,
+                             double distance, double overdrive,
+                             double force_threshold, double torque_threshold,
+                             int id);
   void armMoveCartesianAux (int frame, bool relative,
                             double x, double y, double z,
                             const geometry_msgs::Quaternion& q, int id);
@@ -264,6 +277,7 @@ class OwInterface : public PlexilInterface
   std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
   // Action clients
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;

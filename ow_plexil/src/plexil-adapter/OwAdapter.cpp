@@ -215,6 +215,35 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double pos_x, pos_y, pos_z, norm_x, norm_y, norm_z;
+  double distance, overdrive, force_threshold, torque_threshold;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(pos_x);
+  args[3].getValue(pos_y);
+  args[4].getValue(pos_z);
+  args[5].getValue(norm_x);
+  args[6].getValue(norm_y);
+  args[7].getValue(norm_z);
+  args[8].getValue(distance);
+  args[9].getValue(overdrive);
+  args[10].getValue(force_threshold);
+  args[11].getValue(torque_threshold);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armFindSurface (frame, relative, pos_x, pos_y, pos_z,
+                                           norm_x, norm_y, norm_z,
+                                           distance, overdrive,
+                                           force_threshold, torque_threshold,
+                                           CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+
 static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
@@ -473,6 +502,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("stow", arm_stow);
   g_configuration->registerCommandHandler("unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);
+  g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
   g_configuration->registerCommandHandler("arm_move_cartesian",
 					  arm_move_cartesian);
   g_configuration->registerCommandHandler("arm_move_cartesian_q",

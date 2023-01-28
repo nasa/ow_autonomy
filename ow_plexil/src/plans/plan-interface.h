@@ -22,6 +22,19 @@ Command log_debug (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction ArmFindSurface (In Integer Frame,
+                              In Boolean Relative,
+                              In Real PosX,
+                              In Real PosY,
+                              In Real PosZ,
+                              In Real NormX,
+                              In Real NormY,
+                              In Real NormZ,
+                              In Real Distance,
+                              In Real Overdrive,
+                              In Real ForceThreshold,
+                              In Real TorqueThreshold);
+  
 LibraryAction ArmMoveCartesian (In Integer Frame,
 				In Boolean Relative,
 				In Real X, In Real Y, In Real Z,

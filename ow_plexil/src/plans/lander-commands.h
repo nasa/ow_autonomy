@@ -19,6 +19,15 @@ Command camera_capture ();
 
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 
+Command arm_find_surface (Integer frame,
+                          Boolean relative,
+                          Real pos_x, Real pos_y, Real pos_z,
+                          Real norm_x, Real norm_y, Real norm_z,
+                          Real distance,
+                          Real overdrive,
+                          Real force_threshold,
+                          Real torque_threshold);
+
 Command arm_move_cartesian (Integer frame,
 			    Boolean relative,
 			    Real x, Real y, Real z,

@@ -15,6 +15,7 @@
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Vector3.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // C++
@@ -55,6 +56,7 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // ow_lander.
 
 const string Op_GuardedMove            = "GuardedMove";
+const string Op_ArmFindSurface         = "ArmFindSurface";
 const string Op_ArmMoveCartesian       = "ArmMoveCartesian";
 const string Op_ArmMoveJoint           = "ArmMoveJoint";
 const string Op_ArmMoveJoints          = "ArmMoveJoints";
@@ -73,6 +75,7 @@ const string Op_LightSetIntensity      = "LightSetIntensity";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
+  Op_ArmFindSurface,
   Op_ArmMoveCartesian,
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
@@ -112,6 +115,7 @@ enum ActionGoalStatus {
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
+  { Op_ArmFindSurface, NOGOAL },
   { Op_ArmMoveCartesian, NOGOAL },
   { Op_ArmStow, NOGOAL },
   { Op_ArmUnstow, NOGOAL },
@@ -482,6 +486,8 @@ void OwInterface::initialize()
 
     // Initialize action clients
 
+    m_armFindSurfaceClient =
+      make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
     m_armMoveCartesianClient =
       make_unique<ArmMoveCartesianActionClient>(Op_ArmMoveCartesian, true);
     m_guardedMoveClient =
@@ -662,6 +668,12 @@ void OwInterface::initialize()
       ROS_ERROR ("ArmMoveCartesian action server did not connect!");
     }
     else addSubscriber ("/ArmMoveCartesian/status", Op_ArmMoveCartesian);
+
+    if (! m_armFindSurfaceClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmFindSurface action server did not connect!");
+    }
+    else addSubscriber ("/ArmFindSurface/status", Op_ArmFindSurface);
 
     if (! m_panTiltClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -961,6 +973,63 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
      default_action_done_cb<GrindResultConstPtr> (Op_Grind));
 }
 
+void OwInterface::armFindSurface (int frame, bool relative,
+                                  double pos_x, double pos_y, double pos_z,
+                                  double norm_x, double norm_y, double norm_z,
+                                  double distance, double overdrive,
+                                  double force_threshold, double torque_threshold,
+                                  int id)
+{
+  if (! markOperationRunning (Op_ArmFindSurface, id)) return;
+
+  geometry_msgs::Point pos;
+  pos.x = pos_x;
+  pos.y = pos_y;
+  pos.z = pos_z;
+
+  geometry_msgs::Vector3 normal;
+  normal.x = norm_x;
+  normal.y = norm_y;
+  normal.z = norm_z;
+
+  thread action_thread (&OwInterface::armFindSurfaceAction, this,
+			frame, relative, pos, normal, distance, overdrive,
+                        force_threshold, torque_threshold,
+                        id);
+  action_thread.detach();
+}
+
+void OwInterface::armFindSurfaceAction (int frame, bool relative,
+                                        const geometry_msgs::Point& pos,
+                                        const geometry_msgs::Vector3& normal,
+                                        double distance, double overdrive,
+                                        double force_threshold, double torque_threshold,
+                                        int id)
+{
+  ArmFindSurfaceGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.position = pos;
+  goal.normal = normal;
+  goal.distance = distance;
+  goal.overdrive = overdrive;
+  goal.force_threshold = force_threshold;
+  goal.torque_threshold = torque_threshold;
+
+  // Fill this out.
+  ROS_INFO ("Starting ArmFindSurface (frame=%d, relative=%d)", frame, relative);
+
+  runAction<actionlib::SimpleActionClient<ArmFindSurfaceAction>,
+            ArmFindSurfaceGoal,
+            ArmFindSurfaceResultConstPtr,
+            ArmFindSurfaceFeedbackConstPtr>
+	    (Op_ArmFindSurface, m_armFindSurfaceClient, goal, id,
+	     default_action_active_cb (Op_ArmFindSurface),
+	     default_action_feedback_cb<ArmFindSurfaceFeedbackConstPtr>
+	     (Op_ArmFindSurface),
+	     default_action_done_cb<ArmFindSurfaceResultConstPtr>
+	     (Op_ArmFindSurface));
+}
 
 void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double x, double y, double z,

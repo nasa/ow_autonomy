@@ -22,9 +22,17 @@ TestActions:
                                   Relative = false,
                                   X = 1.7, Y = -0.2, Z = 0.6,
                                   OrientX = 1, OrientY = 0, OrientZ = 0, OrientW = 0);
-  
+
+  LibraryCall ArmFindSurface (Frame = BASE_LINK,
+                              Relative = false,
+                              PosX = 1.75, PosY = 0.1, PosZ = 0.2,
+                              NormX = 0, NormY = 0, NormZ = 0,
+                              Distance = 0.7, Overdrive = 0,
+                              ForceThreshold = 1, TorqueThreshold = 1);
+  /*  
   LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
                            SearchDistance=0.7);
+  */
 
   LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
                      Length = 0.5, Parallel = false,
