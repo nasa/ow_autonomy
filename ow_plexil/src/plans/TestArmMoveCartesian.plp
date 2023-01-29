@@ -14,7 +14,7 @@ TestArmMoveCartesian:
   // ow_lander/scripts/arm_move_cartesian.py.  These are not all the
   // defaults, just those useful in this plan.
 
-  Real DefaultXYZ = 0; // Euler and Quaternion
+  Real DefaultXYZ = 0; // Position, Euler and Quaternion orientation
   Real DefaultW = 1;
 
   log_info ("Beginning TestMoveCartesian...");
