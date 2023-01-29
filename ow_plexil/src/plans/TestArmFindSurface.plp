@@ -14,7 +14,7 @@ TestArmFindSurface:
   // ow_lander/scripts/arm_find_surface.py.  These are not all the
   // defaults, just those useful in this plan.
 
-  Real DefaultZ = 0;
+  Real DefaultPosXYZ = 0;
   Real DefaultNormalX = 0;
   Real DefaultNormalY = 0;
   Real DefaultNormalZ = -1;
@@ -46,7 +46,7 @@ TestArmFindSurface:
                               Relative = false,  // default
                               PosX = 1.45,
                               PosY = -0.4,
-                              PosZ = DefaultZ,
+                              PosZ = DefaultPosXYZ,
                               NormX = DefaultNormalX,
                               NormY = DefaultNormalY,
                               NormZ = DefaultNormalZ,

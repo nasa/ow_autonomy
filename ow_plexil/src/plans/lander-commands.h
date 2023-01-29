@@ -41,6 +41,23 @@ Command arm_move_cartesian_q (Integer frame,
 			      Real orient_x, Real orient_y, Real orient_z,
 			      Real orient_w);
 
+Command arm_move_cartesian_guarded (Integer frame,
+                                    Boolean relative,
+                                    Real x, Real y, Real z,
+                                    // Orientation in Euler angle
+                                    Real orient_x, Real orient_y, Real orient_z,
+                                    Real force_threshold,
+                                    Real torque_threshold);
+
+// Quaternion version of previous
+Command arm_move_cartesian_guarded_q (Integer frame,
+                                      Boolean relative,
+                                      Real x, Real y, Real z,
+                                      Real orient_x, Real orient_y, Real orient_z,
+                                      Real orient_w,
+                                      Real force_threshold,
+                                      Real torque_threshold);
+
 Command arm_move_joint (Boolean relative,
                         Integer joint,
                         Real angle);

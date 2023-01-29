@@ -26,6 +26,7 @@
 #include <actionlib_msgs/GoalStatusArray.h>
 #include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/ArmMoveCartesianAction.h>
+#include <owl_msgs/ArmMoveCartesianGuardedAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
 #include <ow_lander/GrindAction.h>
@@ -57,6 +58,8 @@ using ArmFindSurfaceActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using ArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
+using ArmMoveCartesianGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using ArmStowActionClient =
@@ -120,6 +123,17 @@ class OwInterface : public PlexilInterface
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
 			 double orient_z, double orient_w, int id);
+  void armMoveCartesianGuarded (int frame, bool relative,
+                                double x, double y, double z,
+                                double orient_x, double orient_y, double orient_z,
+                                double force_threshold, double torque_threshold,
+                                int id);
+  void armMoveCartesianGuarded (int frame, bool relative,
+                                double x, double y, double z,
+                                double orient_x, double orient_y,
+                                double orient_z, double orient_w,
+                                double force_threshold, double torque_threshold,
+                                int id);
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
@@ -177,10 +191,23 @@ class OwInterface : public PlexilInterface
   void armMoveCartesianAux (int frame, bool relative,
                             double x, double y, double z,
                             const geometry_msgs::Quaternion& q, int id);
+  void armMoveCartesianGuardedAux (int frame,
+                                   bool relative,
+                                   double x, double y, double z,
+                                   const geometry_msgs::Quaternion& q,
+                                   double force_threshold,
+                                   double torque_threshold,
+                                   int id);
   void armMoveCartesianAction (int frame,
                                bool relative,
                                const geometry_msgs::Pose& pose,
                                int id);
+  void armMoveCartesianGuardedAction (int frame,
+                                      bool relative,
+                                      const geometry_msgs::Pose& pose,
+                                      double force_threshold,
+                                      double torque_threshold,
+                                      int id);
   void armStowAction (int id);
   void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
@@ -279,6 +306,8 @@ class OwInterface : public PlexilInterface
   // Action clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
+  std::unique_ptr<ArmMoveCartesianGuardedActionClient>
+  m_armMoveCartesianGuardedClient;
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;

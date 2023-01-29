@@ -55,28 +55,30 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-const string Op_GuardedMove            = "GuardedMove";
-const string Op_ArmFindSurface         = "ArmFindSurface";
-const string Op_ArmMoveCartesian       = "ArmMoveCartesian";
-const string Op_ArmMoveJoint           = "ArmMoveJoint";
-const string Op_ArmMoveJoints          = "ArmMoveJoints";
-const string Op_DigCircular            = "DigCircular";
-const string Op_DigLinear              = "DigLinear";
-const string Op_Deliver                = "Deliver";
-const string Op_Discard                = "Discard";
-const string Op_Grind                  = "Grind";
-const string Op_ArmStow                = "ArmStow";
-const string Op_ArmUnstow              = "ArmUnstow";
-const string Op_CameraCapture          = "CameraCapture";
-const string Op_CameraSetExposure      = "CameraSetExposure";
-const string Op_PanTiltAntenna         = "AntennaPanTiltAction";
-const string Op_IdentifySampleLocation = "IdentifySampleLocation";
-const string Op_LightSetIntensity      = "LightSetIntensity";
+const string Op_GuardedMove             = "GuardedMove";
+const string Op_ArmFindSurface          = "ArmFindSurface";
+const string Op_ArmMoveCartesian        = "ArmMoveCartesian";
+const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
+const string Op_ArmMoveJoint            = "ArmMoveJoint";
+const string Op_ArmMoveJoints           = "ArmMoveJoints";
+const string Op_DigCircular             = "DigCircular";
+const string Op_DigLinear               = "DigLinear";
+const string Op_Deliver                 = "Deliver";
+const string Op_Discard                 = "Discard";
+const string Op_Grind                   = "Grind";
+const string Op_ArmStow                 = "ArmStow";
+const string Op_ArmUnstow               = "ArmUnstow";
+const string Op_CameraCapture           = "CameraCapture";
+const string Op_CameraSetExposure       = "CameraSetExposure";
+const string Op_PanTiltAntenna          = "AntennaPanTiltAction";
+const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
+const string Op_LightSetIntensity       = "LightSetIntensity";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
   Op_ArmFindSurface,
   Op_ArmMoveCartesian,
+  Op_ArmMoveCartesianGuarded,
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
   Op_DigCircular,
@@ -117,6 +119,7 @@ static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
   { Op_ArmFindSurface, NOGOAL },
   { Op_ArmMoveCartesian, NOGOAL },
+  { Op_ArmMoveCartesianGuarded, NOGOAL },
   { Op_ArmStow, NOGOAL },
   { Op_ArmUnstow, NOGOAL },
   { Op_Grind, NOGOAL },
@@ -490,6 +493,9 @@ void OwInterface::initialize()
       make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
     m_armMoveCartesianClient =
       make_unique<ArmMoveCartesianActionClient>(Op_ArmMoveCartesian, true);
+    m_armMoveCartesianGuardedClient =
+      make_unique<ArmMoveCartesianGuardedActionClient>(Op_ArmMoveCartesianGuarded,
+                                                       true);
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_armMoveJointClient =
@@ -668,6 +674,13 @@ void OwInterface::initialize()
       ROS_ERROR ("ArmMoveCartesian action server did not connect!");
     }
     else addSubscriber ("/ArmMoveCartesian/status", Op_ArmMoveCartesian);
+
+    if (! m_armMoveCartesianGuardedClient->
+        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmMoveCartesianGuarded action server did not connect!");
+    }
+    else addSubscriber ("/ArmMoveCartesianGuarded/status",
+                        Op_ArmMoveCartesianGuarded);
 
     if (! m_armFindSurfaceClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -1060,6 +1073,68 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
   armMoveCartesianAux (frame, relative, x, y, z, q, id);
 }
 
+void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
+                                           double x, double y, double z,
+                                           double orient_x,
+                                           double orient_y,
+                                           double orient_z,
+                                           double force_threshold,
+                                           double torque_threshold,
+                                           int id)
+{
+  tf2::Quaternion q;
+  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
+  q.normalize();  // Recommended in ROS docs, not sure if needed here.
+
+  geometry_msgs::Quaternion qm = tf2::toMsg(q);
+
+  armMoveCartesianGuardedAux (frame, relative, x, y, z, qm,
+                              force_threshold, torque_threshold, id);
+}
+
+void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
+                                           double x, double y, double z,
+                                           double orient_x, double orient_y,
+                                           double orient_z, double orient_w,
+                                           double force_threshold,
+                                           double torque_threshold,
+                                           int id)
+{
+  geometry_msgs::Quaternion q;
+  q.x = orient_x;
+  q.y = orient_y;
+  q.z = orient_z;
+  q.w = orient_w;
+
+  armMoveCartesianGuardedAux (frame, relative, x, y, z, q,
+                              force_threshold, torque_threshold, id);
+}
+
+void OwInterface::armMoveCartesianGuardedAux (int frame, bool relative,
+                                              double x, double y, double z,
+                                              const geometry_msgs::Quaternion& q,
+                                              double force_threshold,
+                                              double torque_threshold,
+                                              int id)
+{
+  if (! markOperationRunning (Op_ArmMoveCartesianGuarded, id)) return;
+
+  geometry_msgs::Point p;
+  p.x = x;
+  p.y = y;
+  p.z = z;
+
+  geometry_msgs::Pose pose;
+  pose.position = p;
+  pose.orientation = q;
+
+  thread action_thread (&OwInterface::armMoveCartesianGuardedAction, this,
+			frame, relative, pose, force_threshold, torque_threshold,
+                        id);
+  action_thread.detach();
+}
+
+
 void OwInterface::armMoveCartesianAux (int frame, bool relative,
                                        double x, double y, double z,
                                        const geometry_msgs::Quaternion& q, int id)
@@ -1103,6 +1178,35 @@ void OwInterface::armMoveCartesianAction (int frame, bool relative,
 	     (Op_ArmMoveCartesian),
 	     default_action_done_cb<ArmMoveCartesianResultConstPtr>
 	     (Op_ArmMoveCartesian));
+}
+
+void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
+                                                 const geometry_msgs::Pose& pose,
+                                                 double force_threshold,
+                                                 double torque_threshold,
+                                                 int id)
+{
+  ArmMoveCartesianGuardedGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.pose = pose;
+  goal.force_threshold = force_threshold;
+  goal.torque_threshold = torque_threshold;
+
+  // Fill this out.
+  ROS_INFO ("Starting ArmMoveCartesianGuarded (frame=%d, relative=%d)",
+            frame, relative);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveCartesianGuardedAction>,
+            ArmMoveCartesianGuardedGoal,
+            ArmMoveCartesianGuardedResultConstPtr,
+            ArmMoveCartesianGuardedFeedbackConstPtr>
+	    (Op_ArmMoveCartesianGuarded, m_armMoveCartesianGuardedClient, goal, id,
+	     default_action_active_cb (Op_ArmMoveCartesianGuarded),
+	     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr>
+	     (Op_ArmMoveCartesianGuarded),
+	     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr>
+	     (Op_ArmMoveCartesianGuarded));
 }
 
 
