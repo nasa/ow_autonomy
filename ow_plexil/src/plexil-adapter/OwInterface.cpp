@@ -70,7 +70,10 @@ const string Op_ArmStow                 = "ArmStow";
 const string Op_ArmUnstow               = "ArmUnstow";
 const string Op_CameraCapture           = "CameraCapture";
 const string Op_CameraSetExposure       = "CameraSetExposure";
-const string Op_PanTiltAntenna          = "AntennaPanTiltAction";
+const string Op_Pan                     = "PanAction";
+const string Op_Tilt                    = "TiltAction";
+const string Op_PanTilt                 = "AntennaPanTiltAction";
+const string Op_PanTiltCartesian        = "PanTiltMoveCartesianAction";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
 const string Op_LightSetIntensity       = "LightSetIntensity";
 
@@ -85,7 +88,10 @@ static vector<string> LanderOpNames = {
   Op_DigLinear,
   Op_Deliver,
   Op_Discard,
-  Op_PanTiltAntenna,
+  Op_Pan,
+  Op_Tilt,
+  Op_PanTilt,
+  Op_PanTiltCartesian,
   Op_Grind,
   Op_ArmStow,
   Op_ArmUnstow,
@@ -132,7 +138,10 @@ static map<string, int> ActionGoalStatusMap {
   { Op_Discard, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
-  { Op_PanTiltAntenna, NOGOAL },
+  { Op_Pan, NOGOAL },
+  { Op_Tilt, NOGOAL },
+  { Op_PanTilt, NOGOAL },
+  { Op_PanTiltCartesian, NOGOAL },
   { Op_IdentifySampleLocation, NOGOAL },
   { Op_LightSetIntensity, NOGOAL }
 };
@@ -525,7 +534,11 @@ void OwInterface::initialize()
     m_identifySampleLocationClient =
       make_unique<IdentifySampleLocationActionClient>
       (Op_IdentifySampleLocation, true);
-    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTiltAntenna, true);
+    m_panClient = make_unique<PanActionClient>(Op_Pan, true);
+    m_tiltClient = make_unique<TiltActionClient>(Op_Tilt, true);
+    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTilt, true);
+    m_panTiltCartesianClient =
+      make_unique<PanTiltMoveCartesianActionClient>(Op_PanTiltCartesian, true);
 
     // Initialize publishers.  For now, latching in lieu of waiting
     // for publishers.
@@ -688,6 +701,8 @@ void OwInterface::initialize()
     }
     else addSubscriber ("/ArmFindSurface/status", Op_ArmFindSurface);
 
+    connectActionServer (m_panClient, Op_Pan);
+
     if (! m_panTiltClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("Antenna pan/tilt action server did not connect!");
@@ -698,7 +713,6 @@ void OwInterface::initialize()
     }
   }
 }
-
 
 void OwInterface::addSubscriber (const string& topic, const string& operation)
 {
@@ -711,16 +725,61 @@ void OwInterface::addSubscriber (const string& topic, const string& operation)
 }
 
 
-void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
+void OwInterface::pan (double degrees, int id)
 {
-  if (! markOperationRunning (Op_PanTiltAntenna, id)) return;
-  thread action_thread (&OwInterface::panTiltAntennaAction, this,
+  if (! markOperationRunning (Op_Pan, id)) return;
+  thread action_thread (&OwInterface::panAction, this, degrees, id);
+  action_thread.detach();
+}
+
+void OwInterface::panAction (double degrees, int id)
+{
+  PanGoal goal;
+  goal.pan = degrees * D2R;
+  std::stringstream args;
+  args << goal.pan;
+  runAction<actionlib::SimpleActionClient<PanAction>,
+            PanGoal,
+            PanResultConstPtr,
+            PanFeedbackConstPtr>
+    (Op_Pan, m_panClient, goal, id,
+     default_action_active_cb (Op_Pan, args.str()),
+     default_action_feedback_cb<PanFeedbackConstPtr> (Op_Pan),
+     default_action_done_cb<PanResultConstPtr> (Op_Pan));
+}
+
+void OwInterface::tilt (double degrees, int id)
+{
+  if (! markOperationRunning (Op_Tilt, id)) return;
+  thread action_thread (&OwInterface::tiltAction, this, degrees, id);
+  action_thread.detach();
+}
+
+void OwInterface::tiltAction (double degrees, int id)
+{
+  TiltGoal goal;
+  goal.tilt = degrees * D2R;
+  std::stringstream args;
+  args << goal.tilt;
+  runAction<actionlib::SimpleActionClient<TiltAction>,
+            TiltGoal,
+            TiltResultConstPtr,
+            TiltFeedbackConstPtr>
+    (Op_Tilt, m_tiltClient, goal, id,
+     default_action_active_cb (Op_Tilt, args.str()),
+     default_action_feedback_cb<TiltFeedbackConstPtr> (Op_Tilt),
+     default_action_done_cb<TiltResultConstPtr> (Op_Tilt));
+}
+
+void OwInterface::panTilt (double pan_degrees, double tilt_degrees, int id)
+{
+  if (! markOperationRunning (Op_PanTilt, id)) return;
+  thread action_thread (&OwInterface::panTiltAction, this,
                         pan_degrees, tilt_degrees, id);
   action_thread.detach();
 }
 
-void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
-                                        int id)
+void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id)
 {
   AntennaPanTiltGoal goal;
   goal.pan = pan_degrees * D2R;
@@ -731,11 +790,44 @@ void OwInterface::panTiltAntennaAction (double pan_degrees, double tilt_degrees,
             AntennaPanTiltGoal,
             AntennaPanTiltResultConstPtr,
             AntennaPanTiltFeedbackConstPtr>
-    (Op_PanTiltAntenna, m_panTiltClient, goal, id,
-     default_action_active_cb (Op_PanTiltAntenna, args.str()),
-     default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTiltAntenna),
-     default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTiltAntenna));
+    (Op_PanTilt, m_panTiltClient, goal, id,
+     default_action_active_cb (Op_PanTilt, args.str()),
+     default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTilt),
+     default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTilt));
 }
+
+void OwInterface::panTiltCartesian (int frame, double x, double y, double z, int id)
+{
+  if (! markOperationRunning (Op_PanTiltCartesian, id)) return;
+  thread action_thread (&OwInterface::panTiltCartesianAction,
+                        this, frame, x, y, z, id);
+  action_thread.detach();
+}
+
+void OwInterface::panTiltCartesianAction (int frame,
+                                          double x, double y, double z,
+                                          int id)
+{
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = z;
+  
+  PanTiltMoveCartesianGoal goal;
+  goal.frame = frame;
+  goal.point = p;
+  std::stringstream args;
+  args << goal.frame << ", " << goal.point;
+  runAction<actionlib::SimpleActionClient<PanTiltMoveCartesianAction>,
+            PanTiltMoveCartesianGoal,
+            PanTiltMoveCartesianResultConstPtr,
+            PanTiltMoveCartesianFeedbackConstPtr>
+    (Op_PanTiltCartesian, m_panTiltCartesianClient, goal, id,
+     default_action_active_cb (Op_PanTiltCartesian, args.str()),
+     default_action_feedback_cb<PanTiltMoveCartesianFeedbackConstPtr>
+     (Op_PanTiltCartesian),
+     default_action_done_cb<PanTiltMoveCartesianResultConstPtr>
+     (Op_PanTiltCartesian));
+}
+
 
 void OwInterface::cameraCapture (int id)
 {

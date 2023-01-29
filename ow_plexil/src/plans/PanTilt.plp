@@ -16,7 +16,8 @@ PanTilt:
 
   if Lookup(AntennaFault)
   { 
-    log_error ("Command pan_tilt not sent to lander due to active antenna fault(s).");
+    log_error ("Command pan_tilt not sent to lander ",
+               "due to active antenna fault(s).");
     FaultDetected = true;
   }
 
@@ -26,7 +27,8 @@ PanTilt:
 
     if FaultDetected
     {
-      log_info ("Antenna fault(s) resolved, sending pan_tilt command to lander...");
+      log_info ("Antenna fault(s) resolved, ",
+                "sending pan_tilt command to lander...");
     }
 
     SynchronousCommand pan_tilt (PanDegrees, TiltDegrees);

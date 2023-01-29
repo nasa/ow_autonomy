@@ -29,6 +29,9 @@
 #include <owl_msgs/ArmMoveCartesianGuardedAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
+#include <owl_msgs/PanAction.h>
+#include <owl_msgs/TiltAction.h>
+#include <owl_msgs/PanTiltMoveCartesianAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
@@ -80,6 +83,10 @@ using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
+using PanActionClient = actionlib::SimpleActionClient<owl_msgs::PanAction>;
+using TiltActionClient = actionlib::SimpleActionClient<owl_msgs::TiltAction>;
+using PanTiltMoveCartesianActionClient =
+  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveCartesianAction>;
 using DiscardActionClient =
   actionlib::SimpleActionClient<ow_lander::DiscardAction>;
 using CameraCaptureActionClient =
@@ -143,7 +150,10 @@ class OwInterface : public PlexilInterface
                                               const std::string& filter_type,
                                               int id);
 
-  void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
+  void pan (double degrees, int id);
+  void tilt (double degrees, int id);
+  void panTilt (double pan_degrees, double tilt_degrees, int id);
+  void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
   void digLinear (double x, double y, double depth, double length,
@@ -181,6 +191,17 @@ class OwInterface : public PlexilInterface
   int    actionGoalStatus (const std::string& action_name) const;
 
  private:
+   template<typename T>
+   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
+                             const std::string& name,
+                             const std::string& topic = "")
+  {
+    if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("%s action server did not connect!", name.c_str());
+    }
+    else if (topic != "") addSubscriber (topic, name);
+  }
+
   void addSubscriber (const std::string& topic, const std::string& operation);
   void armFindSurfaceAction (int frame, bool relative,
                              const geometry_msgs::Point& pos,
@@ -225,7 +246,10 @@ class OwInterface : public PlexilInterface
                           double ground_pos, bool parallel, int id);
   void digLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
-  void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
+  void panAction (double degrees, int id);
+  void tiltAction (double degrees, int id);
+  void panTiltAction (double pan_degrees, double tilt_degrees, int id);
+  void panTiltCartesianAction (int frame, double x, double y, double z, int id);
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
   void cameraCaptureAction (int id);
@@ -317,7 +341,10 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<DigCircularActionClient> m_digCircularClient;
   std::unique_ptr<DigLinearActionClient> m_digLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<PanActionClient> m_panClient;
+  std::unique_ptr<TiltActionClient> m_tiltClient;
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
+  std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;

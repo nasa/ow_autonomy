@@ -454,6 +454,38 @@ static bool check_angle (const char* name, double val,
   return true;
 }
 
+static void pan (Command* cmd, AdapterExecInterface* intf)
+{
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  if (! check_angle ("pan", degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->pan (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
+static void tilt (Command* cmd, AdapterExecInterface* intf)
+{
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  if (! check_angle ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tilt (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
 static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
 {
   double pan_degrees, tilt_degrees;
@@ -468,9 +500,23 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
+    OwInterface::instance()->panTilt (pan_degrees, tilt_degrees, CommandId);
     acknowledge_command_sent(*cr);
   }
+}
+
+static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  double x, y, z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (frame);
+  args[1].getValue (x);
+  args[2].getValue (y);
+  args[3].getValue (z);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->panTiltCartesian (frame, x, y, z, CommandId);
+  acknowledge_command_sent(*cr);
 }
 
 static void camera_capture (Command* cmd, AdapterExecInterface* intf)
@@ -571,7 +617,11 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);
   g_configuration->registerCommandHandler("discard", discard);
+  g_configuration->registerCommandHandler("pan", pan);
+  g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
+  g_configuration->registerCommandHandler("pan_tilt_cartesian",
+                                          pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("camera_capture", camera_capture);
