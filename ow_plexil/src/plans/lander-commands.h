@@ -68,6 +68,11 @@ Command arm_move_joint (Boolean relative,
 Command arm_move_joints (Boolean relative,
                          Real angles[6]);
 
+Command arm_move_joints_guarded (Boolean relative,
+                                 Real angles[6],
+                                 Real force_threshold,
+                                 Real torque_threshold);
+
 Command dig_circular (Real x,
                       Real y,
                       Real depth,

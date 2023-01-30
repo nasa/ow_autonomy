@@ -61,6 +61,7 @@ const string Op_ArmMoveCartesian        = "ArmMoveCartesian";
 const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Op_ArmMoveJoint            = "ArmMoveJoint";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";
+const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_DigCircular             = "DigCircular";
 const string Op_DigLinear               = "DigLinear";
 const string Op_Deliver                 = "Deliver";
@@ -84,6 +85,7 @@ static vector<string> LanderOpNames = {
   Op_ArmMoveCartesianGuarded,
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
+  Op_ArmMoveJointsGuarded,
   Op_DigCircular,
   Op_DigLinear,
   Op_Deliver,
@@ -132,6 +134,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_GuardedMove, NOGOAL },
   { Op_ArmMoveJoint, NOGOAL },
   { Op_ArmMoveJoints, NOGOAL },
+  { Op_ArmMoveJointsGuarded, NOGOAL },
   { Op_DigCircular, NOGOAL },
   { Op_DigLinear, NOGOAL },
   { Op_Deliver, NOGOAL },
@@ -511,6 +514,8 @@ void OwInterface::initialize()
       make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
     m_armMoveJointsClient =
       make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
+    m_armMoveJointsGuardedClient =
+      make_unique<ArmMoveJointsGuardedActionClient>(Op_ArmMoveJointsGuarded, true);
     m_armUnstowClient =
       make_unique<ArmUnstowActionClient>(Op_ArmUnstow, true);
     m_armStowClient =
@@ -613,6 +618,8 @@ void OwInterface::initialize()
                          "/ArmMoveJoint/status");
     connectActionServer (m_armMoveJointsClient, Op_ArmMoveJoints,
                          "/ArmMoveJoints/status");
+    connectActionServer (m_armMoveJointsGuardedClient, Op_ArmMoveJointsGuarded,
+                         "/ArmMoveJointsGuarded/status");
     connectActionServer (m_digCircularClient, Op_DigCircular, "/DigCircular/status");
     connectActionServer (m_digLinearClient, Op_DigLinear, "/DigLinear/status");
     connectActionServer (m_deliverClient, Op_Deliver, "/Deliver/status");
@@ -1335,6 +1342,52 @@ void OwInterface::armMoveJointsAction (bool relative,
      default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (Op_ArmMoveJoints),
      default_action_done_cb<ArmMoveJointsResultConstPtr> (Op_ArmMoveJoints));
 }
+
+void OwInterface::armMoveJointsGuarded (bool relative,
+                                        const vector<double>& angles,
+                                        double force_threshold,
+                                        double torque_threshold,
+                                        int id)
+{
+  if (! markOperationRunning (Op_ArmMoveJointsGuarded, id)) return;
+  thread action_thread (&OwInterface::armMoveJointsGuardedAction,
+                        this, relative, angles,
+                        force_threshold, torque_threshold, id);
+  action_thread.detach();
+}
+
+void OwInterface::armMoveJointsGuardedAction (bool relative,
+                                              const vector<double>& angles,
+                                              double force_threshold,
+                                              double torque_threshold,
+                                              int id)
+{
+  ArmMoveJointsGuardedGoal goal;
+  goal.relative = relative;
+  std::copy(angles.begin(), angles.end(), back_inserter(goal.angles));
+  goal.force_threshold = force_threshold;
+  goal.torque_threshold = torque_threshold;
+
+  ROS_INFO ("Starting ArmMoveJointsGuarded"
+            "(relative=%d, angles=[%f, %f, %f, %f, %f, %f], force_threshold=%f, "
+            "torque_threshold=%f)",
+            goal.relative,
+            goal.angles[0], goal.angles[1], goal.angles[2],
+            goal.angles[3], goal.angles[4], goal.angles[5],
+            force_threshold, torque_threshold);
+
+  runAction<actionlib::SimpleActionClient<ArmMoveJointsGuardedAction>,
+            ArmMoveJointsGuardedGoal,
+            ArmMoveJointsGuardedResultConstPtr,
+            ArmMoveJointsGuardedFeedbackConstPtr>
+    (Op_ArmMoveJointsGuarded, m_armMoveJointsGuardedClient, goal, id,
+     default_action_active_cb (Op_ArmMoveJointsGuarded),
+     default_action_feedback_cb<ArmMoveJointsGuardedFeedbackConstPtr>
+     (Op_ArmMoveJointsGuarded),
+     default_action_done_cb<ArmMoveJointsGuardedResultConstPtr>
+     (Op_ArmMoveJointsGuarded));
+}
+
 
 vector<double> OwInterface::identifySampleLocation (int num_images,
                                                     const string& filter_type,

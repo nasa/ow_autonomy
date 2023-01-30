@@ -371,6 +371,27 @@ static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void arm_move_joints_guarded (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *angles_vector = nullptr;
+  double force_threshold, torque_threshold;
+  RealArray const *angles = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(angles);
+  args[2].getValue(force_threshold);
+  args[3].getValue(torque_threshold);
+  //changes real array into a vector
+  angles->getContentsVector(angles_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJointsGuarded (relative, *angles_vector,
+                                                 force_threshold,
+                                                 torque_threshold,
+                                                 CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void grind (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, depth, length, ground_pos;
@@ -613,6 +634,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
+  g_configuration->registerCommandHandler("arm_move_joints_guarded",
+                                          arm_move_joints_guarded);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", deliver);

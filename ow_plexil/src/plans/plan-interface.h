@@ -91,6 +91,11 @@ LibraryAction ArmMoveJoint (In Boolean Relative,
 LibraryAction ArmMoveJoints (In Boolean Relative,
                              In Real Angles[6]);
 
+LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
+                                    In Real Angles[6],
+                                    In Real ForceThreshold,
+                                    In Real TorqueThreshold);
+
 LibraryAction Grind (In Real X,
                      In Real Y,
                      In Real Depth,

@@ -36,6 +36,7 @@
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
 #include <ow_lander/ArmMoveJointsAction.h>
+#include <owl_msgs/ArmMoveJointsGuardedAction.h>
 #include <ow_lander/DigCircularAction.h>
 #include <ow_lander/DigLinearAction.h>
 #include <ow_lander/DeliverAction.h>
@@ -75,6 +76,8 @@ using ArmMoveJointActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
+using ArmMoveJointsGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
 using DigCircularActionClient =
   actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
 using DigLinearActionClient =
@@ -146,6 +149,11 @@ class OwInterface : public PlexilInterface
                     double search_distance, int id);
   void armMoveJoint (bool relative, int joint, double angle, int id);
   void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
+  void armMoveJointsGuarded (bool relative,
+                             const std::vector<double>& angles,
+                             double force_threshold,
+                             double torque_threshold,
+                             int id);
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
@@ -240,6 +248,11 @@ class OwInterface : public PlexilInterface
                            double angle, int id);
   void armMoveJointsAction (bool relative, const std::vector<double>& angles,
                             int id);
+  void armMoveJointsGuardedAction (bool relative,
+                                   const std::vector<double>& angles,
+                                   double force_threshold,
+                                   double torque_threshold,
+                                   int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
   void digCircularAction (double x, double y, double depth,
@@ -335,6 +348,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
+  std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
@@ -349,7 +363,6 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
-
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
   // Antenna state
