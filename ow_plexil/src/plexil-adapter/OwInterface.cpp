@@ -695,22 +695,16 @@ void OwInterface::initialize()
     else addSubscriber ("/ArmMoveCartesianGuarded/status",
                         Op_ArmMoveCartesianGuarded);
 
-    if (! m_armFindSurfaceClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmFindSurface action server did not connect!");
-    }
-    else addSubscriber ("/ArmFindSurface/status", Op_ArmFindSurface);
-
-    connectActionServer (m_panClient, Op_Pan);
-
-    if (! m_panTiltClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Antenna pan/tilt action server did not connect!");
-    }
-    if (! m_identifySampleLocationClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("IdentifySampleLocation action server did not connect!");
-    }
+    connectActionServer<owl_msgs::ArmFindSurfaceAction> (m_armFindSurfaceClient,
+                                                         Op_ArmFindSurface,
+                                                         "/ArmFindSurface/status");
+    connectActionServer<owl_msgs::PanAction> (m_panClient, Op_Pan);
+    connectActionServer<owl_msgs::TiltAction> (m_tiltClient, Op_Tilt);
+    connectActionServer<ow_lander::AntennaPanTiltAction> (m_panTiltClient, Op_PanTilt);
+    connectActionServer<owl_msgs::PanTiltMoveCartesianAction>
+      (m_panTiltCartesianClient, Op_PanTiltCartesian);
+    connectActionServer<ow_plexil::IdentifyLocationAction>
+      (m_identifySampleLocationClient, Op_IdentifySampleLocation);
   }
 }
 
@@ -810,7 +804,7 @@ void OwInterface::panTiltCartesianAction (int frame,
 {
   geometry_msgs::Point p;
   p.x = x; p.y = y; p.z = z;
-  
+
   PanTiltMoveCartesianGoal goal;
   goal.frame = frame;
   goal.point = p;
