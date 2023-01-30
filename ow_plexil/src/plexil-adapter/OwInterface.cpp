@@ -607,104 +607,35 @@ void OwInterface::initialize()
         subscribe("/faults/pt_faults_status", QSize,
                   &OwInterface::antennaFaultCallback, this)));
 
-    // Connect action clients to servers and add subscribers for
-    // action status.
-
-    if (! m_armUnstowClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmUnstow action server did not connect!");
-    }
-    else addSubscriber ("/ArmUnstow/status", Op_ArmUnstow);
-
-    if (! m_armStowClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmStow action server did not connect!");
-    }
-    else addSubscriber ("/ArmStow/status", Op_ArmStow);
-
-    if (! m_armMoveJointClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS)))  {
-      ROS_ERROR ("ArmMoveJoint action server did not connect!");
-    }
-    else addSubscriber ("/ArmMoveJoint/status", Op_ArmMoveJoint);
-
-    if (! m_armMoveJointsClient ->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveJoints action server did not connect!");
-    }
-    else addSubscriber ("/ArmMoveJoints/status", Op_ArmMoveJoints);
-
-    if (! m_digCircularClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("DigCircular action server did not connect!");
-    }
-    else addSubscriber ("/DigCircular/status", Op_DigCircular);
-
-    if (! m_digLinearClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("DigLinear action server did not connect!");
-    }
-    else addSubscriber ("/DigLinear/status", Op_DigLinear);
-
-    if (! m_deliverClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Deliver action server did not connect!");
-    }
-    else addSubscriber ("/Deliver/status", Op_Deliver);
-
-    if (! m_discardClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Discard action server did not connect!");
-    }
-    else addSubscriber ("/Discard/status", Op_Discard);
-
-    if (! m_cameraCaptureClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("CameraCapture action server did not connect!");
-    }
-    else addSubscriber ("/CameraCapture/status", Op_CameraCapture);
-
-    if (! m_cameraSetExposureClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("CameraSetExposure action server did not connect!");
-    }
-    else addSubscriber ("/CameraSetExposure/status", Op_CameraSetExposure);
-
-    if (! m_lightSetIntensityClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("LightSetIntensity action server did not connect!");
-    }
-    else addSubscriber ("/LightSetIntensity/status", Op_LightSetIntensity);
-
-    if (! m_guardedMoveClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("GuardedMove action server did not connect!");
-    }
-    else addSubscriber ("/GuardedMove/status", Op_GuardedMove);
-
-    if (! m_armMoveCartesianClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveCartesian action server did not connect!");
-    }
-    else addSubscriber ("/ArmMoveCartesian/status", Op_ArmMoveCartesian);
-
-    if (! m_armMoveCartesianGuardedClient->
-        waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveCartesianGuarded action server did not connect!");
-    }
-    else addSubscriber ("/ArmMoveCartesianGuarded/status",
-                        Op_ArmMoveCartesianGuarded);
-
-    connectActionServer<owl_msgs::ArmFindSurfaceAction> (m_armFindSurfaceClient,
-                                                         Op_ArmFindSurface,
-                                                         "/ArmFindSurface/status");
-    connectActionServer<owl_msgs::PanAction> (m_panClient, Op_Pan);
-    connectActionServer<owl_msgs::TiltAction> (m_tiltClient, Op_Tilt);
-    connectActionServer<ow_lander::AntennaPanTiltAction> (m_panTiltClient, Op_PanTilt);
-    connectActionServer<owl_msgs::PanTiltMoveCartesianAction>
-      (m_panTiltCartesianClient, Op_PanTiltCartesian);
-    connectActionServer<ow_plexil::IdentifyLocationAction>
-      (m_identifySampleLocationClient, Op_IdentifySampleLocation);
+    connectActionServer (m_armUnstowClient, Op_ArmUnstow, "/ArmUnstow/status");
+    connectActionServer (m_armStowClient, Op_ArmStow, "/ArmStow/status");
+    connectActionServer (m_armMoveJointClient, Op_ArmMoveJoint,
+                         "/ArmMoveJoint/status");
+    connectActionServer (m_armMoveJointsClient, Op_ArmMoveJoints,
+                         "/ArmMoveJoints/status");
+    connectActionServer (m_digCircularClient, Op_DigCircular, "/DigCircular/status");
+    connectActionServer (m_digLinearClient, Op_DigLinear, "/DigLinear/status");
+    connectActionServer (m_deliverClient, Op_Deliver, "/Deliver/status");
+    connectActionServer (m_discardClient, Op_Discard, "/Discard/status");
+    connectActionServer (m_cameraCaptureClient, Op_CameraCapture,
+                         "/CameraCapture/status");
+    connectActionServer (m_cameraSetExposureClient, Op_CameraSetExposure,
+                         "/CameraSetExposure/status");
+    connectActionServer (m_lightSetIntensityClient, Op_LightSetIntensity,
+                         "/LightSetIntensity/status");
+    connectActionServer (m_guardedMoveClient, Op_GuardedMove,
+                         "/GuardedMove/status");
+    connectActionServer (m_armMoveCartesianClient, Op_ArmMoveCartesian,
+                         "/ArmMoveCartesian/status");
+    connectActionServer (m_armMoveCartesianGuardedClient, Op_ArmMoveCartesianGuarded,
+                         "/ArmMoveCartesianGuarded/status");
+    connectActionServer (m_armFindSurfaceClient, Op_ArmFindSurface,
+                         "/ArmFindSurface/status");
+    connectActionServer (m_panClient, Op_Pan);
+    connectActionServer (m_tiltClient, Op_Tilt);
+    connectActionServer (m_panTiltClient, Op_PanTilt);
+    connectActionServer (m_panTiltCartesianClient, Op_PanTiltCartesian);
+    connectActionServer (m_identifySampleLocationClient, Op_IdentifySampleLocation);
   }
 }
 
