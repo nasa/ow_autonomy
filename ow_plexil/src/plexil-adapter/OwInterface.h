@@ -36,6 +36,7 @@
 #include <ow_lander/AntennaPanTiltAction.h>
 #include <ow_lander/DiscardAction.h>
 #include <ow_lander/CameraCaptureAction.h>
+#include <ow_lander/CameraSetExposureAction.h>
 #include <ow_lander/LightSetIntensityAction.h>
 
 // ROS
@@ -74,6 +75,8 @@ using DiscardActionClient =
   actionlib::SimpleActionClient<ow_lander::DiscardAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
+using CameraSetExposureActionClient =
+  actionlib::SimpleActionClient<ow_lander::CameraSetExposureAction>;
 using LightSetIntensityActionClient =
   actionlib::SimpleActionClient<ow_lander::LightSetIntensityAction>;
 
@@ -111,7 +114,8 @@ class OwInterface : public PlexilInterface
                                               int id);
 
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
-  void cameraCapture (double exposure_secs, int id);
+  void cameraCapture (int id);
+  void cameraSetExposure (double exposure_secs, int id);
   void digLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
   void digCircular (double x, double y, double depth,
@@ -173,7 +177,8 @@ class OwInterface : public PlexilInterface
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
   void discardAction (double x, double y, double z, int id);
-  void cameraCaptureAction (double exposure_secs, int id);
+  void cameraCaptureAction (int id);
+  void cameraSetExposureAction (double exposure_secs, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
@@ -213,8 +218,6 @@ class OwInterface : public PlexilInterface
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
     {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"LANDER_EXECUTION_ERROR", std::make_pair(
-        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
@@ -279,6 +282,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<DiscardActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
+  std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
 
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;

@@ -1,0 +1,15 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Set the camera's exposure time in seconds.
+//   The default is 0.05 seconds.
+//   Values <= 0 mean to use the last exposure setting.
+
+#include "lander-commands.h"
+
+CameraSetExposure:
+{
+  In Real Seconds;
+  SynchronousCommand camera_set_exposure (Seconds);
+}
