@@ -8,9 +8,9 @@
 
 // OW - external
 #include <ow_lander/Light.h>
+#include <owl_msgs/BatteryRemainingUsefulLife.h>
+#include <owl_msgs/BatteryStateOfCharge.h>
 #include <owl_msgs/BatteryTemperature.h>
-#include <owl_msgs/RemainingUsefulLife.h>
-#include <owl_msgs/StateOfCharge.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -315,21 +315,21 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
 
 ///////////////////////// Power support /////////////////////////////////////
 
-static double StateOfCharge       = NAN;
-static double RemainingUsefulLife = NAN;
-static double BatteryTemperature  = NAN;
+static double BatteryStateOfCharge       = NAN;
+static double BatteryRemainingUsefulLife = NAN;
+static double BatteryTemperature         = NAN;
 
-static void soc_callback (const owl_msgs::StateOfCharge::ConstPtr& msg)
+static void soc_callback (const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
 {
-  StateOfCharge = msg->value;
-  publish ("StateOfCharge", StateOfCharge);
+  BatteryStateOfCharge = msg->value;
+  publish ("StateOfCharge", BatteryStateOfCharge);
 }
 
-static void rul_callback (const owl_msgs::RemainingUsefulLife::ConstPtr& msg)
+static void rul_callback (const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
 {
   // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
-  RemainingUsefulLife = msg->value;
-  publish ("RemainingUsefulLife", RemainingUsefulLife);
+  BatteryRemainingUsefulLife = msg->value;
+  publish ("RemainingUsefulLife", BatteryRemainingUsefulLife);
 }
 
 static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& msg)
@@ -1181,14 +1181,14 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetries[ANTENNA_TILT].velocity;
 }
 
-double OwInterface::getStateOfCharge () const
+double OwInterface::getBatteryStateOfCharge () const
 {
-  return StateOfCharge;
+  return BatteryStateOfCharge;
 }
 
-double OwInterface::getRemainingUsefulLife () const
+double OwInterface::getBatteryRemainingUsefulLife () const
 {
-  return RemainingUsefulLife;
+  return BatteryRemainingUsefulLife;
 }
 
 double OwInterface::getBatteryTemperature () const

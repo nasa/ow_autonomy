@@ -135,8 +135,8 @@ class OwInterface : public PlexilInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getStateOfCharge () const;
-  double getRemainingUsefulLife () const;
+  double getBatteryStateOfCharge () const;
+  double getBatteryRemainingUsefulLife () const;
   double getBatteryTemperature () const;
   bool   groundFound () const;
   double groundPosition () const;
