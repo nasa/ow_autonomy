@@ -155,6 +155,10 @@ static bool lookup (const string& state_name,
     vector<double> ft = OwInterface::instance()->getEndEffectorFT();
     value_out = (Value) ft;
   }
+  else if (state_name == "ArmPose") {
+    vector<double> pose = OwInterface::instance()->getArmPose();
+    value_out = (Value) pose;
+  }
   else if (state_name == "ActionGoalStatus") {
     string s;
     args[0].getValue(s);

@@ -9,6 +9,7 @@
 TestTelemetry:
 {
   Real FT[6]; // end effector force/torque
+  Real ArmPose[7]; // Position (x,y,z) followed by orientation (x,y,z,w).
 
   // Pan/Tilt telemetry.
 
@@ -41,5 +42,11 @@ TestTelemetry:
   log_info ("Arm end effector force/torque: {");
   for (Integer i = 0; i < 6; i + 1) {
     log_info ("  ", FT[i]);
+  }
+
+  ArmPose = Lookup(ArmPose);
+  log_info ("Arm pose: {");
+  for (Integer i = 0; i < 7; i + 1) {
+    log_info ("  ", ArmPose[i]);
   }
 }

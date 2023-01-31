@@ -22,6 +22,7 @@
 #include <owl_msgs/CameraFaultsStatus.h>
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
+#include <owl_msgs/ArmPose.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
@@ -141,6 +142,7 @@ class OwInterface : public PlexilInterface
   double getRemainingUsefulLife () const;
   double getBatteryTemperature () const;
   std::vector<double> getEndEffectorFT () const;
+  std::vector<double> getArmPose () const;
   bool   groundFound () const;
   double groundPosition () const;
   bool   systemFault () const;
@@ -196,6 +198,7 @@ class OwInterface : public PlexilInterface
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
                                  const std::string);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
+  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -304,6 +307,7 @@ class OwInterface : public PlexilInterface
   // Misc state
   double m_currentPanRadians, m_currentTiltRadians;
   std::vector<double> m_endEffectorFT;
+  std::vector<double> m_armPose;
 };
 
 #endif

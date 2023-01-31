@@ -98,11 +98,11 @@ Real Lookup JointEffort (Integer joint_index);
 Real Lookup JointPosition (Integer joint_index);
 Real Lookup JointAcceleration (Integer joint_index);
 
-// Force/Torque Sensor
-Real[6] Lookup ArmEndEffectorForceTorque;
-
 
 // Misc
+
+Real[6] Lookup ArmEndEffectorForceTorque;
+Real[7] Lookup ArmPose;
 
 // Query whether a given operation is running.  Uses the operation names as
 // defined in OwInterface.cpp.  Generally not needed, but supports more
