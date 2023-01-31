@@ -252,8 +252,11 @@ class OwInterface : public PlexilInterface
         owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
+  const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
+  const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
+
   FaultMap64 m_panTiltErrors = {
-    {"PAN_JOINT_LOCKED", std::make_pair(
+    {FaultPanJointLocked, std::make_pair(
       owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
     {"TILT_JOINT_LOCKED", std::make_pair(
       owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}

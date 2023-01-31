@@ -404,12 +404,12 @@ bool OwInterface::antennaFault () const
 
 bool OwInterface::antennaPanFault () const
 {
-  return m_panTiltErrors.at("PanFault").second;
+  return m_panTiltErrors.at(FaultPanJointLocked).second;
 }
 
 bool OwInterface::antennaTiltFault () const
 {
-  return m_panTiltErrors.at("TiltFault").second;
+  return m_panTiltErrors.at(FaultTiltJointLocked).second;
 }
 
 bool OwInterface::armFault () const
