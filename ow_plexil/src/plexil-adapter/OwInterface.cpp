@@ -234,6 +234,34 @@ void OwInterface::antennaFaultCallback
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
+void OwInterface::cameraFaultCallback
+(const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
+}
+
+void OwInterface::ftCallback
+(const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
+{
+  m_endEffectorFT[0] = msg->value.force.x;
+  m_endEffectorFT[1] = msg->value.force.y;
+  m_endEffectorFT[2] = msg->value.force.z;
+  m_endEffectorFT[3] = msg->value.torque.x;
+  m_endEffectorFT[4] = msg->value.torque.y;
+  m_endEffectorFT[5] = msg->value.torque.z;
+}
+
+void OwInterface::armPoseCallback (const owl_msgs::ArmPose::ConstPtr& msg)
+{
+  m_armPose[0] = msg->value.position.x;
+  m_armPose[1] = msg->value.position.y;
+  m_armPose[2] = msg->value.position.z;
+  m_armPose[3] = msg->value.orientation.x;
+  m_armPose[4] = msg->value.orientation.y;
+  m_armPose[5] = msg->value.orientation.z;
+  m_armPose[6] = msg->value.orientation.w;
+}
+
 static double normalize_degrees (double angle)
 {
   static double pi = R2D * M_PI;
@@ -423,6 +451,11 @@ bool OwInterface::powerFault () const
   return faultActive (m_powerErrors);
 }
 
+bool OwInterface::cameraFault () const
+{
+  return faultActive (m_cameraErrors);
+}
+
 template<typename T>
 static t_action_done_cb<T> guarded_move_done_cb (const string& opname)
 {
@@ -473,7 +506,12 @@ OwInterface* OwInterface::instance ()
 OwInterface::OwInterface ()
   : m_currentPanRadians (0),
     m_currentTiltRadians (0)
-{ }
+{
+  m_endEffectorFT.resize(6);
+  m_endEffectorFT = {0,0,0,0,0,0};
+  m_armPose.resize(7);
+  m_armPose = {0,0,0,0,0,0,0};
+}
 
 void OwInterface::initialize()
 {
@@ -572,13 +610,13 @@ void OwInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/faults/arm_faults_status", QSize,
+        subscribe("/arm_faults_status", QSize,
                   &OwInterface::armFaultCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/faults/power_faults_status", QSize,
+        subscribe("/power_faults_status", QSize,
                   &OwInterface::powerFaultCallback, this)));
 
     m_subscribers.push_back
@@ -586,6 +624,18 @@ void OwInterface::initialize()
        (m_genericNodeHandle ->
         subscribe("/pan_tilt_faults_status", QSize,
                   &OwInterface::antennaFaultCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/camera_faults_status", QSize,
+                  &OwInterface::cameraFaultCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/arm_end_effector_force_torque", QSize,
+                  &OwInterface::ftCallback, this)));
 
     // Connect action clients to servers and add subscribers for
     // action status.
@@ -683,7 +733,6 @@ void OwInterface::addSubscriber (const string& topic, const string& operation)
        boost::bind(&OwInterface::actionGoalStatusCallback,
                    this, _1, operation))));
 }
-
 
 void OwInterface::panTiltAntenna (double pan_degrees, double tilt_degrees, int id)
 {
@@ -1206,6 +1255,17 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
   return (JointsAtSoftTorqueLimit.find (joint_name) !=
           JointsAtSoftTorqueLimit.end());
 }
+
+vector<double> OwInterface::getEndEffectorFT () const
+{
+  return m_endEffectorFT;
+}
+
+vector<double> OwInterface::getArmPose () const
+{
+  return m_armPose;
+}
+
 
 int OwInterface::actionGoalStatus (const string& action_name) const
 {
