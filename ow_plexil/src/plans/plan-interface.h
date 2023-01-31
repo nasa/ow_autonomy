@@ -80,19 +80,31 @@ Boolean Lookup AntennaPanFault;
 Boolean Lookup AntennaTiltFault;
 Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
+Boolean Lookup CameraFault;
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
 
 // Antenna
-Real    Lookup PanRadians;
-Real    Lookup PanDegrees;
-Real    Lookup TiltRadians;
-Real    Lookup TiltDegrees;
+Real Lookup PanRadians;
+Real Lookup PanDegrees;
+Real Lookup TiltRadians;
+Real Lookup TiltDegrees;
+
+// Joints
+Real Lookup JointVelocity (Integer joint_index);
+Real Lookup JointEffort (Integer joint_index);
+Real Lookup JointPosition (Integer joint_index);
+Real Lookup JointAcceleration (Integer joint_index);
 
 
 // Misc
+
+Real[6] Lookup ArmEndEffectorForceTorque;
+Real[7] Lookup ArmPose;
+Boolean Lookup UsingOceanWATERS;
+Boolean Lookup UsingOWLAT;
 
 // Query whether a given operation is running.  Uses the operation names as
 // defined in OwInterface.cpp.  Generally not needed, but supports more
@@ -102,7 +114,9 @@ Boolean Lookup Running (String operation_name);
 // Query the goal status of the ROS action corresponding to a given library action
 Integer Lookup ActionGoalStatus (String action_name);
 
+// Function
 Boolean Lookup AnglesEquivalent (Real deg1, Real deg2, Real tolerance);
+
 
 //////// PLEXIL Utilities
 
