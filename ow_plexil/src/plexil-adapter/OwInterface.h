@@ -15,11 +15,11 @@
 #include <ow_plexil/IdentifyLocationAction.h>
 
 // ow_simulator
-#include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmJointAccelerations.h>
-#include <ow_faults_detection/ArmFaults.h>
-#include <ow_faults_detection/PowerFaults.h>
-#include <ow_faults_detection/PTFaults.h>
+#include <owl_msgs/ArmFaultsStatus.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
+#include <owl_msgs/PowerFaultsStatus.h>
+#include <owl_msgs/SystemFaultsStatus.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
@@ -142,6 +142,8 @@ class OwInterface : public PlexilInterface
   double groundPosition () const;
   bool   systemFault () const;
   bool   antennaFault () const;
+  bool   antennaPanFault () const;
+  bool   antennaTiltFault () const;
   bool   armFault () const;
   bool   powerFault () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
@@ -181,9 +183,9 @@ class OwInterface : public PlexilInterface
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
-  void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
-  void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
-  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
+  void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
+  void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
+  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
@@ -220,24 +222,44 @@ class OwInterface : public PlexilInterface
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
-  FaultMap32 m_armErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
-    {"COLLISION_ERROR", std::make_pair(3, false)},
-    {"ESTOP_ERROR", std::make_pair(4, false)},
-    {"POSITION_LIMIT_ERROR", std::make_pair(5, false)},
-    {"TORQUE_LIMIT_ERROR", std::make_pair(6, false)},
-    {"VELOCITY_LIMIT_ERROR", std::make_pair(7, false)},
-    {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
+  FaultMap64 m_armErrors = {
+    {"HARDWARE", std::make_pair(
+        owl_msgs::ArmFaultsStatus::HARDWARE, false)},
+    {"TRAJECTORY_GENERATION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::TRAJECTORY_GENERATION, false)},
+    {"COLLISION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::COLLISION, false)},
+    {"E_STOP", std::make_pair(
+        owl_msgs::ArmFaultsStatus::E_STOP, false)},
+    {"POSITION_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::POSITION_LIMIT, false)},
+    {"JOINT_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
+    {"VELOCITY_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
+    {"NO_FORCE_DATA", std::make_pair(
+        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA, false)},
+    {"FORCE_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
-  FaultMap32 m_powerErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)}
+  FaultMap64 m_powerErrors = {
+    {"LOW_STATE_OF_CHARGE", std::make_pair(
+        owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
+    {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
+        owl_msgs::PowerFaultsStatus::INSTANTANEOUS_CAPACITY_LOSS, false)},
+    {"THERMAL_FAULT", std::make_pair(
+        owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
-  FaultMap32 m_panTiltErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
+  const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
+
+  FaultMap64 m_panTiltErrors = {
+    {FaultPanJointLocked, std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
+    {"TILT_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
 
   // Publishers and subscribers

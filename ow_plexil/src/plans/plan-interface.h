@@ -76,6 +76,8 @@ Boolean Lookup SoftTorqueLimitReached (String joint_name);
 // Faults
 Boolean Lookup SystemFault;
 Boolean Lookup AntennaFault;
+Boolean Lookup AntennaPanFault;
+Boolean Lookup AntennaTiltFault;
 Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 
