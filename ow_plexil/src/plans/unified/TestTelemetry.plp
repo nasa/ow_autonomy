@@ -8,6 +8,8 @@
 
 TestTelemetry:
 {
+  Real FT[6]; // end effector force/torque
+
   // Pan/Tilt telemetry.
 
   // Note that the current version of OWLAT Sim has neither a pan/tilt
@@ -27,11 +29,17 @@ TestTelemetry:
   // while OWLAT has a total of 6 joints, all arm.  Nonetheless, this
   // code will do the "right" thing on each testbed, which includes
   // producing warnings/errors for invalid indices and options.
-  
+
   for (Integer j = 0; j < 9; j + 1) {
     log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
     log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));
     log_info ("Effort of joint ", j, " = ", Lookup(JointEffort(j)));
     log_info ("Acceleration of joint ", j, " = ", Lookup(JointAcceleration(j)));
+  }
+
+  FT = Lookup(ArmEndEffectorForceTorque);
+  log_info ("Arm end effector force/torque: {");
+  for (Integer i = 0; i < 6; i + 1) {
+    log_info ("  ", FT[i]);
   }
 }

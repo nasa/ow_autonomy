@@ -148,6 +148,13 @@ static bool lookup (const string& state_name,
   else if (state_name == "PowerFault") {
     value_out = OwInterface::instance()->powerFault();
   }
+  else if (state_name == "CameraFault") {
+    value_out = OwInterface::instance()->cameraFault();
+  }
+  else if (state_name == "ArmEndEffectorForceTorque") {
+    vector<double> ft = OwInterface::instance()->getEndEffectorFT();
+    value_out = (Value) ft;
+  }
   else if (state_name == "ActionGoalStatus") {
     string s;
     args[0].getValue(s);
@@ -406,8 +413,8 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (num_pictures);
   args[1].getValue (filter_type);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  std::vector<double> point_vector;
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  vector<double> point_vector;
   // Get our sample point from identifySampleLocation
   point_vector = OwInterface::instance()->identifySampleLocation (num_pictures,
                                                                   filter_type,

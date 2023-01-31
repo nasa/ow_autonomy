@@ -38,4 +38,7 @@ Real Lookup JointVelocity     (Integer joint);
 Real Lookup JointPosition     (Integer joint);
 Real Lookup JointEffort       (Integer joint);
 
+// Force/Torque Sensor
+Real[6] Lookup ArmEndEffectorForceTorque;
+
 #endif
