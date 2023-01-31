@@ -81,6 +81,12 @@ static bool lookup (const string& state_name,
   else STATE_STUB(SampleGood, true)
   else STATE_STUB(CollectAndTransferTimeout, 10)
 
+  else if (state_name == "UsingOceanWATERS") {
+    value_out = true;
+  }
+  else if (state_name == "UsingOWLAT") {
+    value_out = false;
+  }
   else if (state_name == "TiltRadians") {
     value_out = OwInterface::instance()->getTiltRadians();
   }

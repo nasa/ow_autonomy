@@ -41,5 +41,8 @@ Real Lookup JointEffort       (Integer joint);
 // Misc
 Real[6] Lookup ArmEndEffectorForceTorque;
 Real[7] Lookup ArmPose;
+Boolean Lookup UsingOceanWATERS;
+Boolean Lookup UsingOWLAT;
+
 
 #endif

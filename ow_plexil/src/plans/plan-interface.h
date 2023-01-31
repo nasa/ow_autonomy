@@ -103,6 +103,8 @@ Real Lookup JointAcceleration (Integer joint_index);
 
 Real[6] Lookup ArmEndEffectorForceTorque;
 Real[7] Lookup ArmPose;
+Boolean Lookup UsingOceanWATERS;
+Boolean Lookup UsingOWLAT;
 
 // Query whether a given operation is running.  Uses the operation names as
 // defined in OwInterface.cpp.  Generally not needed, but supports more
