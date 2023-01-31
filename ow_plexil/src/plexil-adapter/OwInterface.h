@@ -19,7 +19,10 @@
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
 #include <owl_msgs/PowerFaultsStatus.h>
+#include <owl_msgs/CameraFaultsStatus.h>
 #include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+#include <owl_msgs/ArmPose.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
@@ -138,6 +141,8 @@ class OwInterface : public PlexilInterface
   double getBatteryStateOfCharge () const;
   double getBatteryRemainingUsefulLife () const;
   double getBatteryTemperature () const;
+  std::vector<double> getEndEffectorFT () const;
+  std::vector<double> getArmPose () const;
   bool   groundFound () const;
   double groundPosition () const;
   bool   systemFault () const;
@@ -146,6 +151,7 @@ class OwInterface : public PlexilInterface
   bool   antennaTiltFault () const;
   bool   armFault () const;
   bool   powerFault () const;
+  bool   cameraFault () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
@@ -186,10 +192,13 @@ class OwInterface : public PlexilInterface
   void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
   void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
+  void cameraFaultCallback (const owl_msgs::CameraFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
                                  const std::string);
+  void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
+  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -262,6 +271,12 @@ class OwInterface : public PlexilInterface
       owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
   };
 
+  const char* FaultNoImage = "NO_IMAGE";
+
+  FaultMap64 m_cameraErrors = {
+    {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
+  };
+
   // Publishers and subscribers
 
   std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
@@ -287,11 +302,12 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
-
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
-  // Antenna state
+  // Misc state
   double m_currentPanRadians, m_currentTiltRadians;
+  std::vector<double> m_endEffectorFT;
+  std::vector<double> m_armPose;
 };
 
 #endif

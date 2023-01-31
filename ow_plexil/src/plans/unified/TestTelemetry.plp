@@ -8,6 +8,20 @@
 
 TestTelemetry:
 {
+  Real FT[6]; // end effector force/torque
+  Real ArmPose[7]; // Position (x,y,z) followed by orientation (x,y,z,w).
+
+  log_info ("Starting telemetry tests...");
+  
+  // Testbed
+  if (Lookup(UsingOceanWATERS)) log_info ("OceanWATERS is in use.");
+  else log_info ("OceanWATERS is NOT in use.");
+  endif;
+
+  if (Lookup(UsingOWLAT)) log_info ("OWLAT is in use.");
+  else log_info ("OWLAT is NOT in use.");
+  endif;
+
   // Pan/Tilt telemetry.
 
   // Note that the current version of OWLAT Sim has neither a pan/tilt
@@ -27,11 +41,27 @@ TestTelemetry:
   // while OWLAT has a total of 6 joints, all arm.  Nonetheless, this
   // code will do the "right" thing on each testbed, which includes
   // producing warnings/errors for invalid indices and options.
-  
+
   for (Integer j = 0; j < 9; j + 1) {
     log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
     log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));
     log_info ("Effort of joint ", j, " = ", Lookup(JointEffort(j)));
     log_info ("Acceleration of joint ", j, " = ", Lookup(JointAcceleration(j)));
   }
+
+  FT = Lookup(ArmEndEffectorForceTorque);
+  log_info ("Arm end effector force/torque: {");
+  for (Integer i = 0; i < 6; i + 1) {
+    log_info ("  ", FT[i]);
+  }
+  log_info ("}");
+
+  ArmPose = Lookup(ArmPose);
+  log_info ("Arm pose: {");
+  for (Integer i = 0; i < 7; i + 1) {
+    log_info ("  ", ArmPose[i]);
+  }
+  log_info ("}");
+
+  log_info ("Telemetry tests finished.");
 }
