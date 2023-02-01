@@ -294,10 +294,10 @@ static void dig_linear (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void deliver (Command* cmd, AdapterExecInterface* intf)
+static void task_deliver_sample (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->deliver (CommandId);
+  OwInterface::instance()->taskDeliverSample (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -435,7 +435,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
-  g_configuration->registerCommandHandler("deliver", deliver);
+  g_configuration->registerCommandHandler("deliver", task_deliver_sample);
   g_configuration->registerCommandHandler("discard", discard);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("identify_sample_location",

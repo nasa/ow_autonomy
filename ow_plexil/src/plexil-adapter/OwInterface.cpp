@@ -57,7 +57,7 @@ const string Op_ArmMoveJoint           = "ArmMoveJoint";
 const string Op_ArmMoveJoints          = "ArmMoveJoints";
 const string Op_DigCircular            = "DigCircular";
 const string Op_DigLinear              = "DigLinear";
-const string Op_Deliver                = "Deliver";
+const string Op_TaskDeliverSample      = "TaskDeliverSample";
 const string Op_Discard                = "Discard";
 const string Op_Grind                  = "Grind";
 const string Op_ArmStow                = "ArmStow";
@@ -74,7 +74,7 @@ static vector<string> LanderOpNames = {
   Op_ArmMoveJoints,
   Op_DigCircular,
   Op_DigLinear,
-  Op_Deliver,
+  Op_TaskDeliverSample,
   Op_Discard,
   Op_PanTiltAntenna,
   Op_Grind,
@@ -116,7 +116,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_ArmMoveJoints, NOGOAL },
   { Op_DigCircular, NOGOAL },
   { Op_DigLinear, NOGOAL },
-  { Op_Deliver, NOGOAL },
+  { Op_TaskDeliverSample, NOGOAL },
   { Op_Discard, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
@@ -493,8 +493,8 @@ void OwInterface::initialize()
       make_unique<DigCircularActionClient>(Op_DigCircular, true);
     m_digLinearClient =
       make_unique<DigLinearActionClient>(Op_DigLinear, true);
-    m_deliverClient =
-      make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_taskDeliverSampleClient =
+      make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
     m_discardClient =
       make_unique<DiscardActionClient>(Op_Discard, true);
     m_cameraCaptureClient =
@@ -614,11 +614,11 @@ void OwInterface::initialize()
     }
     else addSubscriber ("/DigLinear/status", Op_DigLinear);
 
-    if (! m_deliverClient->
+    if (! m_taskDeliverSampleClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Deliver action server did not connect!");
+      ROS_ERROR ("TaskDeliverSample action server did not connect!");
     }
-    else addSubscriber ("/Deliver/status", Op_Deliver);
+    else addSubscriber ("/TaskDeliverSample/status", Op_TaskDeliverSample);
 
     if (! m_discardClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -750,10 +750,10 @@ void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
 }
 
 
-void OwInterface::deliver (int id)
+void OwInterface::taskDeliverSample (int id)
 {
-  if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, id);
+  if (! markOperationRunning (Op_TaskDeliverSample, id)) return;
+  thread action_thread (&OwInterface::taskDeliverSampleAction, this, id);
   action_thread.detach();
 }
 
@@ -765,20 +765,20 @@ void OwInterface::discard (double x, double y, double z, int id)
 }
 
 
-void OwInterface::deliverAction (int id)
+void OwInterface::taskDeliverSampleAction (int id)
 {
-  DeliverGoal goal;
+  TaskDeliverSampleGoal goal;
 
-  ROS_INFO ("Starting Deliver()");
+  ROS_INFO ("Starting TaskDeliverSample()");
 
-  runAction<actionlib::SimpleActionClient<DeliverAction>,
-            DeliverGoal,
-            DeliverResultConstPtr,
-            DeliverFeedbackConstPtr>
-    (Op_Deliver, m_deliverClient, goal, id,
-     default_action_active_cb (Op_Deliver),
-     default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
-     default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
+  runAction<actionlib::SimpleActionClient<TaskDeliverSampleAction>,
+            TaskDeliverSampleGoal,
+            TaskDeliverSampleResultConstPtr,
+            TaskDeliverSampleFeedbackConstPtr>
+    (Op_TaskDeliverSample, m_taskDeliverSampleClient, goal, id,
+     default_action_active_cb (Op_TaskDeliverSample),
+     default_action_feedback_cb<TaskDeliverSampleFeedbackConstPtr> (Op_TaskDeliverSample),
+     default_action_done_cb<TaskDeliverSampleResultConstPtr> (Op_TaskDeliverSample));
 }
 
 void OwInterface::discardAction (double x, double y, double z, int id)
