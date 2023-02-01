@@ -6,9 +6,6 @@
 #include "OwInterface.h"
 #include "subscriber.h"
 
-// OW - external
-#include <ow_lander/Light.h>
-
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -55,10 +52,10 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const string Op_GuardedMove            = "GuardedMove";
 const string Op_ArmMoveJoint           = "ArmMoveJoint";
 const string Op_ArmMoveJoints          = "ArmMoveJoints";
-const string Op_DigCircular            = "DigCircular";
-const string Op_DigLinear              = "DigLinear";
+const string Op_TaskScoopCircular            = "TaskScoopCircular";
+const string Op_TaskScoopLinear              = "TaskScoopLinear";
 const string Op_Deliver                = "Deliver";
-const string Op_Discard                = "Discard";
+const string Op_TaskDiscardSample                = "TaskDiscardSample";
 const string Op_Grind                  = "Grind";
 const string Op_ArmStow                = "ArmStow";
 const string Op_ArmUnstow              = "ArmUnstow";
@@ -72,10 +69,10 @@ static vector<string> LanderOpNames = {
   Op_GuardedMove,
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
-  Op_DigCircular,
-  Op_DigLinear,
+  Op_TaskScoopCircular,
+  Op_TaskScoopLinear,
   Op_Deliver,
-  Op_Discard,
+  Op_TaskDiscardSample,
   Op_PanTiltAntenna,
   Op_Grind,
   Op_ArmStow,
@@ -114,10 +111,10 @@ static map<string, int> ActionGoalStatusMap {
   { Op_GuardedMove, NOGOAL },
   { Op_ArmMoveJoint, NOGOAL },
   { Op_ArmMoveJoints, NOGOAL },
-  { Op_DigCircular, NOGOAL },
-  { Op_DigLinear, NOGOAL },
+  { Op_TaskScoopCircular, NOGOAL },
+  { Op_TaskScoopLinear, NOGOAL },
   { Op_Deliver, NOGOAL },
-  { Op_Discard, NOGOAL },
+  { Op_TaskDiscardSample, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
@@ -489,14 +486,14 @@ void OwInterface::initialize()
       make_unique<ArmStowActionClient>(Op_ArmStow, true);
     m_grindClient =
       make_unique<GrindActionClient>(Op_Grind, true);
-    m_digCircularClient =
-      make_unique<DigCircularActionClient>(Op_DigCircular, true);
-    m_digLinearClient =
-      make_unique<DigLinearActionClient>(Op_DigLinear, true);
+    m_scoopCircularClient =
+      make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
+    m_scoopLinearClient =
+      make_unique<TaskScoopLinearActionClient>(Op_TaskScoopLinear, true);
     m_deliverClient =
       make_unique<DeliverActionClient>(Op_Deliver, true);
     m_discardClient =
-      make_unique<DiscardActionClient>(Op_Discard, true);
+      make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
     m_cameraCaptureClient =
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
     m_cameraSetExposureClient =
@@ -602,17 +599,17 @@ void OwInterface::initialize()
     }
     else addSubscriber ("/ArmMoveJoints/status", Op_ArmMoveJoints);
 
-    if (! m_digCircularClient->
+    if (! m_scoopCircularClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("DigCircular action server did not connect!");
+      ROS_ERROR ("TaskScoopCircular action server did not connect!");
     }
-    else addSubscriber ("/DigCircular/status", Op_DigCircular);
+    else addSubscriber ("/TaskScoopCircular/status", Op_TaskScoopCircular);
 
-    if (! m_digLinearClient->
+    if (! m_scoopLinearClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("DigLinear action server did not connect!");
+      ROS_ERROR ("TaskScoopLinear action server did not connect!");
     }
-    else addSubscriber ("/DigLinear/status", Op_DigLinear);
+    else addSubscriber ("/TaskScoopLinear/status", Op_TaskScoopLinear);
 
     if (! m_deliverClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -622,9 +619,9 @@ void OwInterface::initialize()
 
     if (! m_discardClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Discard action server did not connect!");
+      ROS_ERROR ("TaskDiscardSample action server did not connect!");
     }
-    else addSubscriber ("/Discard/status", Op_Discard);
+    else addSubscriber ("/TaskDiscardSample/status", Op_TaskDiscardSample);
 
     if (! m_cameraCaptureClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -757,14 +754,6 @@ void OwInterface::deliver (int id)
   action_thread.detach();
 }
 
-void OwInterface::discard (double x, double y, double z, int id)
-{
-  if (! markOperationRunning (Op_Discard, id)) return;
-  thread action_thread (&OwInterface::discardAction, this, x, y, z, id);
-  action_thread.detach();
-}
-
-
 void OwInterface::deliverAction (int id)
 {
   DeliverGoal goal;
@@ -781,93 +770,115 @@ void OwInterface::deliverAction (int id)
      default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
 }
 
-void OwInterface::discardAction (double x, double y, double z, int id)
+void OwInterface::discardSample (int frame, bool relative,
+                                 double x, double y, double z,
+                                 double height, int id)
 {
-  DiscardGoal goal;
-  goal.discard.x = x;
-  goal.discard.y = y;
-  goal.discard.z = z;
-
-  ROS_INFO ("Starting Discard(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-
-  runAction<actionlib::SimpleActionClient<DiscardAction>,
-            DiscardGoal,
-            DiscardResultConstPtr,
-            DiscardFeedbackConstPtr>
-    (Op_Discard, m_discardClient, goal, id,
-     default_action_active_cb (Op_Discard),
-     default_action_feedback_cb<DiscardFeedbackConstPtr> (Op_Discard),
-     default_action_done_cb<DiscardResultConstPtr> (Op_Discard));
+  if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
+  thread action_thread (&OwInterface::discardSampleAction, this, x, y, z, id);
+  action_thread.detach();
 }
 
-void OwInterface::digLinear (double x, double y,
+void OwInterface::discardSampleAction (int frame, bool relative,
+                                       double x, double y, double z,
+                                       double height, int id)
+{
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = z;
+
+  TaskDiscardSampleGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
+
+  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+
+  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
+            TaskDiscardSampleGoal,
+            TaskDiscardSampleResultConstPtr,
+            TaskDiscardSampleFeedbackConstPtr>
+    (Op_TaskDiscardSample, m_discardClient, goal, id,
+     default_action_active_cb (Op_TaskDiscardSample),
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Op_TaskDiscardSample),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
+}
+
+void OwInterface::scoopLinear (double x, double y,
                              double depth, double length, double ground_pos,
                              int id)
 {
-  if (! markOperationRunning (Op_DigLinear, id)) return;
-  thread action_thread (&OwInterface::digLinearAction, this, x, y, depth,
+  if (! markOperationRunning (Op_TaskScoopLinear, id)) return;
+  thread action_thread (&OwInterface::scoopLinearAction, this, x, y, depth,
                         length, ground_pos, id);
   action_thread.detach();
 }
 
 
-void OwInterface::digLinearAction (double x, double y,
-                                   double depth, double length,
-                                   double ground_pos, int id)
+void OwInterface::scoopLinearAction (double x, double y,
+                                     double depth, double length,
+                                     double ground_pos, int id)
 {
-  DigLinearGoal goal;
-  goal.x_start = x;
-  goal.y_start = y;
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = 0;  // temporary
+
+  TaskScoopLinearGoal goal;
+  goal.frame = 0; // temporary
+  goal.relative = false; // temporary
+  goal.point = p;
   goal.depth = depth;
   goal.length = length;
-  goal.ground_position = ground_pos;
 
-  ROS_INFO ("Starting DigLinear"
-            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
-            x, y, depth, length, ground_pos);
+  // Flesh out
+  ROS_INFO ("Starting TaskScoopLinear"
+            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f)",
+            x, y, depth, length);
 
-  runAction<actionlib::SimpleActionClient<DigLinearAction>,
-            DigLinearGoal,
-            DigLinearResultConstPtr,
-            DigLinearFeedbackConstPtr>
-    (Op_DigLinear, m_digLinearClient, goal, id,
-     default_action_active_cb (Op_DigLinear),
-     default_action_feedback_cb<DigLinearFeedbackConstPtr> (Op_DigLinear),
-     default_action_done_cb<DigLinearResultConstPtr> (Op_DigLinear));
+  runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
+            TaskScoopLinearGoal,
+            TaskScoopLinearResultConstPtr,
+            TaskScoopLinearFeedbackConstPtr>
+    (Op_TaskScoopLinear, m_scoopLinearClient, goal, id,
+     default_action_active_cb (Op_TaskScoopLinear),
+     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (Op_TaskScoopLinear),
+     default_action_done_cb<TaskScoopLinearResultConstPtr> (Op_TaskScoopLinear));
 }
 
 
-void OwInterface::digCircular (double x, double y, double depth,
+void OwInterface::scoopCircular (double x, double y, double depth,
                                double ground_pos, bool parallel, int id)
 {
-  if (! markOperationRunning (Op_DigCircular, id)) return;
-  thread action_thread (&OwInterface::digCircularAction, this, x, y, depth,
+  if (! markOperationRunning (Op_TaskScoopCircular, id)) return;
+  thread action_thread (&OwInterface::scoopCircularAction, this, x, y, depth,
                         ground_pos, parallel, id);
   action_thread.detach();
 }
 
-void OwInterface::digCircularAction (double x, double y, double depth,
+void OwInterface::scoopCircularAction (double x, double y, double depth,
                                      double ground_pos, bool parallel, int id)
 {
-  DigCircularGoal goal;
-  goal.x_start = x;
-  goal.y_start = y;
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = 0;  // temporary
+
+  TaskScoopCircularGoal goal;
+  goal.frame = 0; // temporary
+  goal.relative = false; // temporary
+  goal.point = p;
   goal.depth = depth;
-  goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  ROS_INFO ("Starting DigCircular"
-            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
-            x, y, depth, (parallel ? "true" : "false"), ground_pos);
+  // Flesh out
+  ROS_INFO ("Starting TaskScoopCircular"
+            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s)",
+            x, y, depth, (parallel ? "true" : "false"));
 
-  runAction<actionlib::SimpleActionClient<DigCircularAction>,
-            DigCircularGoal,
-            DigCircularResultConstPtr,
-            DigCircularFeedbackConstPtr>
-    (Op_DigCircular, m_digCircularClient, goal, id,
-     default_action_active_cb (Op_DigCircular),
-     default_action_feedback_cb<DigCircularFeedbackConstPtr> (Op_DigCircular),
-     default_action_done_cb<DigCircularResultConstPtr> (Op_DigCircular));
+  runAction<actionlib::SimpleActionClient<TaskScoopCircularAction>,
+            TaskScoopCircularGoal,
+            TaskScoopCircularResultConstPtr,
+            TaskScoopCircularFeedbackConstPtr>
+    (Op_TaskScoopCircular, m_scoopCircularClient, goal, id,
+     default_action_active_cb (Op_TaskScoopCircular),
+     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (Op_TaskScoopCircular),
+     default_action_done_cb<TaskScoopCircularResultConstPtr> (Op_TaskScoopCircular));
 }
 
 

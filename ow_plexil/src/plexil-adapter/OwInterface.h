@@ -30,11 +30,11 @@
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
 #include <ow_lander/ArmMoveJointsAction.h>
-#include <ow_lander/DigCircularAction.h>
-#include <ow_lander/DigLinearAction.h>
+#include <owl_msgs/TaskScoopCircularAction.h>
+#include <owl_msgs/TaskScoopLinearAction.h>
 #include <ow_lander/DeliverAction.h>
 #include <ow_lander/AntennaPanTiltAction.h>
-#include <ow_lander/DiscardAction.h>
+#include <owl_msgs/TaskDiscardSampleAction.h>
 #include <ow_lander/CameraCaptureAction.h>
 #include <ow_lander/CameraSetExposureAction.h>
 #include <ow_lander/LightSetIntensityAction.h>
@@ -63,16 +63,16 @@ using ArmMoveJointActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
-using DigCircularActionClient =
-  actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
-using DigLinearActionClient =
-  actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
+using TaskScoopCircularActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
+using TaskScoopLinearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
 using DeliverActionClient =
   actionlib::SimpleActionClient<ow_lander::DeliverAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
-using DiscardActionClient =
-  actionlib::SimpleActionClient<ow_lander::DiscardAction>;
+using TaskDiscardSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
 using CameraSetExposureActionClient =
@@ -116,16 +116,17 @@ class OwInterface : public PlexilInterface
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
-  void digLinear (double x, double y, double depth, double length,
+  void scoopLinear (double x, double y, double depth, double length,
                   double ground_pos, int id);
-  void digCircular (double x, double y, double depth,
+  void scoopCircular (double x, double y, double depth,
                     double ground_pos, bool parallel, int id);
   void grind (double x, double y, double depth, double length,
               bool parallel, double ground_pos, int id);
   void armStow (int id);
   void armUnstow (int id);
   void deliver (int id);
-  void discard (double x, double y, double z, int id);
+  void discardSample (int frame, bool relative, double x, double y, double z,
+                      double height, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
@@ -168,9 +169,9 @@ class OwInterface : public PlexilInterface
                             int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
-  void digCircularAction (double x, double y, double depth,
+  void scoopCircularAction (double x, double y, double depth,
                           double ground_pos, bool parallel, int id);
-  void digLinearAction (double x, double y, double depth, double length,
+  void scoopLinearAction (double x, double y, double depth, double length,
                         double ground_pos, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
@@ -257,11 +258,11 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;
-  std::unique_ptr<DigCircularActionClient> m_digCircularClient;
-  std::unique_ptr<DigLinearActionClient> m_digLinearClient;
+  std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
+  std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
   std::unique_ptr<DeliverActionClient> m_deliverClient;
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
-  std::unique_ptr<DiscardActionClient> m_discardClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
