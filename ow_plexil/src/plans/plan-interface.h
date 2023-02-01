@@ -44,23 +44,30 @@ LibraryAction Grind (In Real X,
                      In Boolean Parallel,
                      In Real GroundPos);
 
-LibraryAction DigCircular (In Real X,
-                           In Real Y,
-                           In Real Depth,
-                           In Real GroundPos,
-                           In Boolean Parallel);
+LibraryAction TaskScoopCircular (In Integer Frame,
+                                 In Boolean Relative,
+                                 In Real X,
+                                 In Real Y,
+                                 In Real Z,
+                                 In Real Depth,
+                                 In Boolean Parallel);
 
-LibraryAction DigLinear (In Real X,
-                         In Real Y,
-                         In Real Depth,
-                         In Real Length,
-                         In Real GroundPos);
+LibraryAction TaskScoopLinear (In Integer Frame,
+                               In Boolean Relative,
+                               In Real X,
+                               In Real Y,
+                               In Real Z,
+                               In Real Depth,
+                               In Real Length);
 
 LibraryAction Deliver ();
 
-LibraryAction Discard (In Real X,
-                       In Real Y,
-                       In Real Z);
+LibraryAction TaskDiscardSample (In Integer Frame,
+                                 In Boolean Relative,
+                                 In Real X,
+                                 In Real Y,
+                                 In Real Z,
+                                 In Real Height);
 
 LibraryAction CameraSetExposure (In Real Seconds);
 LibraryAction CameraCapture ();

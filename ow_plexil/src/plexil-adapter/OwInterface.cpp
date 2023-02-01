@@ -775,7 +775,8 @@ void OwInterface::discardSample (int frame, bool relative,
                                  double height, int id)
 {
   if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
-  thread action_thread (&OwInterface::discardSampleAction, this, x, y, z, id);
+  thread action_thread (&OwInterface::discardSampleAction, this, frame, relative,
+                        x, y, z, height, id);
   action_thread.detach();
 }
 
@@ -790,6 +791,7 @@ void OwInterface::discardSampleAction (int frame, bool relative,
   goal.frame = frame;
   goal.relative = relative;
   goal.point = p;
+  goal.height = height;
 
   ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
 

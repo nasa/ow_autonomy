@@ -175,7 +175,9 @@ class OwInterface : public PlexilInterface
                         double ground_pos, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
-  void discardAction (double x, double y, double z, int id);
+  void discardSampleAction (int frame, bool relative,
+                            double x, double y, double z,
+                            double height, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
