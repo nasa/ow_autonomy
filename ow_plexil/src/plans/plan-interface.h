@@ -9,6 +9,10 @@
 
 #include "lander-commands.h"
 
+// Constants
+#define BASE_LINK 0
+#define SCOOP_TIP 1
+
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
@@ -18,8 +22,58 @@ Command log_debug (...);
 
 // PLEXIL library for lander operations.
 
+LibraryAction ArmFindSurface (In Integer Frame,
+                              In Boolean Relative,
+                              In Real PosX,
+                              In Real PosY,
+                              In Real PosZ,
+                              In Real NormX,
+                              In Real NormY,
+                              In Real NormZ,
+                              In Real Distance,
+                              In Real Overdrive,
+                              In Real ForceThreshold,
+                              In Real TorqueThreshold);
+
+LibraryAction ArmMoveCartesian (In Integer Frame,
+				In Boolean Relative,
+				In Real X, In Real Y, In Real Z, // Euler angle
+				In Real OrientX,
+				In Real OrientY,
+				In Real OrientZ);
+
+// Quaternion version of previous.
+LibraryAction ArmMoveCartesian_Q (In Integer Frame,
+				  In Boolean Relative,
+				  In Real X, In Real Y, In Real Z,
+				  In Real OrientX, In Real OrientY,
+				  In Real OrientZ, In Real OrientW);
+
+LibraryAction ArmMoveCartesianGuarded (In Integer Frame,
+                                       In Boolean Relative,
+                                       // Euler angle:
+                                       In Real X, In Real Y, In Real Z,
+                                       In Real OrientX,
+                                       In Real OrientY,
+                                       In Real OrientZ,
+                                       In Real ForceThreshold,
+                                       In Real TorqueThreshold);
+
+// Quaternion version of previous.
+LibraryAction ArmMoveCartesianGuarded_Q (In Integer Frame,
+                                         In Boolean Relative,
+                                         In Real X, In Real Y, In Real Z,
+                                         In Real OrientX, In Real OrientY,
+                                         In Real OrientZ, In Real OrientW,
+                                         In Real ForceThreshold,
+                                         In Real TorqueThreshold);
+
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
-LibraryAction PanTilt  (In Real PanDegrees, In Real TiltDegrees);
+LibraryAction Pan (In Real Degrees);
+LibraryAction Tilt (In Real Degrees);
+LibraryAction PanTilt (In Real PanDegrees, In Real TiltDegrees);
+LibraryAction PanTiltMoveCartesian  (In Integer Frame,
+                                     In Real X, In Real Y, In Real Z);
 LibraryAction Stow ();
 LibraryAction Unstow ();
 LibraryAction GuardedMove (In Real X,
@@ -36,6 +90,11 @@ LibraryAction ArmMoveJoint (In Boolean Relative,
 
 LibraryAction ArmMoveJoints (In Boolean Relative,
                              In Real Angles[6]);
+
+LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
+                                    In Real Angles[6],
+                                    In Real ForceThreshold,
+                                    In Real TorqueThreshold);
 
 LibraryAction Grind (In Real X,
                      In Real Y,

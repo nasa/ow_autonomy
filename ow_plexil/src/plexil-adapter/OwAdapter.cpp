@@ -215,6 +215,131 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double pos_x, pos_y, pos_z, norm_x, norm_y, norm_z;
+  double distance, overdrive, force_threshold, torque_threshold;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(pos_x);
+  args[3].getValue(pos_y);
+  args[4].getValue(pos_z);
+  args[5].getValue(norm_x);
+  args[6].getValue(norm_y);
+  args[7].getValue(norm_z);
+  args[8].getValue(distance);
+  args[9].getValue(overdrive);
+  args[10].getValue(force_threshold);
+  args[11].getValue(torque_threshold);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armFindSurface (frame, relative, pos_x, pos_y, pos_z,
+                                           norm_x, norm_y, norm_z,
+                                           distance, overdrive,
+                                           force_threshold, torque_threshold,
+                                           CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+
+static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
+					     orient_x, orient_y, orient_z,
+					     CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_cartesian_q (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z, orient_w;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  args[8].getValue(orient_w);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
+					     orient_x, orient_y, orient_z,
+					     orient_w, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z, force_threshold, torque_threshold;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  args[8].getValue(force_threshold);
+  args[9].getValue(torque_threshold);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
+                                                    orient_x, orient_y, orient_z,
+                                                    force_threshold,
+                                                    torque_threshold,
+                                                    CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_cartesian_guarded_q (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, orient_x, orient_y, orient_z, orient_w;
+  double force_threshold, torque_threshold;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(orient_x);
+  args[6].getValue(orient_y);
+  args[7].getValue(orient_z);
+  args[8].getValue(orient_w);
+  args[9].getValue(force_threshold);
+  args[10].getValue(torque_threshold);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
+                                                    orient_x, orient_y, orient_z,
+                                                    orient_w,
+                                                    force_threshold,
+                                                    torque_threshold,
+                                                    CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
 {
   bool relative;
@@ -243,6 +368,27 @@ static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->armMoveJoints (relative, *angles_vector,
                                           CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void arm_move_joints_guarded (Command *cmd, AdapterExecInterface* intf)
+{
+  bool relative;
+  vector<double> const *angles_vector = nullptr;
+  double force_threshold, torque_threshold;
+  RealArray const *angles = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(relative);
+  args[1].getValuePointer(angles);
+  args[2].getValue(force_threshold);
+  args[3].getValue(torque_threshold);
+  //changes real array into a vector
+  angles->getContentsVector(angles_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armMoveJointsGuarded (relative, *angles_vector,
+                                                 force_threshold,
+                                                 torque_threshold,
+                                                 CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -329,6 +475,38 @@ static bool check_angle (const char* name, double val,
   return true;
 }
 
+static void pan (Command* cmd, AdapterExecInterface* intf)
+{
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  if (! check_angle ("pan", degrees, PanMinDegrees, PanMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->pan (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
+static void tilt (Command* cmd, AdapterExecInterface* intf)
+{
+  double degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (degrees);
+  if (! check_angle ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
+                     PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    OwInterface::instance()->tilt (degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
 static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
 {
   double pan_degrees, tilt_degrees;
@@ -343,9 +521,23 @@ static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panTiltAntenna (pan_degrees, tilt_degrees, CommandId);
+    OwInterface::instance()->panTilt (pan_degrees, tilt_degrees, CommandId);
     acknowledge_command_sent(*cr);
   }
+}
+
+static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  double x, y, z;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (frame);
+  args[1].getValue (x);
+  args[2].getValue (y);
+  args[3].getValue (z);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->panTiltCartesian (frame, x, y, z, CommandId);
+  acknowledge_command_sent(*cr);
 }
 
 static void camera_capture (Command* cmd, AdapterExecInterface* intf)
@@ -430,14 +622,29 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("stow", arm_stow);
   g_configuration->registerCommandHandler("unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);
+  g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
+  g_configuration->registerCommandHandler("arm_move_cartesian",
+					  arm_move_cartesian);
+  g_configuration->registerCommandHandler("arm_move_cartesian_q",
+					  arm_move_cartesian_q);
+  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
+					  arm_move_cartesian_guarded);
+  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
+					  arm_move_cartesian_guarded_q);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
+  g_configuration->registerCommandHandler("arm_move_joints_guarded",
+                                          arm_move_joints_guarded);
   g_configuration->registerCommandHandler("dig_circular", dig_circular);
   g_configuration->registerCommandHandler("dig_linear", dig_linear);
   g_configuration->registerCommandHandler("deliver", task_deliver_sample);
   g_configuration->registerCommandHandler("discard", discard);
+  g_configuration->registerCommandHandler("pan", pan);
+  g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
+  g_configuration->registerCommandHandler("pan_tilt_cartesian",
+                                          pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
   g_configuration->registerCommandHandler("camera_capture", camera_capture);

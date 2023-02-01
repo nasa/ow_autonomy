@@ -1,0 +1,61 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Tests for the ArmFindSurface action, which duplicate the first few
+// tests in https://github.com/nasa/ow_simulator/pull/307.  This plan
+// must be run with the atacama_y1a simulator world.
+
+#include "plan-interface.h"
+
+TestArmFindSurface:
+{
+  // The following defaults are defined in
+  // ow_lander/scripts/arm_find_surface.py.  These are not all the
+  // defaults, just those useful in this plan.
+
+  Real DefaultPosXYZ = 0;
+  Real DefaultNormalX = 0;
+  Real DefaultNormalY = 0;
+  Real DefaultNormalZ = -1;
+  Real DefaultDistance = 0.2;
+  Real DefaultOverdrive = 0.05;
+  Real DefaultForceThreshold = 200;
+  Real DefaultTorqueThreshold = 100;
+
+  log_info ("Beginning TestArmFindSurface...");
+
+  LibraryCall Unstow();
+
+  // Fail to find the reddish mound from above.
+  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+                              Relative = false,  // default
+                              PosX = 1.45,
+                              PosY = -0.4,
+                              PosZ = 0.25,
+                              NormX = DefaultNormalX,
+                              NormY = DefaultNormalY,
+                              NormZ = DefaultNormalZ,
+                              Distance = DefaultDistance,
+                              Overdrive = DefaultOverdrive,
+                              ForceThreshold = DefaultForceThreshold,
+                              TorqueThreshold = DefaultTorqueThreshold);
+
+  // Find the mound from above
+  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+                              Relative = false,  // default
+                              PosX = 1.45,
+                              PosY = -0.4,
+                              PosZ = DefaultPosXYZ,
+                              NormX = DefaultNormalX,
+                              NormY = DefaultNormalY,
+                              NormZ = DefaultNormalZ,
+                              Distance = DefaultDistance,
+                              Overdrive = DefaultOverdrive,
+                              ForceThreshold = DefaultForceThreshold,
+                              TorqueThreshold = DefaultTorqueThreshold);
+  LibraryCall Unstow();
+  LibraryCall Stow();
+
+  log_info ("TestArmFindSurface finished.");
+}

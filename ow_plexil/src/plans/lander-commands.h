@@ -17,7 +17,49 @@
 Command camera_set_exposure (Real seconds);
 Command camera_capture ();
 
+Command pan (Real degrees);
+Command tilt (Real degrees);
 Command pan_tilt (Real pan_degrees, Real tilt_degrees);
+Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
+
+Command arm_find_surface (Integer frame,
+                          Boolean relative,
+                          Real pos_x, Real pos_y, Real pos_z,
+                          Real norm_x, Real norm_y, Real norm_z,
+                          Real distance,
+                          Real overdrive,
+                          Real force_threshold,
+                          Real torque_threshold);
+
+Command arm_move_cartesian (Integer frame,
+			    Boolean relative,
+			    Real x, Real y, Real z,
+			    // Orientation in Euler angle
+			    Real orient_x, Real orient_y, Real orient_z);
+
+// Quaternion version of previous
+Command arm_move_cartesian_q (Integer frame,
+			      Boolean relative,
+			      Real x, Real y, Real z,
+			      Real orient_x, Real orient_y, Real orient_z,
+			      Real orient_w);
+
+Command arm_move_cartesian_guarded (Integer frame,
+                                    Boolean relative,
+                                    Real x, Real y, Real z,
+                                    // Orientation in Euler angle
+                                    Real orient_x, Real orient_y, Real orient_z,
+                                    Real force_threshold,
+                                    Real torque_threshold);
+
+// Quaternion version of previous
+Command arm_move_cartesian_guarded_q (Integer frame,
+                                      Boolean relative,
+                                      Real x, Real y, Real z,
+                                      Real orient_x, Real orient_y, Real orient_z,
+                                      Real orient_w,
+                                      Real force_threshold,
+                                      Real torque_threshold);
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,
@@ -25,6 +67,11 @@ Command arm_move_joint (Boolean relative,
 
 Command arm_move_joints (Boolean relative,
                          Real angles[6]);
+
+Command arm_move_joints_guarded (Boolean relative,
+                                 Real angles[6],
+                                 Real force_threshold,
+                                 Real torque_threshold);
 
 Command dig_circular (Real x,
                       Real y,
