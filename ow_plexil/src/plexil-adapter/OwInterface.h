@@ -216,8 +216,6 @@ class OwInterface : public PlexilInterface
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
     {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"LANDER_EXECUTION_ERROR", std::make_pair(
-        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)},
     {"POWER_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
