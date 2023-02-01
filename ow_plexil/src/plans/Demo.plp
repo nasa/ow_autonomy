@@ -27,9 +27,10 @@ Demo:
                        Length = 0.3, Parallel = true,
                        GroundPos = Lookup(GroundPosition));
     log_info ("A circular dig...");
-    LibraryCall DigCircular (X = 2.0, Y = 0, Depth = 0.05,
-                             GroundPos = Lookup(GroundPosition),
-                             Parallel = true);
+    LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
+                                   X = 2.0, Y = 0, Z = Lookup(GroundPosition),
+                                   Depth = 0.05, Parallel = true);
+
   }
   else log_error ("Failed to find ground, skipping grind and dig.");
   endif

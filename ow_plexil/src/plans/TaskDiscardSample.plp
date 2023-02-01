@@ -1,0 +1,41 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Discard material in the scoop to the given point.  This is
+// typically used to dump tailings from digging a trench.
+
+#include "plan-interface.h"
+
+TaskDiscardSample:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real X;
+  In Real Y;
+  In Real Z;
+  In Real Height;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(ArmFault);
+
+  if Lookup(ArmFault)
+  {
+    log_error ("Command discard_sample not sent due to active arm fault(s).");
+    FaultDetected = true;
+  }
+
+  SendDiscard:
+  {
+    Start !Lookup(ArmFault);
+
+    if FaultDetected
+    {
+      log_info ("Arm fault(s) resolved, sending discard_sample command...");
+    }
+
+    SynchronousCommand discard_sample (Frame, Relative, X, Y, Z, Height);
+  }
+
+}

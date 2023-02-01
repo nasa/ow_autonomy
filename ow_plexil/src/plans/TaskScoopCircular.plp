@@ -2,16 +2,18 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform one pass of a circular digging action.
+// Perform one pass of a circular scooping action.
 
 #include "plan-interface.h"
 
-DigCircular:
+TaskScoopCircular:
 {
+  In Integer Frame;
+  In Boolean Relative;
   In Real X;
   In Real Y;
+  In Real Z;
   In Real Depth;
-  In Real GroundPos;
   In Boolean Parallel;
 
   Boolean FaultDetected = false;
@@ -19,21 +21,22 @@ DigCircular:
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
-  { 
-    log_error ("Command dig_circular not sent to lander due to active arm fault(s).");
+  {
+    log_error ("Command scoop_circular not sent to lander ",
+               "due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendDigCircular:
+  SendTaskScoopCircular:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending dig_circular command to lander...");
+      log_info ("Arm fault(s) resolved, sending scoop_circular command to lander...");
     }
 
-    SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+    SynchronousCommand scoop_circular (Frame, Relative, X, Y, Z, Depth, Parallel);
   }
 
 }

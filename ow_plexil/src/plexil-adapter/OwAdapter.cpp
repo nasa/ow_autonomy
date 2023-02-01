@@ -409,53 +409,66 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void dig_circular (Command* cmd, AdapterExecInterface* intf)
+static void scoop_circular (Command* cmd, AdapterExecInterface* intf)
 {
-  double x, y, depth, ground_position;
-  bool parallel;
+  int frame;
+  double x, y, z, depth;
+  bool parallel, relative;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(depth);
-  args[3].getValue(ground_position);
-  args[4].getValue(parallel);
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(depth);
+  args[6].getValue(parallel);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->digCircular(x, y, depth, ground_position, parallel,
+  OwInterface::instance()->scoopCircular(frame, relative, x, y, z, depth,
+                                         parallel, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double x, y, z, depth, length;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(depth);
+  args[6].getValue(length);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->scoopLinear(frame, relative, x, y, z, depth, length,
                                        CommandId);
   acknowledge_command_sent(*cr);
 }
 
-static void dig_linear (Command* cmd, AdapterExecInterface* intf)
-{
-  double x, y, depth, length, ground_position;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(depth);
-  args[3].getValue(length);
-  args[4].getValue(ground_position);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->digLinear(x, y, depth, length, ground_position,
-                                     CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void task_deliver_sample (Command* cmd, AdapterExecInterface* intf)
+static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->taskDeliverSample (CommandId);
   acknowledge_command_sent(*cr);
 }
 
-static void discard (Command* cmd, AdapterExecInterface* intf)
+static void discard_sample (Command* cmd, AdapterExecInterface* intf)
 {
-  double x, y, z;
+  int frame;
+  bool relative;
+  double x, y, z, height;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(z);
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(height);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->discard (x, y, z, CommandId);
+  OwInterface::instance()->discardSample (frame, relative, x, y, z,
+                                          height, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -636,12 +649,12 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("arm_move_joints_guarded",
                                           arm_move_joints_guarded);
-  g_configuration->registerCommandHandler("dig_circular", dig_circular);
-  g_configuration->registerCommandHandler("dig_linear", dig_linear);
-  g_configuration->registerCommandHandler("deliver", task_deliver_sample);
-  g_configuration->registerCommandHandler("discard", discard);
   g_configuration->registerCommandHandler("pan", pan);
   g_configuration->registerCommandHandler("tilt", tilt);
+  g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
+  g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
+  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
+  g_configuration->registerCommandHandler("discard_sample", discard_sample);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
                                           pan_tilt_cartesian);

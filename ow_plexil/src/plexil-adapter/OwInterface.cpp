@@ -6,9 +6,6 @@
 #include "OwInterface.h"
 #include "subscriber.h"
 
-// OW - external
-#include <ow_lander/Light.h>
-
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Int16.h>
@@ -55,7 +52,6 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // ow_lander.
 
-
 const string Op_ArmMoveJoint            = "ArmMoveJoint";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";
 const string Op_ArmStow                 = "ArmStow";
@@ -66,10 +62,6 @@ const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_CameraCapture           = "CameraCapture";
 const string Op_CameraSetExposure       = "CameraSetExposure";
-const string Op_DigCircular             = "DigCircular";
-const string Op_DigLinear               = "DigLinear";
-const string Op_Deliver                 = "Deliver";
-const string Op_Discard                 = "Discard";
 const string Op_Grind                   = "Grind";
 const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
@@ -78,6 +70,9 @@ const string Op_Pan                     = "PanAction";
 const string Op_PanTilt                 = "AntennaPanTiltAction";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesianAction";
 const string Op_TaskDeliverSample       = "TaskDeliverSample";
+const string Op_TaskDiscardSample                = "TaskDiscardSample";
+const string Op_TaskScoopCircular            = "TaskScoopCircular";
+const string Op_TaskScoopLinear              = "TaskScoopLinear";
 const string Op_Tilt                    = "TiltAction";
 
 static vector<string> LanderOpNames = {
@@ -88,14 +83,14 @@ static vector<string> LanderOpNames = {
   Op_ArmMoveJoint,
   Op_ArmMoveJoints,
   Op_ArmMoveJointsGuarded,
-  Op_DigCircular,
-  Op_DigLinear,
   Op_TaskDeliverSample,
-  Op_Discard,
   Op_Pan,
   Op_Tilt,
   Op_PanTilt,
   Op_PanTiltCartesian,
+  Op_TaskScoopCircular,
+  Op_TaskScoopLinear,
+  Op_TaskDiscardSample,
   Op_Grind,
   Op_ArmStow,
   Op_ArmUnstow,
@@ -137,10 +132,10 @@ static map<string, int> ActionGoalStatusMap {
   { Op_ArmMoveJoint, NOGOAL },
   { Op_ArmMoveJoints, NOGOAL },
   { Op_ArmMoveJointsGuarded, NOGOAL },
-  { Op_DigCircular, NOGOAL },
-  { Op_DigLinear, NOGOAL },
   { Op_TaskDeliverSample, NOGOAL },
-  { Op_Discard, NOGOAL },
+  { Op_TaskScoopCircular, NOGOAL },
+  { Op_TaskScoopLinear, NOGOAL },
+  { Op_TaskDiscardSample, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
   { Op_Pan, NOGOAL },
@@ -524,14 +519,14 @@ void OwInterface::initialize()
       make_unique<ArmStowActionClient>(Op_ArmStow, true);
     m_grindClient =
       make_unique<GrindActionClient>(Op_Grind, true);
-    m_digCircularClient =
-      make_unique<DigCircularActionClient>(Op_DigCircular, true);
-    m_digLinearClient =
-      make_unique<DigLinearActionClient>(Op_DigLinear, true);
     m_taskDeliverSampleClient =
       make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
+    m_scoopCircularClient =
+      make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
+    m_scoopLinearClient =
+      make_unique<TaskScoopLinearActionClient>(Op_TaskScoopLinear, true);
     m_discardClient =
-      make_unique<DiscardActionClient>(Op_Discard, true);
+      make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
     m_cameraCaptureClient =
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
     m_cameraSetExposureClient =
@@ -622,11 +617,14 @@ void OwInterface::initialize()
                          "/ArmMoveJoints/status");
     connectActionServer (m_armMoveJointsGuardedClient, Op_ArmMoveJointsGuarded,
                          "/ArmMoveJointsGuarded/status");
-    connectActionServer (m_digCircularClient, Op_DigCircular, "/DigCircular/status");
-    connectActionServer (m_digLinearClient, Op_DigLinear, "/DigLinear/status");
-    connectActionServer (m_taskDeliverSampleClient, Op_Deliver,
+    connectActionServer (m_scoopCircularClient, Op_TaskScoopCircular,
+                         "/TaskScoopCircular/status");
+    connectActionServer (m_scoopLinearClient, Op_TaskScoopLinear,
+                         "/TaskScoopLinear/status");
+    connectActionServer (m_taskDeliverSampleClient, Op_TaskDeliverSample,
                          "/TaskDeliverSample/status");
-    connectActionServer (m_discardClient, Op_Discard, "/Discard/status");
+    connectActionServer (m_discardClient, Op_TaskDiscardSample,
+                         "/TaskDiscardSample/status");
     connectActionServer (m_cameraCaptureClient, Op_CameraCapture,
                          "/CameraCapture/status");
     connectActionServer (m_cameraSetExposureClient, Op_CameraSetExposure,
@@ -822,14 +820,6 @@ void OwInterface::taskDeliverSample (int id)
   action_thread.detach();
 }
 
-void OwInterface::discard (double x, double y, double z, int id)
-{
-  if (! markOperationRunning (Op_Discard, id)) return;
-  thread action_thread (&OwInterface::discardAction, this, x, y, z, id);
-  action_thread.detach();
-}
-
-
 void OwInterface::taskDeliverSampleAction (int id)
 {
   TaskDeliverSampleGoal goal;
@@ -846,93 +836,114 @@ void OwInterface::taskDeliverSampleAction (int id)
      default_action_done_cb<TaskDeliverSampleResultConstPtr> (Op_TaskDeliverSample));
 }
 
-void OwInterface::discardAction (double x, double y, double z, int id)
+void OwInterface::discardSample (int frame, bool relative,
+                                 double x, double y, double z,
+                                 double height, int id)
 {
-  DiscardGoal goal;
-  goal.discard.x = x;
-  goal.discard.y = y;
-  goal.discard.z = z;
-
-  ROS_INFO ("Starting Discard(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-
-  runAction<actionlib::SimpleActionClient<DiscardAction>,
-            DiscardGoal,
-            DiscardResultConstPtr,
-            DiscardFeedbackConstPtr>
-    (Op_Discard, m_discardClient, goal, id,
-     default_action_active_cb (Op_Discard),
-     default_action_feedback_cb<DiscardFeedbackConstPtr> (Op_Discard),
-     default_action_done_cb<DiscardResultConstPtr> (Op_Discard));
+  if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
+  thread action_thread (&OwInterface::discardSampleAction, this, frame, relative,
+                        x, y, z, height, id);
+  action_thread.detach();
 }
 
-void OwInterface::digLinear (double x, double y,
-                             double depth, double length, double ground_pos,
-                             int id)
+void OwInterface::discardSampleAction (int frame, bool relative,
+                                       double x, double y, double z,
+                                       double height, int id)
 {
-  if (! markOperationRunning (Op_DigLinear, id)) return;
-  thread action_thread (&OwInterface::digLinearAction, this, x, y, depth,
-                        length, ground_pos, id);
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = z;
+
+  TaskDiscardSampleGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
+  goal.height = height;
+
+  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
+
+  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
+            TaskDiscardSampleGoal,
+            TaskDiscardSampleResultConstPtr,
+            TaskDiscardSampleFeedbackConstPtr>
+    (Op_TaskDiscardSample, m_discardClient, goal, id,
+     default_action_active_cb (Op_TaskDiscardSample),
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Op_TaskDiscardSample),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
+}
+
+void OwInterface::scoopLinear (int frame, bool relative,
+                               double x, double y, double z,
+                               double depth, double length, int id)
+{
+  if (! markOperationRunning (Op_TaskScoopLinear, id)) return;
+  thread action_thread (&OwInterface::scoopLinearAction, this,
+                        frame, relative, x, y, z, depth, length, id);
   action_thread.detach();
 }
 
 
-void OwInterface::digLinearAction (double x, double y,
-                                   double depth, double length,
-                                   double ground_pos, int id)
+void OwInterface::scoopLinearAction (int frame, bool relative,
+                                     double x, double y, double z,
+                                     double depth, double length, int id)
 {
-  DigLinearGoal goal;
-  goal.x_start = x;
-  goal.y_start = y;
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = z;
+
+  TaskScoopLinearGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
   goal.depth = depth;
   goal.length = length;
-  goal.ground_position = ground_pos;
 
-  ROS_INFO ("Starting DigLinear"
-            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, ground_pos=%.2f)",
-            x, y, depth, length, ground_pos);
+  ROS_INFO ("Starting TaskScoopLinear(x=%.2f, y=%.2f, z=%.2f, depth=%.2f, length=%.2f)",
+            x, y, z, depth, length);
 
-  runAction<actionlib::SimpleActionClient<DigLinearAction>,
-            DigLinearGoal,
-            DigLinearResultConstPtr,
-            DigLinearFeedbackConstPtr>
-    (Op_DigLinear, m_digLinearClient, goal, id,
-     default_action_active_cb (Op_DigLinear),
-     default_action_feedback_cb<DigLinearFeedbackConstPtr> (Op_DigLinear),
-     default_action_done_cb<DigLinearResultConstPtr> (Op_DigLinear));
+  runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
+            TaskScoopLinearGoal,
+            TaskScoopLinearResultConstPtr,
+            TaskScoopLinearFeedbackConstPtr>
+    (Op_TaskScoopLinear, m_scoopLinearClient, goal, id,
+     default_action_active_cb (Op_TaskScoopLinear),
+     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (Op_TaskScoopLinear),
+     default_action_done_cb<TaskScoopLinearResultConstPtr> (Op_TaskScoopLinear));
 }
 
-
-void OwInterface::digCircular (double x, double y, double depth,
-                               double ground_pos, bool parallel, int id)
+void OwInterface::scoopCircular (int frame, bool relative,
+                                 double x, double y, double z,
+                                 double depth, bool parallel, int id)
 {
-  if (! markOperationRunning (Op_DigCircular, id)) return;
-  thread action_thread (&OwInterface::digCircularAction, this, x, y, depth,
-                        ground_pos, parallel, id);
+  if (! markOperationRunning (Op_TaskScoopCircular, id)) return;
+  thread action_thread (&OwInterface::scoopCircularAction, this,
+                        frame, relative, x, y, z, depth, parallel, id);
   action_thread.detach();
 }
 
-void OwInterface::digCircularAction (double x, double y, double depth,
-                                     double ground_pos, bool parallel, int id)
+void OwInterface::scoopCircularAction (int frame, bool relative,
+                                       double x, double y, double z,
+                                       double depth, bool parallel, int id)
 {
-  DigCircularGoal goal;
-  goal.x_start = x;
-  goal.y_start = y;
+  geometry_msgs::Point p;
+  p.x = x; p.y = y; p.z = z;
+
+  TaskScoopCircularGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
   goal.depth = depth;
-  goal.ground_position = ground_pos;
   goal.parallel = parallel;
 
-  ROS_INFO ("Starting DigCircular"
-            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s, ground_pos=%.2f)",
-            x, y, depth, (parallel ? "true" : "false"), ground_pos);
+  ROS_INFO ("Starting TaskScoopCircular(x=%.2f, y=%.2f, z=%.2f, depth=%.2f)",
+            x, y, z, depth);
 
-  runAction<actionlib::SimpleActionClient<DigCircularAction>,
-            DigCircularGoal,
-            DigCircularResultConstPtr,
-            DigCircularFeedbackConstPtr>
-    (Op_DigCircular, m_digCircularClient, goal, id,
-     default_action_active_cb (Op_DigCircular),
-     default_action_feedback_cb<DigCircularFeedbackConstPtr> (Op_DigCircular),
-     default_action_done_cb<DigCircularResultConstPtr> (Op_DigCircular));
+  runAction<actionlib::SimpleActionClient<TaskScoopCircularAction>,
+            TaskScoopCircularGoal,
+            TaskScoopCircularResultConstPtr,
+            TaskScoopCircularFeedbackConstPtr>
+    (Op_TaskScoopCircular, m_scoopCircularClient, goal, id,
+     default_action_active_cb (Op_TaskScoopCircular),
+     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (Op_TaskScoopCircular),
+     default_action_done_cb<TaskScoopCircularResultConstPtr> (Op_TaskScoopCircular));
 }
 
 

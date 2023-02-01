@@ -73,23 +73,30 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real force_threshold,
                                  Real torque_threshold);
 
-Command dig_circular (Real x,
-                      Real y,
-                      Real depth,
-                      Real ground_pos,
-                      Boolean parallel); // true means parallel to lander arm
+Command scoop_circular (Integer frame,
+                        Boolean relative,
+                        Real x,
+                        Real y,
+                        Real z,
+                        Real depth,
+                        Boolean parallel); // true means parallel to lander arm
 
-Command dig_linear (Real x,
-                    Real y,
-                    Real depth,
-                    Real length,
-                    Real ground_pos);
+Command scoop_linear (Integer frame,
+                      Boolean relative,
+                      Real x,
+                      Real y,
+                      Real z,
+                      Real depth,
+                      Real length);
 
 Command deliver ();
 
-Command discard (Real x,
-                 Real y,
-                 Real z);
+Command discard_sample (Integer frame,
+                        Boolean relative,
+                        Real x,
+                        Real y,
+                        Real z,
+                        Real height);
 
 Command grind (Real x,
                Real y,
