@@ -805,35 +805,33 @@ void OwInterface::discardSampleAction (int frame, bool relative,
      default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
 }
 
-void OwInterface::scoopLinear (double x, double y,
-                             double depth, double length, double ground_pos,
-                             int id)
+void OwInterface::scoopLinear (int frame, bool relative,
+                               double x, double y, double z,
+                               double depth, double length, int id)
 {
   if (! markOperationRunning (Op_TaskScoopLinear, id)) return;
-  thread action_thread (&OwInterface::scoopLinearAction, this, x, y, depth,
-                        length, ground_pos, id);
+  thread action_thread (&OwInterface::scoopLinearAction, this,
+                        frame, relative, x, y, z, depth, length, id);
   action_thread.detach();
 }
 
 
-void OwInterface::scoopLinearAction (double x, double y,
-                                     double depth, double length,
-                                     double ground_pos, int id)
+void OwInterface::scoopLinearAction (int frame, bool relative,
+                                     double x, double y, double z,
+                                     double depth, double length, int id)
 {
   geometry_msgs::Point p;
-  p.x = x; p.y = y; p.z = 0;  // temporary
+  p.x = x; p.y = y; p.z = z;
 
   TaskScoopLinearGoal goal;
-  goal.frame = 0; // temporary
-  goal.relative = false; // temporary
+  goal.frame = frame;
+  goal.relative = relative;
   goal.point = p;
   goal.depth = depth;
   goal.length = length;
 
-  // Flesh out
-  ROS_INFO ("Starting TaskScoopLinear"
-            "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f)",
-            x, y, depth, length);
+  ROS_INFO ("Starting TaskScoopLinear(x=%.2f, y=%.2f, z=%.2f, depth=%.2f, length=%.2f)",
+            x, y, z, depth, length);
 
   runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
             TaskScoopLinearGoal,
@@ -845,33 +843,32 @@ void OwInterface::scoopLinearAction (double x, double y,
      default_action_done_cb<TaskScoopLinearResultConstPtr> (Op_TaskScoopLinear));
 }
 
-
-void OwInterface::scoopCircular (double x, double y, double depth,
-                               double ground_pos, bool parallel, int id)
+void OwInterface::scoopCircular (int frame, bool relative,
+                                 double x, double y, double z,
+                                 double depth, bool parallel, int id)
 {
   if (! markOperationRunning (Op_TaskScoopCircular, id)) return;
-  thread action_thread (&OwInterface::scoopCircularAction, this, x, y, depth,
-                        ground_pos, parallel, id);
+  thread action_thread (&OwInterface::scoopCircularAction, this,
+                        frame, relative, x, y, z, depth, parallel, id);
   action_thread.detach();
 }
 
-void OwInterface::scoopCircularAction (double x, double y, double depth,
-                                     double ground_pos, bool parallel, int id)
+void OwInterface::scoopCircularAction (int frame, bool relative,
+                                       double x, double y, double z,
+                                       double depth, bool parallel, int id)
 {
   geometry_msgs::Point p;
-  p.x = x; p.y = y; p.z = 0;  // temporary
+  p.x = x; p.y = y; p.z = z;
 
   TaskScoopCircularGoal goal;
-  goal.frame = 0; // temporary
-  goal.relative = false; // temporary
+  goal.frame = frame;
+  goal.relative = relative;
   goal.point = p;
   goal.depth = depth;
   goal.parallel = parallel;
 
-  // Flesh out
-  ROS_INFO ("Starting TaskScoopCircular"
-            "(x=%.2f, y=%.2f, depth=%.2f, parallel=%s)",
-            x, y, depth, (parallel ? "true" : "false"));
+  ROS_INFO ("Starting TaskScoopCircular(x=%.2f, y=%.2f, z=%.2f, depth=%.2f)",
+            x, y, z, depth);
 
   runAction<actionlib::SimpleActionClient<TaskScoopCircularAction>,
             TaskScoopCircularGoal,

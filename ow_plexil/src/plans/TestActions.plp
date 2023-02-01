@@ -26,7 +26,7 @@ TestActions:
   
   LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
                                  X = 1.5, Y = 0.8, Z = 0.65,
-                                 Height = 0.25);
+                                 Height = 0.1);
   
   LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.05,
                      Length = 0.5, Parallel = true,

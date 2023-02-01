@@ -9,7 +9,7 @@
 
 TaskDiscardSample:
 {
-  In Integer Frame,
+  In Integer Frame;
   In Boolean Relative;
   In Real X;
   In Real Y;

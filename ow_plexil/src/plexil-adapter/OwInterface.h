@@ -116,10 +116,10 @@ class OwInterface : public PlexilInterface
   void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
-  void scoopLinear (double x, double y, double depth, double length,
-                  double ground_pos, int id);
-  void scoopCircular (double x, double y, double depth,
-                    double ground_pos, bool parallel, int id);
+  void scoopLinear (int frame, bool relative, double x, double y, double z,
+                    double depth, double length, int id);
+  void scoopCircular (int frame, bool relative, double x, double y, double z,
+                      double depth, bool parallel, int id);
   void grind (double x, double y, double depth, double length,
               bool parallel, double ground_pos, int id);
   void armStow (int id);
@@ -169,10 +169,10 @@ class OwInterface : public PlexilInterface
                             int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
-  void scoopCircularAction (double x, double y, double depth,
-                          double ground_pos, bool parallel, int id);
-  void scoopLinearAction (double x, double y, double depth, double length,
-                        double ground_pos, int id);
+  void scoopLinearAction (int frame, bool relative, double x, double y, double z,
+                          double depth, double length, int id);
+  void scoopCircularAction (int frame, bool relative, double x, double y, double z,
+                            double depth, bool parallel, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void deliverAction (int id);
   void discardSampleAction (int frame, bool relative,

@@ -265,31 +265,38 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
 
 static void scoop_circular (Command* cmd, AdapterExecInterface* intf)
 {
-  double x, y, depth, ground_position;
-  bool parallel;
+  int frame;
+  double x, y, z, depth;
+  bool parallel, relative;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(depth);
-  args[3].getValue(ground_position);
-  args[4].getValue(parallel);
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(depth);
+  args[6].getValue(parallel);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->scoopCircular(x, y, depth, ground_position, parallel,
-                                         CommandId);
+  OwInterface::instance()->scoopCircular(frame, relative, x, y, z, depth,
+                                         parallel, CommandId);
   acknowledge_command_sent(*cr);
 }
 
 static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
 {
-  double x, y, depth, length, ground_position;
+  int frame;
+  bool relative;
+  double x, y, z, depth, length;
   const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(x);
-  args[1].getValue(y);
-  args[2].getValue(depth);
-  args[3].getValue(length);
-  args[4].getValue(ground_position);
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValue(x);
+  args[3].getValue(y);
+  args[4].getValue(z);
+  args[5].getValue(depth);
+  args[6].getValue(length);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->scoopLinear(x, y, depth, length, ground_position,
+  OwInterface::instance()->scoopLinear(frame, relative, x, y, z, depth, length,
                                        CommandId);
   acknowledge_command_sent(*cr);
 }

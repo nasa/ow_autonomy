@@ -83,8 +83,9 @@ CollectAndTransfer:
     Collect:
     {
       SkipCondition LastComplete >= 2;
-      LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
-                               GroundPos = GroundPos, Parallel = Parallel);
+      LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
+                                     X = X, Y = Y, Z = GroundPos,
+                                     Depth = Depth, Parallel = Parallel);
       set_checkpoint(OurName,true,Lookup(ToString(2,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
