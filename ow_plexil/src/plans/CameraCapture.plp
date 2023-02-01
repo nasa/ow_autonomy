@@ -8,27 +8,5 @@
 
 CameraCapture:
 {
-  Boolean FaultDetected = false;
-
-  PostCondition !Lookup(CameraFault);
-
-  if Lookup(CameraFault)
-  {
-    log_error ("Command camera_capture not sent to ",
-               "lander due to active camera fault.");
-    FaultDetected = true;
-  }
-
-  SendCameraCapture:
-  {
-    Start !Lookup(CameraFault);
-
-    if FaultDetected
-    {
-      log_info ("Camera fault resolved, ",
-                "sending camera_capture command to lander...");
-    }
-    SynchronousCommand camera_capture ();
-  }
+  SynchronousCommand camera_capture ();
 }
-
