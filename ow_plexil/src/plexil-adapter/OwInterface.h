@@ -30,8 +30,8 @@
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/TaskDeliverSampleAction.h>
-#include <owl_msgs/PanAction.h>
-#include <owl_msgs/TiltAction.h>
+#include <ow_lander/PanAction.h>
+#include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
@@ -82,8 +82,8 @@ using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
-using PanActionClient = actionlib::SimpleActionClient<owl_msgs::PanAction>;
-using TiltActionClient = actionlib::SimpleActionClient<owl_msgs::TiltAction>;
+using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
+using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using PanTiltMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveCartesianAction>;
 using TaskScoopCircularActionClient =
