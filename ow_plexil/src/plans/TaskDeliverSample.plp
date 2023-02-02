@@ -8,7 +8,7 @@
 
 #include "plan-interface.h"
 
-Deliver:
+TaskDeliverSample:
 {
   Boolean FaultDetected = false;
 
@@ -29,7 +29,7 @@ Deliver:
       log_info ("Arm fault(s) resolved, sending deliver command to lander...");
     }
 
-    SynchronousCommand deliver ();
+    SynchronousCommand deliver_sample ();
   }
 
 }

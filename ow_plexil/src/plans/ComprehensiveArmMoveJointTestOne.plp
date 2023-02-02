@@ -28,7 +28,7 @@ ComprehensiveArmMoveJointTestOne:
     {
         log_info ("Starting lower and upper limit test...");
 
-        LibraryCall Stow();
+        LibraryCall ArmStow();
 
         LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=-0.56);
 

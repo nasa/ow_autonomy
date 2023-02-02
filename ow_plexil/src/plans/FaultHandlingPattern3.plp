@@ -41,7 +41,7 @@ FaultHandlingPattern3:
   {
     Start !Lookup(ArmFault);
 
-    LibraryCall Unstow();
+    LibraryCall ArmUnstow();
 
   }
 
@@ -49,7 +49,7 @@ FaultHandlingPattern3:
   {
     Start !Lookup(ArmFault);
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
   }
 

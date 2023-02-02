@@ -111,7 +111,7 @@ CollectAndTransfer:
     {
       SkipCondition LastComplete >= 5;
 
-      LibraryCall Deliver ();
+      LibraryCall TaskDeliverSample ();
       Wait 1;
       set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();

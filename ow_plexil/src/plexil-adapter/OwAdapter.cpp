@@ -641,8 +641,8 @@ bool OwAdapter::initialize()
 {
   CommonAdapter::initialize();
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("stow", arm_stow);
-  g_configuration->registerCommandHandler("unstow", arm_unstow);
+  g_configuration->registerCommandHandler("arm_stow", arm_stow);
+  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
   g_configuration->registerCommandHandler("arm_move_cartesian",

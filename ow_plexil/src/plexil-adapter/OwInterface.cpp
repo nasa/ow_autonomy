@@ -71,9 +71,9 @@ const string Op_Pan                     = "PanAction";
 const string Op_PanTilt                 = "PanTiltMoveJointsAction";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesianAction";
 const string Op_TaskDeliverSample       = "TaskDeliverSample";
-const string Op_TaskDiscardSample                = "TaskDiscardSample";
-const string Op_TaskScoopCircular            = "TaskScoopCircular";
-const string Op_TaskScoopLinear              = "TaskScoopLinear";
+const string Op_TaskDiscardSample       = "TaskDiscardSample";
+const string Op_TaskScoopCircular       = "TaskScoopCircular";
+const string Op_TaskScoopLinear         = "TaskScoopLinear";
 const string Op_Tilt                    = "TiltAction";
 
 static vector<string> LanderOpNames = {

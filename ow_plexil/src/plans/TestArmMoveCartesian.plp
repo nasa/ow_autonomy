@@ -19,7 +19,7 @@ TestArmMoveCartesian:
 
   log_info ("Beginning TestMoveCartesian...");
 
-  LibraryCall Unstow();
+  LibraryCall ArmUnstow();
 
   // Puts scoop upside-down facing away from the lander.
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
@@ -37,8 +37,8 @@ TestArmMoveCartesian:
                                   OrientY = 0,
                                   OrientZ = 0,
                                   OrientW = 0);
-  LibraryCall Unstow();
-  LibraryCall Stow();
+  LibraryCall ArmUnstow();
+  LibraryCall ArmStow();
 
   log_info ("TestArmMoveCartesian finished.");
 }

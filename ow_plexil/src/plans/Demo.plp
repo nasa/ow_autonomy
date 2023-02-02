@@ -15,7 +15,7 @@ Demo:
   LibraryCall TestAntennaCamera();
 
   log_info ("Unstowing arm...");
-  LibraryCall Unstow();
+  LibraryCall ArmUnstow();
 
   log_info ("A guarded move...");
   LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,
@@ -35,7 +35,7 @@ Demo:
   else log_error ("Failed to find ground, skipping grind and dig.");
   endif
   log_info ("Stowing arm...");
-  LibraryCall Unstow(); // For safety in stowing
-  LibraryCall Stow();
+  LibraryCall ArmUnstow(); // For safety in stowing
+  LibraryCall ArmStow();
   log_info ("Autonomy demo finished.");
 }

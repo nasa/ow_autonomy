@@ -11,7 +11,7 @@ TestDiscardDeliver:
 {
   Real GP = -0.155;  // Ground position
   log_info ("Starting TestDiscardDeliver...");
-  LibraryCall Unstow();
+  LibraryCall ArmUnstow();
   LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
                            SearchDistance=0.7);
   LibraryCall Grind (X = 1.75, Y = 0.1, Depth = 0.045,
@@ -25,8 +25,8 @@ TestDiscardDeliver:
   LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
                                  X = 1.75, Y = 0.1, Z = GP,
                                  Depth = 0.045, Parallel = false);
-  LibraryCall Deliver ();
-  LibraryCall Unstow(); // For safety in stowing
-  LibraryCall Stow();
+  LibraryCall TaskDeliverSample ();
+  LibraryCall ArmUnstow(); // For safety in stowing
+  LibraryCall ArmStow();
   log_info ("TestDiscardDeliver finished.");
 }

@@ -41,8 +41,8 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      LibraryCall Unstow();
-      LibraryCall Stow();
+      LibraryCall ArmUnstow();
+      LibraryCall ArmStow();
     }
   }
 }

@@ -74,8 +74,8 @@ LibraryAction Tilt (In Real Degrees);
 LibraryAction PanTilt (In Real PanDegrees, In Real TiltDegrees);
 LibraryAction PanTiltMoveCartesian  (In Integer Frame,
                                      In Real X, In Real Y, In Real Z);
-LibraryAction Stow ();
-LibraryAction Unstow ();
+LibraryAction ArmStow ();
+LibraryAction ArmUnstow ();
 LibraryAction GuardedMove (In Real X,
                            In Real Y,
                            In Real Z,
@@ -121,7 +121,7 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
-LibraryAction Deliver ();
+LibraryAction TaskDeliverSample ();
 
 LibraryAction TaskDiscardSample (In Integer Frame,
                                  In Boolean Relative,

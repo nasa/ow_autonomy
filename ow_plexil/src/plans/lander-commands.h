@@ -91,7 +91,7 @@ Command scoop_linear (Integer frame,
                       Real depth,
                       Real length);
 
-Command deliver ();
+Command deliver_sample ();
 
 Command discard_sample (Integer frame,
                         Boolean relative,
@@ -116,10 +116,10 @@ Command guarded_move (Real x,
                       Real search_distance);
 
 // Move from stowed position to a "ready" position
-Command unstow();
+Command arm_unstow();
 
 // Move from "ready" position to stowed position; requires unstow() first
-Command stow();
+Command arm_stow();
 
 // Processes number of images already taken with the stereo camera to
 // find the 3d point to sample.  filter_type can either be "Dark" or
