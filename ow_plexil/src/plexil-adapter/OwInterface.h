@@ -34,7 +34,7 @@
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
-#include <ow_lander/GrindAction.h>
+#include <ow_lander/TaskGrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <owl_msgs/ArmMoveJointAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
@@ -71,8 +71,8 @@ using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using ArmStowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
-using GrindActionClient =
-  actionlib::SimpleActionClient<ow_lander::GrindAction>;
+using TaskGrindActionClient =
+  actionlib::SimpleActionClient<ow_lander::TaskGrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
@@ -361,7 +361,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ArmStopActionClient> m_armStopClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
-  std::unique_ptr<GrindActionClient> m_grindClient;
+  std::unique_ptr<TaskGrindActionClient> m_grindClient;
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanActionClient> m_panClient;
   std::unique_ptr<TiltActionClient> m_tiltClient;

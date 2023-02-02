@@ -63,7 +63,7 @@ const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_CameraCapture           = "CameraCapture";
 const string Op_CameraSetExposure       = "CameraSetExposure";
-const string Op_Grind                   = "Grind";
+const string Op_Grind                   = "TaskGrind";
 const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
 const string Op_LightSetIntensity       = "LightSetIntensity";
@@ -523,7 +523,7 @@ void OwInterface::initialize()
     m_armStowClient =
       make_unique<ArmStowActionClient>(Op_ArmStow, true);
     m_grindClient =
-      make_unique<GrindActionClient>(Op_Grind, true);
+      make_unique<TaskGrindActionClient>(Op_Grind, true);
     m_taskDeliverSampleClient =
       make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
     m_scoopCircularClient =
@@ -1028,7 +1028,7 @@ void OwInterface::grind (double x, double y, double depth, double length,
 void OwInterface::grindAction (double x, double y, double depth, double length,
                                bool parallel, double ground_pos, int id)
 {
-  GrindGoal goal;
+  TaskGrindGoal goal;
   goal.x_start = x;
   goal.y_start = y;
   goal.depth = depth;
@@ -1036,19 +1036,19 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
   goal.parallel = parallel;
   goal.ground_position = ground_pos;
 
-  ROS_INFO ("Starting Grind"
+  ROS_INFO ("Starting TaskGrind"
             "(x=%.2f, y=%.2f, depth=%.2f, length=%.2f, "
             "parallel=%s, ground_pos=%.2f)",
             x, y, depth, length, (parallel ? "true" : "false"), ground_pos);
 
-  runAction<actionlib::SimpleActionClient<GrindAction>,
-            GrindGoal,
-            GrindResultConstPtr,
-            GrindFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<TaskGrindAction>,
+            TaskGrindGoal,
+            TaskGrindResultConstPtr,
+            TaskGrindFeedbackConstPtr>
     (Op_Grind, m_grindClient, goal, id,
      default_action_active_cb (Op_Grind),
-     default_action_feedback_cb<GrindFeedbackConstPtr> (Op_Grind),
-     default_action_done_cb<GrindResultConstPtr> (Op_Grind));
+     default_action_feedback_cb<TaskGrindFeedbackConstPtr> (Op_Grind),
+     default_action_done_cb<TaskGrindResultConstPtr> (Op_Grind));
 }
 
 void OwInterface::armFindSurface (int frame, bool relative,
