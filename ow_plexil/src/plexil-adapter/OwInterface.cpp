@@ -1309,7 +1309,7 @@ void OwInterface::armMoveJointAction (bool relative,
   goal.joint = joint;
   goal.angle = angle;
 
-  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%" PRId64 ", angle=%f)",
+  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%d, angle=%f)",
             goal.relative, goal.joint, goal.angle);
 
   runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
