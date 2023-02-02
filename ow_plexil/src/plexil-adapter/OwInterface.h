@@ -44,7 +44,7 @@
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
-#include <ow_lander/LightSetIntensityAction.h>
+#include <owl_msgs/LightSetIntensityAction.h>
 
 // ROS
 #include <control_msgs/JointControllerState.h>
@@ -97,7 +97,7 @@ using CameraCaptureActionClient =
 using CameraSetExposureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
 using LightSetIntensityActionClient =
-  actionlib::SimpleActionClient<ow_lander::LightSetIntensityAction>;
+  actionlib::SimpleActionClient<owl_msgs::LightSetIntensityAction>;
 
 // The only ow_plexil-defined action.
 using IdentifySampleLocationActionClient =
