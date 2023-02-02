@@ -38,7 +38,7 @@
 #include <ow_lander/ArmMoveJointAction.h>
 #include <ow_lander/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
-#include <owl_msgs/AntennaPanTiltAction.h>
+#include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
@@ -81,7 +81,7 @@ using ArmMoveJointsGuardedActionClient =
 using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltActionClient =
-  actionlib::SimpleActionClient<owl_msgs::AntennaPanTiltAction>;
+  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using PanActionClient = actionlib::SimpleActionClient<owl_msgs::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<owl_msgs::TiltAction>;
 using PanTiltMoveCartesianActionClient =

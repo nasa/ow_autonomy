@@ -67,7 +67,7 @@ const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
 const string Op_LightSetIntensity       = "LightSetIntensity";
 const string Op_Pan                     = "PanAction";
-const string Op_PanTilt                 = "AntennaPanTiltAction";
+const string Op_PanTilt                 = "PanTiltMoveJointsAction";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesianAction";
 const string Op_TaskDeliverSample       = "TaskDeliverSample";
 const string Op_TaskDiscardSample                = "TaskDiscardSample";
@@ -714,19 +714,19 @@ void OwInterface::panTilt (double pan_degrees, double tilt_degrees, int id)
 
 void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id)
 {
-  AntennaPanTiltGoal goal;
+  PanTiltMoveJointsGoal goal;
   goal.pan = pan_degrees * D2R;
   goal.tilt = tilt_degrees * D2R;
   std::stringstream args;
   args << goal.pan << ", " << goal.tilt;
-  runAction<actionlib::SimpleActionClient<AntennaPanTiltAction>,
-            AntennaPanTiltGoal,
-            AntennaPanTiltResultConstPtr,
-            AntennaPanTiltFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<PanTiltMoveJointsAction>,
+            PanTiltMoveJointsGoal,
+            PanTiltMoveJointsResultConstPtr,
+            PanTiltMoveJointsFeedbackConstPtr>
     (Op_PanTilt, m_panTiltClient, goal, id,
      default_action_active_cb (Op_PanTilt, args.str()),
-     default_action_feedback_cb<AntennaPanTiltFeedbackConstPtr> (Op_PanTilt),
-     default_action_done_cb<AntennaPanTiltResultConstPtr> (Op_PanTilt));
+     default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (Op_PanTilt),
+     default_action_done_cb<PanTiltMoveJointsResultConstPtr> (Op_PanTilt));
 }
 
 void OwInterface::panTiltCartesian (int frame, double x, double y, double z, int id)
