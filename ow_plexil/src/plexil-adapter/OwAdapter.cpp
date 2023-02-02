@@ -198,6 +198,14 @@ static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void arm_stop (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->armStop (CommandId);
+  acknowledge_command_sent(*cr);
+
+}
+
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -632,6 +640,7 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 bool OwAdapter::initialize()
 {
   CommonAdapter::initialize();
+  g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("stow", arm_stow);
   g_configuration->registerCommandHandler("unstow", arm_unstow);
   g_configuration->registerCommandHandler("grind", grind);

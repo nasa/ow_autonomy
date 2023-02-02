@@ -96,6 +96,8 @@ LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
                                     In Real ForceThreshold,
                                     In Real TorqueThreshold);
 
+LibraryAction ArmStop ();
+
 LibraryAction Grind (In Real X,
                      In Real Y,
                      In Real Depth,

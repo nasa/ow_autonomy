@@ -27,6 +27,7 @@
 #include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/ArmMoveCartesianAction.h>
 #include <owl_msgs/ArmMoveCartesianGuardedAction.h>
+#include <owl_msgs/ArmStopAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/TaskDeliverSampleAction.h>
@@ -64,6 +65,8 @@ using ArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
 using ArmMoveCartesianGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
+using ArmStopActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmStopAction>;
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using ArmStowActionClient =
@@ -170,6 +173,7 @@ class OwInterface : public PlexilInterface
                       double depth, bool parallel, int id);
   void grind (double x, double y, double depth, double length,
               bool parallel, double ground_pos, int id);
+  void armStop (int id);
   void armStow (int id);
   void armUnstow (int id);
   void taskDeliverSample (int id);
@@ -238,6 +242,7 @@ class OwInterface : public PlexilInterface
                                       double force_threshold,
                                       double torque_threshold,
                                       int id);
+  void armStopAction (int id);
   void armStowAction (int id);
   void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
@@ -353,6 +358,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
+  std::unique_ptr<ArmStopActionClient> m_armStopClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<GrindActionClient> m_grindClient;

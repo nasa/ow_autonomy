@@ -54,6 +54,7 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
 const string Op_ArmMoveJoint            = "ArmMoveJoint";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";
+const string Op_ArmStop                 = "ArmStop";
 const string Op_ArmStow                 = "ArmStow";
 const string Op_ArmUnstow               = "ArmUnstow";
 const string Op_ArmFindSurface          = "ArmFindSurface";
@@ -92,6 +93,7 @@ static vector<string> LanderOpNames = {
   Op_TaskScoopLinear,
   Op_TaskDiscardSample,
   Op_Grind,
+  Op_ArmStop,
   Op_ArmStow,
   Op_ArmUnstow,
   Op_CameraCapture,
@@ -125,6 +127,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_ArmFindSurface, NOGOAL },
   { Op_ArmMoveCartesian, NOGOAL },
   { Op_ArmMoveCartesianGuarded, NOGOAL },
+  { Op_ArmStop, NOGOAL },
   { Op_ArmStow, NOGOAL },
   { Op_ArmUnstow, NOGOAL },
   { Op_Grind, NOGOAL },
@@ -513,6 +516,8 @@ void OwInterface::initialize()
       make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
     m_armMoveJointsGuardedClient =
       make_unique<ArmMoveJointsGuardedActionClient>(Op_ArmMoveJointsGuarded, true);
+    m_armStopClient =
+      make_unique<ArmStopActionClient>(Op_ArmStop, true);
     m_armUnstowClient =
       make_unique<ArmUnstowActionClient>(Op_ArmUnstow, true);
     m_armStowClient =
@@ -609,6 +614,7 @@ void OwInterface::initialize()
         subscribe("/faults/pt_faults_status", QSize,
                   &OwInterface::antennaFaultCallback, this)));
 
+    connectActionServer (m_armStopClient, Op_ArmStop, "/ArmStop/status");
     connectActionServer (m_armUnstowClient, Op_ArmUnstow, "/ArmUnstow/status");
     connectActionServer (m_armStowClient, Op_ArmStow, "/ArmStow/status");
     connectActionServer (m_armMoveJointClient, Op_ArmMoveJoint,
@@ -947,7 +953,28 @@ void OwInterface::scoopCircularAction (int frame, bool relative,
 }
 
 
-void OwInterface::armUnstow (int id)  // as action
+void OwInterface::armStop (int id)
+{
+  if (! markOperationRunning (Op_ArmStop, id)) return;
+  thread action_thread (&OwInterface::armStop, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::armStopAction (int id)
+{
+  ArmStopGoal goal; // empty/undefined
+
+  runAction<actionlib::SimpleActionClient<ArmStopAction>,
+            ArmStopGoal,
+            ArmStopResultConstPtr,
+            ArmStopFeedbackConstPtr>
+    (Op_ArmStop, m_armStopClient, goal, id,
+     default_action_active_cb (Op_ArmStop),
+     default_action_feedback_cb<ArmStopFeedbackConstPtr> (Op_ArmStop),
+     default_action_done_cb<ArmStopResultConstPtr> (Op_ArmStop));
+}
+
+void OwInterface::armUnstow (int id)
 {
   if (! markOperationRunning (Op_ArmUnstow, id)) return;
   thread action_thread (&OwInterface::armUnstowAction, this, id);

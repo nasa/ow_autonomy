@@ -73,6 +73,8 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real force_threshold,
                                  Real torque_threshold);
 
+Command arm_stop ();
+
 Command scoop_circular (Integer frame,
                         Boolean relative,
                         Real x,
