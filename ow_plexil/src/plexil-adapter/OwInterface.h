@@ -26,13 +26,13 @@
 #include <actionlib_msgs/GoalStatusArray.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/ArmStowAction.h>
+#include <owl_msgs/TaskDeliverSampleAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/ArmMoveJointAction.h>
 #include <ow_lander/ArmMoveJointsAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
-#include <ow_lander/DeliverAction.h>
 #include <ow_lander/AntennaPanTiltAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <ow_lander/CameraCaptureAction.h>
@@ -67,8 +67,8 @@ using TaskScoopCircularActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
 using TaskScoopLinearActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
-using DeliverActionClient =
-  actionlib::SimpleActionClient<ow_lander::DeliverAction>;
+using TaskDeliverSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltActionClient =
   actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
 using TaskDiscardSampleActionClient =
@@ -124,9 +124,9 @@ class OwInterface : public PlexilInterface
               bool parallel, double ground_pos, int id);
   void armStow (int id);
   void armUnstow (int id);
-  void deliver (int id);
   void discardSample (int frame, bool relative, double x, double y, double z,
                       double height, int id);
+  void taskDeliverSample (int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
@@ -174,10 +174,10 @@ class OwInterface : public PlexilInterface
   void scoopCircularAction (int frame, bool relative, double x, double y, double z,
                             double depth, bool parallel, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
-  void deliverAction (int id);
   void discardSampleAction (int frame, bool relative,
                             double x, double y, double z,
                             double height, int id);
+  void taskDeliverSampleAction (int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
@@ -262,7 +262,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<GrindActionClient> m_grindClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
-  std::unique_ptr<DeliverActionClient> m_deliverClient;
+  std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanTiltActionClient> m_panTiltClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;

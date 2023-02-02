@@ -54,8 +54,8 @@ const string Op_ArmMoveJoint           = "ArmMoveJoint";
 const string Op_ArmMoveJoints          = "ArmMoveJoints";
 const string Op_TaskScoopCircular            = "TaskScoopCircular";
 const string Op_TaskScoopLinear              = "TaskScoopLinear";
-const string Op_Deliver                = "Deliver";
 const string Op_TaskDiscardSample                = "TaskDiscardSample";
+const string Op_TaskDeliverSample      = "TaskDeliverSample";
 const string Op_Grind                  = "Grind";
 const string Op_ArmStow                = "ArmStow";
 const string Op_ArmUnstow              = "ArmUnstow";
@@ -71,8 +71,8 @@ static vector<string> LanderOpNames = {
   Op_ArmMoveJoints,
   Op_TaskScoopCircular,
   Op_TaskScoopLinear,
-  Op_Deliver,
   Op_TaskDiscardSample,
+  Op_TaskDeliverSample,
   Op_PanTiltAntenna,
   Op_Grind,
   Op_ArmStow,
@@ -113,8 +113,8 @@ static map<string, int> ActionGoalStatusMap {
   { Op_ArmMoveJoints, NOGOAL },
   { Op_TaskScoopCircular, NOGOAL },
   { Op_TaskScoopLinear, NOGOAL },
-  { Op_Deliver, NOGOAL },
   { Op_TaskDiscardSample, NOGOAL },
+  { Op_TaskDeliverSample, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
   { Op_PanTiltAntenna, NOGOAL },
@@ -490,8 +490,8 @@ void OwInterface::initialize()
       make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
     m_scoopLinearClient =
       make_unique<TaskScoopLinearActionClient>(Op_TaskScoopLinear, true);
-    m_deliverClient =
-      make_unique<DeliverActionClient>(Op_Deliver, true);
+    m_taskDeliverSampleClient =
+      make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
     m_discardClient =
       make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
     m_cameraCaptureClient =
@@ -611,11 +611,11 @@ void OwInterface::initialize()
     }
     else addSubscriber ("/TaskScoopLinear/status", Op_TaskScoopLinear);
 
-    if (! m_deliverClient->
+    if (! m_taskDeliverSampleClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("Deliver action server did not connect!");
+      ROS_ERROR ("TaskDeliverSample action server did not connect!");
     }
-    else addSubscriber ("/Deliver/status", Op_Deliver);
+    else addSubscriber ("/TaskDeliverSample/status", Op_TaskDeliverSample);
 
     if (! m_discardClient->
         waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -747,27 +747,27 @@ void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
 }
 
 
-void OwInterface::deliver (int id)
+void OwInterface::taskDeliverSample (int id)
 {
-  if (! markOperationRunning (Op_Deliver, id)) return;
-  thread action_thread (&OwInterface::deliverAction, this, id);
+  if (! markOperationRunning (Op_TaskDeliverSample, id)) return;
+  thread action_thread (&OwInterface::taskDeliverSampleAction, this, id);
   action_thread.detach();
 }
 
-void OwInterface::deliverAction (int id)
+void OwInterface::taskDeliverSampleAction (int id)
 {
-  DeliverGoal goal;
+  TaskDeliverSampleGoal goal;
 
-  ROS_INFO ("Starting Deliver()");
+  ROS_INFO ("Starting TaskDeliverSample()");
 
-  runAction<actionlib::SimpleActionClient<DeliverAction>,
-            DeliverGoal,
-            DeliverResultConstPtr,
-            DeliverFeedbackConstPtr>
-    (Op_Deliver, m_deliverClient, goal, id,
-     default_action_active_cb (Op_Deliver),
-     default_action_feedback_cb<DeliverFeedbackConstPtr> (Op_Deliver),
-     default_action_done_cb<DeliverResultConstPtr> (Op_Deliver));
+  runAction<actionlib::SimpleActionClient<TaskDeliverSampleAction>,
+            TaskDeliverSampleGoal,
+            TaskDeliverSampleResultConstPtr,
+            TaskDeliverSampleFeedbackConstPtr>
+    (Op_TaskDeliverSample, m_taskDeliverSampleClient, goal, id,
+     default_action_active_cb (Op_TaskDeliverSample),
+     default_action_feedback_cb<TaskDeliverSampleFeedbackConstPtr> (Op_TaskDeliverSample),
+     default_action_done_cb<TaskDeliverSampleResultConstPtr> (Op_TaskDeliverSample));
 }
 
 void OwInterface::discardSample (int frame, bool relative,
