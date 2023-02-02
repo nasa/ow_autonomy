@@ -6,7 +6,7 @@
 
 #include "plan-interface.h"
 
-Grind:
+TaskGrind:
 {
   In Real X;
   In Real Y;
@@ -21,7 +21,7 @@ Grind:
 
   if Lookup(ArmFault)
   { 
-    log_error ("Command grind not sent to lander due to active arm fault(s).");
+    log_error ("Command grind not sent due to active arm fault(s).");
     FaultDetected = true;
   }
 
@@ -31,7 +31,7 @@ Grind:
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending grind command to lander...");
+      log_info ("Arm fault(s) resolved, sending grind command...");
     }
 
     SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);

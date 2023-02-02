@@ -98,12 +98,12 @@ LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
 
 LibraryAction ArmStop ();
 
-LibraryAction Grind (In Real X,
-                     In Real Y,
-                     In Real Depth,
-                     In Real Length,
-                     In Boolean Parallel,
-                     In Real GroundPos);
+LibraryAction TaskGrind (In Real X,
+                         In Real Y,
+                         In Real Depth,
+                         In Real Length,
+                         In Boolean Parallel,
+                         In Real GroundPos);
 
 LibraryAction TaskScoopCircular (In Integer Frame,
                                  In Boolean Relative,

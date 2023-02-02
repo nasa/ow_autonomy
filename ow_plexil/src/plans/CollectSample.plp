@@ -15,8 +15,8 @@ CollectSample:
   In Real Length;
   In Boolean Parallel;
 
-  LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
-                     Parallel = Parallel, GroundPos = GroundPos);
+  LibraryCall TaskGrind (X = X, Y = Y, Depth = Depth, Length = Length,
+                         Parallel = Parallel, GroundPos = GroundPos);
   LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
                                  X = X, Y = Y, Z = GroundPos,
                                  Depth = Depth, Parallel = Parallel);

@@ -83,7 +83,7 @@ using ArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
 using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
-using PanTiltActionClient =
+using PanTiltMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
@@ -365,7 +365,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanActionClient> m_panClient;
   std::unique_ptr<TiltActionClient> m_tiltClient;
-  std::unique_ptr<PanTiltActionClient> m_panTiltClient;
+  std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltClient;
   std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;

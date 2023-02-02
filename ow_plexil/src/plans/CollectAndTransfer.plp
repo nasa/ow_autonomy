@@ -75,8 +75,8 @@ CollectAndTransfer:
     PreGrind:
     {
       SkipCondition LastComplete >= 1;
-      LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
-                         Parallel = Parallel, GroundPos = GroundPos);
+      LibraryCall TaskGrind (X = X, Y = Y, Depth = Depth, Length = Length,
+                             Parallel = Parallel, GroundPos = GroundPos);
       set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }

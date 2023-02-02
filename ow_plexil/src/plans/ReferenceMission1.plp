@@ -89,7 +89,7 @@ ReferenceMission1: Concurrence
       LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
                                   GroundPos = ground_pos, Parallel = parallel);
       LibraryCall CollectSample (X = trench_x, Y = trench_y,
-                                 GroundPos = ground_pos, Depth = 0.11,
+                                 GroundPos = ground_pos, Depth = 0.1105,
                                  Length = trench_length, Parallel = parallel);
       LibraryCall ArmUnstow(); // For safety in stowing
       LibraryCall ArmStow();

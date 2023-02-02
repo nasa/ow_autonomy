@@ -543,7 +543,7 @@ void OwInterface::initialize()
       (Op_IdentifySampleLocation, true);
     m_panClient = make_unique<PanActionClient>(Op_Pan, true);
     m_tiltClient = make_unique<TiltActionClient>(Op_Tilt, true);
-    m_panTiltClient = make_unique<PanTiltActionClient>(Op_PanTilt, true);
+    m_panTiltClient = make_unique<PanTiltMoveJointsActionClient>(Op_PanTilt, true);
     m_panTiltCartesianClient =
       make_unique<PanTiltMoveCartesianActionClient>(Op_PanTiltCartesian, true);
 
