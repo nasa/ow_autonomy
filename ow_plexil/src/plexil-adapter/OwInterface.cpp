@@ -50,7 +50,7 @@ const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 
 // Lander operation names.  In general these match those used in PLEXIL and
-// ow_lander.
+// owl_msgs.
 
 const string Op_ArmMoveJoint            = "ArmMoveJoint";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";

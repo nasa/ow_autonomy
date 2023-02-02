@@ -35,8 +35,8 @@
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
 #include <ow_lander/GrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
-#include <ow_lander/ArmMoveJointAction.h>
-#include <ow_lander/ArmMoveJointsAction.h>
+#include <owl_msgs/ArmMoveJointAction.h>
+#include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 #include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
@@ -73,9 +73,9 @@ using GrindActionClient =
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
-  actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
 using ArmMoveJointsActionClient =
-  actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 using ArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
 using TaskDeliverSampleActionClient =
