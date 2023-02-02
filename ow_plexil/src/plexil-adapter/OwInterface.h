@@ -42,8 +42,8 @@
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
-#include <ow_lander/CameraCaptureAction.h>
-#include <ow_lander/CameraSetExposureAction.h>
+#include <owl_msgs/CameraCaptureAction.h>
+#include <owl_msgs/CameraSetExposureAction.h>
 #include <ow_lander/LightSetIntensityAction.h>
 
 // ROS
@@ -93,9 +93,9 @@ using TaskScoopLinearActionClient =
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using CameraCaptureActionClient =
-  actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
+  actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 using CameraSetExposureActionClient =
-  actionlib::SimpleActionClient<ow_lander::CameraSetExposureAction>;
+  actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
 using LightSetIntensityActionClient =
   actionlib::SimpleActionClient<ow_lander::LightSetIntensityAction>;
 
