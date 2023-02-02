@@ -4,7 +4,7 @@
 
 // Read and print telemetry values.
 
-#include "unified-interface.h"
+#include "plan-interface.h"
 
 TestTelemetry:
 {
