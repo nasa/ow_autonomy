@@ -21,7 +21,7 @@ TorqueTest:
   {
     FindGround:
     {
-      LibraryCall Unstow();
+      LibraryCall ArmUnstow();
 
       // Find ground, attempting to reach below surface.
       LibraryCall GuardedMove (X = 2.0, Y = 0, Z = 0.3,

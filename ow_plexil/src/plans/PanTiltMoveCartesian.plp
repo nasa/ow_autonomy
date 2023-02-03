@@ -2,13 +2,14 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Pan and tilt the antenna to specified degrees.
+// Point the antenna at the specified coordinate using the specified frame.
 
 #include "plan-interface.h"
 
-PanTilt:
+PanTiltMoveCartesian:
 {
-  In Real PanDegrees, TiltDegrees;
+  In Integer Frame;
+  In Real X, Y, Z;
 
   Boolean FaultDetected = false;
 
@@ -16,22 +17,22 @@ PanTilt:
 
   if Lookup(AntennaFault)
   { 
-    log_error ("Command pan_tilt not sent to lander ",
+    log_error ("Command pan_tilt_cartesian not sent to lander ",
                "due to active antenna fault(s).");
     FaultDetected = true;
   }
 
-  SendPanTilt:
+  SendPanTiltCartesian:
   {
     Start !Lookup(AntennaFault);
 
     if FaultDetected
     {
       log_info ("Antenna fault(s) resolved, ",
-                "sending pan_tilt command to lander...");
+                "sending pan_tilt_cartesian command to lander...");
     }
 
-    SynchronousCommand pan_tilt (PanDegrees, TiltDegrees);
+    SynchronousCommand pan_tilt_cartesian (Frame, X, Y, Z);
   }
 
 }

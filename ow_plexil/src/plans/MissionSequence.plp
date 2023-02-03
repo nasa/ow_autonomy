@@ -51,7 +51,7 @@ MissionSequence:
     Start !Lookup(ArmFault);
     Skip unstow_done;
 
-    LibraryCall Unstow();
+    LibraryCall ArmUnstow();
 
     // See NOTE above for an explanation of logic.
 
@@ -66,7 +66,7 @@ MissionSequence:
     Start !Lookup(ArmFault);
     Skip stow_done;
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
     // See NOTE above for an explanation of logic.
 

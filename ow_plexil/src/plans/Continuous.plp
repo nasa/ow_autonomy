@@ -23,8 +23,8 @@ Continuous:
     Arm:
     {
       Repeat true;
-      LibraryCall Unstow();
-      LibraryCall Stow();
+      LibraryCall ArmUnstow();
+      LibraryCall ArmStow();
     }
   }    
 }

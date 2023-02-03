@@ -2,38 +2,40 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform one pass of a linear digging action.
+// Perform one pass of a linear scooping action.
 
 #include "plan-interface.h"
 
-DigLinear:
+TaskScoopLinear:
 {
+  In Integer Frame;
+  In Boolean Relative;
   In Real X;
   In Real Y;
+  In Real Z;
   In Real Depth;
   In Real Length;
-  In Real GroundPos;
 
   Boolean FaultDetected = false;
 
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
-  { 
-    log_error ("Command dig_linear not sent to lander due to active arm fault(s).");
+  {
+    log_error ("Command scoop_linear not sent to lander due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendDigLinear:
+  SendTaskScoopLinear:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending dig_linear command to lander...");
+      log_info ("Arm fault(s) resolved, sending scoop_linear command to lander...");
     }
 
-    SynchronousCommand dig_linear (X, Y, Depth, Length, GroundPos);
+    SynchronousCommand scoop_linear (Frame, Relative, X, Y, Z, Depth, Length);
   }
 
 }
