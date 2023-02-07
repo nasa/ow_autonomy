@@ -68,6 +68,7 @@ const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_CameraCapture           = "CameraCapture";
 const string Op_CameraSetExposure       = "CameraSetExposure";
+const string Op_Ingest                  = "DockIngestSample";
 const string Op_Grind                   = "TaskGrind";
 const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
@@ -103,6 +104,7 @@ static vector<string> LanderOpNames = {
   Op_ArmUnstow,
   Op_CameraCapture,
   Op_CameraSetExposure,
+  Op_Ingest,
   Op_IdentifySampleLocation,
   Op_LightSetIntensity
 };
@@ -146,6 +148,7 @@ static map<string, int> ActionGoalStatusMap {
   { Op_TaskDiscardSample, NOGOAL },
   { Op_CameraCapture, NOGOAL },
   { Op_CameraSetExposure, NOGOAL },
+  { Op_Ingest, NOGOAL },
   { Op_Pan, NOGOAL },
   { Op_Tilt, NOGOAL },
   { Op_PanTilt, NOGOAL },
@@ -589,6 +592,8 @@ void OwInterface::initialize()
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
     m_cameraSetExposureClient =
       make_unique<CameraSetExposureActionClient>(Op_CameraSetExposure, true);
+    m_dockIngestSampleClient =
+      make_unique<DockIngestSampleActionClient>(Op_Ingest, true);
     m_lightSetIntensityClient =
       make_unique<LightSetIntensityActionClient>(Op_LightSetIntensity, true);
     m_identifySampleLocationClient =
@@ -700,6 +705,8 @@ void OwInterface::initialize()
                          "/CameraCapture/status");
     connectActionServer (m_cameraSetExposureClient, Op_CameraSetExposure,
                          "/CameraSetExposure/status");
+    connectActionServer (m_dockIngestSampleClient, Op_Ingest,
+                         "/DockIngestSample/status");
     connectActionServer (m_lightSetIntensityClient, Op_LightSetIntensity,
                          "/LightSetIntensity/status");
     connectActionServer (m_guardedMoveClient, Op_GuardedMove,
@@ -882,6 +889,28 @@ void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
      default_action_done_cb<CameraSetExposureResultConstPtr> (Op_CameraSetExposure));
 }
 
+void OwInterface::dockIngestSample (int id)
+{
+  if (! markOperationRunning (Op_Ingest, id)) return;
+  thread action_thread (&OwInterface::dockIngestSampleAction, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::dockIngestSampleAction (int id)
+{
+  DockIngestSampleGoal goal;
+
+  ROS_INFO ("Starting DockIngestSample()");
+
+  runAction<actionlib::SimpleActionClient<DockIngestSampleAction>,
+            DockIngestSampleGoal,
+            DockIngestSampleResultConstPtr,
+            DockIngestSampleFeedbackConstPtr>
+    (Op_Ingest, m_dockIngestSampleClient, goal, id,
+     default_action_active_cb (Op_Ingest),
+     default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Op_Ingest),
+     default_action_done_cb<DockIngestSampleResultConstPtr> (Op_Ingest));
+}
 
 void OwInterface::taskDeliverSample (int id)
 {

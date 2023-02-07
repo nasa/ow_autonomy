@@ -16,7 +16,7 @@ InitializeAntennaAndArm:
   {
     Start !Lookup(AntennaFault);
     log_info ("Resetting pan and tilt angle to 0...");
-    LibraryCall PanTilt (PanDegrees=0, TiltDegrees=0);
+    LibraryCall PanTiltMoveJoints (PanDegrees=0, TiltDegrees=0);
   }
 
   ResetArm:

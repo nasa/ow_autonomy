@@ -14,7 +14,7 @@ TestCameraCapture: UncheckedSequence
   log_info ("Beginning TestCameraCapture...");
 
   log_info ("Aiming camera at some terrain...");
-  LibraryCall PanTilt (PanDegrees = 35, TiltDegrees = 35);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 35, TiltDegrees = 35);
 
   log_info ("Taking image using default exposure (0.05 secs)...");
   LibraryCall CameraCapture ();

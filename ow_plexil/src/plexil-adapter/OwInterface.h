@@ -37,7 +37,7 @@
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
-#include <ow_lander/TaskGrindAction.h>
+#include <owl_msgs/TaskGrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <owl_msgs/ArmMoveJointAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
@@ -48,6 +48,7 @@
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
+#include <ow_lander/DockIngestSampleAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
 
 // ROS
@@ -75,7 +76,7 @@ using ArmUnstowActionClient =
 using ArmStowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using TaskGrindActionClient =
-  actionlib::SimpleActionClient<ow_lander::TaskGrindAction>;
+  actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
@@ -102,6 +103,8 @@ using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 using CameraSetExposureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
+using DockIngestSampleActionClient =
+  actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 using LightSetIntensityActionClient =
   actionlib::SimpleActionClient<owl_msgs::LightSetIntensityAction>;
 
@@ -170,6 +173,7 @@ class OwInterface : public PlexilInterface
   void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
+  void dockIngestSample (int id);
   void scoopLinear (int frame, bool relative, double x, double y, double z,
                     double depth, double length, int id);
   void scoopCircular (int frame, bool relative, double x, double y, double z,
@@ -284,6 +288,7 @@ class OwInterface : public PlexilInterface
                             double height, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
+  void dockIngestSampleAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
@@ -409,6 +414,7 @@ class OwInterface : public PlexilInterface
   std::unique_ptr<TaskDiscardSampleActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
+  std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 

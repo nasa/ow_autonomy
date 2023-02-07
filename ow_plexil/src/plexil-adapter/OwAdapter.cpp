@@ -601,6 +601,13 @@ static void camera_set_exposure (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->dockIngestSample (CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
@@ -681,6 +688,7 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("arm_move_joints_guarded",
                                           arm_move_joints_guarded);
+  g_configuration->registerCommandHandler("dock_ingest_sample", dock_ingest_sample);
   g_configuration->registerCommandHandler("pan", pan);
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);

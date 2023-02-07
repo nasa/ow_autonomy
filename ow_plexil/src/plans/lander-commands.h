@@ -75,6 +75,8 @@ Command arm_move_joints_guarded (Boolean relative,
 
 Command arm_stop ();
 
+Command dock_ingest_sample();
+
 Command scoop_circular (Integer frame,
                         Boolean relative,
                         Real x,

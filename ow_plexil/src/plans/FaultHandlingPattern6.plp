@@ -156,7 +156,7 @@ FaultHandlingPattern6:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTilt (PanDegrees=NewAngle, TiltDegrees=0);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
     }
 
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
