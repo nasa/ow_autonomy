@@ -7,9 +7,10 @@
 #include "subscriber.h"
 
 // OW - external
+#include <owl_msgs/LightSetIntensity.h>
+#include <owl_msgs/BatteryRemainingUsefulLife.h>
+#include <owl_msgs/BatteryStateOfCharge.h>
 #include <owl_msgs/BatteryTemperature.h>
-#include <owl_msgs/RemainingUsefulLife.h>
-#include <owl_msgs/StateOfCharge.h>
 
 // ROS
 #include <std_msgs/Float64.h>
@@ -374,13 +375,13 @@ static double SOC = NAN;
 static double RUL = NAN;
 static double BatteryTemp = NAN;
 
-static void soc_callback (const owl_msgs::StateOfCharge::ConstPtr& msg)
+static void soc_callback (const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
 {
   SOC = msg->value;
   publish ("StateOfCharge", SOC);
 }
 
-static void rul_callback (const owl_msgs::RemainingUsefulLife::ConstPtr& msg)
+static void rul_callback (const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
 {
   // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
   RUL = msg->value;
@@ -1604,12 +1605,12 @@ double OwInterface::getTiltVelocity () const
   return JointTelemetries[ANTENNA_TILT].velocity;
 }
 
-double OwInterface::getStateOfCharge () const
+double OwInterface::getBatteryStateOfCharge () const
 {
   return SOC;
 }
 
-double OwInterface::getRemainingUsefulLife () const
+double OwInterface::getBatteryRemainingUsefulLife () const
 {
   return RUL;
 }
