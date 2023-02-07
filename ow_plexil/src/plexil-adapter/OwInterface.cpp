@@ -7,7 +7,6 @@
 #include "subscriber.h"
 
 // OW - external
-#include <owl_msgs/LightSetIntensity.h>
 #include <owl_msgs/BatteryRemainingUsefulLife.h>
 #include <owl_msgs/BatteryStateOfCharge.h>
 #include <owl_msgs/BatteryTemperature.h>
