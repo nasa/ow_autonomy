@@ -34,7 +34,7 @@
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
-#include <ow_lander/TaskGrindAction.h>
+#include <owl_msgs/TaskGrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
 #include <owl_msgs/ArmMoveJointAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
@@ -73,7 +73,7 @@ using ArmUnstowActionClient =
 using ArmStowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using TaskGrindActionClient =
-  actionlib::SimpleActionClient<ow_lander::TaskGrindAction>;
+  actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
