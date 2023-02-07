@@ -6,7 +6,7 @@
 
 #include "plan-interface.h"
 
-PanTilt:
+PanTiltMoveJoints:
 {
   In Real PanDegrees, TiltDegrees;
 

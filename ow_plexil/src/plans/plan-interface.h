@@ -84,7 +84,7 @@ LibraryAction ArmMoveCartesianGuarded_Q (In Integer Frame,
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 LibraryAction Pan (In Real Degrees);
 LibraryAction Tilt (In Real Degrees);
-LibraryAction PanTilt (In Real PanDegrees, In Real TiltDegrees);
+LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
 LibraryAction PanTiltMoveCartesian  (In Integer Frame,
                                      In Real X, In Real Y, In Real Z);
 LibraryAction ArmStow ();
@@ -110,6 +110,8 @@ LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
                                     In Real TorqueThreshold);
 
 LibraryAction ArmStop ();
+
+LibraryAction DockIngestSample ();
 
 LibraryAction TaskGrind (In Real X,
                          In Real Y,

@@ -2,7 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A simple test for each and every ROS Action based lander operation.
+// Try each and every ROS Action in the simulator, as a quick test for
+// coverage.  Other plans test various actions more rigorously.  This
+// should be run using the Atacama simulator world.
 
 #include "plan-interface.h"
 
@@ -23,16 +25,42 @@ TestActions:
                                   X = 1.7, Y = -0.2, Z = 0.6,
                                   OrientX = 1, OrientY = 0, OrientZ = 0, OrientW = 0);
 
+  LibraryCall ArmMoveCartesianGuarded_Q (Frame = BASE_LINK,
+                                         Relative = true,
+                                         X = 0,
+                                         Y = 0,
+                                         Z = 0.6,
+                                         OrientX = 0,
+                                         OrientY = 0,
+                                         OrientZ = 0,
+                                         OrientW = -1,
+                                         ForceThreshold = 200,
+                                         TorqueThreshold = 100);
+
+  LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0);
+
+  LibraryCall ArmMoveJoints (Relative=true, Angles = #(-1.0 0.5 0.0 0.03 0.0 0.0));
+
+  LibraryCall ArmMoveJointsGuarded (Relative=false,
+                                    Angles= #(0.0 0.0 0.0 0.0 0.0 0.0),
+                                    ForceThreshold = 100,
+                                    TorqueThreshold = 100);
+
   LibraryCall ArmFindSurface (Frame = BASE_LINK,
                               Relative = false,
                               PosX = 1.75, PosY = 0.1, PosZ = 0.2,
-                              NormX = 0, NormY = 0, NormZ = 0,
+                              NormX = 0, NormY = 0, NormZ = -1,
                               Distance = 0.7, Overdrive = 0,
                               ForceThreshold = 1, TorqueThreshold = 1);
-  /*
+
+  LibraryCall CameraSetExposure (Seconds = 1);
+
+  LibraryCall CameraCapture();
+
   LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
                            SearchDistance=0.7);
-  */
+
+  LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
 
   LibraryCall TaskGrind (X = 1.75, Y = 0.1, Depth = 0.045,
                          Length = 0.5, Parallel = false,
@@ -55,8 +83,21 @@ TestActions:
                                Depth = 0.05, Length = 0.1);
 
   LibraryCall TaskDeliverSample ();
+  LibraryCall DockIngestSample ();
   LibraryCall ArmUnstow(); // For safety in stowing
-  LibraryCall ArmStow();
+
+  StopStow:
+  {
+    arm_stow();  // start asynchonously
+    Wait 1;
+    LibraryCall ArmStop();
+    LibraryCall ArmStow();
+  }
+
+  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
+  //  LibraryCall Pan (Degrees = 90);
+  //  LibraryCall Tilt (Degrees = 90);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = 0);
 
   log_info ("Action test finished.");
 }
