@@ -127,7 +127,7 @@ class OwInterface : public PlexilInterface
   // Operational interface
 
   void armFindSurface (int frame, bool relative,
-                       double pos_x, double pos_y, double z,
+                       double pos_x, double pos_y, double pos_z,
                        double norm_x, double norm_y, double norm_z,
                        double distance, double overdrive,
                        double force_threshold, double torque_threshold, int id);
