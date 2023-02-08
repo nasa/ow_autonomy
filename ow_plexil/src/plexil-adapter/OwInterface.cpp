@@ -72,14 +72,14 @@ const string Op_Grind                   = "TaskGrind";
 const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
 const string Op_LightSetIntensity       = "LightSetIntensity";
-const string Op_Pan                     = "PanAction";
-const string Op_PanTilt                 = "PanTiltMoveJointsAction";
-const string Op_PanTiltCartesian        = "PanTiltMoveCartesianAction";
+const string Op_Pan                     = "Pan";
+const string Op_PanTilt                 = "PanTiltMoveJoints";
+const string Op_PanTiltCartesian        = "PanTiltMoveCartesian";
 const string Op_TaskDeliverSample       = "TaskDeliverSample";
 const string Op_TaskDiscardSample       = "TaskDiscardSample";
 const string Op_TaskScoopCircular       = "TaskScoopCircular";
 const string Op_TaskScoopLinear         = "TaskScoopLinear";
-const string Op_Tilt                    = "TiltAction";
+const string Op_Tilt                    = "Tilt";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
