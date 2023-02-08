@@ -84,19 +84,11 @@ TestActions:
 
   LibraryCall TaskDeliverSample ();
   LibraryCall DockIngestSample ();
-  LibraryCall ArmUnstow(); // For safety in stowing
-
-  StopStow:
-  {
-    arm_stow();  // start asynchonously
-    Wait 1;
-    LibraryCall ArmStop();
-    LibraryCall ArmStow();
-  }
-
+  LibraryCall ArmUnstow();
+  LibraryCall ArmStow();
   LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
-  //  LibraryCall Pan (Degrees = 90);
-  //  LibraryCall Tilt (Degrees = 90);
+  LibraryCall Pan (Degrees = 90);
+  LibraryCall Tilt (Degrees = 89);
   LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = 0);
 
   log_info ("Action test finished.");
