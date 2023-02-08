@@ -42,16 +42,22 @@ TestActions:
   LibraryCall ArmMoveJoints (Relative=true, Angles = #(-1.0 0.5 0.0 0.03 0.0 0.0));
 
   LibraryCall ArmMoveJointsGuarded (Relative=false,
-                                    Angles= #(0.0 0.0 0.0 0.0 0.0 0.0),
+                                    Angles= #(0.0 0.5 0.0 0.0 0.0 0.0),
                                     ForceThreshold = 100,
                                     TorqueThreshold = 100);
 
   LibraryCall ArmFindSurface (Frame = BASE_LINK,
                               Relative = false,
-                              PosX = 1.75, PosY = 0.1, PosZ = 0.2,
+                              PosX = 1.75, PosY = 0.1, PosZ = GP,
                               NormX = 0, NormY = 0, NormZ = -1,
-                              Distance = 0.7, Overdrive = 0,
-                              ForceThreshold = 1, TorqueThreshold = 1);
+                              Distance = 0.2, Overdrive = 0.05,
+                              ForceThreshold = 200, TorqueThreshold = 50);
+
+  LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
+                                  Relative = true,
+                                  X = 0, Y = 0, Z = -0.2,
+                                  OrientX = 0, OrientY = 0,
+                                  OrientZ = 0, OrientW = 1);
 
   LibraryCall CameraSetExposure (Seconds = 1);
 
@@ -59,6 +65,12 @@ TestActions:
 
   LibraryCall GuardedMove (X=1.75, Y=0.1, Z=0.2, DirX=0.1, DirY=0.1, DirZ=0.9,
                            SearchDistance=0.7);
+
+  LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
+                                  Relative = true,
+                                  X = 0, Y = 0, Z = -0.2,
+                                  OrientX = 0, OrientY = 0,
+                                  OrientZ = 0, OrientW = 1);
 
   LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
 
@@ -74,12 +86,12 @@ TestActions:
                                  X = 1.5, Y = 0.8, Z = 0.65,
                                  Height = 0.1);
 
-  LibraryCall TaskGrind (X = 1.75, Y = 0.1, Depth = 0.05,
-                         Length = 0.5, Parallel = true,
+  LibraryCall TaskGrind (X = 1.6, Y = 0.02, Depth = 0.05,
+                         Length = 0.6, Parallel = true,
                          GroundPos = GP);
 
   LibraryCall TaskScoopLinear (Frame = 0, Relative = false,
-                               X = 1.75, Y = 0.1, Z = GP,
+                               X = 1.5, Y = 0.02, Z = GP,
                                Depth = 0.05, Length = 0.1);
 
   LibraryCall TaskDeliverSample ();
