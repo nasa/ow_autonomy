@@ -139,11 +139,13 @@ class OwInterface : public PlexilInterface
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
 			 double orient_z, double orient_w, int id);
+  // Uses Euler angle for orientation.
   void armMoveCartesianGuarded (int frame, bool relative,
                                 double x, double y, double z,
                                 double orient_x, double orient_y, double orient_z,
                                 double force_threshold, double torque_threshold,
                                 int id);
+  // Uses quaternion for orientation.
   void armMoveCartesianGuarded (int frame, bool relative,
                                 double x, double y, double z,
                                 double orient_x, double orient_y,
