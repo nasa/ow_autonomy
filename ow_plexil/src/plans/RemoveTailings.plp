@@ -21,13 +21,18 @@ RemoveTailings:
 
   for (Integer pass = 1; pass <= num_passes; pass + 1) {
     log_info ("Removing tailings, pass ", pass, " of ", num_passes, "...");
-    LibraryCall DigCircular (X = X, Y = Y, Depth = bite_depth * pass,
-                             GroundPos = GroundPos, Parallel = Parallel);
-    
+    LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
+                                   X = X, Y = Y, Z = GroundPos,
+                                   Depth = bite_depth * pass,
+                                   Parallel = Parallel);
+
+
     // NOTE: these X/Y/Z values specify a predecided dump location
     // that works in any of the provided simulation worlds.  A real
     // mission procedure would need to find an appropriate dump
     // location.
-    LibraryCall Discard (X = 1.5, Y = 0.8, Z = 0.65);
+    LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
+                                   X = 1.5, Y = 0.8, Z = 0.4, Height = 0.0);
+
   }
 }

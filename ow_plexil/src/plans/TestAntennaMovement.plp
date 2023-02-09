@@ -15,7 +15,7 @@ TestAntennaMovement: UncheckedSequence
   Integer Wins = 0;
 
   // Initialize antenna
-  LibraryCall PanTilt(PanDegrees = 0, TiltDegrees = 0);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = 0);
 
   // Pan tests
   LibraryCall TestPanTilt(Pan = 183.346, Tilt = 0, Count = Count, Wins = Wins);

@@ -34,14 +34,14 @@ FaultHandlingPattern3:
   {
     Start !Lookup(AntennaFault);
 
-    LibraryCall PanTilt (PanDegrees=180, TiltDegrees=0);
+    LibraryCall PanTiltMoveJoints (PanDegrees=180, TiltDegrees=0);
   }
 
   Unstow:
   {
     Start !Lookup(ArmFault);
 
-    LibraryCall Unstow();
+    LibraryCall ArmUnstow();
 
   }
 
@@ -49,7 +49,7 @@ FaultHandlingPattern3:
   {
     Start !Lookup(ArmFault);
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
   }
 

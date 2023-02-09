@@ -2,34 +2,39 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Stow the arm, which requires an unstow() first.  These commands simply move
-// the arm to specific coordinates.
+// Perform one pass with the grinding tool, using the given parameters.
 
 #include "plan-interface.h"
 
-Stow:
+TaskGrind:
 {
+  In Real X;
+  In Real Y;
+  In Real Depth;
+  In Real Length;
+  In Real GroundPos;
+  In Boolean Parallel;
+
   Boolean FaultDetected = false;
 
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
   { 
-    log_error ("Command stow not sent to lander due to active arm fault(s).");
+    log_error ("Command grind not sent due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendStow:
+  SendGrind:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending stow command to lander...");
+      log_info ("Arm fault(s) resolved, sending grind command...");
     }
 
-    SynchronousCommand stow();
+    SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
   }
-
 
 }

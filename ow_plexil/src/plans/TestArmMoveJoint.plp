@@ -22,7 +22,7 @@ TestArmMoveJoint:
   {
     log_info ("Starting first ArmMoveJoint test...");
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0);
 
@@ -38,7 +38,7 @@ TestArmMoveJoint:
 
     log_info ("First test finished, stowing...");
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
   }
 
   // Moves a single joint to a sequence of successive angles.
@@ -46,7 +46,7 @@ TestArmMoveJoint:
   {
     log_info ("Starting second and final ArmMoveJoint test...");
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
     LibraryCall ArmMoveJoint (Relative=true, Joint=0, Angle=0.1);
 
@@ -56,7 +56,7 @@ TestArmMoveJoint:
 
     log_info ("Second and final test finished, stowing...");
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
   }
 
   log_info ("TestArmMoveJoint plan finished.");

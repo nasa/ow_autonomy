@@ -19,7 +19,7 @@ TestPanTilt:
     Count = Count + 1;
     log_info("TEST: ", Count);
 
-    LibraryCall PanTilt (PanDegrees = Pan, TiltDegrees = Tilt);
+    LibraryCall PanTiltMoveJoints (PanDegrees = Pan, TiltDegrees = Tilt);
     current_pan  = Lookup(PanDegrees);
     current_tilt = Lookup(TiltDegrees);
 

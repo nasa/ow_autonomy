@@ -9,7 +9,7 @@ TestLanderLights:
   log_info ("Starting TestLanderLights...");
 
   // Tilt the antenna so that the lights aim on the lander body.
-  LibraryCall PanTilt (PanDegrees = 0, TiltDegrees = 60.0);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = 60.0);
 
   log_info ("Turning lights off...");
   LibraryCall LightSetIntensity (Side = "left", Intensity = 0.0);
