@@ -130,7 +130,7 @@ class OwInterface : public PlexilInterface
   // Operational interface
 
   void armFindSurface (int frame, bool relative,
-                       double pos_x, double pos_y, double z,
+                       double pos_x, double pos_y, double pos_z,
                        double norm_x, double norm_y, double norm_z,
                        double distance, double overdrive,
                        double force_threshold, double torque_threshold, int id);
@@ -142,11 +142,13 @@ class OwInterface : public PlexilInterface
 			 double x, double y, double z,
 			 double orient_x, double orient_y,
 			 double orient_z, double orient_w, int id);
+  // Uses Euler angle for orientation.
   void armMoveCartesianGuarded (int frame, bool relative,
                                 double x, double y, double z,
                                 double orient_x, double orient_y, double orient_z,
                                 double force_threshold, double torque_threshold,
                                 int id);
+  // Uses quaternion for orientation.
   void armMoveCartesianGuarded (int frame, bool relative,
                                 double x, double y, double z,
                                 double orient_x, double orient_y,
