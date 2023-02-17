@@ -88,7 +88,7 @@ FaultHandlingPattern5:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTilt (PanDegrees=NewAngle, TiltDegrees=0);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
 
     }
 

@@ -2,12 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Unstow the arm, which is moving it to a specified "ready" position from
-// wherever its current location.
+// Stow the arm, which requires an unstow() first.  These commands simply move
+// the arm to specific coordinates.
 
 #include "plan-interface.h"
 
-Unstow:
+ArmStow:
 {
   Boolean FaultDetected = false;
 
@@ -15,20 +15,21 @@ Unstow:
 
   if Lookup(ArmFault)
   { 
-    log_error ("Command unstow not sent to lander due to active arm fault(s).");
+    log_error ("Command stow not sent to lander due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendUnstow:
+  SendStow:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending unstow command to lander...");
+      log_info ("Arm fault(s) resolved, sending stow command to lander...");
     }
 
-    SynchronousCommand unstow();
+    SynchronousCommand arm_stow();
   }
+
 
 }

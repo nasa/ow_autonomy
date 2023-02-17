@@ -2,38 +2,33 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform one pass of a circular digging action.
+// Unstow the arm, which is moving it to a specified "ready" position from
+// wherever its current location.
 
 #include "plan-interface.h"
 
-DigCircular:
+ArmUnstow:
 {
-  In Real X;
-  In Real Y;
-  In Real Depth;
-  In Real GroundPos;
-  In Boolean Parallel;
-
   Boolean FaultDetected = false;
 
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
   { 
-    log_error ("Command dig_circular not sent to lander due to active arm fault(s).");
+    log_error ("Command unstow not sent to lander due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendDigCircular:
+  SendUnstow:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending dig_circular command to lander...");
+      log_info ("Arm fault(s) resolved, sending unstow command to lander...");
     }
 
-    SynchronousCommand dig_circular (X, Y, Depth, GroundPos, Parallel);
+    SynchronousCommand arm_unstow();
   }
 
 }

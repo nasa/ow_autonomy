@@ -2,11 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Capture an image with the stereo camera.
+// Stop the arm.
 
 #include "plan-interface.h"
 
-CameraCapture:
+ArmStop:
 {
-  SynchronousCommand camera_capture ();
+  SynchronousCommand arm_stop();
 }

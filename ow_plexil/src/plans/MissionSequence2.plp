@@ -37,7 +37,7 @@ MissionSequence2:
     Start !Lookup(AntennaFault) && !Lookup(PowerFault);
     Skip pan_done;
 
-    LibraryCall PanTilt (PanDegrees=180, TiltDegrees=0);
+    LibraryCall PanTiltMoveJoints (PanDegrees=180, TiltDegrees=0);
 
     if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
     {
@@ -52,7 +52,7 @@ MissionSequence2:
     Start !Lookup(ArmFault) && !Lookup(PowerFault);
     Skip unstow_done;
 
-    LibraryCall Unstow();
+    LibraryCall ArmUnstow();
 
     // See NOTE above for an explanation of logic.
 
@@ -67,7 +67,7 @@ MissionSequence2:
     Start !Lookup(ArmFault) && !Lookup(PowerFault);
     Skip stow_done;
 
-    LibraryCall Stow();
+    LibraryCall ArmStow();
 
     // See NOTE above for an explanation of logic.
 

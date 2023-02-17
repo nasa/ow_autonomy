@@ -15,70 +15,98 @@
 #include <ow_plexil/IdentifyLocationAction.h>
 
 // ow_simulator
-#include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmJointAccelerations.h>
-#include <ow_faults_detection/ArmFaults.h>
-#include <ow_faults_detection/PowerFaults.h>
-#include <ow_faults_detection/PTFaults.h>
+#include <owl_msgs/ArmFaultsStatus.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
+#include <owl_msgs/PowerFaultsStatus.h>
+#include <owl_msgs/CameraFaultsStatus.h>
+#include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+#include <owl_msgs/ArmPose.h>
 
 // ow_simulator (ROS Actions)
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib_msgs/GoalStatusArray.h>
-#include <ow_lander/UnstowAction.h>
-#include <ow_lander/StowAction.h>
-#include <ow_lander/GrindAction.h>
+#include <owl_msgs/ArmFindSurfaceAction.h>
+#include <owl_msgs/ArmMoveCartesianAction.h>
+#include <owl_msgs/ArmMoveCartesianGuardedAction.h>
+#include <owl_msgs/ArmStopAction.h>
+#include <owl_msgs/ArmUnstowAction.h>
+#include <owl_msgs/ArmStowAction.h>
+#include <owl_msgs/TaskDeliverSampleAction.h>
+#include <ow_lander/PanAction.h>
+#include <ow_lander/TiltAction.h>
+#include <owl_msgs/PanTiltMoveCartesianAction.h>
+#include <owl_msgs/TaskGrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
-#include <ow_lander/ArmMoveJointAction.h>
-#include <ow_lander/ArmMoveJointsAction.h>
-#include <ow_lander/DigCircularAction.h>
-#include <ow_lander/DigLinearAction.h>
-#include <ow_lander/DeliverAction.h>
-#include <ow_lander/AntennaPanTiltAction.h>
-#include <ow_lander/DiscardAction.h>
-#include <ow_lander/CameraCaptureAction.h>
-#include <ow_lander/CameraSetExposureAction.h>
-#include <ow_lander/LightSetIntensityAction.h>
+#include <owl_msgs/ArmMoveJointAction.h>
+#include <owl_msgs/ArmMoveJointsAction.h>
+#include <owl_msgs/ArmMoveJointsGuardedAction.h>
+#include <owl_msgs/PanTiltMoveJointsAction.h>
+#include <owl_msgs/TaskScoopCircularAction.h>
+#include <owl_msgs/TaskScoopLinearAction.h>
+#include <owl_msgs/TaskDiscardSampleAction.h>
+#include <owl_msgs/CameraCaptureAction.h>
+#include <owl_msgs/CameraSetExposureAction.h>
+#include <ow_lander/DockIngestSampleAction.h>
+#include <owl_msgs/LightSetIntensityAction.h>
 
 // ROS
 #include <control_msgs/JointControllerState.h>
 #include <sensor_msgs/JointState.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
 #include <ros/ros.h>
 
 // C++
 #include <string>
 #include <memory>
 
-using UnstowActionClient =
-  actionlib::SimpleActionClient<ow_lander::UnstowAction>;
-using StowActionClient =
-  actionlib::SimpleActionClient<ow_lander::StowAction>;
-using GrindActionClient =
-  actionlib::SimpleActionClient<ow_lander::GrindAction>;
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
+using ArmMoveCartesianActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
+using ArmMoveCartesianGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
+using ArmStopActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmStopAction>;
+using ArmUnstowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
+using ArmStowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
+using TaskGrindActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointActionClient =
-  actionlib::SimpleActionClient<ow_lander::ArmMoveJointAction>;
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
 using ArmMoveJointsActionClient =
-  actionlib::SimpleActionClient<ow_lander::ArmMoveJointsAction>;
-using DigCircularActionClient =
-  actionlib::SimpleActionClient<ow_lander::DigCircularAction>;
-using DigLinearActionClient =
-  actionlib::SimpleActionClient<ow_lander::DigLinearAction>;
-using DeliverActionClient =
-  actionlib::SimpleActionClient<ow_lander::DeliverAction>;
-using PanTiltActionClient =
-  actionlib::SimpleActionClient<ow_lander::AntennaPanTiltAction>;
-using DiscardActionClient =
-  actionlib::SimpleActionClient<ow_lander::DiscardAction>;
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
+using ArmMoveJointsGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
+using TaskDeliverSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
+using PanTiltMoveJointsActionClient =
+  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
+using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
+using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
+using PanTiltMoveCartesianActionClient =
+  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveCartesianAction>;
+using TaskScoopCircularActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
+using TaskScoopLinearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
+using TaskDiscardSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using CameraCaptureActionClient =
-  actionlib::SimpleActionClient<ow_lander::CameraCaptureAction>;
+  actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 using CameraSetExposureActionClient =
-  actionlib::SimpleActionClient<ow_lander::CameraSetExposureAction>;
+  actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
+using DockIngestSampleActionClient =
+  actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 using LightSetIntensityActionClient =
-  actionlib::SimpleActionClient<ow_lander::LightSetIntensityAction>;
+  actionlib::SimpleActionClient<owl_msgs::LightSetIntensityAction>;
 
 // The only ow_plexil-defined action.
 using IdentifySampleLocationActionClient =
@@ -101,31 +129,65 @@ class OwInterface : public PlexilInterface
 
   // Operational interface
 
+  void armFindSurface (int frame, bool relative,
+                       double pos_x, double pos_y, double pos_z,
+                       double norm_x, double norm_y, double norm_z,
+                       double distance, double overdrive,
+                       double force_threshold, double torque_threshold, int id);
+  void armMoveCartesian (int frame, bool relative,
+			 double x, double y, double z,
+			 double orient_x, double orient_y,
+			 double orient_z, int id);
+  void armMoveCartesian (int frame, bool relative,
+			 double x, double y, double z,
+			 double orient_x, double orient_y,
+			 double orient_z, double orient_w, int id);
+  // Uses Euler angle for orientation.
+  void armMoveCartesianGuarded (int frame, bool relative,
+                                double x, double y, double z,
+                                double orient_x, double orient_y, double orient_z,
+                                double force_threshold, double torque_threshold,
+                                int id);
+  // Uses quaternion for orientation.
+  void armMoveCartesianGuarded (int frame, bool relative,
+                                double x, double y, double z,
+                                double orient_x, double orient_y,
+                                double orient_z, double orient_w,
+                                double force_threshold, double torque_threshold,
+                                int id);
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  void armMoveJoint (bool relative, int joint, double angle,
-                     int id);
-  void armMoveJoints (bool relative,
-                      const std::vector<double>& angles,
-                      int id);
+  void armMoveJoint (bool relative, int joint, double angle, int id);
+  void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
+  void armMoveJointsGuarded (bool relative,
+                             const std::vector<double>& angles,
+                             double force_threshold,
+                             double torque_threshold,
+                             int id);
   std::vector<double> identifySampleLocation (int num_images,
                                               const std::string& filter_type,
                                               int id);
 
-  void panTiltAntenna (double pan_degrees, double tilt_degrees, int id);
+  void pan (double degrees, int id);
+  void tilt (double degrees, int id);
+  void panTilt (double pan_degrees, double tilt_degrees, int id);
+  void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
-  void digLinear (double x, double y, double depth, double length,
-                  double ground_pos, int id);
-  void digCircular (double x, double y, double depth,
-                    double ground_pos, bool parallel, int id);
+  void dockIngestSample (int id);
+  void scoopLinear (int frame, bool relative, double x, double y, double z,
+                    double depth, double length, int id);
+  void scoopCircular (int frame, bool relative, double x, double y, double z,
+                      double depth, bool parallel, int id);
   void grind (double x, double y, double depth, double length,
               bool parallel, double ground_pos, int id);
-  void stow (int id);
-  void unstow (int id);
-  void deliver (int id);
-  void discard (double x, double y, double z, int id);
+  void armStop (int id);
+  void armStow (int id);
+  void armUnstow (int id);
+  void taskDeliverSample (int id);
+  void discardSample (int frame, bool relative, double x, double y, double z,
+                      double height, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
@@ -135,28 +197,68 @@ class OwInterface : public PlexilInterface
   double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getStateOfCharge () const;
-  double getRemainingUsefulLife () const;
+  double getBatteryStateOfCharge () const;
+  double getBatteryRemainingUsefulLife () const;
   double getBatteryTemperature () const;
+  std::vector<double> getEndEffectorFT () const;
+  std::vector<double> getArmPose () const;
   bool   groundFound () const;
   double groundPosition () const;
   bool   systemFault () const;
   bool   antennaFault () const;
+  bool   antennaPanFault () const;
+  bool   antennaTiltFault () const;
   bool   armFault () const;
   bool   powerFault () const;
+  bool   cameraFault () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointTelemetry (int joint, TelemetryType type) const;
-  int actionGoalStatus (const std::string& action_name) const;
+  int    actionGoalStatus (const std::string& action_name) const;
 
  private:
-  void addSubscriber (const std::string& topic, const std::string& operation);
-  template<typename Service>
-  void callService (ros::ServiceClient, Service, std::string name, int id);
+   template<typename T>
+   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
+                             const std::string& name,
+                             const std::string& topic = "")
+  {
+    if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("%s action server did not connect!", name.c_str());
+    }
+    else if (topic != "") addSubscriber (topic, name);
+  }
 
-  void unstowAction (int id);
-  void stowAction (int id);
+  void addSubscriber (const std::string& topic, const std::string& operation);
+  void armFindSurfaceAction (int frame, bool relative,
+                             const geometry_msgs::Point& pos,
+                             const geometry_msgs::Vector3& normal,
+                             double distance, double overdrive,
+                             double force_threshold, double torque_threshold,
+                             int id);
+  void armMoveCartesianAux (int frame, bool relative,
+                            double x, double y, double z,
+                            const geometry_msgs::Quaternion& q, int id);
+  void armMoveCartesianGuardedAux (int frame,
+                                   bool relative,
+                                   double x, double y, double z,
+                                   const geometry_msgs::Quaternion& q,
+                                   double force_threshold,
+                                   double torque_threshold,
+                                   int id);
+  void armMoveCartesianAction (int frame,
+                               bool relative,
+                               const geometry_msgs::Pose& pose,
+                               int id);
+  void armMoveCartesianGuardedAction (int frame,
+                                      bool relative,
+                                      const geometry_msgs::Pose& pose,
+                                      double force_threshold,
+                                      double torque_threshold,
+                                      int id);
+  void armStopAction (int id);
+  void armStowAction (int id);
+  void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
                     bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
@@ -166,28 +268,43 @@ class OwInterface : public PlexilInterface
                            double angle, int id);
   void armMoveJointsAction (bool relative, const std::vector<double>& angles,
                             int id);
+  void armMoveJointsGuardedAction (bool relative,
+                                   const std::vector<double>& angles,
+                                   double force_threshold,
+                                   double torque_threshold,
+                                   int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
-  void digCircularAction (double x, double y, double depth,
-                          double ground_pos, bool parallel, int id);
-  void digLinearAction (double x, double y, double depth, double length,
-                        double ground_pos, int id);
+  void taskDeliverSampleAction (int id);
+  void panAction (double degrees, int id);
+  void tiltAction (double degrees, int id);
+  void panTiltAction (double pan_degrees, double tilt_degrees, int id);
+  void panTiltCartesianAction (int frame, double x, double y, double z, int id);
+  void scoopLinearAction (int frame, bool relative, double x, double y, double z,
+                          double depth, double length, int id);
+  void scoopCircularAction (int frame, bool relative, double x, double y, double z,
+                            double depth, bool parallel, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
-  void deliverAction (int id);
-  void discardAction (double x, double y, double z, int id);
+  void discardSampleAction (int frame, bool relative,
+                            double x, double y, double z,
+                            double height, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
+  void dockIngestSampleAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
-  void armFaultCallback (const ow_faults_detection::ArmFaults::ConstPtr&);
-  void powerFaultCallback (const ow_faults_detection::PowerFaults::ConstPtr&);
-  void antennaFaultCallback (const ow_faults_detection::PTFaults::ConstPtr&);
+  void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
+  void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
+  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
+  void cameraFaultCallback (const owl_msgs::CameraFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
                                  const std::string);
+  void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
+  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
 
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
@@ -220,24 +337,50 @@ class OwInterface : public PlexilInterface
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
-  FaultMap32 m_armErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"TRAJECTORY_GENERATION_ERROR", std::make_pair(2, false)},
-    {"COLLISION_ERROR", std::make_pair(3, false)},
-    {"ESTOP_ERROR", std::make_pair(4, false)},
-    {"POSITION_LIMIT_ERROR", std::make_pair(5, false)},
-    {"TORQUE_LIMIT_ERROR", std::make_pair(6, false)},
-    {"VELOCITY_LIMIT_ERROR", std::make_pair(7, false)},
-    {"NO_FORCE_DATA_ERROR", std::make_pair(8, false)}
+  FaultMap64 m_armErrors = {
+    {"HARDWARE", std::make_pair(
+        owl_msgs::ArmFaultsStatus::HARDWARE, false)},
+    {"TRAJECTORY_GENERATION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::TRAJECTORY_GENERATION, false)},
+    {"COLLISION", std::make_pair(
+        owl_msgs::ArmFaultsStatus::COLLISION, false)},
+    {"E_STOP", std::make_pair(
+        owl_msgs::ArmFaultsStatus::E_STOP, false)},
+    {"POSITION_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::POSITION_LIMIT, false)},
+    {"JOINT_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
+    {"VELOCITY_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
+    {"NO_FORCE_DATA", std::make_pair(
+        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA, false)},
+    {"FORCE_TORQUE_LIMIT", std::make_pair(
+        owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
-  FaultMap32 m_powerErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)}
+  FaultMap64 m_powerErrors = {
+    {"LOW_STATE_OF_CHARGE", std::make_pair(
+        owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
+    {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
+        owl_msgs::PowerFaultsStatus::INSTANTANEOUS_CAPACITY_LOSS, false)},
+    {"THERMAL_FAULT", std::make_pair(
+        owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
-  FaultMap32 m_panTiltErrors = {
-    {"HARDWARE_ERROR", std::make_pair(1, false)},
-    {"JOINT_LIMIT_ERROR", std::make_pair(2, false)}
+  const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
+  const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
+
+  FaultMap64 m_panTiltErrors = {
+    {FaultPanJointLocked, std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
+    {"TILT_JOINT_LOCKED", std::make_pair(
+      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
+  };
+
+  const char* FaultNoImage = "NO_IMAGE";
+
+  FaultMap64 m_cameraErrors = {
+    {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
   };
 
   // Publishers and subscribers
@@ -251,25 +394,36 @@ class OwInterface : public PlexilInterface
   std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
   // Action clients
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
+  std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
+  std::unique_ptr<ArmMoveCartesianGuardedActionClient>
+  m_armMoveCartesianGuardedClient;
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
-  std::unique_ptr<UnstowActionClient> m_unstowClient;
-  std::unique_ptr<StowActionClient> m_stowClient;
-  std::unique_ptr<GrindActionClient> m_grindClient;
-  std::unique_ptr<DigCircularActionClient> m_digCircularClient;
-  std::unique_ptr<DigLinearActionClient> m_digLinearClient;
-  std::unique_ptr<DeliverActionClient> m_deliverClient;
-  std::unique_ptr<PanTiltActionClient> m_panTiltClient;
-  std::unique_ptr<DiscardActionClient> m_discardClient;
+  std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
+  std::unique_ptr<ArmStopActionClient> m_armStopClient;
+  std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
+  std::unique_ptr<ArmStowActionClient> m_armStowClient;
+  std::unique_ptr<TaskGrindActionClient> m_grindClient;
+  std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
+  std::unique_ptr<PanActionClient> m_panClient;
+  std::unique_ptr<TiltActionClient> m_tiltClient;
+  std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltClient;
+  std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
+  std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
+  std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
+  std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
-
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
 
-  // Antenna state
+  // Misc state
   double m_currentPanRadians, m_currentTiltRadians;
+  std::vector<double> m_endEffectorFT;
+  std::vector<double> m_armPose;
 };
 
 #endif
