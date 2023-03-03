@@ -14,34 +14,93 @@
 // plan-interface.h) that wraps these commands in a way that they
 // called synchronously.
 
-Command tilt_antenna (Real degrees);
-Command pan_antenna (Real degrees);
-Command take_picture();
+Command camera_set_exposure (Real seconds);
+Command camera_capture ();
+
+Command pan (Real degrees);
+Command tilt (Real degrees);
+Command pan_tilt (Real pan_degrees, Real tilt_degrees);
+Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
+
+Command arm_find_surface (Integer frame,
+                          Boolean relative,
+                          Real pos_x, Real pos_y, Real pos_z,
+                          Real norm_x, Real norm_y, Real norm_z,
+                          Real distance,
+                          Real overdrive,
+                          Real force_threshold,
+                          Real torque_threshold);
+
+Command arm_move_cartesian (Integer frame,
+			    Boolean relative,
+			    Real x, Real y, Real z,
+			    // Orientation in Euler angle
+			    Real orient_x, Real orient_y, Real orient_z);
+
+// Quaternion version of previous
+Command arm_move_cartesian_q (Integer frame,
+			      Boolean relative,
+			      Real x, Real y, Real z,
+			      Real orient_x, Real orient_y, Real orient_z,
+			      Real orient_w);
+
+Command arm_move_cartesian_guarded (Integer frame,
+                                    Boolean relative,
+                                    Real x, Real y, Real z,
+                                    // Orientation in Euler angle
+                                    Real orient_x, Real orient_y, Real orient_z,
+                                    Real force_threshold,
+                                    Real torque_threshold);
+
+// Quaternion version of previous
+Command arm_move_cartesian_guarded_q (Integer frame,
+                                      Boolean relative,
+                                      Real x, Real y, Real z,
+                                      Real orient_x, Real orient_y, Real orient_z,
+                                      Real orient_w,
+                                      Real force_threshold,
+                                      Real torque_threshold);
 
 Command arm_move_joint (Boolean relative,
                         Integer joint,
                         Real angle);
 
-Command arm_move_joints (Boolean relative, 
+Command arm_move_joints (Boolean relative,
                          Real angles[6]);
 
-Command dig_circular (Real x,
+Command arm_move_joints_guarded (Boolean relative,
+                                 Real angles[6],
+                                 Real force_threshold,
+                                 Real torque_threshold);
+
+Command arm_stop ();
+
+Command dock_ingest_sample();
+
+Command scoop_circular (Integer frame,
+                        Boolean relative,
+                        Real x,
+                        Real y,
+                        Real z,
+                        Real depth,
+                        Boolean parallel); // true means parallel to lander arm
+
+Command scoop_linear (Integer frame,
+                      Boolean relative,
+                      Real x,
                       Real y,
+                      Real z,
                       Real depth,
-                      Real ground_pos,
-                      Boolean parallel); // true means parallel to lander arm
+                      Real length);
 
-Command dig_linear (Real x,
-                    Real y,
-                    Real depth,
-                    Real length,
-                    Real ground_pos);
+Command deliver_sample ();
 
-Command deliver ();
-
-Command discard (Real x,
-                 Real y,
-                 Real z);
+Command discard_sample (Integer frame,
+                        Boolean relative,
+                        Real x,
+                        Real y,
+                        Real z,
+                        Real height);
 
 Command grind (Real x,
                Real y,
@@ -59,10 +118,10 @@ Command guarded_move (Real x,
                       Real search_distance);
 
 // Move from stowed position to a "ready" position
-Command unstow();
+Command arm_unstow();
 
 // Move from "ready" position to stowed position; requires unstow() first
-Command stow();
+Command arm_stow();
 
 // Processes number of images already taken with the stereo camera to
 // find the 3d point to sample.  filter_type can either be "Dark" or
@@ -70,7 +129,7 @@ Command stow();
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
 
 // Set spotlight intensity
-Command set_light_intensity (String side,     // "left" or "right"
+Command light_set_intensity (String side,     // "left" or "right"
 			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif

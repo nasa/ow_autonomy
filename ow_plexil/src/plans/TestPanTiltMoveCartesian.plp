@@ -1,0 +1,20 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A few tests of the PanTiltMoveCartesian action, taken from
+// https://github.com/nasa/ow_simulator/pull/310.
+
+#include "plan-interface.h"
+
+TestPanTiltMoveCartesian:
+{
+  // Try an unreachable location
+  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=0, Y=0, Z=-5);
+
+  // Point at the reddish mound in front of the lander.
+  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=1.46, Y=-0.4, Z=-0.05);
+
+  // Point at Jupiter
+  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
+}

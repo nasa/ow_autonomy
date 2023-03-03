@@ -75,16 +75,17 @@ CollectAndTransfer:
     PreGrind:
     {
       SkipCondition LastComplete >= 1;
-      LibraryCall Grind (X = X, Y = Y, Depth = Depth, Length = Length,
-                         Parallel = Parallel, GroundPos = GroundPos);
+      LibraryCall TaskGrind (X = X, Y = Y, Depth = Depth, Length = Length,
+                             Parallel = Parallel, GroundPos = GroundPos);
       set_checkpoint(OurName,true,Lookup(ToString(1,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
     Collect:
     {
       SkipCondition LastComplete >= 2;
-      LibraryCall DigCircular (X = X, Y = Y, Depth = Depth,
-                               GroundPos = GroundPos, Parallel = Parallel);
+      LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
+                                     X = X, Y = Y, Z = GroundPos,
+                                     Depth = Depth, Parallel = Parallel);
       set_checkpoint(OurName,true,Lookup(ToString(2,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();
     }
@@ -110,7 +111,7 @@ CollectAndTransfer:
     {
       SkipCondition LastComplete >= 5;
 
-      LibraryCall Deliver ();
+      LibraryCall TaskDeliverSample ();
       Wait 1;
       set_checkpoint(OurName,true,Lookup(ToString(5,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();

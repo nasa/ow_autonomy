@@ -1,0 +1,37 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Pan and tilt the antenna to specified degrees.
+
+#include "plan-interface.h"
+
+PanTiltMoveJoints:
+{
+  In Real PanDegrees, TiltDegrees;
+
+  Boolean FaultDetected = false;
+
+  PostCondition !Lookup(AntennaFault);
+
+  if Lookup(AntennaFault)
+  { 
+    log_error ("Command pan_tilt not sent to lander ",
+               "due to active antenna fault(s).");
+    FaultDetected = true;
+  }
+
+  SendPanTilt:
+  {
+    Start !Lookup(AntennaFault);
+
+    if FaultDetected
+    {
+      log_info ("Antenna fault(s) resolved, ",
+                "sending pan_tilt command to lander...");
+    }
+
+    SynchronousCommand pan_tilt (PanDegrees, TiltDegrees);
+  }
+
+}

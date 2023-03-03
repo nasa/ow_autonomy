@@ -10,7 +10,7 @@
 
 #include "plan-interface.h"
 
-LibraryAction PanAndShoot (In Real PanAngle);
+LibraryAction PanAndShoot (In Real PanAngle, In Real TiltAngle);
 
 IdentifySampleTarget:
 {
@@ -24,19 +24,21 @@ IdentifySampleTarget:
   Post Lookup (GroundFound);
 
   // Take pictures in front of the lander for processing in
-  // identify_sample_location.  An alternative would be to create a
-  // new TakePicture command that waits for the pointcloud, or
-  // modifying the current one.
-  LibraryCall Tilt(Degrees = c_tilt);
-  LibraryCall PanAndShoot(PanAngle = c_pan - delta);
-  LibraryCall PanAndShoot(PanAngle = c_pan);
-  LibraryCall PanAndShoot(PanAngle = c_pan + delta);
+  // identify_sample_location.
+
+  // Tilt used to be done once:
+  //  LibraryCall Tilt(Degrees = c_tilt);
+  // Leaving this here for now in case there are problems with the repeated tilt.
+
+  LibraryCall PanAndShoot(PanAngle = c_pan - delta, TiltAngle = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan, TiltAngle = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan + delta, TiltAngle = c_tilt);
   SynchronousCommand result = identify_sample_location(3, FilterType);
 
   if (isKnown(result[0]) && isKnown(result[1]) && isKnown(result[2])) {
     // Guarded move is an attempt to find the ground position.  The chosen start
     // position is based on the result from identify_sample_location.
-    LibraryCall Unstow();
+    LibraryCall ArmUnstow();
     LibraryCall GuardedMove (X = result[0], Y = result[1], Z = result[2]+.1,
                              DirX = 0, DirY = 0, DirZ = 1,
                              SearchDistance = 0.5);

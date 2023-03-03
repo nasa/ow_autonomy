@@ -11,9 +11,13 @@
 #include <memory>
 #include <ros/ros.h>
 
+// owl_msgs
+#include <owl_msgs/PanTiltPosition.h>
+
 // ow_plexil
 #include <Value.hh>
 #include "PlexilInterface.h"
+#include "joint_support.h"
 
 // OWLAT Sim (installation required)
 #include <owlat_sim_msgs/ARM_UNSTOWAction.h>
@@ -79,28 +83,28 @@ class OwlatInterface : public PlexilInterface
   // Lander interface
   void owlatUnstow (int id);
   void owlatStow (int id);
-  void owlatArmMoveCartesian (int frame, bool relative, 
-                              const std::vector<double>& position, 
-                              const std::vector<double>& orientation, 
+  void owlatArmMoveCartesian (int frame, bool relative,
+                              const std::vector<double>& position,
+                              const std::vector<double>& orientation,
                               int id);
-  void owlatArmMoveCartesianGuarded (int frame, bool relative, 
-                                     const std::vector<double>& position, 
+  void owlatArmMoveCartesianGuarded (int frame, bool relative,
+                                     const std::vector<double>& position,
                                      const std::vector<double>& orientation,
                                      bool retracting,
                                      double force_threshold,
                                      double torque_threshold,int id);
-  void owlatArmMoveJoint (bool relative, int joint, double angle, 
+  void owlatArmMoveJoint (bool relative, int joint, double angle,
                           int id);
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
-                           int id); 
+                           int id);
   void owlatArmMoveJointsGuarded (bool relative,
-                                  const std::vector<double>& angles, 
+                                  const std::vector<double>& angles,
                                   bool retracting, double force_threshold,
                                   double torque_threshold, int id);
   void owlatArmPlaceTool (int frame,
                           bool relative,
-                          const std::vector<double>& position, 
+                          const std::vector<double>& position,
                           const std::vector<double>& normal,
                           double distance, double overdrive,
                           bool retracting, double force_threshold,
@@ -108,47 +112,52 @@ class OwlatInterface : public PlexilInterface
   void owlatArmSetTool (int tool, int id);
   void owlatArmStop (int id);
   void owlatArmTareFS (int id);
-  void owlatTaskPSP (int frame, bool relative, const std::vector<double>& point, 
+  void owlatTaskPSP (int frame, bool relative, const std::vector<double>& point,
                      const std::vector<double>& normal, double max_depth,
-                     double max_force, int id); 
-  void owlatTaskScoop (int frame, bool relative, const std::vector<double>& point, 
-                       const std::vector<double>& normal, int id); 
+                     double max_force, int id);
+  void owlatTaskScoop (int frame, bool relative, const std::vector<double>& point,
+                       const std::vector<double>& normal, int id);
 
   // Lookups
-  PLEXIL::Value getArmJointAngles();
-  PLEXIL::Value getArmJointAccelerations();
-  PLEXIL::Value getArmJointTorques();
-  PLEXIL::Value getArmJointVelocities();
-  PLEXIL::Value getArmFTTorque();
-  PLEXIL::Value getArmFTForce();
-  PLEXIL::Value getArmPose();
-  PLEXIL::Value getArmTool();
-  PLEXIL::Value getPSPStopReason();
+  PLEXIL::Value getArmJointAngles() const;
+  PLEXIL::Value getArmJointAccelerations() const;
+  PLEXIL::Value getArmJointTorques() const ;
+  PLEXIL::Value getArmJointVelocities() const;
+  PLEXIL::Value getArmFTTorque() const;
+  PLEXIL::Value getArmFTForce() const;
+  PLEXIL::Value getArmPose() const;
+  PLEXIL::Value getArmTool() const;
+  PLEXIL::Value getPSPStopReason() const;
+  PLEXIL::Value getPanDegrees() const;
+  PLEXIL::Value getPanRadians() const;
+  PLEXIL::Value getTiltRadians() const;
+  PLEXIL::Value getTiltDegrees() const;
+  PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
 
  private:
 
   // Actions
   void owlatUnstowAction (int id);
   void owlatStowAction (int id);
-  void owlatArmMoveCartesianAction (int frame, bool relative, 
-                                    const std::vector<double>& position, 
-                                    const std::vector<double>& orientation, 
+  void owlatArmMoveCartesianAction (int frame, bool relative,
+                                    const std::vector<double>& position,
+                                    const std::vector<double>& orientation,
                                     int id);
-  void owlatArmMoveCartesianGuardedAction (int frame, bool relative, 
-                                           const std::vector<double>& position, 
+  void owlatArmMoveCartesianGuardedAction (int frame, bool relative,
+                                           const std::vector<double>& position,
                                            const std::vector<double>& orientation,
-                                           bool retracting, 
-                                           double force_threshold, 
+                                           bool retracting,
+                                           double force_threshold,
                                            double torque_threshold,int id);
   void owlatArmMoveJointAction (bool relative, int joint,
-                                double angle, int id); 
+                                double angle, int id);
   void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
                                  int id);
   void owlatArmMoveJointsGuardedAction (bool relative,
-                                        const std::vector<double>& angles, 
+                                        const std::vector<double>& angles,
                                         bool retracting, double force_threshold,
                                         double torque_threshold, int id);
-  void owlatArmPlaceToolAction (int frame, bool relative, 
+  void owlatArmPlaceToolAction (int frame, bool relative,
                                 const std::vector<double>& position,
                                 const std::vector<double>& normal,
                                 double distance, double overdrive,
@@ -158,25 +167,12 @@ class OwlatInterface : public PlexilInterface
   void owlatArmStopAction (int id);
   void owlatArmTareFSAction (int id);
   void owlatTaskPSPAction (int frame, bool relative,
-                           const std::vector<double>& point, 
+                           const std::vector<double>& point,
                            const std::vector<double>& normal, double max_depth,
                            double max_force, int id);
   void owlatTaskScoopAction (int frame, bool relative,
-                             const std::vector<double>& point, 
-                             const std::vector<double>& normal, int id); 
-
-  // Node handle
-  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
-
-  // Subscribers
-  std::unique_ptr<ros::Subscriber> m_armJointAnglesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armJointAccelerationsSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armJointTorquesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armJointVelocitiesSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armFTTorqueSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armFTForceSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armPoseSubscriber;
-  std::unique_ptr<ros::Subscriber> m_armToolSubscriber;
+                             const std::vector<double>& point,
+                             const std::vector<double>& normal, int id);
 
   // Callbacks
   void armJointAnglesCallback
@@ -191,6 +187,7 @@ class OwlatInterface : public PlexilInterface
   void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
   void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
+  void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
   // Action Clients
   std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
@@ -216,6 +213,8 @@ class OwlatInterface : public PlexilInterface
   std::vector<double> m_arm_ft_force;
   std::vector<double> m_arm_pose;
   double m_arm_tool;
+  double m_pan_radians;
+  double m_tilt_radians;
 };
 
 #endif

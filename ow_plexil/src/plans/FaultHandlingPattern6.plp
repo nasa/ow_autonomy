@@ -3,12 +3,12 @@
 // this repository.
 
 // Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the action will stop and end in the ABORTED state. 
+// during a related action, the action will stop and end in the ABORTED state.
 // As long as the action is stopped, a backup action will repeat but only if
 // the battery level is sufficient. If/when the fault is cleared, the original
 // action will automatically be attempted again.
 
-// More specifically: If no faults are occurring, this plan will pan 180 
+// More specifically: If no faults are occurring, this plan will pan 180
 // degrees, and then unstow and stow the arm.
 
 // If a power fault is injected, any action occurring will stop and
@@ -22,14 +22,14 @@
 
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
-// i.e. an antenna fault during panning or an arm fault during 
+// i.e. an antenna fault during panning or an arm fault during
 // unstowing or stowing.
 
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
 // IMPORTANT NOTE: When injecting a fault during an arm operation,
-// you should wait until you see the action aborted, 
+// you should wait until you see the action aborted,
 // e.g. "Stow finished in state ABORTED" before clearing the fault.
 // Otherwise the action will show as completed, even though it halted
 // before completing the task. This is due to some bugs in the simulator,
@@ -78,7 +78,7 @@ FaultHandlingPattern6:
     {
       Start (!PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) ||
                           (Lookup(StateOfCharge) < CriticallyLowCharge)));
-    
+
       if Lookup(AntennaFault)
       {
         log_error ("Panning halted due to an antenna fault.");
@@ -101,7 +101,7 @@ FaultHandlingPattern6:
       Start (PanDone &&
              !UnstowDone &&
              (Lookup(ArmFault) || Lookup(PowerFault) || !BatteryOK));
-    
+
       if Lookup(ArmFault)
       {
         log_error ("Unstowing halted due to an arm fault.");
@@ -137,7 +137,7 @@ FaultHandlingPattern6:
       }
       endif;
     }
-    
+
     LibraryCall MonitorPower (continue = MissionInProgress,
                               battery_temp_ok = BatteryTempOK,
                               battery_life_ok = BatteryLifeOK,
@@ -156,9 +156,9 @@ FaultHandlingPattern6:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall Pan (Degrees=NewAngle);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
     }
-    
+
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,
                                   pan_done=PanDone,
                                   unstow_done=UnstowDone,

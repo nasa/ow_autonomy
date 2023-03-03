@@ -9,21 +9,21 @@ TestLanderLights:
   log_info ("Starting TestLanderLights...");
 
   // Tilt the antenna so that the lights aim on the lander body.
-  LibraryCall Tilt (Degrees = 60.0);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = 60.0);
 
   log_info ("Turning lights off...");
-  LibraryCall SetLightIntensity (Side = "left", Intensity = 0.0);
-  LibraryCall SetLightIntensity (Side = "right", Intensity = 0.0);
+  LibraryCall LightSetIntensity (Side = "left", Intensity = 0.0);
+  LibraryCall LightSetIntensity (Side = "right", Intensity = 0.0);
   Wait 2;
 
   log_info ("Setting each to different levels...");
-  LibraryCall SetLightIntensity (Side = "left", Intensity = 0.25);
-  LibraryCall SetLightIntensity (Side = "right", Intensity = 0.75);
+  LibraryCall LightSetIntensity (Side = "left", Intensity = 0.25);
+  LibraryCall LightSetIntensity (Side = "right", Intensity = 0.75);
   Wait 2;
 
   log_info ("Setting both to full intensity...");
-  LibraryCall SetLightIntensity (Side = "left", Intensity = 1.0);
-  LibraryCall SetLightIntensity (Side = "right", Intensity = 1.0);
+  LibraryCall LightSetIntensity (Side = "left", Intensity = 1.0);
+  LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
 
   log_info ("Finished TestLanderLights.");
 }

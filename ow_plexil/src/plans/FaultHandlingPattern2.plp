@@ -32,7 +32,7 @@ FaultHandlingPattern2:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall Pan (Degrees=NewAngle);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
     }
 
     Pattern2UnstowStow:
@@ -41,8 +41,8 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      LibraryCall Unstow();
-      LibraryCall Stow();
+      LibraryCall ArmUnstow();
+      LibraryCall ArmStow();
     }
   }
 }

@@ -9,6 +9,11 @@
 // simulators and testbeds.
 
 #include "action_support.h"
+#include <cmath>  // for M_PI, fabs, fmod
+
+// Degree/Radian conversion used in subclasses
+constexpr double D2R = M_PI / 180.0 ;
+constexpr double R2D = 180.0 / M_PI ;
 
 class PlexilInterface
 {
@@ -49,9 +54,9 @@ class PlexilInterface
                     t_action_done_cb<ResultPtr> done_cb)
   {
     if (ac) {
-      ROS_INFO ("Sending goal to action %s", opname.c_str());
+      ROS_DEBUG ("Sending goal to action %s", opname.c_str());
       ac->sendGoal (goal, done_cb, active_cb, feedback_cb);
-      ROS_INFO ("Sent goal to action %s", opname.c_str());
+      ROS_DEBUG ("Sent goal to action %s", opname.c_str());
     }
     else {
       ROS_ERROR ("%s action client was null!", opname.c_str());
@@ -62,6 +67,13 @@ class PlexilInterface
     bool finished_before_timeout = ac->waitForResult (ros::Duration (0));
     markOperationFinished (opname, id);
   }
+
+  // Node handle reused much.
+  std::unique_ptr<ros::NodeHandle> m_genericNodeHandle;
+
+  // Subscribers: generic container because the subscribers are not
+  // referenced; only their callback functions are of use.
+  std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
  private:
   // Callback function in PLEXIL adapter for success/failure of given command.

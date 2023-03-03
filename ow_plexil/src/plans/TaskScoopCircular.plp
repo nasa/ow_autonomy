@@ -2,17 +2,18 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform one pass with the grinding tool, using the given parameters.
+// Perform one pass of a circular scooping action.
 
 #include "plan-interface.h"
 
-Grind:
+TaskScoopCircular:
 {
+  In Integer Frame;
+  In Boolean Relative;
   In Real X;
   In Real Y;
+  In Real Z;
   In Real Depth;
-  In Real Length;
-  In Real GroundPos;
   In Boolean Parallel;
 
   Boolean FaultDetected = false;
@@ -20,21 +21,22 @@ Grind:
   PostCondition !Lookup(ArmFault);
 
   if Lookup(ArmFault)
-  { 
-    log_error ("Command grind not sent to lander due to active arm fault(s).");
+  {
+    log_error ("Command scoop_circular not sent to lander ",
+               "due to active arm fault(s).");
     FaultDetected = true;
   }
 
-  SendGrind:
+  SendTaskScoopCircular:
   {
     Start !Lookup(ArmFault);
 
     if FaultDetected
     {
-      log_info ("Arm fault(s) resolved, sending grind command to lander...");
+      log_info ("Arm fault(s) resolved, sending scoop_circular command to lander...");
     }
 
-    SynchronousCommand grind (X, Y, Depth, Length, Parallel, GroundPos);
+    SynchronousCommand scoop_circular (Frame, Relative, X, Y, Z, Depth, Parallel);
   }
 
 }

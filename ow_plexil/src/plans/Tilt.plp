@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Tilt antenna to specified degrees.
+// Tilt the antenna to the specified degrees.
 
 #include "plan-interface.h"
 
@@ -15,8 +15,8 @@ Tilt:
   PostCondition !Lookup(AntennaFault);
 
   if Lookup(AntennaFault)
-  { 
-    log_error ("Command tilt_antenna not sent to lander due to active antenna fault(s).");
+  {
+    log_error ("Command tilt not sent to lander due to active antenna fault(s).");
     FaultDetected = true;
   }
 
@@ -26,10 +26,10 @@ Tilt:
 
     if FaultDetected
     {
-      log_info ("Antenna fault(s) resolved, sending tilt_antenna command to lander...");
+      log_info ("Antenna fault(s) resolved, sending tilt command to lander...");
     }
 
-    SynchronousCommand tilt_antenna (Degrees);
+    SynchronousCommand tilt (Degrees);
   }
 
 }

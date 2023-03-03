@@ -2,11 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Take a picture with the stereo camera.
+// Delete any sample regolith particles that are in the sample dock.
+// This simulates the emptying of the dock.
 
 #include "lander-commands.h"
 
-TakePicture:
+DockIngestSample:
 {
-  SynchronousCommand take_picture();
+  SynchronousCommand dock_ingest_sample ();
 }

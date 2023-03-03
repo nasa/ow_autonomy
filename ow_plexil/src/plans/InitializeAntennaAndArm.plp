@@ -12,29 +12,21 @@ InitializeAntennaAndArm:
 
   log_info ("Initializing lander antenna and arm...");
 
-  ResetTilt:
+  ResetPanTilt:
   {
     Start !Lookup(AntennaFault);
-    log_info ("Resetting tilt angle to 0...");
-    LibraryCall Tilt (Degrees=0);
-  }
-
-  ResetPan:
-  {
-    Start !Lookup(AntennaFault);
-    log_info ("Resetting pan angle to 0...");
-    LibraryCall Pan (Degrees=0);
+    log_info ("Resetting pan and tilt angle to 0...");
+    LibraryCall PanTiltMoveJoints (PanDegrees=0, TiltDegrees=0);
   }
 
   ResetArm:
   {
     Start !Lookup(ArmFault);
     log_info ("Stowing the arm...");
-    LibraryCall Unstow();
-    LibraryCall Stow();
+    LibraryCall ArmUnstow();
+    LibraryCall ArmStow();
   }
 
   log_info ("Initialization complete.");
 
 }
-

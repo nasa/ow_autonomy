@@ -3,26 +3,26 @@
 // this repository.
 
 // Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the action will stop and end in the ABORTED state. 
-// As long as the action is stopped, a backup action will repeat. If/when the 
+// during a related action, the action will stop and end in the ABORTED state.
+// As long as the action is stopped, a backup action will repeat. If/when the
 // fault is cleared, the original action will automatically be attempted again.
 
-// More specifically: If no faults are occurring, this plan will pan 180 
+// More specifically: If no faults are occurring, this plan will pan 180
 // degrees, and then unstow and stow the arm.
 
-// If a relevant fault is injected, the plan will stop the current action 
+// If a relevant fault is injected, the plan will stop the current action
 // and start repeating a panning action as backup to the original action.
 
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
-// i.e. an antenna fault during panning or an arm fault during 
+// i.e. an antenna fault during panning or an arm fault during
 // unstowing or stowing.
 
 // NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
 // will halt the panning action in this plan.
 
 // IMPORTANT NOTE: When injecting a fault during an arm operation,
-// you should wait until you see the action aborted, 
+// you should wait until you see the action aborted,
 // e.g. "Stow finished in state ABORTED" before clearing the fault.
 // Otherwise the action will show as completed, even though it halted
 // before completing the task. This is due to some bugs in the simulator,
@@ -53,28 +53,28 @@ FaultHandlingPattern5:
 
   RunMission: Concurrence
   {
-    
+
     End !MissionInProgress;
     log_info ("Starting Mission...");
 
     LogPanError:
     {
       Start !PanDone && Lookup(AntennaFault);
-    
+
       log_error ("Panning halted due to an antenna fault.");
     }
 
     LogUnstowError:
     {
       Start PanDone && !UnstowDone && Lookup(ArmFault);
-    
+
       log_error ("Unstowing halted due to an arm fault.");
     }
 
     LogStowError:
     {
       Start UnstowDone && !StowDone && Lookup(ArmFault);
-    
+
       log_error ("Stowing halted due to an arm fault.");
     }
 
@@ -88,8 +88,8 @@ FaultHandlingPattern5:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall Pan (Degrees=NewAngle);
-    
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+
     }
 
     LibraryCall MissionSequence (mission_in_progress=MissionInProgress,

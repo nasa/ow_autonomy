@@ -25,13 +25,13 @@ ActionGoalStateDemo:
       RepeatCondition true;
       StartCondition !Lookup(AntennaFault);
 
-      if (Lookup(ActionGoalStatus("Stow")) == 1)
+      if (Lookup(ActionGoalStatus("ArmStow")) == 1)
       {
         NewAngle = (Lookup(PanDegrees) - 15) mod 360;
       }
       else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
   
-      LibraryCall Pan (Degrees=NewAngle);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
     }
 
     Pattern2UnstowStow:
@@ -40,8 +40,8 @@ ActionGoalStateDemo:
       StartCondition !Lookup(ArmFault);
       InvariantCondition !Lookup(ArmFault);
 
-      LibraryCall Unstow();
-      LibraryCall Stow();
+      LibraryCall ArmUnstow();
+      LibraryCall ArmStow();
     }
   }
 }

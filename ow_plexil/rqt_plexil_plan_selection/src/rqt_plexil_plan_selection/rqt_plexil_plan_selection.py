@@ -12,7 +12,8 @@ from qt_gui.plugin import Plugin
 from python_qt_binding import loadUi
 from python_qt_binding.QtCore import pyqtSignal
 from python_qt_binding.QtGui import QBrush, QColor, QIcon
-from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, QTableWidgetItem, QAbstractScrollArea, QMessageBox, QApplication
+from python_qt_binding.QtWidgets import QWidget, QAbstractItemView, \
+  QTableWidgetItem, QAbstractScrollArea, QMessageBox, QApplication
 from ow_plexil.srv import PlanSelection
 from std_msgs.msg import String
 import rosservice
@@ -20,7 +21,7 @@ import rosservice
 class PlexilPlanSelectionGUI(Plugin):
 
   #sets up our signal for the sub callback
-  monitor_signal = pyqtSignal(['QString']) 
+  monitor_signal = pyqtSignal(['QString'])
 
   def __init__(self, context):
     '''init initializes the widget and sets up our subscriber, publisher and event handlers'''
@@ -49,18 +50,21 @@ class PlexilPlanSelectionGUI(Plugin):
     self.status_subscriber = rospy.Subscriber('plexil_plan_selection_status', String, self.status_callback)
     #client placeholder
     self.plan_select_client = None
-  
+
     #Qt signal to modify GUI from callback
     self.monitor_signal[str].connect(self.monitor_status)
 
     #populates the plan list, shows different plans based off of what launch file is running
+    # Leaving this commented out as example of how to add plan subdirectories.
+    #unified_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'),
+    #                                'src', 'plans', 'unified')
     if rospy.get_param('owlat_flag', False):
       owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat_plans')
-      self.populate_plan_list(owlat_plan_dir)
+      self.populate_plan_list([owlat_plan_dir])
     else:
       ow_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
-      self.populate_plan_list(ow_plan_dir)
- 
+      self.populate_plan_list([ow_plan_dir])
+
     #sets up tables
     self._widget.sentPlansTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
     self._widget.planQueueTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
@@ -75,14 +79,13 @@ class PlexilPlanSelectionGUI(Plugin):
     self._widget.sendButton.clicked[bool].connect(self.handle_send_button_clicked)
     self._widget.resetButton.clicked[bool].connect(self.handle_reset_button_clicked)
 
-  def populate_plan_list(self, plan_dir):
-    '''Finds all .ple plexil plans in the plans directory and stores them in the widget list.'''
+  def populate_plan_list(self, plan_dirs):
+    '''Finds all .ple files in the plan directories and stores them in the widget list.'''
     plan_list = []
-    #get all plans with extension .ple
-    for p in os.listdir(plan_dir):
-      if p.endswith(".ple"):
-        plan_list.append(p.rsplit(".")[0])
-    #add to list
+    for plan_dir in plan_dirs:
+      for p in os.listdir(plan_dir):
+        if p.endswith(".ple"):
+          plan_list.append(p.rsplit(".")[0])
     self._widget.planList.addItems(plan_list)
     self._widget.planList.sortItems()
 
@@ -92,7 +95,7 @@ class PlexilPlanSelectionGUI(Plugin):
      Running, Finished or Failed.'''
     num_rows = self._widget.sentPlansTable.rowCount()
     #if completed and previously running we set status as finished
-    if feedback == "COMPLETE": 
+    if feedback == "COMPLETE":
       for i in range(num_rows):
         current_status = self._widget.sentPlansTable.item(i,1).text()
         if current_status == "Running...":
@@ -103,22 +106,22 @@ class PlexilPlanSelectionGUI(Plugin):
       #splitting into plan name and status
       status = feedback.rsplit(":")[0]
       running_plan = feedback.rsplit(":")[1].rsplit(".")[0]
-      #we set status to running or Failed depending on status 
+      #we set status to running or Failed depending on status
       for i in range(num_rows):
         plan_name = self._widget.sentPlansTable.item(i,0).text()
         current_status = self._widget.sentPlansTable.item(i,1).text()
         if plan_name == running_plan and current_status == "Pending...":
           if status == "SUCCESS":
             self._widget.sentPlansTable.item(i, 1).setText("Running...")
-            break 
+            break
           else:
             self._widget.sentPlansTable.item(i, 1).setText("Failed")
             self._widget.sentPlansTable.item(i, 1).setBackground(QColor(230,38,0))
-            break 
+            break
     return
-   
+
   def status_callback(self, msg):
-    '''Callback from status subscriber. Sends the msg to the function monitor_signal for further 
+    '''Callback from status subscriber. Sends the msg to the function monitor_signal for further
      processing in order to prevent threading issues in the GUI.'''
     #have to use a signal here or else GUI wont update
     feedback_string = str(msg.data)
@@ -181,7 +184,7 @@ class PlexilPlanSelectionGUI(Plugin):
 
   def handle_send_button_clicked(self, checked):
     '''When send button is clicked any items in the plan queue table are sent (in order) to the sent plans table.
-     It then publishes a string array of these plans so that the ow_plexil_plan_selection node can run them 
+     It then publishes a string array of these plans so that the ow_plexil_plan_selection node can run them
      sequentially. If the subscriber is not connected a popup box reminding the user to run the ow_plexil node will show up.'''
     if self.check_client_set_up() == False:
       return
@@ -193,7 +196,7 @@ class PlexilPlanSelectionGUI(Plugin):
       plan_name = self._widget.planQueueTable.item(0,0).text()
       plans_sent.append(str(plan_name + ".plx"))
       self._widget.planQueueTable.removeRow(0)
-      
+
       row_position = self._widget.sentPlansTable.rowCount()
       self._widget.sentPlansTable.insertRow(row_position)
       self._widget.sentPlansTable.setItem(row_position, 0, QTableWidgetItem(plan_name))
@@ -205,7 +208,7 @@ class PlexilPlanSelectionGUI(Plugin):
     return
 
   def handle_reset_button_clicked(self, checked):
-    '''When reset button is clicked all plans in the sent plans table are deleted. It also publishes a string command 
+    '''When reset button is clicked all plans in the sent plans table are deleted. It also publishes a string command
      RESET letting the ow_plexil_plan_selection node know that any plans in its queue should also be deleted.'''
     if self.check_client_set_up() == False:
       return
@@ -244,4 +247,3 @@ class PlexilPlanSelectionGUI(Plugin):
     '''handles shutdown procedures for the plugin, unregisters the publisher and subscriber.'''
     self.status_subscriber.unregister()
     pass
-
