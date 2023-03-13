@@ -9,16 +9,9 @@
 
 OwlatPositionArm:
 {
-
-  // End effector frame
-  Integer frame = 16;
-  Boolean relative = false;
-  Real position[3] = #(0.0 0.0 0.4);
-  Real orientation[4] = #(0.0 0.0 0.0 1.0);
-
   log_info("Moving arm into position above surface with ARM_MOVE_CARTESIAN.");
-  LibraryCall OwlatArmMoveCartesian(Frame=frame, 
-                                    Relative=relative,
-                                    Position=position,
-                                    Orientation=orientation);
+  LibraryCall OwlatArmMoveCartesian(Frame=1,
+                                    Relative=false,
+                                    Position=#(0.0 0.0 0.43),
+                                    Orientation=#(0.0 0.0 0.0 1.0));
 }

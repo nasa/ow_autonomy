@@ -2,8 +2,18 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 3.10.1
-// It uses Test Sequence 2 for setup and uses ARM_TARE_FS, ARM_MOVE_CARTESIAN_GUARDED
+// This Test Sequence is found in the User Guide under section 4.10.1.
+// It does the setup as for Test Sequence 2 and illustrates
+// ARM_MOVE_CARTESIAN_GUARDED.  The ArmTareFS is added for
+// calibration.
+
+/* Succeeds without action, producing this error:
+
+372.894204041 ERROR: Uncaught exception in task guarded_motion
+372.894309160 ERROR [ROS]: Command ARM_MOVE_CARTESIAN_GUARDED
+140690377961024 Failure unspecified error when invoking command
+
+*/
 
 
 #include "owlat-interface.h"
@@ -12,16 +22,6 @@ LibraryAction OwlatPositionArm();
 
 OwlatTestSequence3:
 {
-
-  // End effector frame
-  Integer frame = 16;
-  Boolean relative = false;
-  Real position1[3] = #(0.0 0.0 0.15);
-  Real position2[3] = #(0.0 0.0 -0.1);
-  Real orientation[4] = #(0.0 0.0 0.0 1.0);
-  Real force_threshold = 5.0;
-  Real torque_threshold = 1.0;
-
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence3");
 
   // Initialize arm
@@ -33,23 +33,12 @@ OwlatTestSequence3:
 
   // Approaches surface
   log_info("Approaching surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
-                                           Relative=relative,
-                                           Position=position1,
-                                           Orientation=orientation,
+  LibraryCall OwlatArmMoveCartesianGuarded(Frame=1,
+                                           Relative=false,
+                                           Position=#(0.0 0.0 0.15),
+                                           Orientation=#(0.0 0.0 0.0 1.0),
                                            Retracting=false,
-                                           ForceThreshold=force_threshold,
-                                           TorqueThreshold=torque_threshold);
-
-  // Retracts from surface
-  log_info("Retracting from surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
-                                           Relative=relative,
-                                           Position=position2,
-                                           Orientation=orientation,
-                                           Retracting=true,
-                                           ForceThreshold=force_threshold,
-                                           TorqueThreshold=torque_threshold);
-
+                                           ForceThreshold=5.0,
+                                           TorqueThreshold=1.0);
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence3");
 }
