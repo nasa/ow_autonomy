@@ -2,9 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 4.9.1.
-// It tests ARM_UNSTOW, ARM_MOVE_CARTESIAN and is used in every
-// subsequent test sequence.
+// This Test Sequence is found in the OWLAT Sim 0.5.3 User Guide,
+// section 4.9.1.  It tests ARM_UNSTOW and ARM_MOVE_CARTESIAN.
+// Because the cartesian move is used in many subsequent test
+// sequences, it has been abstracted as the OwlatPositionArm plan.
 
 /* Succeeds, but produces this error:
 

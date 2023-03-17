@@ -27,7 +27,7 @@
 #include <owlat_sim_msgs/ARM_MOVE_JOINTAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
-#include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
+#include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owlat_sim_msgs/ARM_SET_TOOLAction.h>
 #include <owlat_sim_msgs/ARM_STOPAction.h>
 #include <owlat_sim_msgs/ARM_TARE_FSAction.h>
@@ -56,8 +56,8 @@ using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
 using OwlatArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTS_GUARDEDAction>;
-using OwlatArmPlaceToolActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_PLACE_TOOLAction>;
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using OwlatArmSetToolActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_SET_TOOLAction>;
 using OwlatArmStopActionClient =
@@ -102,13 +102,14 @@ class OwlatInterface : public PlexilInterface
                                   const std::vector<double>& angles,
                                   bool retracting, double force_threshold,
                                   double torque_threshold, int id);
-  void owlatArmPlaceTool (int frame,
-                          bool relative,
-                          const std::vector<double>& position,
-                          const std::vector<double>& normal,
-                          double distance, double overdrive,
-                          bool retracting, double force_threshold,
-                          double torque_threshold, int id);
+  void armFindSurface (int frame,
+                       bool relative,
+                       const std::vector<double>& position,
+                       const std::vector<double>& normal,
+                       double distance, double overdrive,
+                       double force_threshold,
+                       double torque_threshold,
+                       int id);
   void owlatArmSetTool (int tool, int id);
   void owlatArmStop (int id);
   void owlatArmTareFS (int id);
@@ -157,12 +158,13 @@ class OwlatInterface : public PlexilInterface
                                         const std::vector<double>& angles,
                                         bool retracting, double force_threshold,
                                         double torque_threshold, int id);
-  void owlatArmPlaceToolAction (int frame, bool relative,
-                                const std::vector<double>& position,
-                                const std::vector<double>& normal,
-                                double distance, double overdrive,
-                                bool retracting, double force_threshold,
-                                double torque_threshold, int id);
+  void armFindSurfaceAction (int frame, bool relative,
+                             const std::vector<double>& position,
+                             const std::vector<double>& normal,
+                             double distance, double overdrive,
+                             double force_threshold,
+                             double torque_threshold,
+                             int id);
   void owlatArmSetToolAction (int tool, int id);
   void owlatArmStopAction (int id);
   void owlatArmTareFSAction (int id);
@@ -197,7 +199,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<OwlatArmMoveJointActionClient> m_owlatArmMoveJointClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
   std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
-  std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<OwlatArmSetToolActionClient> m_owlatArmSetToolClient;
   std::unique_ptr<OwlatArmStopActionClient> m_owlatArmStopClient;
   std::unique_ptr<OwlatArmTareFSActionClient> m_owlatArmTareFSClient;

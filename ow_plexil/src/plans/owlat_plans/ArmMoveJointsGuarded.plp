@@ -4,10 +4,13 @@
 
 #include "owlat-lander-commands.h"
 
-OwlatArmMoveJoints:
+ArmMoveJointsGuarded:
 {
   In Boolean Relative;
   In Real Angles[7];
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
 
-  SynchronousCommand owlat_arm_move_joints(Relative, Angles);
+  SynchronousCommand arm_move_joints_guarded (Relative, Angles,
+                                              ForceThreshold, TorqueThreshold);
 }

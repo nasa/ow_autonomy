@@ -2,20 +2,19 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 4.11.1
-// It uses Test Sequence 2's setup and illustrates ARM_PLACE_TOOL.
+// This Test Sequence is found in the OWLAT Sim 0.5.3 User Guide,
+// section 4.11.1.  It uses Test Sequence 2's setup and illustrates
+// ArmFindSurface.
 
-/* Succeeds without action, producing this error:
+/* Errors out during initialization:
 
-863.443863970 ERROR: Uncaught exception in task place_tool
-863.443968222 ERROR [ROS]: Command ARM_PLACE_TOOL 140690042410912
-Failure rejected step 1: Kinematics Failure: IK Could not resolve
-0.1277 0 -1.202 0 0.707107 0 0.707107 from -5.93975e-06 -0.999995
--6.4711e-06 1.99999 6.10514e-06 0.570006 6.05393e-06: goal is out of
-reach! mag_w_sqr: 1.44939
+135.574756083 ERROR [ROS]: Command ARM_MOVE_CARTESIAN 139664820408992
+Failure Kinematics Failure: IK Could not resolve 0.5577 0 -1.202 0
+0.707107 0 0.707107 from 2.3388e-05 -0.998214 -1.91479e-05 2.00025
+2.62182e-05 0.56994 -2.50811e-05: goal is out of reach! mag_w_sqr:
+1.69251
 
 */
-
 
 #include "owlat-interface.h"
 
@@ -23,33 +22,20 @@ LibraryAction OwlatPositionArm();
 
 OwlatTestSequence4:
 {
-
-  // End effector frame
-  Integer frame = 1;
-  Boolean relative = false;
-  Real position[3] = #(0.0 0.0 0.15);
-  Real normal[3] = #(0.0 0.0 -1.0);
-  Real distance = 0.15;
-  Real overdrive = 0.0;
-  Real force_threshold = 5.0;
-  Real torque_threshold = 1.0;
-
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
 
   // Initialize arm
   LibraryCall OwlatUnstow();
   LibraryCall OwlatPositionArm();
 
-  // Approaches surface
-  log_info("Approaching surface with ARM_PLACE_TOOL.");
-  LibraryCall OwlatArmPlaceTool(Frame=frame, Relative=relative,
-                                Position=position,
-                                Normal=normal,
-                                Distance=distance,
-                                Overdrive=overdrive,
-                                Retracting=false,
-                                ForceThreshold=force_threshold,
-                                TorqueThreshold=torque_threshold);
+  LibraryCall ArmFindSurface(Frame=1,
+                             Relative=false,
+                             Position=#(0.0 0.0 0.15),
+                             Normal=#(0.0 0.0 -1.0),
+                             Distance=0.15,
+                             Overdrive=0.0,
+                             ForceThreshold=5.0,
+                             TorqueThreshold=1.0);
 
   // Retracts from surface
   LibraryCall OwlatUnstow();

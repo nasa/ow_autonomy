@@ -2,10 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 4.10.1.
-// It does the setup as for Test Sequence 2 and illustrates
-// ARM_MOVE_CARTESIAN_GUARDED.  The ArmTareFS is added for
-// calibration.
+// This Test Sequence is found in the OWLAT Sim 0.5.3 User Guide,
+// section 4.10.1.  It does the setup as for Test Sequence 2 and
+// illustrates ARM_MOVE_CARTESIAN_GUARDED.
 
 /* Succeeds without action, producing this error:
 
@@ -28,7 +27,7 @@ OwlatTestSequence3:
   LibraryCall OwlatUnstow();
   LibraryCall OwlatPositionArm();
 
-  // Tare the force sensor
+  // Added for calibration.
   LibraryCall OwlatArmTareFS();
 
   // Approaches surface

@@ -6,6 +6,16 @@
 // It uses Test Sequence 2's setup and illustrates ARM_SET_TOOL,
 // TASK_PSP.
 
+/* The following error appears after plan finishes:
+
+147.025020271 ERROR [ROS]: Command TASK_PSP 140702390428864 Failure
+could not complete state Init : Kinematics Failure: IK Could not
+resolve 0.2987 0 -1.202 0 0.707107 0 0.707107 from -0.000197313
+-0.994659 7.21946e-06 2.00089 1.24613e-05 0.569966 4.39982e-06: goal
+is out of reach! mag_w_sqr: 1.50178
+
+*/
+
 #include "owlat-interface.h"
 
 LibraryAction OwlatPositionArm();

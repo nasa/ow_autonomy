@@ -26,14 +26,24 @@ LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,In Boolean Relative,
                                            In Boolean Retracting, In Real ForceThreshold,
                                            In Real TorqueThreshold); 
 LibraryAction OwlatArmMoveJoint(In Boolean Relative, In Integer Joint, In Real Angle);
-LibraryAction OwlatArmMoveJoints(In Boolean Relative, In Real Angles[7]);
-LibraryAction OwlatArmMoveJointsGuarded(In Boolean Relative, In Real Angles[7],
-                                        In Boolean Retracting, In Real ForceThreshold,
-                                        In Real TorqueThreshold);
-LibraryAction OwlatArmPlaceTool(In Integer Frame, In Boolean Relative, In Real Position[3], In Real Normal[3],
-                                In Real Distance, In Real Overdrive, In Boolean Retracting, In Real ForceThreshold,
-                                In Real TorqueThreshold);
+LibraryAction ArmMoveJoints (In Boolean Relative, In Real Angles[7]);
+
+LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
+                                    In Real Angles[7],
+                                    In Real ForceThreshold,
+                                    In Real TorqueThreshold);
+
+LibraryAction ArmFindSurface (In Integer Frame,
+                              In Boolean Relative,
+                              In Real Position[3],
+                              In Real Normal[3],
+                              In Real Distance,
+                              In Real Overdrive,
+                              In Real ForceThreshold,
+                              In Real TorqueThreshold);
+
 LibraryAction OwlatArmSetTool(In Integer Tool);
+
 LibraryAction OwlatArmStop();
 LibraryAction OwlatArmTareFS();
 LibraryAction OwlatTaskDropoff(In Integer Frame, In Boolean Relative, In Real Point[3]);

@@ -2,49 +2,23 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Perform an ArmFindSurface as specified.
-
-#include "plan-interface.h"
+Command arm_find_surface (Integer Frame, Boolean relative,
+                          Real position[3], Real normal[3],
+                          Real distance, Real overdrive,
+                          Real force_threshold, Real torque_threshold);
 
 ArmFindSurface:
 {
   In Integer Frame;
   In Boolean Relative;
-  In Real PosX;
-  In Real PosY;
-  In Real PosZ;
-  In Real NormX;
-  In Real NormY;
-  In Real NormZ;
+  In Real Position[3];
+  In Real Normal[3];
   In Real Distance;
   In Real Overdrive;
   In Real ForceThreshold;
   In Real TorqueThreshold;
 
-  Boolean FaultDetected = false;
-
-  PostCondition !Lookup(ArmFault);
-
-  if Lookup(ArmFault)
-  {
-    log_error ("Command arm_find_surface not sent ",
-	       "to lander due to active arm fault(s).");
-    FaultDetected = true;
-  }
-
-  SendArmFindSurface:
-  {
-    Start !Lookup(ArmFault);
-
-    if FaultDetected
-    {
-      log_info ("Arm fault(s) resolved, ",
-		"sending arm_find_surface command to lander...");
-    }
-
-    SynchronousCommand arm_find_surface (Frame, Relative, PosX, PosY, PosZ,
-                                         NormX, NormY, NormZ,
-                                         Distance, Overdrive,
-                                         ForceThreshold, TorqueThreshold);
-  }
+  SynchronousCommand arm_find_surface (Frame, Relative, Position, Normal,
+                                       Distance, Overdrive,
+                                       ForceThreshold, TorqueThreshold);
 }

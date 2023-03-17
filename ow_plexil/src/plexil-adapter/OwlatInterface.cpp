@@ -17,6 +17,7 @@ using std::string;
 using std::vector;
 using std::make_unique;
 using namespace owlat_sim_msgs;
+using namespace owl_msgs;
 using namespace PLEXIL;
 
 const string Name_OwlatUnstow =           "/owlat_sim/ARM_UNSTOW";
@@ -28,7 +29,7 @@ const string Name_OwlatArmMoveJoint =     "/owlat_sim/ARM_MOVE_JOINT";
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
-const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
+const string Name_ArmFindSurface =     "ArmFindSurface";
 const string Name_OwlatArmSetTool =       "/owlat_sim/ARM_SET_TOOL";
 const string Name_OwlatArmStop =          "/owlat_sim/ARM_STOP";
 const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
@@ -46,7 +47,7 @@ enum class LanderOps {
   OwlatArmMoveJoint,
   OwlatArmMoveJoints,
   OwlatArmMoveJointsGuarded,
-  OwlatArmPlaceTool,
+  ArmFindSurface,
   OwlatArmSetTool,
   OwlatArmStop,
   OwlatArmTareFS,
@@ -62,7 +63,7 @@ static vector<string> LanderOpNames = {
     Name_OwlatArmMoveJoint,
     Name_OwlatArmMoveJoints,
     Name_OwlatArmMoveJointsGuarded,
-    Name_OwlatArmPlaceTool,
+    Name_ArmFindSurface,
     Name_OwlatArmSetTool,
     Name_OwlatArmStop,
     Name_OwlatArmTareFS,
@@ -185,8 +186,8 @@ void OwlatInterface::initialize()
     m_owlatArmMoveJointsGuardedClient =
       make_unique<OwlatArmMoveJointsGuardedActionClient>
       (Name_OwlatArmMoveJointsGuarded, true);
-    m_owlatArmPlaceToolClient =
-      make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
+    m_armFindSurfaceClient =
+      make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
     m_owlatArmSetToolClient =
       make_unique<OwlatArmSetToolActionClient>(Name_OwlatArmSetTool, true);
     m_owlatArmStopClient =
@@ -227,9 +228,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmPlaceToolClient->waitForServer
+    if (! m_armFindSurfaceClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_PLACE_TOOL action server did not connect!");
+      ROS_ERROR ("ArmFindSurface action server did not connect!");
     }
     if (! m_owlatArmSetToolClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -489,50 +490,53 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
      default_action_done_cb<ARM_MOVE_JOINTS_GUARDEDResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
-                                        const vector<double>& position,
-                                        const vector<double>& normal,
-                                        double distance, double overdrive,
-                                        bool retracting, double force_threshold,
-                                        double torque_threshold, int id)
+void OwlatInterface::armFindSurface (int frame, bool relative,
+                                     const vector<double>& position,
+                                     const vector<double>& normal,
+                                     double distance, double overdrive,
+                                     double force_threshold,
+                                     double torque_threshold,
+                                     int id)
 {
-  if (! markOperationRunning (Name_OwlatArmPlaceTool, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmPlaceToolAction,
-                        this, frame, relative, position, normal,
-                        distance, overdrive, retracting, force_threshold,
-                        torque_threshold, id);
+  if (! markOperationRunning (Name_ArmFindSurface, id)) return;
+
+  thread action_thread (&OwlatInterface::armFindSurfaceAction,
+                        this, frame, relative, position, normal, distance,
+                        overdrive, force_threshold, torque_threshold, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
-                                              const vector<double>& position,
-                                              const vector<double>& normal,
-                                              double distance, double overdrive,
-                                              bool retracting, double force_threshold,
-                                              double torque_threshold, int id)
+void OwlatInterface::armFindSurfaceAction (int frame, bool relative,
+                                           const vector<double>& position,
+                                           const vector<double>& normal,
+                                           double distance, double overdrive,
+                                           double force_threshold,
+                                           double torque_threshold,
+                                           int id)
 {
-  ARM_PLACE_TOOLGoal goal;
-  goal.frame.value = frame;
+  ArmFindSurfaceGoal goal;
+  goal.frame = frame;
   goal.relative = relative;
-  for(int i = 0; i < goal.position.size(); i++){
-    goal.position[i] = position[i];
-    goal.normal[i] = normal[i];
-  }
+  goal.position.x = position[0];
+  goal.position.y = position[1];
+  goal.position.z = position[2];
+  goal.normal.x = normal[0];
+  goal.normal.y = normal[1];
+  goal.normal.z = normal[2];
   goal.distance = distance;
   goal.overdrive = overdrive;
-  goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmPlaceTool;  // shorter version
+  string opname = Name_ArmFindSurface;
 
-  runAction<actionlib::SimpleActionClient<ARM_PLACE_TOOLAction>,
-            ARM_PLACE_TOOLGoal,
-            ARM_PLACE_TOOLResultConstPtr,
-            ARM_PLACE_TOOLFeedbackConstPtr>
-    (opname, m_owlatArmPlaceToolClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmFindSurfaceAction>,
+            ArmFindSurfaceGoal,
+            ArmFindSurfaceResultConstPtr,
+            ArmFindSurfaceFeedbackConstPtr>
+    (opname, m_armFindSurfaceClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_PLACE_TOOLFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_PLACE_TOOLResultConstPtr> (opname));
+     default_action_feedback_cb<ArmFindSurfaceFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmFindSurfaceResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatArmSetTool (int tool, int id)

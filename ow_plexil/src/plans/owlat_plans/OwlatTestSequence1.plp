@@ -2,8 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This Test Sequence is found in the User Guide under section 4.8.1
-// It tests ARM_MOVE_JOINTS, ARM_TARE_FS, ARM_MOVE_JOINTS_GUARDED, ARM_UNSTOW.
+// This Test Sequence is found in the OWLAT Sim 0.5.3 User Guide,
+// section 4.8.1. It tests ARM_MOVE_JOINTS, ARM_MOVE_JOINTS_GUARDED,
+// ARM_UNSTOW.
 
 #include "owlat-interface.h"
 
@@ -18,18 +19,17 @@ OwlatTestSequence1:
 
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence1");
 
-  // Get Arm into position above ground
-  LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
+  // Get arm into position above ground.
+  LibraryCall ArmMoveJoints(Relative=false, Angles=angles1);
 
-  // Tare the force sensor
+  // Added for calibration.
   LibraryCall OwlatArmTareFS();
-
-  // Move the arm until it comes in contact with the ground 
-  LibraryCall OwlatArmMoveJointsGuarded(Relative=true, 
-                                        Angles=angles2, 
-                                        Retracting=false,
-                                        ForceThreshold=force_threshold, 
-                                        TorqueThreshold=torque_threshold);
+  
+  // Move the arm until it comes in contact with the ground.
+  LibraryCall ArmMoveJointsGuarded(Relative=true, 
+                                   Angles=angles2, 
+                                   ForceThreshold=force_threshold, 
+                                   TorqueThreshold=torque_threshold);
 
   // Pull the arm back from the surface
   /* LibraryCall OwlatArmMoveJointsGuarded(Relative=true,  */

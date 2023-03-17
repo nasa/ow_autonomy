@@ -158,10 +158,10 @@ static void owlat_arm_move_joints_guarded (Command* cmd,
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
+static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
-  bool relative, retracting;
+  bool relative;
   double force_threshold, torque_threshold, distance, overdrive;
   vector<double> const *position_vector = nullptr;
   vector<double> const *normal_vector = nullptr;
@@ -174,21 +174,19 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   args[3].getValuePointer(normal);
   args[4].getValue(distance);
   args[5].getValue(overdrive);
-  args[6].getValue(retracting);
-  args[7].getValue(force_threshold);
-  args[8].getValue(torque_threshold);
+  args[6].getValue(force_threshold);
+  args[7].getValue(torque_threshold);
   //change real array into a vector
   position->getContentsVector(position_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmPlaceTool (frame, relative,
-                                                 *position_vector,
-                                                 *normal_vector,
-                                                 distance, overdrive,
-                                                 retracting,
-                                                 force_threshold,
-                                                 torque_threshold,
-                                                 CommandId);
+  OwlatInterface::instance()->armFindSurface (frame, relative,
+                                              *position_vector,
+                                              *normal_vector,
+                                              distance, overdrive,
+                                              force_threshold,
+                                              torque_threshold,
+                                              CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -432,8 +430,8 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_move_joints);
   g_configuration->registerCommandHandler("owlat_arm_move_joints_guarded",
                                           owlat_arm_move_joints_guarded);
-  g_configuration->registerCommandHandler("owlat_arm_place_tool",
-                                          owlat_arm_place_tool);
+  g_configuration->registerCommandHandler("arm_find_surface",
+                                          arm_find_surface);
   g_configuration->registerCommandHandler("owlat_arm_set_tool",
                                           owlat_arm_set_tool);
   g_configuration->registerCommandHandler("owlat_arm_stop", owlat_arm_stop);
