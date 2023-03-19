@@ -26,7 +26,7 @@ OwlatTestSequence4:
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence4");
 
   // Initialize arm
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
   LibraryCall OwlatPositionArm();
 
   // Approaches surface
@@ -41,7 +41,7 @@ OwlatTestSequence4:
                                 TorqueThreshold=torque_threshold);
 
   // Retracts from surface
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence4");
 }

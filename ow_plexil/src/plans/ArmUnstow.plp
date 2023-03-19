@@ -2,33 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Unstow the arm, which is moving it to a specified "ready" position from
-// wherever its current location.
-
-#include "plan-interface.h"
+Command arm_unstow();
 
 ArmUnstow:
 {
-  Boolean FaultDetected = false;
-
-  PostCondition !Lookup(ArmFault);
-
-  if Lookup(ArmFault)
-  { 
-    log_error ("Command unstow not sent to lander due to active arm fault(s).");
-    FaultDetected = true;
-  }
-
-  SendUnstow:
-  {
-    Start !Lookup(ArmFault);
-
-    if FaultDetected
-    {
-      log_info ("Arm fault(s) resolved, sending unstow command to lander...");
-    }
-
-    SynchronousCommand arm_unstow();
-  }
-
+  SynchronousCommand arm_unstow();
 }

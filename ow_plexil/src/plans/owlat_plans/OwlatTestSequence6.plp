@@ -28,7 +28,7 @@ OwlatTestSequence6:
   LibraryCall OwlatArmSetTool(Tool=4);
 
   // Initialize arm
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
   LibraryCall OwlatPositionArm();
 
   // Scoops ground

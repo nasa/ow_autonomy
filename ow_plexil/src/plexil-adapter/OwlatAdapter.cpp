@@ -31,10 +31,10 @@ using namespace PLEXIL;
 
 using std::string;
 
-static void owlat_unstow (Command* cmd, AdapterExecInterface* intf)
+static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatUnstow (CommandId);
+  OwlatInterface::instance()->armUnstow (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -420,7 +420,7 @@ bool OwlatAdapter::initialize()
 
   // Commands
 
-  g_configuration->registerCommandHandler("owlat_unstow", owlat_unstow);
+  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
   g_configuration->registerCommandHandler("owlat_stow", owlat_stow);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
                                           owlat_arm_move_cartesian);

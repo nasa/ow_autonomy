@@ -28,7 +28,7 @@ OwlatTestSequence5:
   LibraryCall OwlatArmSetTool(Tool=1);
 
   // Initialize arm
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
   LibraryCall OwlatPositionArm();
 
   // Executes TASK_PSP

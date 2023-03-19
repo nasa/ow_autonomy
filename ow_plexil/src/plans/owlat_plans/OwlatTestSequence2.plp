@@ -22,7 +22,7 @@ OwlatTestSequence2:
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence2");
 
   log_info("Unstowing arm with ARM_UNSTOW.");
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
   LibraryCall OwlatPositionArm();
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence2");

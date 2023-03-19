@@ -17,9 +17,10 @@ using std::string;
 using std::vector;
 using std::make_unique;
 using namespace owlat_sim_msgs;
+using namespace owl_msgs;
 using namespace PLEXIL;
 
-const string Name_OwlatUnstow =           "/owlat_sim/ARM_UNSTOW";
+const string Name_ArmUnstow =           "ArmUnstow";
 const string Name_OwlatStow =             "/owlat_sim/ARM_STOW";
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
@@ -39,7 +40,7 @@ const size_t OwlatJoints = 6;
 
 // Used as indices into the subsequent vector.
 enum class LanderOps {
-  OwlatUnstow,
+  ArmUnstow,
   OwlatStow,
   OwlatArmMoveCartesian,
   OwlatArmMoveCartesianGuarded,
@@ -55,7 +56,7 @@ enum class LanderOps {
 };
 
 static vector<string> LanderOpNames = {
-    Name_OwlatUnstow,
+    Name_ArmUnstow,
     Name_OwlatStow,
     Name_OwlatArmMoveCartesian,
     Name_OwlatArmMoveCartesianGuarded,
@@ -168,8 +169,8 @@ void OwlatInterface::initialize()
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
-    m_owlatUnstowClient =
-      make_unique<OwlatUnstowActionClient>(Name_OwlatUnstow, true);
+    m_armUnstowClient =
+      make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
     m_owlatStowClient =
       make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
     m_owlatArmMoveCartesianClient =
@@ -199,9 +200,9 @@ void OwlatInterface::initialize()
       make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
     // Connect to action servers
-    if (! m_owlatUnstowClient->waitForServer
+    if (! m_armUnstowClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT UNSTOW action server did not connect!");
+      ROS_ERROR ("ArmUnstow action server did not connect!");
     }
     if (! m_owlatStowClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -257,26 +258,26 @@ void OwlatInterface::initialize()
 
 /////////////////////////////// OWLAT Interface ////////////////////////////////
 
-void OwlatInterface::owlatUnstow (int id)
+void OwlatInterface::armUnstow (int id)
 {
-  if (! markOperationRunning (Name_OwlatUnstow, id)) return;
-  thread action_thread (&OwlatInterface::owlatUnstowAction, this, id);
+  if (! markOperationRunning (Name_ArmUnstow, id)) return;
+  thread action_thread (&OwlatInterface::armUnstowAction, this, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatUnstowAction (int id)
+void OwlatInterface::armUnstowAction (int id)
 {
-  ARM_UNSTOWGoal goal;
-  string opname = Name_OwlatUnstow;  // shorter version
+  ArmUnstowGoal goal;
+  string opname = Name_ArmUnstow;
 
-  runAction<actionlib::SimpleActionClient<ARM_UNSTOWAction>,
-            ARM_UNSTOWGoal,
-            ARM_UNSTOWResultConstPtr,
-            ARM_UNSTOWFeedbackConstPtr>
-    (opname, m_owlatUnstowClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
+            ArmUnstowGoal,
+            ArmUnstowResultConstPtr,
+            ArmUnstowFeedbackConstPtr>
+    (opname, m_armUnstowClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_UNSTOWFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_UNSTOWResultConstPtr> (opname));
+     default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmUnstowResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatStow (int id)

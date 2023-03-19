@@ -25,7 +25,7 @@ OwlatTestSequence3:
   LibraryCall PrintNodeStart(NodeName="OwlatTestSequence3");
 
   // Initialize arm
-  LibraryCall OwlatUnstow();
+  LibraryCall ArmUnstow();
   LibraryCall OwlatPositionArm();
 
   // Tare the force sensor

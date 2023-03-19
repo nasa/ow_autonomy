@@ -20,7 +20,7 @@
 #include "joint_support.h"
 
 // OWLAT Sim (installation required)
-#include <owlat_sim_msgs/ARM_UNSTOWAction.h>
+#include <owl_msgs/ArmUnstowAction.h>
 #include <owlat_sim_msgs/ARM_STOWAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
@@ -42,8 +42,8 @@
 #include <owlat_sim_msgs/ARM_POSE.h>
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
-using OwlatUnstowActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
+using ArmUnstowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using OwlatStowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
 using OwlatArmMoveCartesianActionClient =
@@ -81,7 +81,7 @@ class OwlatInterface : public PlexilInterface
   void initialize();
 
   // Lander interface
-  void owlatUnstow (int id);
+  void armUnstow (int id);
   void owlatStow (int id);
   void owlatArmMoveCartesian (int frame, bool relative,
                               const std::vector<double>& position,
@@ -137,7 +137,7 @@ class OwlatInterface : public PlexilInterface
  private:
 
   // Actions
-  void owlatUnstowAction (int id);
+  void armUnstowAction (int id);
   void owlatStowAction (int id);
   void owlatArmMoveCartesianAction (int frame, bool relative,
                                     const std::vector<double>& position,
@@ -190,7 +190,7 @@ class OwlatInterface : public PlexilInterface
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
   // Action Clients
-  std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
+  std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
   std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
   std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
