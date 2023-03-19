@@ -21,6 +21,7 @@
 
 // OWLAT Sim (installation required)
 #include <owl_msgs/ArmUnstowAction.h>
+#include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owlat_sim_msgs/ARM_STOWAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
@@ -44,6 +45,8 @@
 
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
+using TaskDiscardSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using OwlatStowActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
 using OwlatArmMoveCartesianActionClient =
@@ -82,6 +85,7 @@ class OwlatInterface : public PlexilInterface
 
   // Lander interface
   void armUnstow (int id);
+  void taskDiscard (int id);
   void owlatStow (int id);
   void owlatArmMoveCartesian (int frame, bool relative,
                               const std::vector<double>& position,
@@ -135,6 +139,19 @@ class OwlatInterface : public PlexilInterface
   PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
 
  private:
+  template <class Client, class Goal, class ResultPtr, class FeedbackPtr>
+  void nullaryAction (int id, const std::string& name,
+                      std::unique_ptr<Client>& ac)
+  {
+    Goal goal;
+    std::string opname = name;
+
+    runAction<Client, Goal, ResultPtr, FeedbackPtr>
+      (opname, ac, goal, id,
+       default_action_active_cb (opname),
+       default_action_feedback_cb<FeedbackPtr> (opname),
+       default_action_done_cb<ResultPtr> (opname));
+  }
 
   // Actions
   void armUnstowAction (int id);
@@ -191,6 +208,7 @@ class OwlatInterface : public PlexilInterface
 
   // Action Clients
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
   std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
   std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
   std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;

@@ -20,7 +20,7 @@ using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
-const string Name_ArmUnstow =           "ArmUnstow";
+const string Name_Unstow =           "ArmUnstow";
 const string Name_OwlatStow =             "/owlat_sim/ARM_STOW";
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
@@ -35,9 +35,11 @@ const string Name_OwlatArmStop =          "/owlat_sim/ARM_STOP";
 const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
 const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
+const string Name_Discard = "TaskDiscardSample";
 
 const size_t OwlatJoints = 6;
 
+/*
 // Used as indices into the subsequent vector.
 enum class LanderOps {
   ArmUnstow,
@@ -54,29 +56,30 @@ enum class LanderOps {
   OwlatArmTaskPSP,
   OwlatArmTaskScoop
 };
+*/
 
 static vector<string> LanderOpNames = {
-    Name_ArmUnstow,
-    Name_OwlatStow,
-    Name_OwlatArmMoveCartesian,
-    Name_OwlatArmMoveCartesianGuarded,
-    Name_OwlatArmMoveJoint,
-    Name_OwlatArmMoveJoints,
-    Name_OwlatArmMoveJointsGuarded,
-    Name_OwlatArmPlaceTool,
-    Name_OwlatArmSetTool,
-    Name_OwlatArmStop,
-    Name_OwlatArmTareFS,
-    Name_OwlatTaskPSP,
-    Name_OwlatTaskScoop
-  };
+  Name_Discard,
+  Name_Unstow,
+  Name_OwlatStow,
+  Name_OwlatArmMoveCartesian,
+  Name_OwlatArmMoveCartesianGuarded,
+  Name_OwlatArmMoveJoint,
+  Name_OwlatArmMoveJoints,
+  Name_OwlatArmMoveJointsGuarded,
+  Name_OwlatArmPlaceTool,
+  Name_OwlatArmSetTool,
+  Name_OwlatArmStop,
+  Name_OwlatArmTareFS,
+  Name_OwlatTaskPSP,
+  Name_OwlatTaskScoop
+};
 
 // Task PSP Callback
 static double PSPStopReasonVar = 0;
 
-template<int OpIndex, typename T>
 static void task_psp_done_cb (const actionlib::SimpleClientGoalState& state,
-                              const T& result)
+                              const TASK_PSPResultConstPtr& result)
 {
   ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
   PSPStopReasonVar = result->stop_reason.value;
@@ -170,7 +173,9 @@ void OwlatInterface::initialize()
 
     // Initialize pointers
     m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
+      make_unique<ArmUnstowActionClient>(Name_Unstow, true);
+    m_taskDiscardClient =
+      make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
     m_owlatStowClient =
       make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
     m_owlatArmMoveCartesianClient =
@@ -203,6 +208,10 @@ void OwlatInterface::initialize()
     if (! m_armUnstowClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmUnstow action server did not connect!");
+    }
+    if (! m_taskDiscardClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("TaskDiscardSample action server did not connect!");
     }
     if (! m_owlatStowClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -260,7 +269,7 @@ void OwlatInterface::initialize()
 
 void OwlatInterface::armUnstow (int id)
 {
-  if (! markOperationRunning (Name_ArmUnstow, id)) return;
+  if (! markOperationRunning (Name_Unstow, id)) return;
   thread action_thread (&OwlatInterface::armUnstowAction, this, id);
   action_thread.detach();
 }
@@ -268,7 +277,7 @@ void OwlatInterface::armUnstow (int id)
 void OwlatInterface::armUnstowAction (int id)
 {
   ArmUnstowGoal goal;
-  string opname = Name_ArmUnstow;
+  string opname = Name_Unstow;
 
   runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
             ArmUnstowGoal,
@@ -278,6 +287,18 @@ void OwlatInterface::armUnstowAction (int id)
      default_action_active_cb (opname),
      default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (opname),
      default_action_done_cb<ArmUnstowResultConstPtr> (opname));
+}
+
+void OwlatInterface::taskDiscard (int id)
+{
+  if (! markOperationRunning (Name_Discard, id)) return;
+  thread action_thread (&OwlatInterface::nullaryAction<
+                        TaskDiscardSampleActionClient,
+                        TaskDiscardSampleGoal,
+                        TaskDiscardSampleResultConstPtr,
+                        TaskDiscardSampleFeedbackConstPtr>,
+                        this, id, Name_Discard, std::ref(m_taskDiscardClient));
+  action_thread.detach();
 }
 
 void OwlatInterface::owlatStow (int id)
@@ -640,8 +661,7 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
     (opname, m_owlatTaskPSPClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TASK_PSPFeedbackConstPtr> (opname),
-     task_psp_done_cb<static_cast<int>(LanderOps::OwlatArmTaskPSP),
-     TASK_PSPResultConstPtr>);
+     task_psp_done_cb);
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
