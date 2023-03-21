@@ -270,28 +270,19 @@ void OwlatInterface::initialize()
 void OwlatInterface::armUnstow (int id)
 {
   if (! markOperationRunning (Name_Unstow, id)) return;
-  thread action_thread (&OwlatInterface::armUnstowAction, this, id);
+  thread action_thread (&OwlatInterface::nullaryAction<
+                        ArmUnstowActionClient,
+                        ArmUnstowGoal,
+                        ArmUnstowResultConstPtr,
+                        ArmUnstowFeedbackConstPtr>,
+                        this, id, Name_Unstow, std::ref(m_armUnstowClient));
   action_thread.detach();
-}
-
-void OwlatInterface::armUnstowAction (int id)
-{
-  ArmUnstowGoal goal;
-  string opname = Name_Unstow;
-
-  runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
-            ArmUnstowGoal,
-            ArmUnstowResultConstPtr,
-            ArmUnstowFeedbackConstPtr>
-    (opname, m_armUnstowClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (opname),
-     default_action_done_cb<ArmUnstowResultConstPtr> (opname));
 }
 
 void OwlatInterface::taskDiscard (int id)
 {
   if (! markOperationRunning (Name_Discard, id)) return;
+  /*
   thread action_thread (&OwlatInterface::nullaryAction<
                         TaskDiscardSampleActionClient,
                         TaskDiscardSampleGoal,
@@ -299,15 +290,24 @@ void OwlatInterface::taskDiscard (int id)
                         TaskDiscardSampleFeedbackConstPtr>,
                         this, id, Name_Discard, std::ref(m_taskDiscardClient));
   action_thread.detach();
+  */
 }
 
 void OwlatInterface::owlatStow (int id)
 {
   if (! markOperationRunning (Name_OwlatStow, id)) return;
-  thread action_thread (&OwlatInterface::owlatStowAction, this, id);
+  //  thread action_thread (&OwlatInterface::owlatStowAction, this, id);
+  thread action_thread (&OwlatInterface::nullaryAction<
+                        ARM_STOWAction,
+                        ARM_STOWGoal,
+                        ARM_STOWResultConstPtr,
+                        ARM_STOWFeedbackConstPtr>,
+                        this, id, Name_OwlatStow, std::ref(m_owlatStowClient));
+
   action_thread.detach();
 }
 
+/*
 void OwlatInterface::owlatStowAction (int id)
 {
   ARM_STOWGoal goal;
@@ -322,6 +322,7 @@ void OwlatInterface::owlatStowAction (int id)
      default_action_feedback_cb<ARM_STOWFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_STOWResultConstPtr> (opname));
 }
+*/
 
 void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative,
                                             const vector<double>& position,

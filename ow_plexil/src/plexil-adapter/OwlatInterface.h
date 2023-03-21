@@ -154,8 +154,7 @@ class OwlatInterface : public PlexilInterface
   }
 
   // Actions
-  void armUnstowAction (int id);
-  void owlatStowAction (int id);
+  //  void owlatStowAction (int id);
   void owlatArmMoveCartesianAction (int frame, bool relative,
                                     const std::vector<double>& position,
                                     const std::vector<double>& orientation,
