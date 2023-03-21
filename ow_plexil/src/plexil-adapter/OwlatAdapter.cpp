@@ -41,7 +41,7 @@ static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
 static void owlat_stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatStow (CommandId);
+  OwlatInterface::instance()->armStow (CommandId);
   acknowledge_command_sent(*cr);
 }
 

@@ -20,8 +20,8 @@ using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
-const string Name_Unstow =           "ArmUnstow";
-const string Name_OwlatStow =             "/owlat_sim/ARM_STOW";
+const string Name_Unstow = "ArmUnstow";
+const string Name_Stow = "ArmStow";
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
   "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
@@ -43,7 +43,7 @@ const size_t OwlatJoints = 6;
 // Used as indices into the subsequent vector.
 enum class LanderOps {
   ArmUnstow,
-  OwlatStow,
+  ArmStow,
   OwlatArmMoveCartesian,
   OwlatArmMoveCartesianGuarded,
   OwlatArmMoveJoint,
@@ -61,7 +61,7 @@ enum class LanderOps {
 static vector<string> LanderOpNames = {
   Name_Discard,
   Name_Unstow,
-  Name_OwlatStow,
+  Name_Stow,
   Name_OwlatArmMoveCartesian,
   Name_OwlatArmMoveCartesianGuarded,
   Name_OwlatArmMoveJoint,
@@ -172,12 +172,12 @@ void OwlatInterface::initialize()
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
+    m_armStowClient =
+      make_unique<ArmStowActionClient>(Name_Stow, true);
     m_armUnstowClient =
       make_unique<ArmUnstowActionClient>(Name_Unstow, true);
     m_taskDiscardClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_owlatStowClient =
-      make_unique<OwlatStowActionClient>(Name_OwlatStow, true);
     m_owlatArmMoveCartesianClient =
       make_unique<OwlatArmMoveCartesianActionClient>(Name_OwlatArmMoveCartesian,
                                                      true);
@@ -205,6 +205,10 @@ void OwlatInterface::initialize()
       make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
     // Connect to action servers
+    if (! m_armStowClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("ArmStow action server did not connect!");
+    }
     if (! m_armUnstowClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmUnstow action server did not connect!");
@@ -212,10 +216,6 @@ void OwlatInterface::initialize()
     if (! m_taskDiscardClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("TaskDiscardSample action server did not connect!");
-    }
-    if (! m_owlatStowClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT STOW action server did not connect!");
     }
     if (! m_owlatArmMoveCartesianClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -293,34 +293,33 @@ void OwlatInterface::taskDiscard (int id)
   */
 }
 
-void OwlatInterface::owlatStow (int id)
+void OwlatInterface::armStow (int id)
 {
-  if (! markOperationRunning (Name_OwlatStow, id)) return;
-  //  thread action_thread (&OwlatInterface::owlatStowAction, this, id);
+  if (! markOperationRunning (Name_Stow, id)) return;
+  //  thread action_thread (&OwlatInterface::armStowAction, this, id);
   thread action_thread (&OwlatInterface::nullaryAction<
-                        ARM_STOWAction,
-                        ARM_STOWGoal,
-                        ARM_STOWResultConstPtr,
-                        ARM_STOWFeedbackConstPtr>,
-                        this, id, Name_OwlatStow, std::ref(m_owlatStowClient));
-
+                        ArmStowActionClient,
+                        ArmStowGoal,
+                        ArmStowResultConstPtr,
+                        ArmStowFeedbackConstPtr>,
+                        this, id, Name_Stow, std::ref(m_armStowClient));
   action_thread.detach();
 }
 
 /*
 void OwlatInterface::owlatStowAction (int id)
 {
-  ARM_STOWGoal goal;
+  ArmStowGoal goal;
   string opname = Name_OwlatStow;  // shorter version
 
-  runAction<actionlib::SimpleActionClient<ARM_STOWAction>,
-            ARM_STOWGoal,
-            ARM_STOWResultConstPtr,
-            ARM_STOWFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<ArmStowAction>,
+            ArmStowGoal,
+            ArmStowResultConstPtr,
+            ArmStowFeedbackConstPtr>
     (opname, m_owlatStowClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_STOWFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_STOWResultConstPtr> (opname));
+     default_action_feedback_cb<ArmStowFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmStowResultConstPtr> (opname));
 }
 */
 

@@ -21,8 +21,8 @@
 
 // OWLAT Sim (installation required)
 #include <owl_msgs/ArmUnstowAction.h>
+#include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
-#include <owlat_sim_msgs/ARM_STOWAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTAction.h>
@@ -45,10 +45,10 @@
 
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
+using ArmStowActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
-using OwlatStowActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
 using OwlatArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIANAction>;
 using OwlatArmMoveCartesianGuardedActionClient =
@@ -84,9 +84,9 @@ class OwlatInterface : public PlexilInterface
   void initialize();
 
   // Lander interface
+  void armStow (int id);
   void armUnstow (int id);
   void taskDiscard (int id);
-  void owlatStow (int id);
   void owlatArmMoveCartesian (int frame, bool relative,
                               const std::vector<double>& position,
                               const std::vector<double>& orientation,
@@ -206,9 +206,9 @@ class OwlatInterface : public PlexilInterface
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
   // Action Clients
+  std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
-  std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
   std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
   std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
   std::unique_ptr<OwlatArmMoveJointActionClient> m_owlatArmMoveJointClient;
