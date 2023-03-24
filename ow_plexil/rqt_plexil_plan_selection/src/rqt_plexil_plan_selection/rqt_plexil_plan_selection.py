@@ -54,16 +54,15 @@ class PlexilPlanSelectionGUI(Plugin):
     #Qt signal to modify GUI from callback
     self.monitor_signal[str].connect(self.monitor_status)
 
-    #populates the plan list, shows different plans based off of what launch file is running
-    # Leaving this commented out as example of how to add plan subdirectories.
-    #unified_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'),
-    #                                'src', 'plans', 'unified')
+    # Populates the plan list, shows different plans based on what launch file is running.
+    common_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'),
+                                   'src', 'plans', 'common')
     if rospy.get_param('owlat_flag', False):
       owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat_plans')
-      self.populate_plan_list([owlat_plan_dir])
+      self.populate_plan_list([owlat_plan_dir, common_plan_dir])
     else:
       ow_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
-      self.populate_plan_list([ow_plan_dir])
+      self.populate_plan_list([ow_plan_dir, common_plan_dir])
 
     #sets up tables
     self._widget.sentPlansTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
