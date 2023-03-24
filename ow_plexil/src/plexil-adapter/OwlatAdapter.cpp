@@ -264,6 +264,16 @@ static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void using_owlat (const State&, StateCacheEntry& entry)
+{
+  entry.update(true);
+}
+
+static void using_oceanwaters (const State&, StateCacheEntry& entry)
+{
+  entry.update(false);
+}
+
 static void armJointAngles (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointAngles ", "lookup called for " << state.name()
@@ -444,6 +454,8 @@ bool OwlatAdapter::initialize()
 
   // Telemetry
 
+  g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
+  g_configuration->registerLookupHandler("UsingOceanWATERS", using_oceanwaters);
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
   g_configuration->registerLookupHandler("ArmJointAccelerations",
                                          armJointAccelerations);
