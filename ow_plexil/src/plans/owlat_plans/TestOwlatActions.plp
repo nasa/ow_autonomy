@@ -7,4 +7,5 @@ LibraryAction ArmUnstow();
 TestOwlatActions:
 {
   LibraryCall ArmUnstow();
+  LibraryCall ArmStow();
 }

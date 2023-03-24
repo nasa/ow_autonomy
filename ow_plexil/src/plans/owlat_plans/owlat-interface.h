@@ -13,35 +13,61 @@ Command log_info (...);
 Command log_warning (...);
 Command log_error (...);
 
-
 // PLEXIL library for lander operations in OWLAT.
 LibraryAction ArmUnstow();
-LibraryAction OwlatStow();
+LibraryAction ArmStow();
 LibraryAction OwlatArmMoveCartesian(In Integer Frame,
                                     In Boolean Relative,
                                     In Real Position[3],
                                     In Real Orientation[4]);
-LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,In Boolean Relative, 
-                                           In Real Position[3], In Real Orientation[4],
-                                           In Boolean Retracting, In Real ForceThreshold,
+LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,
+                                           In Boolean Relative, 
+                                           In Real Position[3],
+                                           In Real Orientation[4],
+                                           In Boolean Retracting,
+                                           In Real ForceThreshold,
                                            In Real TorqueThreshold); 
-LibraryAction OwlatArmMoveJoint(In Boolean Relative, In Integer Joint, In Real Angle);
-LibraryAction OwlatArmMoveJoints(In Boolean Relative, In Real Angles[7]);
-LibraryAction OwlatArmMoveJointsGuarded(In Boolean Relative, In Real Angles[7],
-                                        In Boolean Retracting, In Real ForceThreshold,
+LibraryAction OwlatArmMoveJoint(In Boolean Relative,
+                                In Integer Joint,
+                                In Real Angle);
+LibraryAction OwlatArmMoveJoints(In Boolean Relative,
+                                 In Real Angles[7]);
+LibraryAction OwlatArmMoveJointsGuarded(In Boolean Relative,
+                                        In Real Angles[7],
+                                        In Boolean Retracting,
+                                        In Real ForceThreshold,
                                         In Real TorqueThreshold);
-LibraryAction OwlatArmPlaceTool(In Integer Frame, In Boolean Relative, In Real Position[3], In Real Normal[3],
-                                In Real Distance, In Real Overdrive, In Boolean Retracting, In Real ForceThreshold,
+LibraryAction OwlatArmPlaceTool(In Integer Frame,
+                                In Boolean Relative,
+                                In Real Position[3],
+                                In Real Normal[3],
+                                In Real Distance,
+                                In Real Overdrive,
+                                In Boolean Retracting,
+                                In Real ForceThreshold,
                                 In Real TorqueThreshold);
 LibraryAction OwlatArmSetTool(In Integer Tool);
 LibraryAction OwlatArmStop();
 LibraryAction OwlatArmTareFS();
-LibraryAction OwlatTaskDropoff(In Integer Frame, In Boolean Relative, In Real Point[3]);
-LibraryAction OwlatTaskPSP(In Integer Frame, In Boolean Relative, In Real Point[3],
-                           In Real Normal[3], In Real MaxDepth, In Real MaxForce);
-LibraryAction OwlatTaskScoop(In Integer Frame, In Boolean Relative, In Real Point[3], In Real Normal[3]);
-LibraryAction OwlatTaskShearBevameter(In Integer Frame, In Boolean Relative, In Real Point[3],
-                                      In Real Normal[3], In Real Preload, In Real MaxTorque);
+LibraryAction OwlatTaskDropoff(In Integer Frame,
+                               In Boolean Relative,
+                               In Real Point[3]);
+LibraryAction OwlatTaskPSP(In Integer Frame,
+                           In Boolean Relative,
+                           In Real Point[3],
+                           In Real Normal[3],
+                           In Real MaxDepth,
+                           In Real MaxForce);
+LibraryAction OwlatTaskScoop(In Integer Frame,
+                             In Boolean Relative,
+                             In Real Point[3],
+                             In Real Normal[3]);
+LibraryAction OwlatTaskShearBevameter(In Integer Frame,
+                                      In Boolean Relative,
+                                      In Real Point[3],
+                                      In Real Normal[3],
+                                      In Real Preload,
+                                      In Real MaxTorque);
 LibraryAction PrintNodeStart(In String NodeName);
 LibraryAction PrintNodeFinish(In String NodeName);
 

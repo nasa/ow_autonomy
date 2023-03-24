@@ -9,19 +9,18 @@ OPTION(OWLAT "Build to support JPL's OWLAT simulator instead of OceanWATERS" OFF
 
 # Find the packages that are used by both OceanWATERS and OWLAT.
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  roslib
-  actionlib
-  actionlib_msgs
-  geometry_msgs
-  rqt_gui_py
-  message_generation
-  std_msgs
-  )
-
 if(OWLAT)
+  find_package(catkin REQUIRED COMPONENTS
+    roscpp
+    rospy
+    roslib
+    actionlib
+    actionlib_msgs
+    geometry_msgs
+    rqt_gui_py
+    message_generation
+    std_msgs
+    )
   # Intended to only make the owl_msgs package be found here.
   list(INSERT CMAKE_PREFIX_PATH 0 "/opt/ros/noetic/share")
 else()
