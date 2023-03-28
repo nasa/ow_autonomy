@@ -46,7 +46,7 @@ LibraryAction OwlatArmPlaceTool(In Integer Frame,
                                 In Boolean Retracting,
                                 In Real ForceThreshold,
                                 In Real TorqueThreshold);
-LibraryAction OwlatArmSetTool(In Integer Tool);
+LibraryAction ArmSetTool(In Integer Tool);
 LibraryAction ArmTareFTSensor();
 LibraryAction OwlatTaskDropoff(In Integer Frame,
                                In Boolean Relative,

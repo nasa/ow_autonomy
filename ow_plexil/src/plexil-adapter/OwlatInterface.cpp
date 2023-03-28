@@ -24,6 +24,7 @@ const string Name_Unstow = "ArmUnstow";
 const string Name_Stow = "ArmStow";
 const string Name_ArmStop = "ArmStop";
 const string Name_Tare = "ArmTareFTSensor";
+const string Name_SetTool =       "/owlat_sim/ArmSetTool";
 
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
@@ -33,7 +34,6 @@ const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
 const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
-const string Name_OwlatArmSetTool =       "/owlat_sim/ARM_SET_TOOL";
 const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 const string Name_Discard = "TaskDiscardSample";
@@ -69,7 +69,7 @@ static vector<string> LanderOpNames = {
   Name_OwlatArmMoveJoints,
   Name_OwlatArmMoveJointsGuarded,
   Name_OwlatArmPlaceTool,
-  Name_OwlatArmSetTool,
+  Name_SetTool,
   Name_ArmStop,
   Name_Tare,
   Name_OwlatTaskPSP,
@@ -194,8 +194,8 @@ void OwlatInterface::initialize()
       (Name_OwlatArmMoveJointsGuarded, true);
     m_owlatArmPlaceToolClient =
       make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
-    m_owlatArmSetToolClient =
-      make_unique<OwlatArmSetToolActionClient>(Name_OwlatArmSetTool, true);
+    m_armSetToolClient =
+      make_unique<ArmSetToolActionClient>(Name_SetTool, true);
     m_armStopClient =
       make_unique<ArmStopActionClient>(Name_ArmStop, true);
     m_armTareFTSensorClient =
@@ -242,9 +242,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_PLACE_TOOL action server did not connect!");
     }
-    if (! m_owlatArmSetToolClient->waitForServer
+    if (! m_armSetToolClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_SET_TOOL action server did not connect!");
+      ROS_ERROR ("OWLAT ArmSetTool action server did not connect!");
     }
     if (! m_armStopClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -558,27 +558,27 @@ void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
      default_action_done_cb<ARM_PLACE_TOOLResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmSetTool (int tool, int id)
+void OwlatInterface::armSetTool (int tool, int id)
 {
-  if (! markOperationRunning (Name_OwlatArmSetTool, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmSetToolAction, this, tool, id);
+  if (! markOperationRunning (Name_SetTool, id)) return;
+  thread action_thread (&OwlatInterface::armSetToolAction, this, tool, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmSetToolAction (int tool, int id)
+void OwlatInterface::armSetToolAction (int tool, int id)
 {
-  ARM_SET_TOOLGoal goal;
-  goal.tool.value = tool;
-  string opname = Name_OwlatArmSetTool;  // shorter version
+  ArmSetToolGoal goal;
+  goal.tool = tool;
+  string opname = Name_SetTool;
 
-  runAction<actionlib::SimpleActionClient<ARM_SET_TOOLAction>,
-            ARM_SET_TOOLGoal,
-            ARM_SET_TOOLResultConstPtr,
-            ARM_SET_TOOLFeedbackConstPtr>
-    (opname, m_owlatArmSetToolClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmSetToolAction>,
+            ArmSetToolGoal,
+            ArmSetToolResultConstPtr,
+            ArmSetToolFeedbackConstPtr>
+    (opname, m_armSetToolClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_SET_TOOLFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_SET_TOOLResultConstPtr> (opname));
+     default_action_feedback_cb<ArmSetToolFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmSetToolResultConstPtr> (opname));
 }
 
 void OwlatInterface::armStop (int id)

@@ -4,9 +4,13 @@
 
 LibraryAction ArmUnstow();
 LibraryAction ArmStow();
+LibraryAction ArmTareFTSensor();
+LibraryAction ArmSetTool(In Integer Tool);
 
 TestOwlatActions:
 {
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();
+  LibraryCall ArmTareFTSensor();
+  LibraryCall ArmSetTool(Tool=0);
 }

@@ -25,7 +25,7 @@ OwlatTestSequence5:
 
   // Change tool to the Pressure Sinkage Plate
   log_info("Changing end effector tool to the Pressure Sinkage Plate.");
-  LibraryCall OwlatArmSetTool(Tool=1);
+  LibraryCall ArmSetTool(Tool=1);
 
   // Initialize arm
   LibraryCall ArmUnstow();

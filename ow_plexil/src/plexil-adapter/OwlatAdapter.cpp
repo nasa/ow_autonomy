@@ -192,13 +192,13 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_set_tool (Command* cmd, AdapterExecInterface* intf)
+static void arm_set_tool (Command* cmd, AdapterExecInterface* intf)
 {
   int tool;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(tool);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmSetTool (tool, CommandId);
+  OwlatInterface::instance()->armSetTool (tool, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -432,6 +432,10 @@ bool OwlatAdapter::initialize()
 
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
   g_configuration->registerCommandHandler("arm_stow", arm_stow);
+  g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
+  g_configuration->registerCommandHandler("arm_stop", arm_stop);
+  g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
+
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
                                           owlat_arm_move_cartesian);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian_guarded",
@@ -444,10 +448,6 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_move_joints_guarded);
   g_configuration->registerCommandHandler("owlat_arm_place_tool",
                                           owlat_arm_place_tool);
-  g_configuration->registerCommandHandler("owlat_arm_set_tool",
-                                          owlat_arm_set_tool);
-  g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
   g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);

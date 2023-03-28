@@ -43,9 +43,6 @@ Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], 
                              Real distance, Real overdrive, Boolean retracting, Real force_threshold,
                              Real torque_threshold);
 
-// Set the arm to use the provided tool.
-Command owlat_arm_set_tool(Integer tool);
-
 // Perform scoop dropoff over target point in a given frame.
 Command owlat_task_dropoff(Integer frame, Boolean relative, Real point[3]);
 
