@@ -14,27 +14,25 @@
 
 // More in depth explanation of these Commands can be found in the OWLAT user guide.
 
-// This action allows the user to specify a target Cartesian pose for the arm. 
-Command owlat_arm_move_cartesian(Integer frame, Boolean relative, 
-                                 Real position[3], Real orientation[4]); 
+// This action allows the user to specify a target Cartesian pose for the arm.
+Command owlat_arm_move_cartesian(Integer frame, Boolean relative,
+                                 Real position[3], Real orientation[4]);
 
 // Guarded version of owlat_arm_move_cartesian.
-Command owlat_arm_move_cartesian_guarded(Integer frame, Boolean relative, 
+Command owlat_arm_move_cartesian_guarded(Integer frame, Boolean relative,
                                          Real position[3], Real orientation[4],
                                          Boolean retracting, Real force_threshold,
-                                         Real torque_threshold); 
+                                         Real torque_threshold);
 
-
-// Arm joint move with all joints Moves the arm to the prescribed postion, either absolute 
-// or relative to present position.
-Command owlat_arm_move_joints(Boolean relative, Real angles[7]);
+// Move all joints to specified angles.
+Command owlat_arm_move_joints (Boolean relative, Real angles[7]);
 
 // Guarded version of owlat_arm_move_joints.
 Command owlat_arm_move_joints_guarded(Boolean relative, Real angles[7],
                                       Boolean retracting, Real force_threshold,
                                       Real torque_threshold);
 
-// Perform a guarded pose move to the specified position moving along the given normal 
+// Perform a guarded pose move to the specified position moving along the given normal
 // vector until meeting a force threshold.
 Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], Real normal[3],
                              Real distance, Real overdrive, Boolean retracting, Real force_threshold,
@@ -43,7 +41,7 @@ Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], 
 // Perform scoop dropoff over target point in a given frame.
 Command owlat_task_dropoff(Integer frame, Boolean relative, Real point[3]);
 
-// Perform pressure sinkage plate operation at the specified point with a given surface 
+// Perform pressure sinkage plate operation at the specified point with a given surface
 // normal, until achieving a target force or depth.
 Command owlat_task_psp(Integer frame, Boolean relative, Real point[3],
                        Real normal[3], Real max_depth, Real max_force);

@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include "owlat-lander-commands.h"
+Command owlat_arm_move_joints (Boolean relative, Real angles[7]);
 
 OwlatArmMoveJoints:
 {

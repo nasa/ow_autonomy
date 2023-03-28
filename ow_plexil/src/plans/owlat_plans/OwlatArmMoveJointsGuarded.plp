@@ -2,7 +2,11 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include "owlat-lander-commands.h"
+Command owlat_arm_move_joints_guarded(Boolean relative,
+                                      Real angles[7],
+                                      Boolean retracting,
+                                      Real force_threshold,
+                                      Real torque_threshold);
 
 OwlatArmMoveJointsGuarded:
 {
@@ -12,7 +16,7 @@ OwlatArmMoveJointsGuarded:
   In Real ForceThreshold;
   In Real TorqueThreshold;
 
-  SynchronousCommand owlat_arm_move_joints_guarded(Relative, Angles,
-                                                   Retracting, ForceThreshold,
+  SynchronousCommand owlat_arm_move_joints_guarded(Relative, Angles, Retracting,
+                                                   ForceThreshold,
                                                    TorqueThreshold);
 }
