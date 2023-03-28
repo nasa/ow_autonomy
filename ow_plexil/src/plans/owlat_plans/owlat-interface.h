@@ -27,9 +27,9 @@ LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,
                                            In Boolean Retracting,
                                            In Real ForceThreshold,
                                            In Real TorqueThreshold); 
-LibraryAction OwlatArmMoveJoint(In Boolean Relative,
-                                In Integer Joint,
-                                In Real Angle);
+LibraryAction ArmMoveJoint(In Boolean Relative,
+                           In Integer Joint,
+                           In Real Angle);
 LibraryAction OwlatArmMoveJoints(In Boolean Relative,
                                  In Real Angles[7]);
 LibraryAction OwlatArmMoveJointsGuarded(In Boolean Relative,

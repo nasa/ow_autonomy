@@ -102,7 +102,7 @@ static void owlat_arm_move_cartesian_guarded (Command* cmd,
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
+static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
   int joint;
@@ -112,8 +112,7 @@ static void owlat_arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue(joint);
   args[2].getValue(angle);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJoint (relative, joint, angle,
-                                                 CommandId);
+  OwlatInterface::instance()->armMoveJoint (relative, joint, angle, CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -435,13 +434,12 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
+  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
 
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
                                           owlat_arm_move_cartesian);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian_guarded",
                                           owlat_arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("owlat_arm_move_joint",
-                                          owlat_arm_move_joint);
   g_configuration->registerCommandHandler("owlat_arm_move_joints",
                                           owlat_arm_move_joints);
   g_configuration->registerCommandHandler("owlat_arm_move_joints_guarded",

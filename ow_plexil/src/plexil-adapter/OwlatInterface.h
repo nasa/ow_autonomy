@@ -26,10 +26,10 @@
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owl_msgs/ArmSetToolAction.h>
+#include <owl_msgs/ArmMoveJointAction.h>
 
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_JOINTAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
@@ -56,13 +56,13 @@ using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using ArmSetToolActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
+using ArmMoveJointActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
 
 using OwlatArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIANAction>;
 using OwlatArmMoveCartesianGuardedActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIAN_GUARDEDAction>;
-using OwlatArmMoveJointActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTAction>;
 using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
 using OwlatArmMoveJointsGuardedActionClient =
@@ -100,8 +100,7 @@ class OwlatInterface : public PlexilInterface
                                      bool retracting,
                                      double force_threshold,
                                      double torque_threshold,int id);
-  void owlatArmMoveJoint (bool relative, int joint, double angle,
-                          int id);
+  void armMoveJoint (bool relative, int joint, double angle, int id);
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
                            int id);
@@ -167,8 +166,7 @@ class OwlatInterface : public PlexilInterface
                                            bool retracting,
                                            double force_threshold,
                                            double torque_threshold,int id);
-  void owlatArmMoveJointAction (bool relative, int joint,
-                                double angle, int id);
+  void armMoveJointAction (bool relative, int joint, double angle, int id);
   void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
                                  int id);
   void owlatArmMoveJointsGuardedAction (bool relative,
@@ -211,7 +209,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
   std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
   std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
-  std::unique_ptr<OwlatArmMoveJointActionClient> m_owlatArmMoveJointClient;
+  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
   std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
   std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;

@@ -25,9 +25,6 @@ Command owlat_arm_move_cartesian_guarded(Integer frame, Boolean relative,
                                          Real torque_threshold); 
 
 
-// Move a single arm joint, relative refers to if motion is relative to current joint angle.
-Command owlat_arm_move_joint(Boolean relative, Integer joint, Real angle);
-
 // Arm joint move with all joints Moves the arm to the prescribed postion, either absolute 
 // or relative to present position.
 Command owlat_arm_move_joints(Boolean relative, Real angles[7]);

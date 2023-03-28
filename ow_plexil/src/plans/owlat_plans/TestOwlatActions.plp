@@ -6,11 +6,15 @@ LibraryAction ArmUnstow();
 LibraryAction ArmStow();
 LibraryAction ArmTareFTSensor();
 LibraryAction ArmSetTool(In Integer Tool);
+LibraryAction ArmMoveJoint(In Boolean Relative,
+                           In Integer Joint,
+                           In Real Angle);
 
 TestOwlatActions:
 {
   LibraryCall ArmUnstow();
-  LibraryCall ArmStow();
   LibraryCall ArmTareFTSensor();
   LibraryCall ArmSetTool(Tool=0);
+  LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
+  LibraryCall ArmStow();
 }

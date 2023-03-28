@@ -24,12 +24,13 @@ const string Name_Unstow = "ArmUnstow";
 const string Name_Stow = "ArmStow";
 const string Name_ArmStop = "ArmStop";
 const string Name_Tare = "ArmTareFTSensor";
-const string Name_SetTool =       "/owlat_sim/ArmSetTool";
+const string Name_SetTool =       "ArmSetTool";
+const string Name_MoveJoint =     "ArmMoveJoint";
 
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
   "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
-const string Name_OwlatArmMoveJoint =     "/owlat_sim/ARM_MOVE_JOINT";
+
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
@@ -65,7 +66,7 @@ static vector<string> LanderOpNames = {
   Name_Stow,
   Name_OwlatArmMoveCartesian,
   Name_OwlatArmMoveCartesianGuarded,
-  Name_OwlatArmMoveJoint,
+  Name_MoveJoint,
   Name_OwlatArmMoveJoints,
   Name_OwlatArmMoveJointsGuarded,
   Name_OwlatArmPlaceTool,
@@ -185,8 +186,8 @@ void OwlatInterface::initialize()
     m_owlatArmMoveCartesianGuardedClient =
       make_unique<OwlatArmMoveCartesianGuardedActionClient>
       (Name_OwlatArmMoveCartesianGuarded, true);
-    m_owlatArmMoveJointClient =
-      make_unique<OwlatArmMoveJointActionClient>(Name_OwlatArmMoveJoint, true);
+    m_armMoveJointClient =
+      make_unique<ArmMoveJointActionClient>(Name_MoveJoint, true);
     m_owlatArmMoveJointsClient =
       make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
     m_owlatArmMoveJointsGuardedClient =
@@ -226,9 +227,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN_GUARDED action server did not connect!");
     }
-    if (! m_owlatArmMoveJointClient->waitForServer
+    if (! m_armMoveJointClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_MOVE_JOINT action server did not connect!");
+      ROS_ERROR ("OWLAT ArmMoveJoint action server did not connect!");
     }
     if (! m_owlatArmMoveJointsClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -408,34 +409,34 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
      default_action_done_cb<ARM_MOVE_CARTESIAN_GUARDEDResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJoint (bool relative,
-                                        int joint, double angle,
-                                        int id)
+void OwlatInterface::armMoveJoint (bool relative,
+                                   int joint, double angle,
+                                   int id)
 {
-  if (! markOperationRunning (Name_OwlatArmMoveJoint, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmMoveJointAction,
+  if (! markOperationRunning (Name_MoveJoint, id)) return;
+  thread action_thread (&OwlatInterface::armMoveJointAction,
                         this, relative, joint, angle, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointAction (bool relative,
-                                              int joint, double angle,
-                                              int id)
+void OwlatInterface::armMoveJointAction (bool relative,
+                                         int joint, double angle,
+                                         int id)
 {
-  ARM_MOVE_JOINTGoal goal;
+  ArmMoveJointGoal goal;
   goal.relative = relative;
   goal.joint = joint;
   goal.angle = angle;
-  string opname = Name_OwlatArmMoveJoint;  // shorter version
+  string opname = Name_MoveJoint;  // shorter version
 
-  runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTAction>,
-            ARM_MOVE_JOINTGoal,
-            ARM_MOVE_JOINTResultConstPtr,
-            ARM_MOVE_JOINTFeedbackConstPtr>
-    (opname, m_owlatArmMoveJointClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
+            ArmMoveJointGoal,
+            ArmMoveJointResultConstPtr,
+            ArmMoveJointFeedbackConstPtr>
+    (opname, m_armMoveJointClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_MOVE_JOINTFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_MOVE_JOINTResultConstPtr> (opname));
+     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmMoveJointResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatArmMoveJoints (bool relative,
