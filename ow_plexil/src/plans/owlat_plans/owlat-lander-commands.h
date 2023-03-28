@@ -14,12 +14,6 @@
 
 // More in depth explanation of these Commands can be found in the OWLAT user guide.
 
-// Move from stowed position to a "ready" position.
-Command owlat_unstow();
-
-// Move from "ready" position to stowed position; requires unstow() first.
-Command owlat_stow();
-
 // This action allows the user to specify a target Cartesian pose for the arm. 
 Command owlat_arm_move_cartesian(Integer frame, Boolean relative, 
                                  Real position[3], Real orientation[4]); 
@@ -51,9 +45,6 @@ Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], 
 
 // Set the arm to use the provided tool.
 Command owlat_arm_set_tool(Integer tool);
-
-// Stops arm motion
-Command owlat_arm_stop();
 
 // Tare end effector force/torque sensor.
 Command owlat_arm_tare_fs();
