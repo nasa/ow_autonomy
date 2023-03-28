@@ -3,7 +3,7 @@
 // this repository.
 
 // This Test Sequence is found in the User Guide under section 3.8.1
-// It tests ARM_MOVE_JOINTS, ARM_TARE_FS, ARM_MOVE_JOINTS_GUARDED
+// It tests ARM_MOVE_JOINTS, ArmTareFTSensor, ARM_MOVE_JOINTS_GUARDED
 
 
 #include "owlat-interface.h"
@@ -22,8 +22,7 @@ OwlatTestSequence1:
   // Get Arm into position above ground
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
 
-  // Tare the force sensor
-  LibraryCall OwlatArmTareFS();
+  LibraryCall ArmTareFTSensor();
 
   // Move the arm until it comes in contact with the ground 
   LibraryCall OwlatArmMoveJointsGuarded(Relative=true, 

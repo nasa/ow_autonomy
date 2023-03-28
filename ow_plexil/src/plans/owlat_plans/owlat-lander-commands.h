@@ -46,9 +46,6 @@ Command owlat_arm_place_tool(Integer Frame, Boolean relative, Real position[3], 
 // Set the arm to use the provided tool.
 Command owlat_arm_set_tool(Integer tool);
 
-// Tare end effector force/torque sensor.
-Command owlat_arm_tare_fs();
-
 // Perform scoop dropoff over target point in a given frame.
 Command owlat_task_dropoff(Integer frame, Boolean relative, Real point[3]);
 

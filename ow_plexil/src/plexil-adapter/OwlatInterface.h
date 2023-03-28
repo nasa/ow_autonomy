@@ -24,6 +24,7 @@
 #include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/ArmStopAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
+#include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTAction.h>
@@ -31,7 +32,6 @@
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
 #include <owlat_sim_msgs/ARM_SET_TOOLAction.h>
-#include <owlat_sim_msgs/ARM_TARE_FSAction.h>
 #include <owlat_sim_msgs/TASK_PSPAction.h>
 #include <owlat_sim_msgs/TASK_SCOOPAction.h>
 #include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
@@ -49,6 +49,8 @@ using ArmStowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using ArmStopActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStopAction>;
+using ArmTareFTSensorActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmTareFTSensorAction>;
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using OwlatArmMoveCartesianActionClient =
@@ -65,8 +67,6 @@ using OwlatArmPlaceToolActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_PLACE_TOOLAction>;
 using OwlatArmSetToolActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_SET_TOOLAction>;
-using OwlatArmTareFSActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_TARE_FSAction>;
 using OwlatTaskPSPActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::TASK_PSPAction>;
 using OwlatTaskScoopActionClient =
@@ -115,7 +115,7 @@ class OwlatInterface : public PlexilInterface
                           bool retracting, double force_threshold,
                           double torque_threshold, int id);
   void owlatArmSetTool (int tool, int id);
-  void owlatArmTareFS (int id);
+  void armTareFTSensor (int id);
   void owlatTaskPSP (int frame, bool relative, const std::vector<double>& point,
                      const std::vector<double>& normal, double max_depth,
                      double max_force, int id);
@@ -180,7 +180,6 @@ class OwlatInterface : public PlexilInterface
                                 bool retracting, double force_threshold,
                                 double torque_threshold, int id);
   void owlatArmSetToolAction (int tool, int id);
-  void owlatArmTareFSAction (int id);
   void owlatTaskPSPAction (int frame, bool relative,
                            const std::vector<double>& point,
                            const std::vector<double>& normal, double max_depth,
@@ -216,7 +215,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;
   std::unique_ptr<OwlatArmSetToolActionClient> m_owlatArmSetToolClient;
   std::unique_ptr<ArmStopActionClient> m_armStopClient;
-  std::unique_ptr<OwlatArmTareFSActionClient> m_owlatArmTareFSClient;
+  std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<OwlatTaskPSPActionClient> m_owlatTaskPSPClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
 

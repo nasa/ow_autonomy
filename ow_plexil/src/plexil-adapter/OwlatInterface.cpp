@@ -23,6 +23,7 @@ using namespace PLEXIL;
 const string Name_Unstow = "ArmUnstow";
 const string Name_Stow = "ArmStow";
 const string Name_ArmStop = "ArmStop";
+const string Name_Tare = "ArmTareFTSensor";
 
 const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
@@ -33,7 +34,6 @@ const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
 const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
 const string Name_OwlatArmSetTool =       "/owlat_sim/ARM_SET_TOOL";
-const string Name_OwlatArmTareFS =        "/owlat_sim/ARM_TARE_FS";
 const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 const string Name_Discard = "TaskDiscardSample";
@@ -71,7 +71,7 @@ static vector<string> LanderOpNames = {
   Name_OwlatArmPlaceTool,
   Name_OwlatArmSetTool,
   Name_ArmStop,
-  Name_OwlatArmTareFS,
+  Name_Tare,
   Name_OwlatTaskPSP,
   Name_OwlatTaskScoop
 };
@@ -198,8 +198,8 @@ void OwlatInterface::initialize()
       make_unique<OwlatArmSetToolActionClient>(Name_OwlatArmSetTool, true);
     m_armStopClient =
       make_unique<ArmStopActionClient>(Name_ArmStop, true);
-    m_owlatArmTareFSClient =
-      make_unique<OwlatArmTareFSActionClient>(Name_OwlatArmTareFS, true);
+    m_armTareFTSensorClient =
+      make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
     m_owlatTaskPSPClient =
       make_unique<OwlatTaskPSPActionClient>(Name_OwlatTaskPSP, true);
     m_owlatTaskScoopClient =
@@ -250,9 +250,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmStop action server did not connect!");
     }
-    if (! m_owlatArmTareFSClient->waitForServer
+    if (! m_armTareFTSensorClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_TARE_FS action server did not connect!");
+      ROS_ERROR ("ArmTareFTSensor action server did not connect!");
     }
     if (! m_owlatTaskPSPClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -593,26 +593,16 @@ void OwlatInterface::armStop (int id)
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmTareFS (int id)
+void OwlatInterface::armTareFTSensor (int id)
 {
-  if (! markOperationRunning (Name_OwlatArmTareFS, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmTareFSAction, this, id);
+  if (! markOperationRunning (Name_Tare, id)) return;
+  thread action_thread (&OwlatInterface::nullaryAction<
+                        ArmTareFTSensorActionClient,
+                        ArmTareFTSensorGoal,
+                        ArmTareFTSensorResultConstPtr,
+                        ArmTareFTSensorFeedbackConstPtr>,
+                        this, id, Name_Tare, std::ref(m_armTareFTSensorClient));
   action_thread.detach();
-}
-
-void OwlatInterface::owlatArmTareFSAction (int id)
-{
-  ARM_TARE_FSGoal goal;
-  string opname = Name_OwlatArmTareFS;  // shorter version
-
-  runAction<actionlib::SimpleActionClient<ARM_TARE_FSAction>,
-            ARM_TARE_FSGoal,
-            ARM_TARE_FSResultConstPtr,
-            ARM_TARE_FSFeedbackConstPtr>
-    (opname, m_owlatArmTareFSClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_TARE_FSFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_TARE_FSResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatTaskPSP (int frame, bool relative,

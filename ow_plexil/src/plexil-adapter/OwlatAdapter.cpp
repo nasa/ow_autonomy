@@ -209,10 +209,10 @@ static void arm_stop (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_tare_fs (Command* cmd, AdapterExecInterface* intf)
+static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmTareFS (CommandId);
+  OwlatInterface::instance()->armTareFTSensor (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -447,7 +447,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("owlat_arm_set_tool",
                                           owlat_arm_set_tool);
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("owlat_arm_tare_fs", owlat_arm_tare_fs);
+  g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
   g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
