@@ -5,14 +5,12 @@
 #ifndef Ow_commands_H
 #define Ow_commands_H
 
-// All available PLEXIL commands to the lander.  This is essentially the
-// lander's command interface.
+// Lander commands available in OceanWATERS.  These include the common
+// ones:
 
-// Note that in PLEXIL, commands are asynchronous by design.
-// Typically, OceanWATERS plans should not call the following commands
-// directly, but instead use the Library interface (defined in
-// plan-interface.h) that wraps these commands in a way that they
-// called synchronously.
+#include "common/common-commands.h"
+
+// and the OceanWATERS-specific ones that follow.
 
 Command camera_set_exposure (Real seconds);
 Command camera_capture ();
@@ -31,18 +29,6 @@ Command arm_find_surface (Integer frame,
                           Real force_threshold,
                           Real torque_threshold);
 
-Command arm_move_cartesian (Integer frame,
-			    Boolean relative,
-			    Real x, Real y, Real z,
-			    // Orientation in Euler angle
-			    Real orient_x, Real orient_y, Real orient_z);
-
-// Quaternion version of previous
-Command arm_move_cartesian_q (Integer frame,
-			      Boolean relative,
-			      Real x, Real y, Real z,
-			      Real orient_x, Real orient_y, Real orient_z,
-			      Real orient_w);
 
 Command arm_move_cartesian_guarded (Integer frame,
                                     Boolean relative,
@@ -61,10 +47,6 @@ Command arm_move_cartesian_guarded_q (Integer frame,
                                       Real force_threshold,
                                       Real torque_threshold);
 
-Command arm_move_joint (Boolean relative,
-                        Integer joint,
-                        Real angle);
-
 Command arm_move_joints (Boolean relative,
                          Real angles[6]);
 
@@ -72,8 +54,6 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real angles[6],
                                  Real force_threshold,
                                  Real torque_threshold);
-
-Command arm_stop ();
 
 Command dock_ingest_sample();
 
@@ -116,12 +96,6 @@ Command guarded_move (Real x,
                       Real dir_y,
                       Real dir_z,
                       Real search_distance);
-
-// Move from stowed position to a "ready" position
-Command arm_unstow();
-
-// Move from "ready" position to stowed position; requires unstow() first
-Command arm_stow();
 
 // Processes number of images already taken with the stereo camera to
 // find the 3d point to sample.  filter_type can either be "Dark" or

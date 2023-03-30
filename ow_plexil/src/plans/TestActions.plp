@@ -17,13 +17,13 @@ TestActions:
 
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
                                 Relative = false,
-                                X = 1.7, Y = -0.2, Z = 0.6,
-                                OrientX = 0, OrientY = 0, OrientZ = 0);
+                                Position = #(1.7 -0.2 0.6),
+                                Orientation = #(0 0 0));
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = false,
-                                  X = 1.7, Y = -0.2, Z = 0.6,
-                                  OrientX = 1, OrientY = 0, OrientZ = 0, OrientW = 0);
+                                  Position = #(1.7 -0.2 0.6),
+                                  Orientation = #(0 0 0));
 
   LibraryCall ArmMoveCartesianGuarded_Q (Frame = BASE_LINK,
                                          Relative = true,
@@ -55,9 +55,8 @@ TestActions:
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
-                                  OrientX = 0, OrientY = 0,
-                                  OrientZ = 0, OrientW = 1);
+                                  Position = #(0 0 -0.2),
+                                  Orientation = #(0 0 0 1));
 
   LibraryCall CameraSetExposure (Seconds = 1);
 
@@ -68,9 +67,8 @@ TestActions:
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
-                                  OrientX = 0, OrientY = 0,
-                                  OrientZ = 0, OrientW = 1);
+                                  Position = #(0 0 -0.2),
+                                  Orientation = #(0 0 0 1));
 
   LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
 

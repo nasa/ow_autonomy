@@ -27,8 +27,8 @@
 #include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owl_msgs/ArmSetToolAction.h>
 #include <owl_msgs/ArmMoveJointAction.h>
+#include <owl_msgs/ArmMoveCartesianAction.h>
 
-#include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
@@ -58,9 +58,9 @@ using ArmSetToolActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
 using ArmMoveJointActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
+using ArmMoveCartesianActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
 
-using OwlatArmMoveCartesianActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIANAction>;
 using OwlatArmMoveCartesianGuardedActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIAN_GUARDEDAction>;
 using OwlatArmMoveJointsActionClient =
@@ -90,10 +90,10 @@ class OwlatInterface : public PlexilInterface
   void armUnstow (int id);
   void armStop (int id);
   void taskDiscard (int id);
-  void owlatArmMoveCartesian (int frame, bool relative,
-                              const std::vector<double>& position,
-                              const std::vector<double>& orientation,
-                              int id);
+  void armMoveCartesian (int frame, bool relative,
+                         const std::vector<double>& position,
+                         const std::vector<double>& orientation,
+                         int id);
   void owlatArmMoveCartesianGuarded (int frame, bool relative,
                                      const std::vector<double>& position,
                                      const std::vector<double>& orientation,
@@ -155,11 +155,10 @@ class OwlatInterface : public PlexilInterface
   }
 
   // Actions
-  //  void owlatStowAction (int id);
-  void owlatArmMoveCartesianAction (int frame, bool relative,
-                                    const std::vector<double>& position,
-                                    const std::vector<double>& orientation,
-                                    int id);
+  void armMoveCartesianAction (int frame,
+                               bool relative,
+                               const geometry_msgs::Pose& pose,
+                               int id);
   void owlatArmMoveCartesianGuardedAction (int frame, bool relative,
                                            const std::vector<double>& position,
                                            const std::vector<double>& orientation,
@@ -207,7 +206,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
-  std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
+  std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
   std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;

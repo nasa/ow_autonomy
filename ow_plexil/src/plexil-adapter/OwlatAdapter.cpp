@@ -45,7 +45,7 @@ static void arm_stow (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
+static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
@@ -53,20 +53,20 @@ static void owlat_arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
   vector<double> const *orientation_vector = nullptr;
   RealArray const *position = nullptr;
   RealArray const *orientation = nullptr;
-  // Get our Frame, relative, position and orientation
+  // Get arguments.
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
   args[2].getValuePointer(position);
   args[3].getValuePointer(orientation);
-  //change real array into a vector
+  // Change real array into a vector.
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveCartesian (frame, relative,
-                                                     *position_vector,
-                                                     *orientation_vector,
-                                                     CommandId);
+  OwlatInterface::instance()->armMoveCartesian (frame, relative,
+                                                *position_vector,
+                                                *orientation_vector,
+                                                CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -435,9 +435,11 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
-
-  g_configuration->registerCommandHandler("owlat_arm_move_cartesian",
-                                          owlat_arm_move_cartesian);
+  // Both the following use the same overloaded function.
+  g_configuration->registerCommandHandler("arm_move_cartesian",
+                                          arm_move_cartesian);
+  g_configuration->registerCommandHandler("arm_move_cartesian_q",
+                                          arm_move_cartesian);
   g_configuration->registerCommandHandler("owlat_arm_move_cartesian_guarded",
                                           owlat_arm_move_cartesian_guarded);
   g_configuration->registerCommandHandler("owlat_arm_move_joints",

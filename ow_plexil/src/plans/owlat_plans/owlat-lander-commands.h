@@ -8,15 +8,13 @@
 // All available PLEXIL commands in OWLAT to the lander.  This is essentially the
 // lander's command interface.
 
+#include "../common/common-commands.h"
+
 // Note that PLEXIL commands are asynchronous by design.  In general, autonomy
 // plans should not call these directly, but rather user the Library interface
 // that wraps these commands; this is defined in plan-interface.h.
 
 // More in depth explanation of these Commands can be found in the OWLAT user guide.
-
-// This action allows the user to specify a target Cartesian pose for the arm.
-Command owlat_arm_move_cartesian(Integer frame, Boolean relative,
-                                 Real position[3], Real orientation[4]);
 
 // Guarded version of owlat_arm_move_cartesian.
 Command owlat_arm_move_cartesian_guarded(Integer frame, Boolean relative,

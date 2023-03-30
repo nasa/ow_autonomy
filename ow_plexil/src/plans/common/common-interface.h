@@ -18,6 +18,23 @@ Command log_debug (...);
 
 LibraryAction ArmStow ();
 LibraryAction ArmUnstow ();
+LibraryAction ArmStop ();
+
+LibraryAction ArmMoveJoint(In Boolean Relative,
+                           In Integer Joint,
+                           In Real Angle);
+
+
+LibraryAction ArmMoveCartesian (In Integer Frame,
+                                In Boolean Relative,
+                                In Real Position[3],
+                                In Real Orientation[3]);
+
+LibraryAction ArmMoveCartesian_Q (In Integer Frame,
+                                  In Boolean Relative,
+                                  In Real Position[3],
+                                  In Real Orientation[4]);
+
 
 // Lander queries and telemetry
 

@@ -8,6 +8,7 @@
 #include <ArrayImpl.hh>
 #include <functional>
 #include "subscriber.h"
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 using std::hash;
 using std::copy;
@@ -26,8 +27,8 @@ const string Name_ArmStop = "ArmStop";
 const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
 const string Name_MoveJoint =     "ArmMoveJoint";
+const string Name_ArmMoveCartesian = "ArmMoveCartesian";
 
-const string Name_OwlatArmMoveCartesian = "/owlat_sim/ARM_MOVE_CARTESIAN";
 const string Name_OwlatArmMoveCartesianGuarded =
   "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
 
@@ -64,7 +65,7 @@ static vector<string> LanderOpNames = {
   Name_Discard,
   Name_Unstow,
   Name_Stow,
-  Name_OwlatArmMoveCartesian,
+  Name_ArmMoveCartesian,
   Name_OwlatArmMoveCartesianGuarded,
   Name_MoveJoint,
   Name_OwlatArmMoveJoints,
@@ -180,9 +181,9 @@ void OwlatInterface::initialize()
       make_unique<ArmUnstowActionClient>(Name_Unstow, true);
     m_taskDiscardClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_owlatArmMoveCartesianClient =
-      make_unique<OwlatArmMoveCartesianActionClient>(Name_OwlatArmMoveCartesian,
-                                                     true);
+    m_armMoveCartesianClient =
+      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian,
+                                                true);
     m_owlatArmMoveCartesianGuardedClient =
       make_unique<OwlatArmMoveCartesianGuardedActionClient>
       (Name_OwlatArmMoveCartesianGuarded, true);
@@ -219,9 +220,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("TaskDiscardSample action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianClient->waitForServer
+    if (! m_armMoveCartesianClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN action server did not connect!");
+      ROS_ERROR ("ArmMoveCartesian action server did not connect!");
     }
     if (! m_owlatArmMoveCartesianGuardedClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -308,59 +309,60 @@ void OwlatInterface::armStow (int id)
   action_thread.detach();
 }
 
-/*
-void OwlatInterface::owlatStowAction (int id)
+void OwlatInterface::armMoveCartesian (int frame,
+                                       bool relative,
+                                       const vector<double>& position,
+                                       const vector<double>& orientation,
+                                       int id)
 {
-  ArmStowGoal goal;
-  string opname = Name_OwlatStow;  // shorter version
+  if (! markOperationRunning (Name_ArmMoveCartesian, id)) return;
 
-  runAction<actionlib::SimpleActionClient<ArmStowAction>,
-            ArmStowGoal,
-            ArmStowResultConstPtr,
-            ArmStowFeedbackConstPtr>
-    (opname, m_owlatStowClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ArmStowFeedbackConstPtr> (opname),
-     default_action_done_cb<ArmStowResultConstPtr> (opname));
-}
-*/
+  geometry_msgs::Quaternion qm;
 
-void OwlatInterface::owlatArmMoveCartesian (int frame, bool relative,
-                                            const vector<double>& position,
-                                            const vector<double>& orientation,
-                                            int id)
-{
-  if (! markOperationRunning (Name_OwlatArmMoveCartesian, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmMoveCartesianAction, this,
-                        frame, relative, position, orientation, id);
+  // Deal with type of orientation
+  if (orientation.size() == 3) { // assume Euler angle
+    tf2::Quaternion q;
+    // Yaw, pitch, roll, respectively.
+    q.setEuler (orientation[2], orientation[1], orientation[0]);
+    q.normalize();  // Recommended in ROS docs, not sure if needed here.
+    qm = tf2::toMsg(q);
+  }
+  else { // assume quaternion orientation
+    qm.x = orientation[0];
+    qm.y = orientation[1];
+    qm.z = orientation[2];
+    qm.w = orientation[3];
+  }
+
+  geometry_msgs::Pose pose;
+  pose.position.x = position[0];
+  pose.position.y = position[1];
+  pose.position.z = position[2];
+  pose.orientation = qm;
+  thread action_thread (&OwlatInterface::armMoveCartesianAction, this,
+                        frame, relative, pose, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveCartesianAction (int frame, bool relative,
-                                                  const vector<double>& position,
-                                                  const vector<double>& orientation,
-                                                  int id)
+void OwlatInterface::armMoveCartesianAction (int frame,
+                                             bool relative,
+                                             const geometry_msgs::Pose& pose,
+                                             int id)
 {
-  ARM_MOVE_CARTESIANGoal goal;
-  goal.frame.value = frame;
+  ArmMoveCartesianGoal goal;
+  goal.frame = frame;
   goal.relative = relative;
-  goal.pose.position.x = position[0];
-  goal.pose.position.y = position[1];
-  goal.pose.position.z = position[2];
-  goal.pose.orientation.x = orientation[0];
-  goal.pose.orientation.y = orientation[1];
-  goal.pose.orientation.z = orientation[2];
-  goal.pose.orientation.w = orientation[3];
-  string opname = Name_OwlatArmMoveCartesian;  // shorter version
+  goal.pose = pose;
+  string opname = Name_ArmMoveCartesian;
 
-  runAction<actionlib::SimpleActionClient<ARM_MOVE_CARTESIANAction>,
-            ARM_MOVE_CARTESIANGoal,
-            ARM_MOVE_CARTESIANResultConstPtr,
-            ARM_MOVE_CARTESIANFeedbackConstPtr>
-    (opname, m_owlatArmMoveCartesianClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmMoveCartesianAction>,
+            ArmMoveCartesianGoal,
+            ArmMoveCartesianResultConstPtr,
+            ArmMoveCartesianFeedbackConstPtr>
+    (opname, m_armMoveCartesianClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_MOVE_CARTESIANFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_MOVE_CARTESIANResultConstPtr> (opname));
+     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmMoveCartesianResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative,
