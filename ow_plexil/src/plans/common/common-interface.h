@@ -38,6 +38,22 @@ LibraryAction ArmMoveCartesian_Q (In Integer Frame,
                                   In Real Position[3],
                                   In Real Orientation[4]);
 
+LibraryAction ArmMoveCartesianGuarded (In Integer Frame,
+                                       In Boolean Relative,
+                                       In Real Position[3],
+                                       In Real Orientation[3],
+                                       In Boolean Retracting,
+                                       In Real ForceThreshold,
+                                       In Real TorqueThreshold);
+
+LibraryAction ArmMoveCartesianGuarded_Q (In Integer Frame,
+                                         In Boolean Relative,
+                                         In Real Position[3],
+                                         In Real Orientation[4],
+                                         In Boolean Retracting,
+                                         In Real ForceThreshold,
+                                         In Real TorqueThreshold);
+
 
 // Lander queries and telemetry
 

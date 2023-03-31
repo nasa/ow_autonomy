@@ -30,5 +30,19 @@ Command arm_move_cartesian_q (Integer frame,
                               Real position[3],
                               Real orientation[4]);
 
+// Takes an Euler angle for orientation.
+Command arm_move_cartesian_guarded (Integer frame,
+                                    Boolean relative,
+                                    Real position[3],
+                                    Real orientation[3],
+                                    Real ForceThreshold,
+                                    Real TorqueThreshold);
 
+// Takes a quaternion for orientation.
+Command arm_move_cartesian_guarded_q (Integer frame,
+                                      Boolean relative,
+                                      Real position[3],
+                                      Real orientation[4],
+                                      Real ForceThreshold,
+                                      Real TorqueThreshold);
 #endif

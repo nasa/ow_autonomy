@@ -42,25 +42,6 @@ LibraryAction ArmFindSurface (In Integer Frame,
                               In Real ForceThreshold,
                               In Real TorqueThreshold);
 
-LibraryAction ArmMoveCartesianGuarded (In Integer Frame,
-                                       In Boolean Relative,
-                                       // Euler angle:
-                                       In Real X, In Real Y, In Real Z,
-                                       In Real OrientX,
-                                       In Real OrientY,
-                                       In Real OrientZ,
-                                       In Real ForceThreshold,
-                                       In Real TorqueThreshold);
-
-// Quaternion version of previous.
-LibraryAction ArmMoveCartesianGuarded_Q (In Integer Frame,
-                                         In Boolean Relative,
-                                         In Real X, In Real Y, In Real Z,
-                                         In Real OrientX, In Real OrientY,
-                                         In Real OrientZ, In Real OrientW,
-                                         In Real ForceThreshold,
-                                         In Real TorqueThreshold);
-
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 LibraryAction Pan (In Real Degrees);
 LibraryAction Tilt (In Real Degrees);

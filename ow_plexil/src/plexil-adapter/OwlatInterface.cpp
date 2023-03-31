@@ -28,9 +28,7 @@ const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
 const string Name_MoveJoint =     "ArmMoveJoint";
 const string Name_ArmMoveCartesian = "ArmMoveCartesian";
-
-const string Name_OwlatArmMoveCartesianGuarded =
-  "/owlat_sim/ARM_MOVE_CARTESIAN_GUARDED";
+const string Name_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
@@ -66,7 +64,7 @@ static vector<string> LanderOpNames = {
   Name_Unstow,
   Name_Stow,
   Name_ArmMoveCartesian,
-  Name_OwlatArmMoveCartesianGuarded,
+  Name_ArmMoveCartesianGuarded,
   Name_MoveJoint,
   Name_OwlatArmMoveJoints,
   Name_OwlatArmMoveJointsGuarded,
@@ -184,9 +182,9 @@ void OwlatInterface::initialize()
     m_armMoveCartesianClient =
       make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian,
                                                 true);
-    m_owlatArmMoveCartesianGuardedClient =
-      make_unique<OwlatArmMoveCartesianGuardedActionClient>
-      (Name_OwlatArmMoveCartesianGuarded, true);
+    m_armMoveCartesianGuardedClient =
+      make_unique<ArmMoveCartesianGuardedActionClient>
+      (Name_ArmMoveCartesianGuarded, true);
     m_armMoveJointClient =
       make_unique<ArmMoveJointActionClient>(Name_MoveJoint, true);
     m_owlatArmMoveJointsClient =
@@ -224,9 +222,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmMoveCartesian action server did not connect!");
     }
-    if (! m_owlatArmMoveCartesianGuardedClient->waitForServer
+    if (! m_armMoveCartesianGuardedClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_MOVE_CARTESIAN_GUARDED action server did not connect!");
+      ROS_ERROR ("ArmMoveCartesianGuarded action server did not connect!");
     }
     if (! m_armMoveJointClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -365,29 +363,28 @@ void OwlatInterface::armMoveCartesianAction (int frame,
      default_action_done_cb<ArmMoveCartesianResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveCartesianGuarded (int frame, bool relative,
-                                                   const vector<double>& position,
-                                                   const vector<double>& orientation,
-                                                   bool retracting,
-                                                   double force_threshold,
-                                                   double torque_threshold,int id)
+void OwlatInterface::armMoveCartesianGuarded (int frame, bool relative,
+                                              const vector<double>& position,
+                                              const vector<double>& orientation,
+                                              double force_threshold,
+                                              double torque_threshold,int id)
 {
-  if (! markOperationRunning (Name_OwlatArmMoveCartesianGuarded, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmMoveCartesianGuardedAction,
+  if (! markOperationRunning (Name_ArmMoveCartesianGuarded, id)) return;
+  thread action_thread (&OwlatInterface::armMoveCartesianGuardedAction,
                         this, frame, relative, position, orientation,
-                        retracting, force_threshold, torque_threshold, id);
+                        force_threshold, torque_threshold, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relative,
-                                                         const vector<double>& position,
-                                                         const vector<double>& orientation,
-                                                         bool retracting,
-                                                         double force_threshold,
-                                                         double torque_threshold, int id)
+void OwlatInterface::armMoveCartesianGuardedAction (int frame,
+                                                    bool relative,
+                                                    const vector<double>& position,
+                                                    const vector<double>& orientation,
+                                                    double force_threshold,
+                                                    double torque_threshold, int id)
 {
-  ARM_MOVE_CARTESIAN_GUARDEDGoal goal;
-  goal.frame.value = frame;
+  ArmMoveCartesianGuardedGoal goal;
+  goal.frame = frame;
   goal.relative = relative;
   goal.pose.position.x = position[0];
   goal.pose.position.y = position[1];
@@ -396,19 +393,18 @@ void OwlatInterface::owlatArmMoveCartesianGuardedAction (int frame, bool relativ
   goal.pose.orientation.y = orientation[1];
   goal.pose.orientation.z = orientation[2];
   goal.pose.orientation.w = orientation[3];
-  goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmMoveCartesianGuarded;  // shorter version
+  string opname = Name_ArmMoveCartesianGuarded;
 
-  runAction<actionlib::SimpleActionClient<ARM_MOVE_CARTESIAN_GUARDEDAction>,
-            ARM_MOVE_CARTESIAN_GUARDEDGoal,
-            ARM_MOVE_CARTESIAN_GUARDEDResultConstPtr,
-            ARM_MOVE_CARTESIAN_GUARDEDFeedbackConstPtr>
-    (opname, m_owlatArmMoveCartesianGuardedClient, goal, id,
+  runAction<actionlib::SimpleActionClient<ArmMoveCartesianGuardedAction>,
+            ArmMoveCartesianGuardedGoal,
+            ArmMoveCartesianGuardedResultConstPtr,
+            ArmMoveCartesianGuardedFeedbackConstPtr>
+    (opname, m_armMoveCartesianGuardedClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_MOVE_CARTESIAN_GUARDEDFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_MOVE_CARTESIAN_GUARDEDResultConstPtr> (opname));
+     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr> (opname));
 }
 
 void OwlatInterface::armMoveJoint (bool relative,

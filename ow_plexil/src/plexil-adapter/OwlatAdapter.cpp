@@ -70,35 +70,34 @@ static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_move_cartesian_guarded (Command* cmd,
-                                              AdapterExecInterface* intf)
+static void arm_move_cartesian_guarded (Command* cmd,
+                                        AdapterExecInterface* intf)
 {
   int frame;
-  bool relative, retracting;
-  double force_threshold, torque_threshold;
+  bool relative;
   vector<double> const *position_vector = nullptr;
   vector<double> const *orientation_vector = nullptr;
+  double force_threshold, torque_threshold;
   RealArray const *position = nullptr;
   RealArray const *orientation = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
-  args[4].getValue(retracting);
-  args[5].getValue(force_threshold);
-  args[6].getValue(torque_threshold);
   args[2].getValuePointer(position);
   args[3].getValuePointer(orientation);
+  args[4].getValue(force_threshold);
+  args[5].getValue(torque_threshold);
+
     //change real array into a vector
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveCartesianGuarded (frame, relative,
-                                                            *position_vector,
-                                                            *orientation_vector,
-                                                            retracting,
-                                                            force_threshold,
-                                                            torque_threshold,
-                                                            CommandId);
+  OwlatInterface::instance()->armMoveCartesianGuarded (frame, relative,
+                                                       *position_vector,
+                                                       *orientation_vector,
+                                                       force_threshold,
+                                                       torque_threshold,
+                                                       CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -440,8 +439,10 @@ bool OwlatAdapter::initialize()
                                           arm_move_cartesian);
   g_configuration->registerCommandHandler("arm_move_cartesian_q",
                                           arm_move_cartesian);
-  g_configuration->registerCommandHandler("owlat_arm_move_cartesian_guarded",
-                                          owlat_arm_move_cartesian_guarded);
+  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
+                                          arm_move_cartesian_guarded);
+  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
+                                          arm_move_cartesian_guarded);
   g_configuration->registerCommandHandler("owlat_arm_move_joints",
                                           owlat_arm_move_joints);
   g_configuration->registerCommandHandler("owlat_arm_move_joints_guarded",

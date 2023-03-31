@@ -28,8 +28,8 @@
 #include <owl_msgs/ArmSetToolAction.h>
 #include <owl_msgs/ArmMoveJointAction.h>
 #include <owl_msgs/ArmMoveCartesianAction.h>
+#include <owl_msgs/ArmMoveCartesianGuardedAction.h>
 
-#include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
 #include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
@@ -60,9 +60,9 @@ using ArmMoveJointActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
 using ArmMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
+using ArmMoveCartesianGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
 
-using OwlatArmMoveCartesianGuardedActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIAN_GUARDEDAction>;
 using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
 using OwlatArmMoveJointsGuardedActionClient =
@@ -90,17 +90,17 @@ class OwlatInterface : public PlexilInterface
   void armUnstow (int id);
   void armStop (int id);
   void taskDiscard (int id);
+  void armMoveJoint (bool relative, int joint, double angle, int id);
   void armMoveCartesian (int frame, bool relative,
                          const std::vector<double>& position,
                          const std::vector<double>& orientation,
                          int id);
-  void owlatArmMoveCartesianGuarded (int frame, bool relative,
-                                     const std::vector<double>& position,
-                                     const std::vector<double>& orientation,
-                                     bool retracting,
-                                     double force_threshold,
-                                     double torque_threshold,int id);
-  void armMoveJoint (bool relative, int joint, double angle, int id);
+  void armMoveCartesianGuarded (int frame, bool relative,
+                                const std::vector<double>& position,
+                                const std::vector<double>& orientation,
+                                double force_threshold,
+                                double torque_threshold,int id);
+
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
                            int id);
@@ -159,12 +159,13 @@ class OwlatInterface : public PlexilInterface
                                bool relative,
                                const geometry_msgs::Pose& pose,
                                int id);
-  void owlatArmMoveCartesianGuardedAction (int frame, bool relative,
-                                           const std::vector<double>& position,
-                                           const std::vector<double>& orientation,
-                                           bool retracting,
-                                           double force_threshold,
-                                           double torque_threshold,int id);
+  void armMoveCartesianGuardedAction (int frame,
+                                      bool relative,
+                                      const std::vector<double>& position,
+                                      const std::vector<double>& orientation,
+                                      double force_threshold,
+                                      double torque_threshold,
+                                      int id);
   void armMoveJointAction (bool relative, int joint, double angle, int id);
   void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
                                  int id);
@@ -207,7 +208,7 @@ class OwlatInterface : public PlexilInterface
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
   std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
-  std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
+  std::unique_ptr<ArmMoveCartesianGuardedActionClient> m_armMoveCartesianGuardedClient;
   std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
   std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;

@@ -30,23 +30,23 @@ OwlatTestSequence3:
 
   // Approaches surface
   log_info("Approaching surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
-                                           Relative=relative,
-                                           Position=position1,
-                                           Orientation=orientation,
-                                           Retracting=false,
-                                           ForceThreshold=force_threshold,
-                                           TorqueThreshold=torque_threshold);
+  LibraryCall ArmMoveCartesianGuarded(Frame=frame,
+                                      Relative=relative,
+                                      Position=position1,
+                                      Orientation=orientation,
+                                      Retracting=false,
+                                      ForceThreshold=force_threshold,
+                                      TorqueThreshold=torque_threshold);
 
   // Retracts from surface
   log_info("Retracting from surface with ARM_MOVE_CARTESIAN_GUARDED.");
-  LibraryCall OwlatArmMoveCartesianGuarded(Frame=frame,
-                                           Relative=relative,
-                                           Position=position2,
-                                           Orientation=orientation,
-                                           Retracting=true,
-                                           ForceThreshold=force_threshold,
-                                           TorqueThreshold=torque_threshold);
+  LibraryCall ArmMoveCartesianGuarded(Frame=frame,
+                                      Relative=relative,
+                                      Position=position2,
+                                      Orientation=orientation,
+                                      Retracting=true,
+                                      ForceThreshold=force_threshold,
+                                      TorqueThreshold=torque_threshold);
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence3");
 }

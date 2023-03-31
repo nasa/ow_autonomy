@@ -16,12 +16,6 @@
 
 // More in depth explanation of these Commands can be found in the OWLAT user guide.
 
-// Guarded version of owlat_arm_move_cartesian.
-Command owlat_arm_move_cartesian_guarded(Integer frame, Boolean relative,
-                                         Real position[3], Real orientation[4],
-                                         Boolean retracting, Real force_threshold,
-                                         Real torque_threshold);
-
 // Move all joints to specified angles.
 Command owlat_arm_move_joints (Boolean relative, Real angles[7]);
 

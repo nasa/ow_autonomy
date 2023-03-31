@@ -135,24 +135,12 @@ class OwInterface : public PlexilInterface
                        double distance, double overdrive,
                        double force_threshold, double torque_threshold, int id);
   void armMoveCartesian (int frame, bool relative,
-			 double x, double y, double z,
-			 double orient_x, double orient_y,
-			 double orient_z, int id);
-  void armMoveCartesian (int frame, bool relative,
-			 double x, double y, double z,
-			 double orient_x, double orient_y,
-			 double orient_z, double orient_w, int id);
-  // Uses Euler angle for orientation.
+                         const std::vector<double>& position,
+                         const std::vector<double>& orientation,
+			 int id);
   void armMoveCartesianGuarded (int frame, bool relative,
-                                double x, double y, double z,
-                                double orient_x, double orient_y, double orient_z,
-                                double force_threshold, double torque_threshold,
-                                int id);
-  // Uses quaternion for orientation.
-  void armMoveCartesianGuarded (int frame, bool relative,
-                                double x, double y, double z,
-                                double orient_x, double orient_y,
-                                double orient_z, double orient_w,
+                                const std::vector<double>& position,
+                                const std::vector<double>& orientation,
                                 double force_threshold, double torque_threshold,
                                 int id);
   void guardedMove (double x, double y, double z,
