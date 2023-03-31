@@ -10,6 +10,9 @@
 
 #include "common-commands.h"
 
+#define BASE_FRAME 0
+#define TOOL_FRAME 1
+
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);

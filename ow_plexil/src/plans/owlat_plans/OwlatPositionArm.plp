@@ -10,7 +10,7 @@
 OwlatPositionArm:
 {
   log_info("Moving arm into position above surface with ArmMoveCartesian.");
-  LibraryCall ArmMoveCartesian(Frame=16, // End effector frame
+  LibraryCall ArmMoveCartesian(Frame=TOOL_FRAME,
                                Relative=false,
                                Position=#(0.0 0.0 0.4),
                                Orientation=#(0.0 0.0 0.0 1.0));

@@ -12,9 +12,7 @@ LibraryAction OwlatPositionArm();
 
 OwlatTestSequence3:
 {
-
-  // End effector frame
-  Integer frame = 16;
+  Integer frame = TOOL_FRAME;
   Boolean relative = false;
   Real position1[3] = #(0.0 0.0 0.15);
   Real position2[3] = #(0.0 0.0 -0.1);
