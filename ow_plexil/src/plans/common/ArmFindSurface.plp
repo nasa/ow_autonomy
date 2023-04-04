@@ -1,0 +1,35 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Perform an ArmFindSurface as specified.
+
+Command arm_find_surface (Integer frame,
+                          Boolean relative,
+                          Real pos_x, Real pos_y, Real pos_z,
+                          Real norm_x, Real norm_y, Real norm_z,
+                          Real distance,
+                          Real overdrive,
+                          Real force_threshold,
+                          Real torque_threshold);
+
+ArmFindSurface:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real PosX;
+  In Real PosY;
+  In Real PosZ;
+  In Real NormX;
+  In Real NormY;
+  In Real NormZ;
+  In Real Distance;
+  In Real Overdrive;
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
+  
+  SynchronousCommand arm_find_surface (Frame, Relative, PosX, PosY, PosZ,
+                                       NormX, NormY, NormZ,
+                                       Distance, Overdrive,
+                                       ForceThreshold, TorqueThreshold);
+}

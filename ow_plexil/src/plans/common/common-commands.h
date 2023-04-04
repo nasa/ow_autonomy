@@ -45,4 +45,14 @@ Command arm_move_cartesian_guarded_q (Integer frame,
                                       Real orientation[4],
                                       Real ForceThreshold,
                                       Real TorqueThreshold);
+
+Command arm_find_surface (Integer frame,
+                          Boolean relative,
+                          Real pos_x, Real pos_y, Real pos_z,
+                          Real norm_x, Real norm_y, Real norm_z,
+                          Real distance,
+                          Real overdrive,
+                          Real force_threshold,
+                          Real torque_threshold);
+
 #endif

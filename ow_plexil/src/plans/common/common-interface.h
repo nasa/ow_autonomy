@@ -54,6 +54,18 @@ LibraryAction ArmMoveCartesianGuarded_Q (In Integer Frame,
                                          In Real ForceThreshold,
                                          In Real TorqueThreshold);
 
+LibraryAction ArmFindSurface (In Integer Frame,
+                              In Boolean Relative,
+                              In Real PosX,
+                              In Real PosY,
+                              In Real PosZ,
+                              In Real NormX,
+                              In Real NormY,
+                              In Real NormZ,
+                              In Real Distance,
+                              In Real Overdrive,
+                              In Real ForceThreshold,
+                              In Real TorqueThreshold);
 
 // Lander queries and telemetry
 

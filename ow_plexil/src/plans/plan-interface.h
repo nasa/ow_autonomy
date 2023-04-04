@@ -29,19 +29,6 @@
 
 // PLEXIL library for lander operations.
 
-LibraryAction ArmFindSurface (In Integer Frame,
-                              In Boolean Relative,
-                              In Real PosX,
-                              In Real PosY,
-                              In Real PosZ,
-                              In Real NormX,
-                              In Real NormY,
-                              In Real NormZ,
-                              In Real Distance,
-                              In Real Overdrive,
-                              In Real ForceThreshold,
-                              In Real TorqueThreshold);
-
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 LibraryAction Pan (In Real Degrees);
 LibraryAction Tilt (In Real Degrees);
