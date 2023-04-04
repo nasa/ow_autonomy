@@ -417,14 +417,14 @@ static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
-  : CommonAdapter (execInterface, configXml)
+  : PlexilAdapter (execInterface, configXml)
 {
   debugMsg("OwlatAdapter", " created.");
 }
 
 bool OwlatAdapter::initialize()
 {
-  CommonAdapter::initialize();
+  PlexilAdapter::initialize();
 
   // Commands
 

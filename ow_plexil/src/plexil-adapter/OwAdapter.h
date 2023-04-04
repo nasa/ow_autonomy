@@ -7,9 +7,9 @@
 
 // PLEXIL Interface adapter for OceanWATERS.
 
-#include "CommonAdapter.h"
+#include "PlexilAdapter.h"
 
-class OwAdapter : public CommonAdapter
+class OwAdapter : public PlexilAdapter
 {
 public:
   // No default constructor, only this specialized one.

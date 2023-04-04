@@ -662,14 +662,14 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
-  : CommonAdapter(execInterface, configXml)
+  : PlexilAdapter(execInterface, configXml)
 {
   debugMsg("OwAdapter", " created.");
 }
 
 bool OwAdapter::initialize()
 {
-  CommonAdapter::initialize();
+  PlexilAdapter::initialize();
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_stow", arm_stow);
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);

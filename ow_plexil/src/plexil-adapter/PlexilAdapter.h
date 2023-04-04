@@ -16,13 +16,13 @@
 #include <map>
 #include <vector>
 
-class CommonAdapter : public PLEXIL::InterfaceAdapter
+class PlexilAdapter : public PLEXIL::InterfaceAdapter
 {
 public:
-  CommonAdapter() = delete;  // only a specialized constructor for subclasses
-  virtual ~CommonAdapter() = default;
-  CommonAdapter (const CommonAdapter&) = delete;
-  CommonAdapter& operator= (const CommonAdapter&) = delete;
+  PlexilAdapter() = delete;  // only a specialized constructor for subclasses
+  virtual ~PlexilAdapter() = default;
+  PlexilAdapter (const PlexilAdapter&) = delete;
+  PlexilAdapter& operator= (const PlexilAdapter&) = delete;
 
   virtual bool initialize();
   virtual bool start();
@@ -36,7 +36,7 @@ public:
                              const std::vector<PLEXIL::Value>&) const;
 
 protected:
-  CommonAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  PlexilAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
   bool isStateSubscribed (const PLEXIL::State& state) const;
   std::set<PLEXIL::State> m_subscribedStates;
 };

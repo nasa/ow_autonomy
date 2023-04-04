@@ -9,7 +9,7 @@ set (HEADERS
   adapter_support.h
   PlexilInterface.h
   OwExecutive.h
-  CommonAdapter.h
+  PlexilAdapter.h
   PlexilPlanSelection.h
   TerminalPlanSelection.h
 )
@@ -20,7 +20,7 @@ set (SOURCES
   adapter_support.cpp
   PlexilInterface.cpp
   OwExecutive.cpp
-  CommonAdapter.cpp
+  PlexilAdapter.cpp
   PlexilPlanSelection.cpp
   TerminalPlanSelection.cpp
 )

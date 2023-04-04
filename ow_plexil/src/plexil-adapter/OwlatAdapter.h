@@ -7,9 +7,9 @@
 
 // PLEXIL Interface adapter for OWLAT simulator.
 
-#include "CommonAdapter.h"
+#include "PlexilAdapter.h"
 
-class OwlatAdapter : public CommonAdapter
+class OwlatAdapter : public PlexilAdapter
 {
 public:
   // No default constructor, only this specialized one.

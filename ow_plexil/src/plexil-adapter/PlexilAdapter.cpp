@@ -5,7 +5,7 @@
 // Implementation of PLEXIL interface adapter as common to all testbeds.
 
 // ow_plexil
-#include "CommonAdapter.h"
+#include "PlexilAdapter.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -23,32 +23,32 @@
 #include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
-void CommonAdapter::propagateValueChange (const State& state,
+void PlexilAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals) const
 {
   if (! isStateSubscribed (state)) {
-    debugMsg("CommonAdapter:propagateValueChange", " ignoring " << state);
+    debugMsg("PlexilAdapter:propagateValueChange", " ignoring " << state);
     return;
   }
 
-  debugMsg("CommonAdapter:propagateValueChange", " sending " << state);
+  debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();
 }
 
-bool CommonAdapter::isStateSubscribed(const State& state) const
+bool PlexilAdapter::isStateSubscribed(const State& state) const
 {
   return m_subscribedStates.find(state) != m_subscribedStates.end();
 }
 
-CommonAdapter::CommonAdapter(AdapterExecInterface& execInterface,
+PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
   : InterfaceAdapter(execInterface, configXml)
 {
-  debugMsg("CommonAdapter", " created.");
+  debugMsg("PlexilAdapter", " created.");
 }
 
-bool CommonAdapter::initialize()
+bool PlexilAdapter::initialize()
 {
   g_configuration->defaultRegisterAdapter(this);
   g_configuration->registerCommandHandler("log_info", log_info);
@@ -62,49 +62,49 @@ bool CommonAdapter::initialize()
   setSubscriber (receiveDoubleFromInt);
   setSubscriber (receiveDoubleVector);
   g_adapter = this;
-  debugMsg("CommonAdapter", " initialized.");
+  debugMsg("PlexilAdapter", " initialized.");
   return true;
 }
 
-bool CommonAdapter::start()
+bool PlexilAdapter::start()
 {
-  debugMsg("CommonAdapter", " started.");
+  debugMsg("PlexilAdapter", " started.");
   return true;
 }
 
-bool CommonAdapter::stop()
+bool PlexilAdapter::stop()
 {
-  debugMsg("CommonAdapter", " stopped.");
+  debugMsg("PlexilAdapter", " stopped.");
   return true;
 }
 
-bool CommonAdapter::reset()
+bool PlexilAdapter::reset()
 {
-  debugMsg("CommonAdapter", " reset.");
+  debugMsg("PlexilAdapter", " reset.");
   return true;
 }
 
-bool CommonAdapter::shutdown()
+bool PlexilAdapter::shutdown()
 {
-  debugMsg("CommonAdapter", " shut down.");
+  debugMsg("PlexilAdapter", " shut down.");
   return true;
 }
 
-void CommonAdapter::invokeAbort(Command *cmd)
+void PlexilAdapter::invokeAbort(Command *cmd)
 {
   ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
             cmd->getName().c_str());
 }
 
-void CommonAdapter::subscribe(const State& state)
+void PlexilAdapter::subscribe(const State& state)
 {
-  debugMsg("CommonAdapter:subscribe", " to state " << state.name());
+  debugMsg("PlexilAdapter:subscribe", " to state " << state.name());
   m_subscribedStates.insert(state);
 }
 
 
-void CommonAdapter::unsubscribe (const State& state)
+void PlexilAdapter::unsubscribe (const State& state)
 {
-  debugMsg("CommonAdapter:unsubscribe", " from state " << state.name());
+  debugMsg("PlexilAdapter:unsubscribe", " from state " << state.name());
   m_subscribedStates.erase(state);
 }

@@ -24,7 +24,7 @@ using std::mutex;
 // An empty argument vector, for convenience.
 const vector<Value> EmptyArgs;
 
-CommonAdapter* g_adapter;
+PlexilAdapter* g_adapter;
 
 static mutex g_shared_mutex;
 
