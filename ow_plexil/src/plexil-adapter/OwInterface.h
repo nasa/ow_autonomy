@@ -224,16 +224,6 @@ class OwInterface : public PlexilInterface
                              double distance, double overdrive,
                              double force_threshold, double torque_threshold,
                              int id);
-  void armMoveCartesianAux (int frame, bool relative,
-                            double x, double y, double z,
-                            const geometry_msgs::Quaternion& q, int id);
-  void armMoveCartesianGuardedAux (int frame,
-                                   bool relative,
-                                   double x, double y, double z,
-                                   const geometry_msgs::Quaternion& q,
-                                   double force_threshold,
-                                   double torque_threshold,
-                                   int id);
   void armMoveCartesianAction (int frame,
                                bool relative,
                                const geometry_msgs::Pose& pose,

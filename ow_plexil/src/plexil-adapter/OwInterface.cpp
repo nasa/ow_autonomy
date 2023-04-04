@@ -1202,125 +1202,49 @@ void OwInterface::armFindSurfaceAction (int frame, bool relative,
 }
 
 void OwInterface::armMoveCartesian (int frame, bool relative,
-				    double x, double y, double z,
-				    double orient_x, double orient_y,
-				    double orient_z, int id)
-{
-  tf2::Quaternion q;
-  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
-  q.normalize();  // Recommended in ROS docs, not sure if needed here.
-
-  geometry_msgs::Quaternion qm = tf2::toMsg(q);
-
-  armMoveCartesianAux (frame, relative, x, y, z, qm, id);
-}
-
-
-void OwInterface::armMoveCartesian (int frame, bool relative,
-				    double x, double y, double z,
-				    double orient_x, double orient_y,
-				    double orient_z, double orient_w, int id)
-{
-  geometry_msgs::Quaternion q;
-  q.x = orient_x;
-  q.y = orient_y;
-  q.z = orient_z;
-  q.w = orient_w;
-
-  armMoveCartesianAux (frame, relative, x, y, z, q, id);
-}
-
-void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                           double x, double y, double z,
-                                           double orient_x,
-                                           double orient_y,
-                                           double orient_z,
-                                           double force_threshold,
-                                           double torque_threshold,
-                                           int id)
-{
-  tf2::Quaternion q;
-  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
-  q.normalize();  // Recommended in ROS docs, not sure if needed here.
-
-  geometry_msgs::Quaternion qm = tf2::toMsg(q);
-
-  armMoveCartesianGuardedAux (frame, relative, x, y, z, qm,
-                              force_threshold, torque_threshold, id);
-}
-
-void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                           double x, double y, double z,
-                                           double orient_x, double orient_y,
-                                           double orient_z, double orient_w,
-                                           double force_threshold,
-                                           double torque_threshold,
-                                           int id)
-{
-  geometry_msgs::Quaternion q;
-  q.x = orient_x;
-  q.y = orient_y;
-  q.z = orient_z;
-  q.w = orient_w;
-
-  armMoveCartesianGuardedAux (frame, relative, x, y, z, q,
-                              force_threshold, torque_threshold, id);
-}
-
-void OwInterface::armMoveCartesianGuardedAux (int frame, bool relative,
-                                              double x, double y, double z,
-                                              const geometry_msgs::Quaternion& q,
-                                              double force_threshold,
-                                              double torque_threshold,
-                                              int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesianGuarded, id)) return;
-
-  geometry_msgs::Point p;
-  p.x = x;
-  p.y = y;
-  p.z = z;
-
-  geometry_msgs::Pose pose;
-  pose.position = p;
-  pose.orientation = q;
-
-  thread action_thread (&OwInterface::armMoveCartesianGuardedAction, this,
-			frame, relative, pose, force_threshold, torque_threshold,
-                        id);
-  action_thread.detach();
-}
-
-
-void OwInterface::armMoveCartesianAux (int frame, bool relative,
-                                       double x, double y, double z,
-                                       const geometry_msgs::Quaternion& q, int id)
+                                    const std::vector<double>& position,
+                                    const std::vector<double>& orientation,
+				    int id)
 {
   if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
 
-  geometry_msgs::Point p;
-  p.x = x;
-  p.y = y;
-  p.z = z;
+  geometry_msgs::Quaternion qm;
+
+  // Deal with type of orientation
+  if (orientation.size() == 3) { // assume Euler angle
+    tf2::Quaternion q;
+    // Yaw, pitch, roll, respectively.
+    q.setEuler (orientation[2], orientation[1], orientation[0]);
+    q.normalize();  // Recommended in ROS docs, not sure if needed here.
+    qm = tf2::toMsg(q);
+  }
+  else { // assume quaternion orientation
+    qm.x = orientation[0];
+    qm.y = orientation[1];
+    qm.z = orientation[2];
+    qm.w = orientation[3];
+  }
 
   geometry_msgs::Pose pose;
-  pose.position = p;
-  pose.orientation = q;
-
+  pose.position.x = position[0];
+  pose.position.y = position[1];
+  pose.position.z = position[2];
+  pose.orientation = qm;
   thread action_thread (&OwInterface::armMoveCartesianAction, this,
-			frame, relative, pose, id);
+                        frame, relative, pose, id);
   action_thread.detach();
 }
 
-
-
-void OwInterface::armMoveCartesianAction (int frame, bool relative,
-                                          const geometry_msgs::Pose& pose, int id)
+void OwInterface::armMoveCartesianAction (int frame,
+                                          bool relative,
+                                          const geometry_msgs::Pose& pose,
+                                          int id)
 {
   ArmMoveCartesianGoal goal;
   goal.frame = frame;
   goal.relative = relative;
   goal.pose = pose;
+  string opname = Op_ArmMoveCartesian;
 
   // Fill this out.
   ROS_INFO ("Starting ArmMoveCartesian (frame=%d, relative=%d)", frame, relative);
@@ -1329,12 +1253,47 @@ void OwInterface::armMoveCartesianAction (int frame, bool relative,
             ArmMoveCartesianGoal,
             ArmMoveCartesianResultConstPtr,
             ArmMoveCartesianFeedbackConstPtr>
-	    (Op_ArmMoveCartesian, m_armMoveCartesianClient, goal, id,
-	     default_action_active_cb (Op_ArmMoveCartesian),
-	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr>
-	     (Op_ArmMoveCartesian),
-	     default_action_done_cb<ArmMoveCartesianResultConstPtr>
-	     (Op_ArmMoveCartesian));
+	    (opname, m_armMoveCartesianClient, goal, id,
+	     default_action_active_cb (opname),
+	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr> (opname),
+	     default_action_done_cb<ArmMoveCartesianResultConstPtr> (opname));
+}
+
+void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
+                                           const vector<double>& position,
+                                           const vector<double>& orientation,
+                                           double force_threshold,
+                                           double torque_threshold,
+                                           int id)
+{
+  if (! markOperationRunning (Op_ArmMoveCartesianGuarded, id)) return;
+
+  geometry_msgs::Quaternion qm;
+
+  // Deal with type of orientation
+  if (orientation.size() == 3) { // assume Euler angle
+    tf2::Quaternion q;
+    // Yaw, pitch, roll, respectively.
+    q.setEuler (orientation[2], orientation[1], orientation[0]);
+    q.normalize();  // Recommended in ROS docs, not sure if needed here.
+    qm = tf2::toMsg(q);
+  }
+  else { // assume quaternion orientation
+    qm.x = orientation[0];
+    qm.y = orientation[1];
+    qm.z = orientation[2];
+    qm.w = orientation[3];
+  }
+
+  geometry_msgs::Pose pose;
+  pose.position.x = position[0];
+  pose.position.y = position[1];
+  pose.position.z = position[2];
+  pose.orientation = qm;
+  thread action_thread (&OwInterface::armMoveCartesianGuardedAction,
+                        this, frame, relative, pose,
+                        force_threshold, torque_threshold, id);
+  action_thread.detach();
 }
 
 void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
@@ -1349,7 +1308,8 @@ void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
   goal.pose = pose;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-
+  string opname = Op_ArmMoveCartesianGuarded;
+  
   // Fill this out.
   ROS_INFO ("Starting ArmMoveCartesianGuarded (frame=%d, relative=%d)",
             frame, relative);
@@ -1358,12 +1318,12 @@ void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
             ArmMoveCartesianGuardedGoal,
             ArmMoveCartesianGuardedResultConstPtr,
             ArmMoveCartesianGuardedFeedbackConstPtr>
-	    (Op_ArmMoveCartesianGuarded, m_armMoveCartesianGuardedClient, goal, id,
-	     default_action_active_cb (Op_ArmMoveCartesianGuarded),
+	    (opname, m_armMoveCartesianGuardedClient, goal, id,
+	     default_action_active_cb (opname),
 	     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr>
-	     (Op_ArmMoveCartesianGuarded),
+	     (opname),
 	     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr>
-	     (Op_ArmMoveCartesianGuarded));
+	     (opname));
 }
 
 

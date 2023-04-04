@@ -279,42 +279,22 @@ static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  double x, y, z, orient_x, orient_y, orient_z;
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *orientation_vector = nullptr;
+  RealArray const *position = nullptr;
+  RealArray const *orientation = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
+  args[2].getValuePointer(position);
+  args[3].getValuePointer(orientation);
+  position->getContentsVector(position_vector);
+  orientation->getContentsVector(orientation_vector);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
-					     orient_x, orient_y, orient_z,
-					     CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_q (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, orient_w;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(orient_w);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
-					     orient_x, orient_y, orient_z,
-					     orient_w, CommandId);
+  OwInterface::instance()->armMoveCartesian (frame, relative,
+                                             *position_vector,
+                                             *orientation_vector,
+                                             CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -322,49 +302,24 @@ static void arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface* intf
 {
   int frame;
   bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, force_threshold, torque_threshold;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(force_threshold);
-  args[9].getValue(torque_threshold);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
-                                                    orient_x, orient_y, orient_z,
-                                                    force_threshold,
-                                                    torque_threshold,
-                                                    CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_guarded_q (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, orient_w;
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *orientation_vector = nullptr;
   double force_threshold, torque_threshold;
+  RealArray const *position = nullptr;
+  RealArray const *orientation = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(frame);
   args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(orient_w);
-  args[9].getValue(force_threshold);
-  args[10].getValue(torque_threshold);
+  args[2].getValuePointer(position);
+  args[3].getValuePointer(orientation);
+  args[4].getValue(force_threshold);
+  args[5].getValue(torque_threshold);
+  position->getContentsVector(position_vector);
+  orientation->getContentsVector(orientation_vector);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
-                                                    orient_x, orient_y, orient_z,
-                                                    orient_w,
+  OwInterface::instance()->armMoveCartesianGuarded (frame, relative,
+                                                    *position_vector,
+                                                    *orientation_vector,
                                                     force_threshold,
                                                     torque_threshold,
                                                     CommandId);
@@ -678,11 +633,11 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("arm_move_cartesian",
 					  arm_move_cartesian);
   g_configuration->registerCommandHandler("arm_move_cartesian_q",
-					  arm_move_cartesian_q);
+					  arm_move_cartesian);
   g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
 					  arm_move_cartesian_guarded);
   g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
-					  arm_move_cartesian_guarded_q);
+					  arm_move_cartesian_guarded);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);

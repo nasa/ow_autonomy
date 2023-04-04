@@ -370,29 +370,45 @@ void OwlatInterface::armMoveCartesianGuarded (int frame, bool relative,
                                               double torque_threshold,int id)
 {
   if (! markOperationRunning (Name_ArmMoveCartesianGuarded, id)) return;
+
+  geometry_msgs::Quaternion qm;
+
+  // Deal with type of orientation
+  if (orientation.size() == 3) { // assume Euler angle
+    tf2::Quaternion q;
+    // Yaw, pitch, roll, respectively.
+    q.setEuler (orientation[2], orientation[1], orientation[0]);
+    q.normalize();  // Recommended in ROS docs, not sure if needed here.
+    qm = tf2::toMsg(q);
+  }
+  else { // assume quaternion orientation
+    qm.x = orientation[0];
+    qm.y = orientation[1];
+    qm.z = orientation[2];
+    qm.w = orientation[3];
+  }
+
+  geometry_msgs::Pose pose;
+  pose.position.x = position[0];
+  pose.position.y = position[1];
+  pose.position.z = position[2];
+  pose.orientation = qm;
   thread action_thread (&OwlatInterface::armMoveCartesianGuardedAction,
-                        this, frame, relative, position, orientation,
+                        this, frame, relative, pose,
                         force_threshold, torque_threshold, id);
   action_thread.detach();
 }
 
-void OwlatInterface::armMoveCartesianGuardedAction (int frame,
-                                                    bool relative,
-                                                    const vector<double>& position,
-                                                    const vector<double>& orientation,
+void OwlatInterface::armMoveCartesianGuardedAction (int frame, bool relative,
+                                                    const geometry_msgs::Pose& pose,
                                                     double force_threshold,
-                                                    double torque_threshold, int id)
+                                                    double torque_threshold,
+                                                    int id)
 {
   ArmMoveCartesianGuardedGoal goal;
   goal.frame = frame;
   goal.relative = relative;
-  goal.pose.position.x = position[0];
-  goal.pose.position.y = position[1];
-  goal.pose.position.z = position[2];
-  goal.pose.orientation.x = orientation[0];
-  goal.pose.orientation.y = orientation[1];
-  goal.pose.orientation.z = orientation[2];
-  goal.pose.orientation.w = orientation[3];
+  goal.pose = pose;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
   string opname = Name_ArmMoveCartesianGuarded;

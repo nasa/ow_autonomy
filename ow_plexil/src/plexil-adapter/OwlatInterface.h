@@ -99,7 +99,8 @@ class OwlatInterface : public PlexilInterface
                                 const std::vector<double>& position,
                                 const std::vector<double>& orientation,
                                 double force_threshold,
-                                double torque_threshold,int id);
+                                double torque_threshold,
+                                int id);
 
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
@@ -161,8 +162,7 @@ class OwlatInterface : public PlexilInterface
                                int id);
   void armMoveCartesianGuardedAction (int frame,
                                       bool relative,
-                                      const std::vector<double>& position,
-                                      const std::vector<double>& orientation,
+                                      const geometry_msgs::Pose&,
                                       double force_threshold,
                                       double torque_threshold,
                                       int id);
