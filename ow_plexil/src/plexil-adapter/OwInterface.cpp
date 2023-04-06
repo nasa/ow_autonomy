@@ -4,9 +4,8 @@
 
 // ow_plexil
 #include "OwInterface.h"
-#include "subscriber.h"
 
-// OW - external
+// owl_msgs
 #include <owl_msgs/BatteryRemainingUsefulLife.h>
 #include <owl_msgs/BatteryStateOfCharge.h>
 #include <owl_msgs/BatteryTemperature.h>
@@ -17,15 +16,16 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Vector3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // C++
 #include <set>
-#include <vector>
 #include <map>
-#include <thread>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
+
+using namespace ow_lander;
+using namespace owl_msgs;
+using namespace PLEXIL;
 
 using std::set;
 using std::map;
@@ -36,8 +36,6 @@ using std::string;
 using std::shared_ptr;
 using std::make_unique;
 
-using namespace ow_lander;
-using namespace owl_msgs;
 
 //////////////////// Utilities ////////////////////////
 
@@ -56,14 +54,7 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // owl_msgs.
 
-const string Op_ArmMoveJoint            = "ArmMoveJoint";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";
-const string Op_ArmStop                 = "ArmStop";
-const string Op_ArmStow                 = "ArmStow";
-const string Op_ArmUnstow               = "ArmUnstow";
-const string Op_ArmFindSurface          = "ArmFindSurface";
-const string Op_ArmMoveCartesian        = "ArmMoveCartesian";
-const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_CameraCapture           = "CameraCapture";
 const string Op_CameraSetExposure       = "CameraSetExposure";
@@ -83,10 +74,6 @@ const string Op_Tilt                    = "Tilt";
 
 static vector<string> LanderOpNames = {
   Op_GuardedMove,
-  Op_ArmFindSurface,
-  Op_ArmMoveCartesian,
-  Op_ArmMoveCartesianGuarded,
-  Op_ArmMoveJoint,
   Op_ArmMoveJoints,
   Op_ArmMoveJointsGuarded,
   Op_TaskDeliverSample,
@@ -98,9 +85,6 @@ static vector<string> LanderOpNames = {
   Op_TaskScoopLinear,
   Op_TaskDiscardSample,
   Op_Grind,
-  Op_ArmStop,
-  Op_ArmStow,
-  Op_ArmUnstow,
   Op_CameraCapture,
   Op_CameraSetExposure,
   Op_Ingest,
@@ -547,36 +531,20 @@ void OwInterface::initialize()
   static bool initialized = false;
 
   if (not initialized) {
+    LanderInterface::initialize();
 
     for (const string& name : LanderOpNames) {
       registerLanderOperation (name);
     }
 
-    m_genericNodeHandle = make_unique<ros::NodeHandle>();
-
     // Initialize action clients
 
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
-    m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Op_ArmMoveCartesian, true);
-    m_armMoveCartesianGuardedClient =
-      make_unique<ArmMoveCartesianGuardedActionClient>(Op_ArmMoveCartesianGuarded,
-                                                       true);
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
-    m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
     m_armMoveJointsClient =
       make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
     m_armMoveJointsGuardedClient =
       make_unique<ArmMoveJointsGuardedActionClient>(Op_ArmMoveJointsGuarded, true);
-    m_armStopClient =
-      make_unique<ArmStopActionClient>(Op_ArmStop, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Op_ArmUnstow, true);
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Op_ArmStow, true);
     m_grindClient =
       make_unique<TaskGrindActionClient>(Op_Grind, true);
     m_taskDeliverSampleClient =
@@ -683,11 +651,6 @@ void OwInterface::initialize()
         subscribe("/arm_end_effector_force_torque", QSize,
                   &OwInterface::ftCallback, this)));
 
-    connectActionServer (m_armStopClient, Op_ArmStop, "/ArmStop/status");
-    connectActionServer (m_armUnstowClient, Op_ArmUnstow, "/ArmUnstow/status");
-    connectActionServer (m_armStowClient, Op_ArmStow, "/ArmStow/status");
-    connectActionServer (m_armMoveJointClient, Op_ArmMoveJoint,
-                         "/ArmMoveJoint/status");
     connectActionServer (m_armMoveJointsClient, Op_ArmMoveJoints,
                          "/ArmMoveJoints/status");
     connectActionServer (m_armMoveJointsGuardedClient, Op_ArmMoveJointsGuarded,
@@ -710,28 +673,12 @@ void OwInterface::initialize()
                          "/LightSetIntensity/status");
     connectActionServer (m_guardedMoveClient, Op_GuardedMove,
                          "/GuardedMove/status");
-    connectActionServer (m_armMoveCartesianClient, Op_ArmMoveCartesian,
-                         "/ArmMoveCartesian/status");
-    connectActionServer (m_armMoveCartesianGuardedClient, Op_ArmMoveCartesianGuarded,
-                         "/ArmMoveCartesianGuarded/status");
-    connectActionServer (m_armFindSurfaceClient, Op_ArmFindSurface,
-                         "/ArmFindSurface/status");
     connectActionServer (m_panClient, Op_Pan);
     connectActionServer (m_tiltClient, Op_Tilt);
     connectActionServer (m_panTiltClient, Op_PanTilt);
     connectActionServer (m_panTiltCartesianClient, Op_PanTiltCartesian);
     connectActionServer (m_identifySampleLocationClient, Op_IdentifySampleLocation);
   }
-}
-
-void OwInterface::addSubscriber (const string& topic, const string& operation)
-{
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-      (topic, QSize,
-       boost::bind(&OwInterface::actionGoalStatusCallback,
-                   this, _1, operation))));
 }
 
 void OwInterface::pan (double degrees, int id)
@@ -1309,7 +1256,7 @@ void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
   string opname = Op_ArmMoveCartesianGuarded;
-  
+
   // Fill this out.
   ROS_INFO ("Starting ArmMoveCartesianGuarded (frame=%d, relative=%d)",
             frame, relative);

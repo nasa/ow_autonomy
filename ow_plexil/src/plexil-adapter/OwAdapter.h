@@ -5,11 +5,11 @@
 #ifndef Ow_Adapter
 #define Ow_Adapter
 
-// PLEXIL Interface adapter for OceanWATERS.
+// PLEXIL interface adapter for OceanWATERS.
 
-#include "PlexilAdapter.h"
+#include "LanderAdapter.h"
 
-class OwAdapter : public PlexilAdapter
+class OwAdapter : public LanderAdapter
 {
 public:
   // No default constructor, only this specialized one.

@@ -19,7 +19,7 @@
 class PlexilAdapter : public PLEXIL::InterfaceAdapter
 {
 public:
-  PlexilAdapter() = delete;  // only a specialized constructor for subclasses
+  PlexilAdapter() = default;
   virtual ~PlexilAdapter() = default;
   PlexilAdapter (const PlexilAdapter&) = delete;
   PlexilAdapter& operator= (const PlexilAdapter&) = delete;

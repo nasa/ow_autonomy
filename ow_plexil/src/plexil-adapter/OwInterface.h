@@ -5,16 +5,13 @@
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
-// Interface to lander simulator.  Singleton, because only once instance will
-// ever be needed in the current autonomy scheme, which has one autonomy
-// executive per lander.
+// Interface specific to OceanWATERS' lander.
 
 // ow_plexil
-#include "PlexilInterface.h"
-#include "joint_support.h"
+#include "LanderInterface.h"
 #include <ow_plexil/IdentifyLocationAction.h>
 
-// ow_simulator
+// owl_msgs (telemetry)
 #include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
@@ -24,15 +21,8 @@
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
 #include <owl_msgs/ArmPose.h>
 
-// ow_simulator (ROS Actions)
-#include <actionlib/client/simple_action_client.h>
-#include <actionlib_msgs/GoalStatusArray.h>
-#include <owl_msgs/ArmFindSurfaceAction.h>
-#include <owl_msgs/ArmMoveCartesianAction.h>
-#include <owl_msgs/ArmMoveCartesianGuardedAction.h>
-#include <owl_msgs/ArmStopAction.h>
-#include <owl_msgs/ArmUnstowAction.h>
-#include <owl_msgs/ArmStowAction.h>
+// owl_msgs (lander commands)
+
 #include <owl_msgs/TaskDeliverSampleAction.h>
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
@@ -51,36 +41,10 @@
 #include <ow_lander/DockIngestSampleAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
 
-// ROS
-#include <control_msgs/JointControllerState.h>
-#include <sensor_msgs/JointState.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/Quaternion.h>
-#include <ros/ros.h>
-
-// C++
-#include <string>
-#include <memory>
-
-using ArmFindSurfaceActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
-using ArmMoveCartesianActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
-using ArmMoveCartesianGuardedActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
-using ArmStopActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmStopAction>;
-using ArmUnstowActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
-using ArmStowActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using TaskGrindActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
 using GuardedMoveActionClient =
   actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
-using ArmMoveJointActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 using ArmMoveJointsGuardedActionClient =
@@ -129,24 +93,9 @@ class OwInterface : public PlexilInterface
 
   // Operational interface
 
-  void armFindSurface (int frame, bool relative,
-                       double pos_x, double pos_y, double pos_z,
-                       double norm_x, double norm_y, double norm_z,
-                       double distance, double overdrive,
-                       double force_threshold, double torque_threshold, int id);
-  void armMoveCartesian (int frame, bool relative,
-                         const std::vector<double>& position,
-                         const std::vector<double>& orientation,
-			 int id);
-  void armMoveCartesianGuarded (int frame, bool relative,
-                                const std::vector<double>& position,
-                                const std::vector<double>& orientation,
-                                double force_threshold, double torque_threshold,
-                                int id);
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
-  void armMoveJoint (bool relative, int joint, double angle, int id);
   void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
   void armMoveJointsGuarded (bool relative,
                              const std::vector<double>& angles,
@@ -206,37 +155,6 @@ class OwInterface : public PlexilInterface
   int    actionGoalStatus (const std::string& action_name) const;
 
  private:
-   template<typename T>
-   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
-                             const std::string& name,
-                             const std::string& topic = "")
-  {
-    if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("%s action server did not connect!", name.c_str());
-    }
-    else if (topic != "") addSubscriber (topic, name);
-  }
-
-  void addSubscriber (const std::string& topic, const std::string& operation);
-  void armFindSurfaceAction (int frame, bool relative,
-                             const geometry_msgs::Point& pos,
-                             const geometry_msgs::Vector3& normal,
-                             double distance, double overdrive,
-                             double force_threshold, double torque_threshold,
-                             int id);
-  void armMoveCartesianAction (int frame,
-                               bool relative,
-                               const geometry_msgs::Pose& pose,
-                               int id);
-  void armMoveCartesianGuardedAction (int frame,
-                                      bool relative,
-                                      const geometry_msgs::Pose& pose,
-                                      double force_threshold,
-                                      double torque_threshold,
-                                      int id);
-  void armStopAction (int id);
-  void armStowAction (int id);
-  void armUnstowAction (int id);
   void grindAction (double x, double y, double depth, double length,
                     bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
@@ -372,17 +290,10 @@ class OwInterface : public PlexilInterface
   std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
 
   // Action clients
-  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
-  std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
-  std::unique_ptr<ArmMoveCartesianGuardedActionClient>
-  m_armMoveCartesianGuardedClient;
+
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
-  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
-  std::unique_ptr<ArmStopActionClient> m_armStopClient;
-  std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
-  std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<TaskGrindActionClient> m_grindClient;
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanActionClient> m_panClient;

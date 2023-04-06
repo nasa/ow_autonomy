@@ -8,8 +8,10 @@ set (HEADERS
   action_support.h
   adapter_support.h
   PlexilInterface.h
+  LanderInterface.h
   OwExecutive.h
   PlexilAdapter.h
+  LanderAdapter.h
   PlexilPlanSelection.h
   TerminalPlanSelection.h
 )
@@ -19,8 +21,10 @@ set (SOURCES
   action_support.cpp
   adapter_support.cpp
   PlexilInterface.cpp
+  LanderInterface.cpp
   OwExecutive.cpp
   PlexilAdapter.cpp
+  LanderAdapter.cpp
   PlexilPlanSelection.cpp
   TerminalPlanSelection.cpp
 )
