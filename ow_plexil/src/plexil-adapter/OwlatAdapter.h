@@ -7,9 +7,11 @@
 
 // PLEXIL Interface adapter for OWLAT simulator.
 
-#include "PlexilAdapter.h"
+#include "LanderAdapter.h"
 
-class OwlatAdapter : public PlexilAdapter
+class OwlatInterface;
+
+class OwlatAdapter : public LanderAdapter
 {
 public:
   // No default constructor, only this specialized one.
@@ -19,6 +21,8 @@ public:
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
+ private:
+  OwlatInterface* m_interface;
 };
 
 extern "C" {

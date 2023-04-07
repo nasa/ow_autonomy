@@ -19,7 +19,7 @@ class PlexilInterface
 {
  public:
   PlexilInterface ();
-  virtual ~PlexilInterface () = 0;
+  virtual ~PlexilInterface ();
   PlexilInterface (const PlexilInterface&) = delete;
   PlexilInterface& operator= (const PlexilInterface&) = delete;
 
@@ -36,6 +36,7 @@ class PlexilInterface
   void setCommandStatusCallback (void (*callback) (int, bool));
 
  protected:
+  void initialize();
   bool operationRunning (const std::string& name) const;
   void registerLanderOperation (const std::string& name);
 
@@ -43,6 +44,32 @@ class PlexilInterface
   // otherwise.  The keys of this map do not change after initialization, and
   // comprise all the valid lander operation names.
   std::map<std::string, int> m_runningOperations;
+
+  template <class Client, class Goal, class ResultPtr, class FeedbackPtr>
+  void nullaryAction (int id, const std::string& name,
+                      std::unique_ptr<Client>& ac)
+  {
+    Goal goal;
+    std::string opname = name;
+
+    runAction<Client, Goal, ResultPtr, FeedbackPtr>
+      (opname, ac, goal, id,
+       default_action_active_cb (opname),
+       default_action_feedback_cb<FeedbackPtr> (opname),
+       default_action_done_cb<ResultPtr> (opname));
+  }
+  template<typename T>
+  void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
+			    const std::string& name,
+			    const std::string& topic = "")
+  {
+    if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("%s action server did not connect!", name.c_str());
+    }
+    //    else if (topic != "") subscribeToActionStatus (topic, name);
+  }
+
+  //  void subscribeToActionStatus (const std::string& topic, const std::string& operation);
 
   template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,
@@ -78,6 +105,9 @@ class PlexilInterface
  private:
   // Callback function in PLEXIL adapter for success/failure of given command.
   std::function<void(int, bool)> m_commandStatusCallback;
+  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
+                                 const std::string);
+
 };
 
 #endif

@@ -17,7 +17,6 @@
 #include <vector>
 #include <functional>
 
-using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
@@ -29,52 +28,35 @@ using std::string;
 using std::vector;
 using std::make_unique;
 
-const string Name_Unstow = "ArmUnstow";
-const string Name_Stow = "ArmStow";
-const string Name_ArmStop = "ArmStop";
-const string Name_MoveJoint =     "ArmMoveJoint";
 const string Name_ArmMoveCartesian = "ArmMoveCartesian";
 const string Name_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
+const string Name_ArmMoveJoint =     "ArmMoveJoint";
+const string Name_ArmStop = "ArmStop";
+const string Name_ArmStow = "ArmStow";
+const string Name_ArmUnstow = "ArmUnstow";
 
 static vector<string> LanderOpNames = {
-  Name_Discard,
-  Name_Unstow,
-  Name_Stow,
   Name_ArmMoveCartesian,
   Name_ArmMoveCartesianGuarded,
-  Name_MoveJoint,
+  Name_ArmMoveJoint,
   Name_ArmStop,
+  Name_ArmStow,
+  Name_ArmUnstow
 };
-
-LanderInterface* LanderInterface::instance ()
-{
-  // Very simple singleton
-  static LanderInterface instance;
-  return &instance;
-}
 
 void LanderInterface::initialize()
 {
   static bool initialized = false;
 
   if (not initialized) {
+    PlexilInterface::initialize();
 
     for (auto name : LanderOpNames) {
       registerLanderOperation (name);
     }
 
-    m_genericNodeHandle = make_unique<ros::NodeHandle>();
-
     // Initialize action clients
 
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Name_Stow, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Name_Unstow, true);
-    m_taskDiscardClient =
-      make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
     m_armMoveCartesianClient =
       make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian,
                                                 true);
@@ -82,60 +64,29 @@ void LanderInterface::initialize()
       make_unique<ArmMoveCartesianGuardedActionClient>
       (Name_ArmMoveCartesianGuarded, true);
     m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Name_MoveJoint, true);
+      make_unique<ArmMoveJointActionClient>(Name_ArmMoveJoint, true);
+    m_armStopClient =
+      make_unique<ArmStopActionClient>(Name_ArmStop, true);
+    m_armStowClient =
+      make_unique<ArmStowActionClient>(Name_ArmStow, true);
+    m_armUnstowClient =
+      make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
 
     // Connect to action servers
-    connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
-    connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
-    connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
+    connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
+                         "/ArmMoveCartesian/status");
+    connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
+                         "/ArmMoveCartesianGuarded/status");
     connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
                          "/ArmMoveJoint/status");
-    connectActionServer (m_armMoveCartesianClient, Op_ArmMoveCartesian,
-                         "/ArmMoveCartesian/status");
-    connectActionServer (m_armMoveCartesianGuardedClient, Op_ArmMoveCartesianGuarded,
-                         "/ArmMoveCartesianGuarded/status");
-    connectActionServer (m_armFindSurfaceClient, Op_ArmFindSurface,
-                         "/ArmFindSurface/status");
+    connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
+    connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
+    connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
   }
 }
 
-void LanderInterface::addSubscriber (const string& topic, const string& operation)
-{
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-      (topic, QSize,
-       boost::bind(&OwInterface::actionGoalStatusCallback,
-                   this, _1, operation))));
-}
 
-
-/////////////////////////////// Lander Interface ////////////////////////////////
-
-void LanderInterface::armUnstow (int id)
-{
-  if (! markOperationRunning (Name_Unstow, id)) return;
-  thread action_thread (&LanderInterface::nullaryAction<
-                        ArmUnstowActionClient,
-                        ArmUnstowGoal,
-                        ArmUnstowResultConstPtr,
-                        ArmUnstowFeedbackConstPtr>,
-                        this, id, Name_Unstow, std::ref(m_armUnstowClient));
-  action_thread.detach();
-}
-
-void LanderInterface::armStow (int id)
-{
-  if (! markOperationRunning (Name_Stow, id)) return;
-  //  thread action_thread (&LanderInterface::armStowAction, this, id);
-  thread action_thread (&LanderInterface::nullaryAction<
-                        ArmStowActionClient,
-                        ArmStowGoal,
-                        ArmStowResultConstPtr,
-                        ArmStowFeedbackConstPtr>,
-                        this, id, Name_Stow, std::ref(m_armStowClient));
-  action_thread.detach();
-}
+/////////////////////////////// Unified Lander Interface ////////////////////////
 
 void LanderInterface::armMoveCartesian (int frame,
                                        bool relative,
@@ -257,7 +208,7 @@ void LanderInterface::armMoveJoint (bool relative,
                                    int joint, double angle,
                                    int id)
 {
-  if (! markOperationRunning (Name_MoveJoint, id)) return;
+  if (! markOperationRunning (Name_ArmMoveJoint, id)) return;
   thread action_thread (&LanderInterface::armMoveJointAction,
                         this, relative, joint, angle, id);
   action_thread.detach();
@@ -271,7 +222,10 @@ void LanderInterface::armMoveJointAction (bool relative,
   goal.relative = relative;
   goal.joint = joint;
   goal.angle = angle;
-  string opname = Name_MoveJoint;  // shorter version
+  string opname = Name_ArmMoveJoint;  // shorter version
+
+  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%d, angle=%f)",
+            goal.relative, goal.joint, goal.angle);
 
   runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
             ArmMoveJointGoal,
@@ -281,4 +235,41 @@ void LanderInterface::armMoveJointAction (bool relative,
      default_action_active_cb (opname),
      default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (opname),
      default_action_done_cb<ArmMoveJointResultConstPtr> (opname));
+}
+
+void LanderInterface::armStop (int id)
+{
+  if (! markOperationRunning (Name_ArmStop, id)) return;
+  thread action_thread (&LanderInterface::nullaryAction<
+                        ArmStopActionClient,
+                        ArmStopGoal,
+                        ArmStopResultConstPtr,
+                        ArmStopFeedbackConstPtr>,
+                        this, id, Name_ArmStop, std::ref(m_armStopClient));
+  action_thread.detach();
+}
+
+void LanderInterface::armStow (int id)
+{
+  if (! markOperationRunning (Name_ArmStow, id)) return;
+  //  thread action_thread (&LanderInterface::armStowAction, this, id);
+  thread action_thread (&LanderInterface::nullaryAction<
+                        ArmStowActionClient,
+                        ArmStowGoal,
+                        ArmStowResultConstPtr,
+                        ArmStowFeedbackConstPtr>,
+                        this, id, Name_ArmStow, std::ref(m_armStowClient));
+  action_thread.detach();
+}
+
+void LanderInterface::armUnstow (int id)
+{
+  if (! markOperationRunning (Name_ArmUnstow, id)) return;
+  thread action_thread (&LanderInterface::nullaryAction<
+                        ArmUnstowActionClient,
+                        ArmUnstowGoal,
+                        ArmUnstowResultConstPtr,
+                        ArmUnstowFeedbackConstPtr>,
+                        this, id, Name_ArmUnstow, std::ref(m_armUnstowClient));
+  action_thread.detach();
 }

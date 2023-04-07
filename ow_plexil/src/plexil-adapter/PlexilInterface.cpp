@@ -6,6 +6,7 @@
 #include "subscriber.h"
 
 using std::string;
+using std::make_unique;
 
 // Dummy operation ID that signifies idle lander operation.
 #define IDLE_ID (-1)
@@ -19,6 +20,42 @@ PlexilInterface::~PlexilInterface ()
   // No memory leak, since memory wasn't allocated.
   m_commandStatusCallback = nullptr;
 }
+
+void PlexilInterface::initialize()
+{
+  m_genericNodeHandle = make_unique<ros::NodeHandle>();
+}
+
+/* Revisit
+
+void PlexilInterface::actionGoalStatusCallback
+(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
+
+// Update ActionGoalStatusMap of action action_name with the status
+// from first goal in GoalStatusArray msg. This is based on the
+// assumption that no action will have more than one goal in our
+// system.
+{
+  if (msg->status_list.size() == 0) {
+    int status = -1; // TODO: abstract this (was NOGOAL)
+    update_action_goal_state (action_name, status);
+  }
+  else {
+    int status = msg->status_list[0].status;
+    update_action_goal_state (action_name, status);
+  }
+}
+
+void PlexilInterface::subscribeToActionStatus (const string& topic, const string& operation)
+{
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+      (topic, 3,
+       boost::bind(&PlexilInterface::actionGoalStatusCallback,
+                   this, _1, operation))));
+}
+*/
 
 bool PlexilInterface::isLanderOperation (const string& name) const
 {

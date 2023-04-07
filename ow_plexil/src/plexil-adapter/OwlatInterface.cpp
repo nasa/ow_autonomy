@@ -21,14 +21,9 @@ using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
-const string Name_Unstow = "ArmUnstow";
-const string Name_Stow = "ArmStow";
-const string Name_ArmStop = "ArmStop";
+const string Name_ArmFindSurface = "ArmFindSurface";
 const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
-const string Name_MoveJoint =     "ArmMoveJoint";
-const string Name_ArmMoveCartesian = "ArmMoveCartesian";
-const string Name_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
@@ -40,37 +35,13 @@ const string Name_Discard = "TaskDiscardSample";
 
 const size_t OwlatJoints = 6;
 
-/*
-// Used as indices into the subsequent vector.
-enum class LanderOps {
-  ArmUnstow,
-  ArmStow,
-  OwlatArmMoveCartesian,
-  OwlatArmMoveCartesianGuarded,
-  OwlatArmMoveJoint,
-  OwlatArmMoveJoints,
-  OwlatArmMoveJointsGuarded,
-  OwlatArmPlaceTool,
-  OwlatArmSetTool,
-  OwlatArmStop,
-  OwlatArmTareFS,
-  OwlatArmTaskPSP,
-  OwlatArmTaskScoop
-};
-*/
-
 static vector<string> LanderOpNames = {
+  Name_ArmFindSurface,
   Name_Discard,
-  Name_Unstow,
-  Name_Stow,
-  Name_ArmMoveCartesian,
-  Name_ArmMoveCartesianGuarded,
-  Name_MoveJoint,
   Name_OwlatArmMoveJoints,
   Name_OwlatArmMoveJointsGuarded,
   Name_OwlatArmPlaceTool,
   Name_SetTool,
-  Name_ArmStop,
   Name_Tare,
   Name_OwlatTaskPSP,
   Name_OwlatTaskScoop
@@ -101,6 +72,7 @@ void OwlatInterface::initialize()
   static bool initialized = false;
 
   if (not initialized) {
+    LanderInterface::initialize();
 
     for (auto name : LanderOpNames) {
       registerLanderOperation (name);
@@ -173,20 +145,10 @@ void OwlatInterface::initialize()
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Name_Stow, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Name_Unstow, true);
+    m_armFindSurfaceClient =
+      make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
     m_taskDiscardClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian,
-                                                true);
-    m_armMoveCartesianGuardedClient =
-      make_unique<ArmMoveCartesianGuardedActionClient>
-      (Name_ArmMoveCartesianGuarded, true);
-    m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Name_MoveJoint, true);
     m_owlatArmMoveJointsClient =
       make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
     m_owlatArmMoveJointsGuardedClient =
@@ -196,8 +158,6 @@ void OwlatInterface::initialize()
       make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
     m_armSetToolClient =
       make_unique<ArmSetToolActionClient>(Name_SetTool, true);
-    m_armStopClient =
-      make_unique<ArmStopActionClient>(Name_ArmStop, true);
     m_armTareFTSensorClient =
       make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
     m_owlatTaskPSPClient =
@@ -206,29 +166,11 @@ void OwlatInterface::initialize()
       make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
     // Connect to action servers
-    if (! m_armStowClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmStow action server did not connect!");
-    }
-    if (! m_armUnstowClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmUnstow action server did not connect!");
-    }
+    connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
+                         "/ArmFindSurface/status");
     if (! m_taskDiscardClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("TaskDiscardSample action server did not connect!");
-    }
-    if (! m_armMoveCartesianClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveCartesian action server did not connect!");
-    }
-    if (! m_armMoveCartesianGuardedClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmMoveCartesianGuarded action server did not connect!");
-    }
-    if (! m_armMoveJointClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ArmMoveJoint action server did not connect!");
     }
     if (! m_owlatArmMoveJointsClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -245,10 +187,6 @@ void OwlatInterface::initialize()
     if (! m_armSetToolClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ArmSetTool action server did not connect!");
-    }
-    if (! m_armStopClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmStop action server did not connect!");
     }
     if (! m_armTareFTSensorClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -268,17 +206,59 @@ void OwlatInterface::initialize()
 
 /////////////////////////////// OWLAT Interface ////////////////////////////////
 
-void OwlatInterface::armUnstow (int id)
+
+void OwlatInterface::armFindSurface (int frame, bool relative,
+                                  const std::vector<double>& pos,
+                                  const std::vector<double>& normal,
+                                  double distance, double overdrive,
+                                  double force_threshold, double torque_threshold,
+                                  int id)
 {
-  if (! markOperationRunning (Name_Unstow, id)) return;
-  thread action_thread (&OwlatInterface::nullaryAction<
-                        ArmUnstowActionClient,
-                        ArmUnstowGoal,
-                        ArmUnstowResultConstPtr,
-                        ArmUnstowFeedbackConstPtr>,
-                        this, id, Name_Unstow, std::ref(m_armUnstowClient));
+  if (! markOperationRunning (Name_ArmFindSurface, id)) return;
+
+  thread action_thread (&OwlatInterface::armFindSurfaceAction, this,
+			frame, relative, pos, normal, distance, overdrive,
+                        force_threshold, torque_threshold,
+                        id);
   action_thread.detach();
 }
+
+void OwlatInterface::armFindSurfaceAction (int frame, bool relative,
+                                           const std::vector<double>& pos,
+                                           const std::vector<double>& normal,
+                                           double distance, double overdrive,
+                                           double force_threshold, double torque_threshold,
+                                           int id)
+{
+  ArmFindSurfaceGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.position[0] = pos[0];
+  goal.position[1] = pos[1];
+  goal.position[2] = pos[2];
+  goal.normal[0] = normal[0];
+  goal.normal[1] = normal[1];
+  goal.normal[2] = normal[2];
+  goal.distance = distance;
+  goal.overdrive = overdrive;
+  goal.force_threshold = force_threshold;
+  goal.torque_threshold = torque_threshold;
+
+  // Fill this out.
+  ROS_INFO ("Starting ArmFindSurface (frame=%d, relative=%d)", frame, relative);
+
+  runAction<actionlib::SimpleActionClient<ArmFindSurfaceAction>,
+            ArmFindSurfaceGoal,
+            ArmFindSurfaceResultConstPtr,
+            ArmFindSurfaceFeedbackConstPtr>
+	    (Name_ArmFindSurface, m_armFindSurfaceClient, goal, id,
+	     default_action_active_cb (Name_ArmFindSurface),
+	     default_action_feedback_cb<ArmFindSurfaceFeedbackConstPtr>
+	     (Name_ArmFindSurface),
+	     default_action_done_cb<ArmFindSurfaceResultConstPtr>
+	     (Name_ArmFindSurface));
+}
+
 
 void OwlatInterface::taskDiscard (int id)
 {
@@ -292,165 +272,6 @@ void OwlatInterface::taskDiscard (int id)
                         this, id, Name_Discard, std::ref(m_taskDiscardClient));
   action_thread.detach();
   */
-}
-
-void OwlatInterface::armStow (int id)
-{
-  if (! markOperationRunning (Name_Stow, id)) return;
-  //  thread action_thread (&OwlatInterface::armStowAction, this, id);
-  thread action_thread (&OwlatInterface::nullaryAction<
-                        ArmStowActionClient,
-                        ArmStowGoal,
-                        ArmStowResultConstPtr,
-                        ArmStowFeedbackConstPtr>,
-                        this, id, Name_Stow, std::ref(m_armStowClient));
-  action_thread.detach();
-}
-
-void OwlatInterface::armMoveCartesian (int frame,
-                                       bool relative,
-                                       const vector<double>& position,
-                                       const vector<double>& orientation,
-                                       int id)
-{
-  if (! markOperationRunning (Name_ArmMoveCartesian, id)) return;
-
-  geometry_msgs::Quaternion qm;
-
-  // Deal with type of orientation
-  if (orientation.size() == 3) { // assume Euler angle
-    tf2::Quaternion q;
-    // Yaw, pitch, roll, respectively.
-    q.setEuler (orientation[2], orientation[1], orientation[0]);
-    q.normalize();  // Recommended in ROS docs, not sure if needed here.
-    qm = tf2::toMsg(q);
-  }
-  else { // assume quaternion orientation
-    qm.x = orientation[0];
-    qm.y = orientation[1];
-    qm.z = orientation[2];
-    qm.w = orientation[3];
-  }
-
-  geometry_msgs::Pose pose;
-  pose.position.x = position[0];
-  pose.position.y = position[1];
-  pose.position.z = position[2];
-  pose.orientation = qm;
-  thread action_thread (&OwlatInterface::armMoveCartesianAction, this,
-                        frame, relative, pose, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::armMoveCartesianAction (int frame,
-                                             bool relative,
-                                             const geometry_msgs::Pose& pose,
-                                             int id)
-{
-  ArmMoveCartesianGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-  string opname = Name_ArmMoveCartesian;
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianAction>,
-            ArmMoveCartesianGoal,
-            ArmMoveCartesianResultConstPtr,
-            ArmMoveCartesianFeedbackConstPtr>
-    (opname, m_armMoveCartesianClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr> (opname),
-     default_action_done_cb<ArmMoveCartesianResultConstPtr> (opname));
-}
-
-void OwlatInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                              const vector<double>& position,
-                                              const vector<double>& orientation,
-                                              double force_threshold,
-                                              double torque_threshold,int id)
-{
-  if (! markOperationRunning (Name_ArmMoveCartesianGuarded, id)) return;
-
-  geometry_msgs::Quaternion qm;
-
-  // Deal with type of orientation
-  if (orientation.size() == 3) { // assume Euler angle
-    tf2::Quaternion q;
-    // Yaw, pitch, roll, respectively.
-    q.setEuler (orientation[2], orientation[1], orientation[0]);
-    q.normalize();  // Recommended in ROS docs, not sure if needed here.
-    qm = tf2::toMsg(q);
-  }
-  else { // assume quaternion orientation
-    qm.x = orientation[0];
-    qm.y = orientation[1];
-    qm.z = orientation[2];
-    qm.w = orientation[3];
-  }
-
-  geometry_msgs::Pose pose;
-  pose.position.x = position[0];
-  pose.position.y = position[1];
-  pose.position.z = position[2];
-  pose.orientation = qm;
-  thread action_thread (&OwlatInterface::armMoveCartesianGuardedAction,
-                        this, frame, relative, pose,
-                        force_threshold, torque_threshold, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::armMoveCartesianGuardedAction (int frame, bool relative,
-                                                    const geometry_msgs::Pose& pose,
-                                                    double force_threshold,
-                                                    double torque_threshold,
-                                                    int id)
-{
-  ArmMoveCartesianGuardedGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-  goal.force_threshold = force_threshold;
-  goal.torque_threshold = torque_threshold;
-  string opname = Name_ArmMoveCartesianGuarded;
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianGuardedAction>,
-            ArmMoveCartesianGuardedGoal,
-            ArmMoveCartesianGuardedResultConstPtr,
-            ArmMoveCartesianGuardedFeedbackConstPtr>
-    (opname, m_armMoveCartesianGuardedClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr> (opname),
-     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr> (opname));
-}
-
-void OwlatInterface::armMoveJoint (bool relative,
-                                   int joint, double angle,
-                                   int id)
-{
-  if (! markOperationRunning (Name_MoveJoint, id)) return;
-  thread action_thread (&OwlatInterface::armMoveJointAction,
-                        this, relative, joint, angle, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::armMoveJointAction (bool relative,
-                                         int joint, double angle,
-                                         int id)
-{
-  ArmMoveJointGoal goal;
-  goal.relative = relative;
-  goal.joint = joint;
-  goal.angle = angle;
-  string opname = Name_MoveJoint;  // shorter version
-
-  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
-            ArmMoveJointGoal,
-            ArmMoveJointResultConstPtr,
-            ArmMoveJointFeedbackConstPtr>
-    (opname, m_armMoveJointClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (opname),
-     default_action_done_cb<ArmMoveJointResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatArmMoveJoints (bool relative,
@@ -594,18 +415,6 @@ void OwlatInterface::armSetToolAction (int tool, int id)
      default_action_active_cb (opname),
      default_action_feedback_cb<ArmSetToolFeedbackConstPtr> (opname),
      default_action_done_cb<ArmSetToolResultConstPtr> (opname));
-}
-
-void OwlatInterface::armStop (int id)
-{
-  if (! markOperationRunning (Name_ArmStop, id)) return;
-  thread action_thread (&OwlatInterface::nullaryAction<
-                        ArmStopActionClient,
-                        ArmStopGoal,
-                        ArmStopResultConstPtr,
-                        ArmStopFeedbackConstPtr>,
-                        this, id, Name_ArmStop, std::ref(m_armStopClient));
-  action_thread.detach();
 }
 
 void OwlatInterface::armTareFTSensor (int id)

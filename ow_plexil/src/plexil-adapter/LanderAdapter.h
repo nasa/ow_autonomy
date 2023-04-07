@@ -9,18 +9,28 @@
 
 #include "PlexilAdapter.h"
 
+// PLEXIL
+#include <AdapterExecInterface.hh>
+
+class LanderInterface;
+
 class LanderAdapter : public PlexilAdapter
 {
-public:
+ public:
   // No default constructor, only this specialized one.
   LanderAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
-  virtual ~LanderAdapter () = 0 = default;
+  virtual ~LanderAdapter () = default;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
 
-  virtual bool initialize();
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
+
+ protected:
+  bool initialize (LanderInterface*);
+ private:
+  LanderInterface* m_interface;
 };
+
 
 extern "C" {
   void initLanderAdapter();

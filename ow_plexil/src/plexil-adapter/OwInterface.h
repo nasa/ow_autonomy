@@ -11,25 +11,14 @@
 #include "LanderInterface.h"
 #include <ow_plexil/IdentifyLocationAction.h>
 
-// owl_msgs (telemetry)
-#include <owl_msgs/ArmJointAccelerations.h>
-#include <owl_msgs/ArmFaultsStatus.h>
-#include <owl_msgs/PanTiltFaultsStatus.h>
-#include <owl_msgs/PowerFaultsStatus.h>
-#include <owl_msgs/CameraFaultsStatus.h>
-#include <owl_msgs/SystemFaultsStatus.h>
-#include <owl_msgs/ArmEndEffectorForceTorque.h>
-#include <owl_msgs/ArmPose.h>
-
 // owl_msgs (lander commands)
-
+#include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/TaskDeliverSampleAction.h>
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
 #include <owl_msgs/TaskGrindAction.h>
 #include <ow_lander/GuardedMoveAction.h>
-#include <owl_msgs/ArmMoveJointAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 #include <owl_msgs/PanTiltMoveJointsAction.h>
@@ -41,6 +30,18 @@
 #include <ow_lander/DockIngestSampleAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
 
+// owl_msgs (telemetry)
+#include <owl_msgs/ArmJointAccelerations.h>
+#include <owl_msgs/ArmFaultsStatus.h>
+#include <owl_msgs/PanTiltFaultsStatus.h>
+#include <owl_msgs/PowerFaultsStatus.h>
+#include <owl_msgs/CameraFaultsStatus.h>
+#include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+#include <owl_msgs/ArmPose.h>
+
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using TaskGrindActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
 using GuardedMoveActionClient =
@@ -81,7 +82,7 @@ using IdentifySampleLocationActionClient =
 using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
 using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
 
-class OwInterface : public PlexilInterface
+class OwInterface : public LanderInterface
 {
  public:
   static OwInterface* instance();
@@ -93,6 +94,15 @@ class OwInterface : public PlexilInterface
 
   // Operational interface
 
+  void armFindSurface (int frame,
+                       bool relative,
+                       const std::vector<double>& pos,
+                       const std::vector<double>& normal,
+                       double distance,
+                       double overdrive,
+                       double force_threshold,
+                       double torque_threshold,
+                       int id);
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
@@ -152,16 +162,20 @@ class OwInterface : public PlexilInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointTelemetry (int joint, TelemetryType type) const;
-  int    actionGoalStatus (const std::string& action_name) const;
+  //  int    actionGoalStatus (const std::string& action_name) const;
 
  private:
+  void armFindSurfaceAction (int frame, bool relative,
+                             const geometry_msgs::Point& pos,
+                             const geometry_msgs::Vector3& normal,
+                             double distance, double overdrive,
+                             double force_threshold, double torque_threshold,
+                             int id);
   void grindAction (double x, double y, double depth, double length,
                     bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
                           double dir_x, double dir_y, double dir_z,
                           double search_distance, int id);
-  void armMoveJointAction (bool relative, int joint,
-                           double angle, int id);
   void armMoveJointsAction (bool relative, const std::vector<double>& angles,
                             int id);
   void armMoveJointsGuardedAction (bool relative,
@@ -197,8 +211,6 @@ class OwInterface : public PlexilInterface
   void cameraFaultCallback (const owl_msgs::CameraFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
-  void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
-                                 const std::string);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
 
@@ -291,6 +303,7 @@ class OwInterface : public PlexilInterface
 
   // Action clients
 
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<GuardedMoveActionClient> m_guardedMoveClient;
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;

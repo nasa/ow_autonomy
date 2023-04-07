@@ -9,6 +9,8 @@
 
 #include "LanderAdapter.h"
 
+class OwInterface;
+
 class OwAdapter : public LanderAdapter
 {
 public:
@@ -20,6 +22,9 @@ public:
 
   virtual bool initialize();
   virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
+
+ private:
+  OwInterface* m_interface;
 };
 
 extern "C" {

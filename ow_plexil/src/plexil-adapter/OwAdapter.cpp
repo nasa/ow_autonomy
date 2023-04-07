@@ -87,111 +87,112 @@ static bool lookup (const string& state_name,
   else if (state_name == "UsingOWLAT") {
     value_out = false;
   }
+  /*  
   else if (state_name == "TiltRadians") {
-    value_out = OwInterface::instance()->getTiltRadians();
+    value_out = m_interface->getTiltRadians();
   }
   else if (state_name == "TiltDegrees") {
-    value_out = OwInterface::instance()->getTiltDegrees();
+    value_out = m_interface->getTiltDegrees();
   }
   else if (state_name == "PanRadians") {
-    value_out = OwInterface::instance()->getPanRadians();
+    value_out = m_interface->getPanRadians();
   }
   else if (state_name == "PanDegrees") {
-    value_out = OwInterface::instance()->getPanDegrees();
+    value_out = m_interface->getPanDegrees();
   }
   else if (state_name == "PanVelocity") {
-    value_out = OwInterface::instance()->getPanVelocity();
+    value_out = m_interface->getPanVelocity();
   }
   else if (state_name == "TiltVelocity") {
-    value_out = OwInterface::instance()->getTiltVelocity();
+    value_out = m_interface->getTiltVelocity();
   }
   else if (state_name == "HardTorqueLimitReached") {
     string s;
     args[0].getValue(s);
-    value_out = OwInterface::instance()->hardTorqueLimitReached(s);
+    value_out = m_interface->hardTorqueLimitReached(s);
   }
   else if (state_name == "SoftTorqueLimitReached") {
     string s;
     args[0].getValue(s);
-    value_out = OwInterface::instance()->softTorqueLimitReached(s);
+    value_out = m_interface->softTorqueLimitReached(s);
   }
   else if (state_name == "Running") {
     string operation;
     args[0].getValue(operation);
-    value_out = OwInterface::instance()->running (operation);
+    value_out = m_interface->running (operation);
   }
   else if (state_name == "StateOfCharge") {
-    value_out = OwInterface::instance()->getBatteryStateOfCharge();
+    value_out = m_interface->getBatteryStateOfCharge();
   }
   else if (state_name == "RemainingUsefulLife") {
-    value_out = OwInterface::instance()->getBatteryRemainingUsefulLife();
+    value_out = m_interface->getBatteryRemainingUsefulLife();
   }
   else if (state_name == "BatteryTemperature") {
-    value_out = OwInterface::instance()->getBatteryTemperature();
+    value_out = m_interface->getBatteryTemperature();
   }
   else if (state_name == "GroundFound") {
-    value_out = OwInterface::instance()->groundFound();
+    value_out = m_interface->groundFound();
   }
   else if (state_name == "GroundPosition") {
-    value_out = OwInterface::instance()->groundPosition();
+    value_out = m_interface->groundPosition();
   }
   // Faults
   else if (state_name == "SystemFault") {
-    value_out = OwInterface::instance()->systemFault();
+    value_out = m_interface->systemFault();
   }
   else if (state_name == "AntennaFault") {
-    value_out = OwInterface::instance()->antennaFault();
+    value_out = m_interface->antennaFault();
   }
   else if (state_name == "AntennaPanFault") {
-    value_out = OwInterface::instance()->antennaPanFault();
+    value_out = m_interface->antennaPanFault();
   }
   else if (state_name == "AntennaTiltFault") {
-    value_out = OwInterface::instance()->antennaTiltFault();
+    value_out = m_interface->antennaTiltFault();
   }
   else if (state_name == "ArmFault") {
-    value_out = OwInterface::instance()->armFault();
+    value_out = m_interface->armFault();
   }
   else if (state_name == "PowerFault") {
-    value_out = OwInterface::instance()->powerFault();
+    value_out = m_interface->powerFault();
   }
   else if (state_name == "CameraFault") {
-    value_out = OwInterface::instance()->cameraFault();
+    value_out = m_interface->cameraFault();
   }
   else if (state_name == "ArmEndEffectorForceTorque") {
-    vector<double> ft = OwInterface::instance()->getEndEffectorFT();
+    vector<double> ft = m_interface->getEndEffectorFT();
     value_out = (Value) ft;
   }
   else if (state_name == "ArmPose") {
-    vector<double> pose = OwInterface::instance()->getArmPose();
+    vector<double> pose = m_interface->getArmPose();
     value_out = (Value) pose;
   }
   else if (state_name == "ActionGoalStatus") {
     string s;
     args[0].getValue(s);
-    value_out = OwInterface::instance()->actionGoalStatus(s);
+    value_out = m_interface->actionGoalStatus(s);
   }
   else if (state_name == "JointVelocity") {
     int joint;
     args[0].getValue(joint);
-    value_out = OwInterface::instance()->
+    value_out = m_interface->
       jointTelemetry(joint, TelemetryType::Velocity);
   }
   else if (state_name == "JointEffort") {
     int joint;
     args[0].getValue(joint);
-    value_out = OwInterface::instance()->
+    value_out = m_interface->
       jointTelemetry(joint, TelemetryType::Effort);
   }
   else if (state_name == "JointPosition") {
     int joint;
     args[0].getValue(joint);
-    value_out = OwInterface::instance()->
+    value_out = m_interface->
       jointTelemetry(joint, TelemetryType::Position);
   }
   else if (state_name == "JointAcceleration") {
     int joint;
     args[0].getValue(joint);
-    value_out = OwInterface::instance()->
+    value_out = m_interface->
       jointTelemetry(joint, TelemetryType::Acceleration);
   }
   else if (state_name == "AnglesEquivalent") {
@@ -199,34 +200,43 @@ static bool lookup (const string& state_name,
     args[0].getValue(deg1);
     args[1].getValue(deg2);
     args[2].getValue(tolerance);
-    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
+    value_out = m_interface->anglesEquivalent (deg1, deg2, tolerance);
   }
+  */
   else retval = false;
 
   return retval;
 }
 
-static void arm_stow (Command* cmd, AdapterExecInterface* intf)
+static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
 {
+  int frame;
+  bool relative;
+  double distance, overdrive, force_threshold, torque_threshold;
+
+  vector<double> const *position_vector = nullptr;
+  vector<double> const *orientation_vector = nullptr;
+  RealArray const *position = nullptr;
+  RealArray const *orientation = nullptr;
+
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValuePointer(position);
+  args[3].getValuePointer(orientation);
+  args[4].getValue(distance);
+  args[5].getValue(overdrive);
+  args[6].getValue(force_threshold);
+  args[7].getValue(torque_threshold);
+  position->getContentsVector(position_vector);
+  orientation->getContentsVector(orientation_vector);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armStow (CommandId);
+  OwInterface::instance()->armFindSurface (frame, relative,
+                                           *position_vector, *orientation_vector,
+                                           distance, overdrive,
+                                           force_threshold, torque_threshold,
+                                           CommandId);
   acknowledge_command_sent(*cr);
-
-}
-
-static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armUnstow (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_stop (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armStop (CommandId);
-  acknowledge_command_sent(*cr);
-
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -243,101 +253,6 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double pos_x, pos_y, pos_z, norm_x, norm_y, norm_z;
-  double distance, overdrive, force_threshold, torque_threshold;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(pos_x);
-  args[3].getValue(pos_y);
-  args[4].getValue(pos_z);
-  args[5].getValue(norm_x);
-  args[6].getValue(norm_y);
-  args[7].getValue(norm_z);
-  args[8].getValue(distance);
-  args[9].getValue(overdrive);
-  args[10].getValue(force_threshold);
-  args[11].getValue(torque_threshold);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armFindSurface (frame, relative, pos_x, pos_y, pos_z,
-                                           norm_x, norm_y, norm_z,
-                                           distance, overdrive,
-                                           force_threshold, torque_threshold,
-                                           CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-
-static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *orientation_vector = nullptr;
-  RealArray const *position = nullptr;
-  RealArray const *orientation = nullptr;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
-  position->getContentsVector(position_vector);
-  orientation->getContentsVector(orientation_vector);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesian (frame, relative,
-                                             *position_vector,
-                                             *orientation_vector,
-                                             CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *orientation_vector = nullptr;
-  double force_threshold, torque_threshold;
-  RealArray const *position = nullptr;
-  RealArray const *orientation = nullptr;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
-  args[4].getValue(force_threshold);
-  args[5].getValue(torque_threshold);
-  position->getContentsVector(position_vector);
-  orientation->getContentsVector(orientation_vector);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesianGuarded (frame, relative,
-                                                    *position_vector,
-                                                    *orientation_vector,
-                                                    force_threshold,
-                                                    torque_threshold,
-                                                    CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
-{
-  bool relative;
-  int joint;
-  double angle; // unit is radians
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(relative);
-  args[1].getValue(joint);
-  args[2].getValue(angle);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveJoint (relative, joint, angle,
-                                         CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -617,29 +532,20 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
-  : PlexilAdapter(execInterface, configXml)
+  : LanderAdapter(execInterface, configXml)
 {
   debugMsg("OwAdapter", " created.");
 }
 
 bool OwAdapter::initialize()
 {
-  PlexilAdapter::initialize();
-  g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("arm_stow", arm_stow);
-  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
-  g_configuration->registerCommandHandler("grind", grind);
+  m_interface = OwInterface::instance();
+  LanderAdapter::initialize (m_interface);
+
+  // Commands
   g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
-  g_configuration->registerCommandHandler("arm_move_cartesian",
-					  arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_q",
-					  arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
-					  arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
-					  arm_move_cartesian_guarded);
+  g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
-  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("arm_move_joints_guarded",
                                           arm_move_joints_guarded);
@@ -660,7 +566,6 @@ bool OwAdapter::initialize()
                                           camera_set_exposure);
   g_configuration->registerCommandHandler("light_set_intensity",
                                           light_set_intensity);
-  OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }

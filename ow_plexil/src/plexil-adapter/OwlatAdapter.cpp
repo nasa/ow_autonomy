@@ -31,90 +31,7 @@ using namespace PLEXIL;
 
 using std::string;
 
-static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armUnstow (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_stow (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armStow (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *orientation_vector = nullptr;
-  RealArray const *position = nullptr;
-  RealArray const *orientation = nullptr;
-  // Get arguments.
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
-  // Change real array into a vector.
-  position->getContentsVector(position_vector);
-  orientation->getContentsVector(orientation_vector);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armMoveCartesian (frame, relative,
-                                                *position_vector,
-                                                *orientation_vector,
-                                                CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_guarded (Command* cmd,
-                                        AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *orientation_vector = nullptr;
-  double force_threshold, torque_threshold;
-  RealArray const *position = nullptr;
-  RealArray const *orientation = nullptr;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
-  args[4].getValue(force_threshold);
-  args[5].getValue(torque_threshold);
-
-    //change real array into a vector
-  position->getContentsVector(position_vector);
-  orientation->getContentsVector(orientation_vector);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armMoveCartesianGuarded (frame, relative,
-                                                       *position_vector,
-                                                       *orientation_vector,
-                                                       force_threshold,
-                                                       torque_threshold,
-                                                       CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
-{
-  bool relative;
-  int joint;
-  double angle; //radians
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(relative);
-  args[1].getValue(joint);
-  args[2].getValue(angle);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armMoveJoint (relative, joint, angle, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
+/*
 static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
@@ -126,7 +43,7 @@ static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJoints (relative, *angles_vector,
+  m_interface->owlatArmMoveJoints (relative, *angles_vector,
                                                   CommandId);
   acknowledge_command_sent(*cr);
 }
@@ -147,7 +64,7 @@ static void owlat_arm_move_joints_guarded (Command* cmd,
   //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative,
+  m_interface->owlatArmMoveJointsGuarded (relative,
                                                          *angles_vector,
                                                          retracting,
                                                          force_threshold,
@@ -179,7 +96,7 @@ static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
   position->getContentsVector(position_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmPlaceTool (frame, relative,
+  m_interface->owlatArmPlaceTool (frame, relative,
                                                  *position_vector,
                                                  *normal_vector,
                                                  distance, overdrive,
@@ -196,21 +113,14 @@ static void arm_set_tool (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(tool);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armSetTool (tool, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_stop (Command* cmd, AdapterExecInterface* intf)
-{
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armStop (CommandId);
+  m_interface->armSetTool (tool, CommandId);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armTareFTSensor (CommandId);
+  m_interface->armTareFTSensor (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -234,7 +144,7 @@ static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatTaskPSP (frame, relative,*point_vector,
+  m_interface->owlatTaskPSP (frame, relative,*point_vector,
                                             *normal_vector, max_depth, max_force,
                                             CommandId);
   acknowledge_command_sent(*cr);
@@ -257,10 +167,11 @@ static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatTaskScoop (frame, relative,*point_vector,
+  m_interface->owlatTaskScoop (frame, relative,*point_vector,
                                               *normal_vector, CommandId);
   acknowledge_command_sent(*cr);
 }
+*/
 
 static void using_owlat (const State&, StateCacheEntry& entry)
 {
@@ -272,95 +183,96 @@ static void using_oceanwaters (const State&, StateCacheEntry& entry)
   entry.update(false);
 }
 
+/*
 static void armJointAngles (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointAngles ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointAngles());
+  entry.update(m_interface->getArmJointAngles());
 }
 
 static void armJointAccelerations (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointAccelerations ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointAccelerations());
+  entry.update(m_interface->getArmJointAccelerations());
 }
 
 static void armJointTorques (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointTorques ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointTorques());
+  entry.update(m_interface->getArmJointTorques());
 }
 
 static void armJointVelocities (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointVelocities ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointVelocities());
+  entry.update(m_interface->getArmJointVelocities());
 }
 
 static void armFTTorque (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmFTTorque ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmFTTorque());
+  entry.update(m_interface->getArmFTTorque());
 }
 
 static void armFTForce (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmFTForce ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmFTForce());
+  entry.update(m_interface->getArmFTForce());
 }
 
 static void armPose (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmPose ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmPose());
+  entry.update(m_interface->getArmPose());
 }
 
 static void armTool (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmTool ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmTool());
+  entry.update(m_interface->getArmTool());
 }
 
 static void pspStopReason (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getPSPStopReason ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getPSPStopReason());
+  entry.update(m_interface->getPSPStopReason());
 }
 
 static void panRadians (const State& state, StateCacheEntry &entry)
 {
   debugMsg("PanRadians ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getPanRadians());
+  entry.update(m_interface->getPanRadians());
 }
 
 static void panDegrees (const State& state, StateCacheEntry &entry)
 {
   debugMsg("PanDegrees ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getPanDegrees());
+  entry.update(m_interface->getPanDegrees());
 }
 
 static void tiltRadians (const State& state, StateCacheEntry &entry)
 {
   debugMsg("TiltRadians ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getTiltRadians());
+  entry.update(m_interface->getTiltRadians());
 }
 
 static void tiltDegrees (const State& state, StateCacheEntry &entry)
 {
   debugMsg("TiltDegrees ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getTiltDegrees());
+  entry.update(m_interface->getTiltDegrees());
 }
 
 static void joint_velocity (const State& state, StateCacheEntry &entry)
@@ -370,7 +282,7 @@ static void joint_velocity (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->
+  entry.update(m_interface->
                getJointTelemetry(joint, TelemetryType::Velocity));
 }
 
@@ -381,7 +293,7 @@ static void joint_position (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->
+  entry.update(m_interface->
                getJointTelemetry(joint, TelemetryType::Position));
 }
 
@@ -392,7 +304,7 @@ static void joint_effort (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->
+  entry.update(m_interface->
                getJointTelemetry(joint, TelemetryType::Effort));
 }
 
@@ -403,10 +315,10 @@ static void joint_acceleration (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->
+  entry.update(m_interface->
                getJointTelemetry(joint, TelemetryType::Acceleration));
 }
-
+*/
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 {
   debugMsg("default_lookup_handler", "lookup called for " << state.name()
@@ -417,32 +329,21 @@ static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
-  : PlexilAdapter (execInterface, configXml)
+  : LanderAdapter (execInterface, configXml)
 {
   debugMsg("OwlatAdapter", " created.");
 }
 
 bool OwlatAdapter::initialize()
 {
-  PlexilAdapter::initialize();
+  m_interface = OwlatInterface::instance();
+  LanderAdapter::initialize (m_interface);
 
   // Commands
 
-  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
-  g_configuration->registerCommandHandler("arm_stow", arm_stow);
+  /*
   g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
-  g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
-  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
-  // Both the following use the same overloaded function.
-  g_configuration->registerCommandHandler("arm_move_cartesian",
-                                          arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_q",
-                                          arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
-                                          arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
-                                          arm_move_cartesian_guarded);
   g_configuration->registerCommandHandler("owlat_arm_move_joints",
                                           owlat_arm_move_joints);
   g_configuration->registerCommandHandler("owlat_arm_move_joints_guarded",
@@ -451,7 +352,6 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_place_tool);
   g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
-  OwlatInterface::instance()->setCommandStatusCallback (command_status_callback);
 
   // Telemetry
 
@@ -477,6 +377,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("JointPosition", joint_position);
   g_configuration->registerLookupHandler("JointEffort", joint_effort);
   g_configuration->registerLookupHandler("JointAcceleration", joint_acceleration);
+  */
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");

@@ -7,28 +7,13 @@
 
 // Interface to JPL's OWLAT simulator.
 
-// C++
-#include <memory>
-#include <ros/ros.h>
-
-// owl_msgs
-#include <owl_msgs/PanTiltPosition.h>
-
-// ow_plexil
-#include <Value.hh>
-#include "PlexilInterface.h"
-#include "joint_support.h"
+#include "LanderInterface.h"
 
 // OWLAT Sim (installation required)
-#include <owl_msgs/ArmUnstowAction.h>
-#include <owl_msgs/ArmStowAction.h>
-#include <owl_msgs/ArmStopAction.h>
+#include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owl_msgs/ArmSetToolAction.h>
-#include <owl_msgs/ArmMoveJointAction.h>
-#include <owl_msgs/ArmMoveCartesianAction.h>
-#include <owl_msgs/ArmMoveCartesianGuardedAction.h>
 
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
@@ -44,24 +29,14 @@
 #include <owlat_sim_msgs/ARM_POSE.h>
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
-using ArmUnstowActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
-using ArmStowActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
-using ArmStopActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmStopAction>;
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using ArmTareFTSensorActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmTareFTSensorAction>;
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using ArmSetToolActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
-using ArmMoveJointActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointAction>;
-using ArmMoveCartesianActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianAction>;
-using ArmMoveCartesianGuardedActionClient =
-  actionlib::SimpleActionClient<owl_msgs::ArmMoveCartesianGuardedAction>;
 
 using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
@@ -74,7 +49,7 @@ using OwlatTaskPSPActionClient =
 using OwlatTaskScoopActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::TASK_SCOOPAction>;
 
-class OwlatInterface : public PlexilInterface
+class OwlatInterface : public LanderInterface
 {
  public:
   static OwlatInterface* instance();
@@ -86,22 +61,15 @@ class OwlatInterface : public PlexilInterface
   void initialize();
 
   // Lander interface
-  void armStow (int id);
-  void armUnstow (int id);
-  void armStop (int id);
+  void armFindSurface (int frame, bool relative,
+                       const std::vector<double>& pos,
+                       const std::vector<double>& normal,
+                       double distance,
+                       double overdrive,
+                       double force_threshold,
+                       double torque_threshold,
+                       int id);
   void taskDiscard (int id);
-  void armMoveJoint (bool relative, int joint, double angle, int id);
-  void armMoveCartesian (int frame, bool relative,
-                         const std::vector<double>& position,
-                         const std::vector<double>& orientation,
-                         int id);
-  void armMoveCartesianGuarded (int frame, bool relative,
-                                const std::vector<double>& position,
-                                const std::vector<double>& orientation,
-                                double force_threshold,
-                                double torque_threshold,
-                                int id);
-
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
                            int id);
@@ -141,32 +109,13 @@ class OwlatInterface : public PlexilInterface
   PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
 
  private:
-  template <class Client, class Goal, class ResultPtr, class FeedbackPtr>
-  void nullaryAction (int id, const std::string& name,
-                      std::unique_ptr<Client>& ac)
-  {
-    Goal goal;
-    std::string opname = name;
-
-    runAction<Client, Goal, ResultPtr, FeedbackPtr>
-      (opname, ac, goal, id,
-       default_action_active_cb (opname),
-       default_action_feedback_cb<FeedbackPtr> (opname),
-       default_action_done_cb<ResultPtr> (opname));
-  }
-
   // Actions
-  void armMoveCartesianAction (int frame,
-                               bool relative,
-                               const geometry_msgs::Pose& pose,
-                               int id);
-  void armMoveCartesianGuardedAction (int frame,
-                                      bool relative,
-                                      const geometry_msgs::Pose&,
-                                      double force_threshold,
-                                      double torque_threshold,
-                                      int id);
-  void armMoveJointAction (bool relative, int joint, double angle, int id);
+  void armFindSurfaceAction (int frame, bool relative,
+                             const std::vector<double>& position,
+                             const std::vector<double>& normal,
+                             double distance, double overdrive,
+                             double force_threshold, double torque_threshold,
+                             int id);
   void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
                                  int id);
   void owlatArmMoveJointsGuardedAction (bool relative,
@@ -204,17 +153,12 @@ class OwlatInterface : public PlexilInterface
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
 
   // Action Clients
-  std::unique_ptr<ArmStowActionClient> m_armStowClient;
-  std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
-  std::unique_ptr<ArmMoveCartesianActionClient> m_armMoveCartesianClient;
-  std::unique_ptr<ArmMoveCartesianGuardedActionClient> m_armMoveCartesianGuardedClient;
-  std::unique_ptr<ArmMoveJointActionClient> m_armMoveJointClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
   std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
   std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;
   std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
-  std::unique_ptr<ArmStopActionClient> m_armStopClient;
   std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<OwlatTaskPSPActionClient> m_owlatTaskPSPClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;

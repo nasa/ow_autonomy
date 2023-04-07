@@ -4,6 +4,7 @@
 
 // ow_plexil
 #include "OwInterface.h"
+#include "subscriber.h"
 
 // owl_msgs
 #include <owl_msgs/BatteryRemainingUsefulLife.h>
@@ -18,6 +19,9 @@
 #include <geometry_msgs/Vector3.h>
 
 // C++
+#include <thread>
+#include <vector>
+#include <functional>
 #include <set>
 #include <map>
 #include <algorithm> // for std::copy
@@ -54,6 +58,7 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // owl_msgs.
 
+const string Op_ArmFindSurface = "ArmFindSurface";
 const string Op_ArmMoveJoints           = "ArmMoveJoints";
 const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
 const string Op_CameraCapture           = "CameraCapture";
@@ -73,6 +78,7 @@ const string Op_TaskScoopLinear         = "TaskScoopLinear";
 const string Op_Tilt                    = "Tilt";
 
 static vector<string> LanderOpNames = {
+  Op_ArmFindSurface,
   Op_GuardedMove,
   Op_ArmMoveJoints,
   Op_ArmMoveJointsGuarded,
@@ -95,6 +101,8 @@ static vector<string> LanderOpNames = {
 
 ///////////////////////// Action Goal Status Support /////////////////////////
 
+/* Revisit this
+
 // Duplication of actionlib_msgs/GoalStatus.h with the addition of a
 // NOGOAL status for when the action is not running.
 //
@@ -114,15 +122,8 @@ enum ActionGoalStatus {
 
 static map<string, int> ActionGoalStatusMap {
   // ROS action name -> Action goal status
-  { Op_ArmFindSurface, NOGOAL },
-  { Op_ArmMoveCartesian, NOGOAL },
-  { Op_ArmMoveCartesianGuarded, NOGOAL },
-  { Op_ArmStop, NOGOAL },
-  { Op_ArmStow, NOGOAL },
-  { Op_ArmUnstow, NOGOAL },
   { Op_Grind, NOGOAL },
   { Op_GuardedMove, NOGOAL },
-  { Op_ArmMoveJoint, NOGOAL },
   { Op_ArmMoveJoints, NOGOAL },
   { Op_ArmMoveJointsGuarded, NOGOAL },
   { Op_TaskDeliverSample, NOGOAL },
@@ -149,6 +150,8 @@ static void update_action_goal_state (string action, int state)
     ROS_ERROR("Unknown action: %s", action.c_str());
   }
 }
+
+*/
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -385,23 +388,6 @@ static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& 
 /// Queue size for subscribers is a guess at adequacy.
 const int QSize = 3;
 
-void OwInterface::actionGoalStatusCallback
-(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
-
-// Update ActionGoalStatusMap of action action_name with the status
-// from first goal in GoalStatusArray msg. This is based on the
-// assumption that no action will have more than one goal in our
-// system.
-{
-  if (msg->status_list.size() == 0) {
-    int status = NOGOAL;
-    update_action_goal_state (action_name, status);
-  }
-  else {
-    int status = msg->status_list[0].status;
-    update_action_goal_state (action_name, status);
-  }
-}
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -539,6 +525,8 @@ void OwInterface::initialize()
 
     // Initialize action clients
 
+    m_armFindSurfaceClient =
+      make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
     m_guardedMoveClient =
       make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
     m_armMoveJointsClient =
@@ -651,6 +639,8 @@ void OwInterface::initialize()
         subscribe("/arm_end_effector_force_torque", QSize,
                   &OwInterface::ftCallback, this)));
 
+    connectActionServer (m_armFindSurfaceClient, Op_ArmFindSurface,
+                         "/ArmFindSurface/status");
     connectActionServer (m_armMoveJointsClient, Op_ArmMoveJoints,
                          "/ArmMoveJoints/status");
     connectActionServer (m_armMoveJointsGuardedClient, Op_ArmMoveJointsGuarded,
@@ -992,69 +982,6 @@ void OwInterface::scoopCircularAction (int frame, bool relative,
 }
 
 
-void OwInterface::armStop (int id)
-{
-  if (! markOperationRunning (Op_ArmStop, id)) return;
-  thread action_thread (&OwInterface::armStop, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armStopAction (int id)
-{
-  ArmStopGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmStopAction>,
-            ArmStopGoal,
-            ArmStopResultConstPtr,
-            ArmStopFeedbackConstPtr>
-    (Op_ArmStop, m_armStopClient, goal, id,
-     default_action_active_cb (Op_ArmStop),
-     default_action_feedback_cb<ArmStopFeedbackConstPtr> (Op_ArmStop),
-     default_action_done_cb<ArmStopResultConstPtr> (Op_ArmStop));
-}
-
-void OwInterface::armUnstow (int id)
-{
-  if (! markOperationRunning (Op_ArmUnstow, id)) return;
-  thread action_thread (&OwInterface::armUnstowAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armUnstowAction (int id)
-{
-  ArmUnstowGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
-            ArmUnstowGoal,
-            ArmUnstowResultConstPtr,
-            ArmUnstowFeedbackConstPtr>
-    (Op_ArmUnstow, m_armUnstowClient, goal, id,
-     default_action_active_cb (Op_ArmUnstow),
-     default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (Op_ArmUnstow),
-     default_action_done_cb<ArmUnstowResultConstPtr> (Op_ArmUnstow));
-}
-
-void OwInterface::armStow (int id)  // as action
-{
-  if (! markOperationRunning (Op_ArmStow, id)) return;
-  thread action_thread (&OwInterface::armStowAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armStowAction (int id)
-{
-  ArmStowGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmStowAction>,
-            ArmStowGoal,
-            ArmStowResultConstPtr,
-            ArmStowFeedbackConstPtr>
-    (Op_ArmStow, m_armStowClient, goal, id,
-     default_action_active_cb (Op_ArmStow),
-     default_action_feedback_cb<ArmStowFeedbackConstPtr> (Op_ArmStow),
-     default_action_done_cb<ArmStowResultConstPtr> (Op_ArmStow));
-}
-
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
@@ -1091,8 +1018,8 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
 }
 
 void OwInterface::armFindSurface (int frame, bool relative,
-                                  double pos_x, double pos_y, double pos_z,
-                                  double norm_x, double norm_y, double norm_z,
+                                  const std::vector<double>& position,
+                                  const std::vector<double>& normal,
                                   double distance, double overdrive,
                                   double force_threshold, double torque_threshold,
                                   int id)
@@ -1100,17 +1027,17 @@ void OwInterface::armFindSurface (int frame, bool relative,
   if (! markOperationRunning (Op_ArmFindSurface, id)) return;
 
   geometry_msgs::Point pos;
-  pos.x = pos_x;
-  pos.y = pos_y;
-  pos.z = pos_z;
+  pos.x = position[0];
+  pos.y = position[1];
+  pos.z = position[2];
 
-  geometry_msgs::Vector3 normal;
-  normal.x = norm_x;
-  normal.y = norm_y;
-  normal.z = norm_z;
+  geometry_msgs::Vector3 norm;
+  norm.x = normal[0];
+  norm.y = normal[1];
+  norm.z = normal[2];
 
   thread action_thread (&OwInterface::armFindSurfaceAction, this,
-			frame, relative, pos, normal, distance, overdrive,
+			frame, relative, pos, norm, distance, overdrive,
                         force_threshold, torque_threshold,
                         id);
   action_thread.detach();
@@ -1148,132 +1075,6 @@ void OwInterface::armFindSurfaceAction (int frame, bool relative,
 	     (Op_ArmFindSurface));
 }
 
-void OwInterface::armMoveCartesian (int frame, bool relative,
-                                    const std::vector<double>& position,
-                                    const std::vector<double>& orientation,
-				    int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
-
-  geometry_msgs::Quaternion qm;
-
-  // Deal with type of orientation
-  if (orientation.size() == 3) { // assume Euler angle
-    tf2::Quaternion q;
-    // Yaw, pitch, roll, respectively.
-    q.setEuler (orientation[2], orientation[1], orientation[0]);
-    q.normalize();  // Recommended in ROS docs, not sure if needed here.
-    qm = tf2::toMsg(q);
-  }
-  else { // assume quaternion orientation
-    qm.x = orientation[0];
-    qm.y = orientation[1];
-    qm.z = orientation[2];
-    qm.w = orientation[3];
-  }
-
-  geometry_msgs::Pose pose;
-  pose.position.x = position[0];
-  pose.position.y = position[1];
-  pose.position.z = position[2];
-  pose.orientation = qm;
-  thread action_thread (&OwInterface::armMoveCartesianAction, this,
-                        frame, relative, pose, id);
-  action_thread.detach();
-}
-
-void OwInterface::armMoveCartesianAction (int frame,
-                                          bool relative,
-                                          const geometry_msgs::Pose& pose,
-                                          int id)
-{
-  ArmMoveCartesianGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-  string opname = Op_ArmMoveCartesian;
-
-  // Fill this out.
-  ROS_INFO ("Starting ArmMoveCartesian (frame=%d, relative=%d)", frame, relative);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianAction>,
-            ArmMoveCartesianGoal,
-            ArmMoveCartesianResultConstPtr,
-            ArmMoveCartesianFeedbackConstPtr>
-	    (opname, m_armMoveCartesianClient, goal, id,
-	     default_action_active_cb (opname),
-	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr> (opname),
-	     default_action_done_cb<ArmMoveCartesianResultConstPtr> (opname));
-}
-
-void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                           const vector<double>& position,
-                                           const vector<double>& orientation,
-                                           double force_threshold,
-                                           double torque_threshold,
-                                           int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesianGuarded, id)) return;
-
-  geometry_msgs::Quaternion qm;
-
-  // Deal with type of orientation
-  if (orientation.size() == 3) { // assume Euler angle
-    tf2::Quaternion q;
-    // Yaw, pitch, roll, respectively.
-    q.setEuler (orientation[2], orientation[1], orientation[0]);
-    q.normalize();  // Recommended in ROS docs, not sure if needed here.
-    qm = tf2::toMsg(q);
-  }
-  else { // assume quaternion orientation
-    qm.x = orientation[0];
-    qm.y = orientation[1];
-    qm.z = orientation[2];
-    qm.w = orientation[3];
-  }
-
-  geometry_msgs::Pose pose;
-  pose.position.x = position[0];
-  pose.position.y = position[1];
-  pose.position.z = position[2];
-  pose.orientation = qm;
-  thread action_thread (&OwInterface::armMoveCartesianGuardedAction,
-                        this, frame, relative, pose,
-                        force_threshold, torque_threshold, id);
-  action_thread.detach();
-}
-
-void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
-                                                 const geometry_msgs::Pose& pose,
-                                                 double force_threshold,
-                                                 double torque_threshold,
-                                                 int id)
-{
-  ArmMoveCartesianGuardedGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-  goal.force_threshold = force_threshold;
-  goal.torque_threshold = torque_threshold;
-  string opname = Op_ArmMoveCartesianGuarded;
-
-  // Fill this out.
-  ROS_INFO ("Starting ArmMoveCartesianGuarded (frame=%d, relative=%d)",
-            frame, relative);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianGuardedAction>,
-            ArmMoveCartesianGuardedGoal,
-            ArmMoveCartesianGuardedResultConstPtr,
-            ArmMoveCartesianGuardedFeedbackConstPtr>
-	    (opname, m_armMoveCartesianGuardedClient, goal, id,
-	     default_action_active_cb (opname),
-	     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr>
-	     (opname),
-	     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr>
-	     (opname));
-}
-
-
 void OwInterface::guardedMove (double x, double y, double z,
                                double dir_x, double dir_y, double dir_z,
                                double search_dist, int id)
@@ -1310,42 +1111,6 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
      default_action_active_cb (Op_GuardedMove),
      default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
      guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
-}
-
-void OwInterface::armMoveJoint (bool relative,
-                                int joint, double angle,
-                                int id)
-{
-  if (! markOperationRunning (Op_ArmMoveJoint, id)) return;
-  thread action_thread (&OwInterface::armMoveJointAction,
-                        this, relative, joint, angle, id);
-  action_thread.detach();
-}
-
-void OwInterface::armMoveJointAction (bool relative,
-                                      int joint, double angle,
-                                      int id)
-{
-  ArmMoveJointGoal goal;
-  goal.relative = relative;
-  // NOTE: goal.joint is of type int64_t.  Assignment safe, but type
-  // should be either corrected all the way up the calling tree, or
-  // the message type should be changed to int32, which is more than
-  // sufficient and easiest to work with.
-  goal.joint = joint;
-  goal.angle = angle;
-
-  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%d, angle=%f)",
-            goal.relative, goal.joint, goal.angle);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
-            ArmMoveJointGoal,
-            ArmMoveJointResultConstPtr,
-            ArmMoveJointFeedbackConstPtr>
-    (Op_ArmMoveJoint, m_armMoveJointClient, goal, id,
-     default_action_active_cb (Op_ArmMoveJoint),
-     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (Op_ArmMoveJoint),
-     default_action_done_cb<ArmMoveJointResultConstPtr> (Op_ArmMoveJoint));
 }
 
 void OwInterface::armMoveJoints (bool relative,
@@ -1578,10 +1343,13 @@ vector<double> OwInterface::getArmPose () const
 }
 
 
+/*  revisit
+
 int OwInterface::actionGoalStatus (const string& action_name) const
 {
   return ActionGoalStatusMap[action_name];
 }
+*/
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const
 {
