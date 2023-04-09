@@ -27,26 +27,24 @@ using std::unique_ptr;
 #include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
-
-/*
 static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armUnstow (CommandId);
+  LanderAdapter::s_interface->armUnstow (CommandId);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_stop (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armStop (CommandId);
+  LanderAdapter::s_interface->armStop (CommandId);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armStow (CommandId);
+  LanderAdapter::s_interface->armStow (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -68,7 +66,7 @@ static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armMoveCartesian (frame, relative,
+  LanderAdapter::s_interface->armMoveCartesian (frame, relative,
                                                 *position_vector,
                                                 *orientation_vector,
                                                 CommandId);
@@ -97,7 +95,7 @@ static void arm_move_cartesian_guarded (Command* cmd,
   position->getContentsVector(position_vector);
   orientation->getContentsVector(orientation_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armMoveCartesianGuarded (frame, relative,
+  LanderAdapter::s_interface->armMoveCartesianGuarded (frame, relative,
                                                        *position_vector,
                                                        *orientation_vector,
                                                        force_threshold,
@@ -116,100 +114,100 @@ static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue(joint);
   args[2].getValue(angle);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  m_interface->armMoveJoint (relative, joint, angle, CommandId);
+  LanderAdapter::s_interface->armMoveJoint (relative, joint, angle, CommandId);
   acknowledge_command_sent(*cr);
 }
 
-
+/*
 static void armJointAngles (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointAngles ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmJointAngles());
+  entry.update(LanderAdapter::s_interface->getArmJointAngles());
 }
 
 static void armJointAccelerations (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointAccelerations ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmJointAccelerations());
+  entry.update(LanderAdapter::s_interface->getArmJointAccelerations());
 }
 
 static void armJointTorques (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointTorques ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmJointTorques());
+  entry.update(LanderAdapter::s_interface->getArmJointTorques());
 }
 
 static void armJointVelocities (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmJointVelocities ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmJointVelocities());
+  entry.update(LanderAdapter::s_interface->getArmJointVelocities());
 }
 
 static void armFTTorque (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmFTTorque ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmFTTorque());
+  entry.update(LanderAdapter::s_interface->getArmFTTorque());
 }
 
 static void armFTForce (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmFTForce ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmFTForce());
+  entry.update(LanderAdapter::s_interface->getArmFTForce());
 }
 
 static void armPose (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmPose ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmPose());
+  entry.update(LanderAdapter::s_interface->getArmPose());
 }
 
 static void armTool (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmTool ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getArmTool());
+  entry.update(LanderAdapter::s_interface->getArmTool());
 }
 
 static void pspStopReason (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getPSPStopReason ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getPSPStopReason());
+  entry.update(LanderAdapter::s_interface->getPSPStopReason());
 }
 
 static void panRadians (const State& state, StateCacheEntry &entry)
 {
   debugMsg("PanRadians ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getPanRadians());
+  entry.update(LanderAdapter::s_interface->getPanRadians());
 }
 
 static void panDegrees (const State& state, StateCacheEntry &entry)
 {
   debugMsg("PanDegrees ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getPanDegrees());
+  entry.update(LanderAdapter::s_interface->getPanDegrees());
 }
 
 static void tiltRadians (const State& state, StateCacheEntry &entry)
 {
   debugMsg("TiltRadians ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getTiltRadians());
+  entry.update(LanderAdapter::s_interface->getTiltRadians());
 }
 
 static void tiltDegrees (const State& state, StateCacheEntry &entry)
 {
   debugMsg("TiltDegrees ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
-  entry.update(m_interface->getTiltDegrees());
+  entry.update(LanderAdapter::s_interface->getTiltDegrees());
 }
 
 static void joint_velocity (const State& state, StateCacheEntry &entry)
@@ -219,7 +217,7 @@ static void joint_velocity (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(m_interface->
+  entry.update(LanderAdapter::s_interface->
                getJointTelemetry(joint, TelemetryType::Velocity));
 }
 
@@ -230,7 +228,7 @@ static void joint_position (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(m_interface->
+  entry.update(LanderAdapter::s_interface->
                getJointTelemetry(joint, TelemetryType::Position));
 }
 
@@ -241,7 +239,7 @@ static void joint_effort (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(m_interface->
+  entry.update(LanderAdapter::s_interface->
                getJointTelemetry(joint, TelemetryType::Effort));
 }
 
@@ -252,10 +250,9 @@ static void joint_acceleration (const State& state, StateCacheEntry &entry)
            << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
-  entry.update(m_interface->
+  entry.update(LanderAdapter::s_interface->
                getJointTelemetry(joint, TelemetryType::Acceleration));
 }
-
 */
 
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
@@ -266,6 +263,8 @@ static void default_lookup_handler (const State& state, StateCacheEntry &entry)
   entry.update(Unknown);
 }
 
+LanderInterface* LanderAdapter::s_interface = NULL;
+
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
                               const pugi::xml_node& configXml)
   : PlexilAdapter (execInterface, configXml)
@@ -273,14 +272,14 @@ LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
   debugMsg("LanderAdapter", " created.");
 }
 
-bool LanderAdapter::initialize (LanderInterface* lander)
+bool LanderAdapter::initialize (LanderInterface* li)
 {
   PlexilAdapter::initialize();
-  m_interface = lander;
-  m_interface->setCommandStatusCallback (command_status_callback);
+  s_interface = li;
+  s_interface->setCommandStatusCallback (command_status_callback);
 
   // Commands
-  /*
+
   g_configuration->registerCommandHandler("arm_move_cartesian",
                                           arm_move_cartesian);
   g_configuration->registerCommandHandler("arm_move_cartesian_q",
@@ -295,6 +294,7 @@ bool LanderAdapter::initialize (LanderInterface* lander)
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
 
   // Telemetry
+  /*
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
   g_configuration->registerLookupHandler("ArmJointAccelerations",
                                          armJointAccelerations);

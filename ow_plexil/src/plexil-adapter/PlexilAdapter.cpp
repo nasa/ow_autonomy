@@ -30,7 +30,6 @@ void PlexilAdapter::propagateValueChange (const State& state,
     debugMsg("PlexilAdapter:propagateValueChange", " ignoring " << state);
     return;
   }
-
   debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
   m_execInterface.handleValueChange (state, vals.front());
   m_execInterface.notifyOfExternalEvent();

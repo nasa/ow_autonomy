@@ -7,11 +7,12 @@
 
 // PLEXIL Interface adapter base class to be specialized for each testbed.
 
-// PLEXIL API
+// PLEXIL
 #include "InterfaceAdapter.hh"
 #include "Command.hh"
 #include "Value.hh"
 
+// C++
 #include <set>
 #include <map>
 #include <vector>

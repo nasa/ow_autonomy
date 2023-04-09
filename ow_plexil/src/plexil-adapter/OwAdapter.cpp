@@ -87,112 +87,111 @@ static bool lookup (const string& state_name,
   else if (state_name == "UsingOWLAT") {
     value_out = false;
   }
-  /*  
   else if (state_name == "TiltRadians") {
-    value_out = m_interface->getTiltRadians();
+    value_out = OwInterface::instance()->getTiltRadians();
   }
   else if (state_name == "TiltDegrees") {
-    value_out = m_interface->getTiltDegrees();
+    value_out = OwInterface::instance()->getTiltDegrees();
   }
   else if (state_name == "PanRadians") {
-    value_out = m_interface->getPanRadians();
+    value_out = OwInterface::instance()->getPanRadians();
   }
   else if (state_name == "PanDegrees") {
-    value_out = m_interface->getPanDegrees();
+    value_out = OwInterface::instance()->getPanDegrees();
   }
   else if (state_name == "PanVelocity") {
-    value_out = m_interface->getPanVelocity();
+    value_out = OwInterface::instance()->getPanVelocity();
   }
   else if (state_name == "TiltVelocity") {
-    value_out = m_interface->getTiltVelocity();
+    value_out = OwInterface::instance()->getTiltVelocity();
   }
   else if (state_name == "HardTorqueLimitReached") {
     string s;
     args[0].getValue(s);
-    value_out = m_interface->hardTorqueLimitReached(s);
+    value_out = OwInterface::instance()->hardTorqueLimitReached(s);
   }
   else if (state_name == "SoftTorqueLimitReached") {
     string s;
     args[0].getValue(s);
-    value_out = m_interface->softTorqueLimitReached(s);
+    value_out = OwInterface::instance()->softTorqueLimitReached(s);
   }
   else if (state_name == "Running") {
     string operation;
     args[0].getValue(operation);
-    value_out = m_interface->running (operation);
+    value_out = OwInterface::instance()->running (operation);
   }
   else if (state_name == "StateOfCharge") {
-    value_out = m_interface->getBatteryStateOfCharge();
+    value_out = OwInterface::instance()->getBatteryStateOfCharge();
   }
   else if (state_name == "RemainingUsefulLife") {
-    value_out = m_interface->getBatteryRemainingUsefulLife();
+    value_out = OwInterface::instance()->getBatteryRemainingUsefulLife();
   }
   else if (state_name == "BatteryTemperature") {
-    value_out = m_interface->getBatteryTemperature();
+    value_out = OwInterface::instance()->getBatteryTemperature();
   }
   else if (state_name == "GroundFound") {
-    value_out = m_interface->groundFound();
+    value_out = OwInterface::instance()->groundFound();
   }
   else if (state_name == "GroundPosition") {
-    value_out = m_interface->groundPosition();
+    value_out = OwInterface::instance()->groundPosition();
   }
   // Faults
   else if (state_name == "SystemFault") {
-    value_out = m_interface->systemFault();
+    value_out = OwInterface::instance()->systemFault();
   }
   else if (state_name == "AntennaFault") {
-    value_out = m_interface->antennaFault();
+    value_out = OwInterface::instance()->antennaFault();
   }
   else if (state_name == "AntennaPanFault") {
-    value_out = m_interface->antennaPanFault();
+    value_out = OwInterface::instance()->antennaPanFault();
   }
   else if (state_name == "AntennaTiltFault") {
-    value_out = m_interface->antennaTiltFault();
+    value_out = OwInterface::instance()->antennaTiltFault();
   }
   else if (state_name == "ArmFault") {
-    value_out = m_interface->armFault();
+    value_out = OwInterface::instance()->armFault();
   }
   else if (state_name == "PowerFault") {
-    value_out = m_interface->powerFault();
+    value_out = OwInterface::instance()->powerFault();
   }
   else if (state_name == "CameraFault") {
-    value_out = m_interface->cameraFault();
+    value_out = OwInterface::instance()->cameraFault();
   }
   else if (state_name == "ArmEndEffectorForceTorque") {
-    vector<double> ft = m_interface->getEndEffectorFT();
+    vector<double> ft = OwInterface::instance()->getEndEffectorFT();
     value_out = (Value) ft;
   }
   else if (state_name == "ArmPose") {
-    vector<double> pose = m_interface->getArmPose();
+    vector<double> pose = OwInterface::instance()->getArmPose();
     value_out = (Value) pose;
   }
   else if (state_name == "ActionGoalStatus") {
     string s;
     args[0].getValue(s);
-    value_out = m_interface->actionGoalStatus(s);
+    value_out = OwInterface::instance()->actionGoalStatus(s);
   }
   else if (state_name == "JointVelocity") {
     int joint;
     args[0].getValue(joint);
-    value_out = m_interface->
+    value_out = OwInterface::instance()->
       jointTelemetry(joint, TelemetryType::Velocity);
   }
   else if (state_name == "JointEffort") {
     int joint;
     args[0].getValue(joint);
-    value_out = m_interface->
+    value_out = OwInterface::instance()->
       jointTelemetry(joint, TelemetryType::Effort);
   }
   else if (state_name == "JointPosition") {
     int joint;
     args[0].getValue(joint);
-    value_out = m_interface->
+    value_out = OwInterface::instance()->
       jointTelemetry(joint, TelemetryType::Position);
   }
   else if (state_name == "JointAcceleration") {
     int joint;
     args[0].getValue(joint);
-    value_out = m_interface->
+    value_out = OwInterface::instance()->
       jointTelemetry(joint, TelemetryType::Acceleration);
   }
   else if (state_name == "AnglesEquivalent") {
@@ -200,9 +199,8 @@ static bool lookup (const string& state_name,
     args[0].getValue(deg1);
     args[1].getValue(deg2);
     args[2].getValue(tolerance);
-    value_out = m_interface->anglesEquivalent (deg1, deg2, tolerance);
+    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
   }
-  */
   else retval = false;
 
   return retval;
@@ -539,9 +537,6 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 
 bool OwAdapter::initialize()
 {
-  m_interface = OwInterface::instance();
-  LanderAdapter::initialize (m_interface);
-
   // Commands
   g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
   g_configuration->registerCommandHandler("grind", grind);

@@ -17,6 +17,7 @@ class LanderInterface;
 class LanderAdapter : public PlexilAdapter
 {
  public:
+  static LanderInterface* s_interface;
   // No default constructor, only this specialized one.
   LanderAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
   virtual ~LanderAdapter () = default;
@@ -27,8 +28,6 @@ class LanderAdapter : public PlexilAdapter
 
  protected:
   bool initialize (LanderInterface*);
- private:
-  LanderInterface* m_interface;
 };
 
 
