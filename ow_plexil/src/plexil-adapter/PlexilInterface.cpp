@@ -4,12 +4,37 @@
 
 #include "PlexilInterface.h"
 #include "subscriber.h"
+#include <map>
 
 using std::string;
+using std::map;
 using std::make_unique;
 
 // Dummy operation ID that signifies idle lander operation.
 #define IDLE_ID (-1)
+
+///////////////////////// Action Goal Status Support /////////////////////////
+
+// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
+// NOGOAL status for when the action is not running.
+//
+enum ActionGoalStatus {
+  NOGOAL = -1,
+  PENDING = 0,
+  ACTIVE = 1,
+  PREEMPTED = 2,
+  SUCCEEDED = 3,
+  ABORTED = 4,
+  REJECTED = 5,
+  PREEMPTING = 6,
+  RECALLING = 7,
+  RECALLED = 8,
+  LOST = 9
+};
+
+static map<string, int> ActionGoalStatusMap { };
+
+///////////////////////////////// Class Interface ///////////////////////////////
 
 PlexilInterface::PlexilInterface ()
   : m_commandStatusCallback (nullptr)
@@ -26,7 +51,6 @@ void PlexilInterface::initialize()
   m_genericNodeHandle = make_unique<ros::NodeHandle>();
 }
 
-/* Revisit
 
 void PlexilInterface::actionGoalStatusCallback
 (const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
@@ -37,12 +61,14 @@ void PlexilInterface::actionGoalStatusCallback
 // system.
 {
   if (msg->status_list.size() == 0) {
-    int status = -1; // TODO: abstract this (was NOGOAL)
-    update_action_goal_state (action_name, status);
+    ActionGoalStatusMap[action_name] = NOGOAL;
+  }
+  else if (msg->status_list.size() == 1) {
+    ActionGoalStatusMap[action_name] = msg->status_list[0].status;
   }
   else {
-    int status = msg->status_list[0].status;
-    update_action_goal_state (action_name, status);
+    ROS_ERROR ("%s had more than one goal: this should never happen.",
+               action_name.c_str());
   }
 }
 
@@ -55,7 +81,13 @@ void PlexilInterface::subscribeToActionStatus (const string& topic, const string
        boost::bind(&PlexilInterface::actionGoalStatusCallback,
                    this, _1, operation))));
 }
-*/
+
+int PlexilInterface::actionGoalStatus (const string& action_name) const
+{
+  return ActionGoalStatusMap[action_name];
+}
+
+
 
 bool PlexilInterface::isLanderOperation (const string& name) const
 {

@@ -86,6 +86,7 @@ void acknowledge_command_sent(CommandRecord& cr, bool skip)
 
 void command_status_callback (int id, bool success)
 {
+  ROS_INFO ("----enter command_status callback");
   auto it = CommandRegistry.find(id);
   if (it == CommandRegistry.end())
   {
@@ -99,6 +100,7 @@ void command_status_callback (int id, bool success)
   acknowledge_command_sent(*cr, true);
   if (success) acknowledge_command_success (cmd, intf);
   else acknowledge_command_failure (cmd, intf);
+  ROS_INFO ("----leave command_status callback");
 }
 
 static State create_state (const string& state_name, const vector<Value>& value)

@@ -34,6 +34,7 @@ class PlexilInterface
 
   // Command feedback
   void setCommandStatusCallback (void (*callback) (int, bool));
+  int actionGoalStatus (const std::string& action_name) const;
 
  protected:
   void initialize();
@@ -66,10 +67,10 @@ class PlexilInterface
     if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("%s action server did not connect!", name.c_str());
     }
-    //    else if (topic != "") subscribeToActionStatus (topic, name);
+    else if (topic != "") subscribeToActionStatus (topic, name);
   }
 
-  //  void subscribeToActionStatus (const std::string& topic, const std::string& operation);
+  void subscribeToActionStatus (const std::string& topic, const std::string& operation);
 
   template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,

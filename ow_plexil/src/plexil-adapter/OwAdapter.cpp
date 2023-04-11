@@ -528,6 +528,9 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+
+// Telemetry
+
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
   : LanderAdapter(execInterface, configXml)
@@ -537,6 +540,8 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 
 bool OwAdapter::initialize()
 {
+  LanderAdapter::initialize (OwInterface::instance());
+
   // Commands
   g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
   g_configuration->registerCommandHandler("grind", grind);

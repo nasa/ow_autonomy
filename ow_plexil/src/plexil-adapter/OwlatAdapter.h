@@ -21,8 +21,6 @@ public:
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
   virtual bool initialize();
- private:
-  OwlatInterface* m_interface;
 };
 
 extern "C" {

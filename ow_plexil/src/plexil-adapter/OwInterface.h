@@ -162,7 +162,6 @@ class OwInterface : public LanderInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointTelemetry (int joint, TelemetryType type) const;
-  //  int    actionGoalStatus (const std::string& action_name) const;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,

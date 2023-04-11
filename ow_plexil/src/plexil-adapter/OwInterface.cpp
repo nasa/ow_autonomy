@@ -23,7 +23,6 @@
 #include <vector>
 #include <functional>
 #include <set>
-#include <map>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
 
@@ -32,7 +31,6 @@ using namespace owl_msgs;
 using namespace PLEXIL;
 
 using std::set;
-using std::map;
 using std::vector;
 using std::thread;
 using std::ref;
@@ -98,60 +96,6 @@ static vector<string> LanderOpNames = {
   Op_LightSetIntensity
 };
 
-
-///////////////////////// Action Goal Status Support /////////////////////////
-
-/* Revisit this
-
-// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
-// NOGOAL status for when the action is not running.
-//
-enum ActionGoalStatus {
-  NOGOAL = -1,
-  PENDING = 0,
-  ACTIVE = 1,
-  PREEMPTED = 2,
-  SUCCEEDED = 3,
-  ABORTED = 4,
-  REJECTED = 5,
-  PREEMPTING = 6,
-  RECALLING = 7,
-  RECALLED = 8,
-  LOST = 9
-};
-
-static map<string, int> ActionGoalStatusMap {
-  // ROS action name -> Action goal status
-  { Op_Grind, NOGOAL },
-  { Op_GuardedMove, NOGOAL },
-  { Op_ArmMoveJoints, NOGOAL },
-  { Op_ArmMoveJointsGuarded, NOGOAL },
-  { Op_TaskDeliverSample, NOGOAL },
-  { Op_TaskScoopCircular, NOGOAL },
-  { Op_TaskScoopLinear, NOGOAL },
-  { Op_TaskDiscardSample, NOGOAL },
-  { Op_CameraCapture, NOGOAL },
-  { Op_CameraSetExposure, NOGOAL },
-  { Op_Ingest, NOGOAL },
-  { Op_Pan, NOGOAL },
-  { Op_Tilt, NOGOAL },
-  { Op_PanTilt, NOGOAL },
-  { Op_PanTiltCartesian, NOGOAL },
-  { Op_IdentifySampleLocation, NOGOAL },
-  { Op_LightSetIntensity, NOGOAL }
-};
-
-static void update_action_goal_state (string action, int state)
-{
-  if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
-    ActionGoalStatusMap[action] = state;
-  }
-  else {
-    ROS_ERROR("Unknown action: %s", action.c_str());
-  }
-}
-
-*/
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -1341,15 +1285,6 @@ vector<double> OwInterface::getArmPose () const
 {
   return m_armPose;
 }
-
-
-/*  revisit
-
-int OwInterface::actionGoalStatus (const string& action_name) const
-{
-  return ActionGoalStatusMap[action_name];
-}
-*/
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const
 {
