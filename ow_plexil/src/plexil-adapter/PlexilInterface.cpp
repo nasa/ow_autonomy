@@ -63,12 +63,8 @@ void PlexilInterface::actionGoalStatusCallback
   if (msg->status_list.size() == 0) {
     ActionGoalStatusMap[action_name] = NOGOAL;
   }
-  else if (msg->status_list.size() == 1) {
+  else { // if (msg->status_list.size() >= 1) {
     ActionGoalStatusMap[action_name] = msg->status_list[0].status;
-  }
-  else {
-    ROS_ERROR ("%s had more than one goal: this should never happen.",
-               action_name.c_str());
   }
 }
 
