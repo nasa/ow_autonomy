@@ -33,6 +33,7 @@ public:
   virtual void invokeAbort(PLEXIL::Command *cmd);
   virtual void subscribe(const PLEXIL::State& state);
   virtual void unsubscribe(const PLEXIL::State& state);
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
   void propagateValueChange (const PLEXIL::State&,
                              const std::vector<PLEXIL::Value>&) const;
 

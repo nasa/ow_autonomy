@@ -671,7 +671,6 @@ void OwInterface::panTilt (double pan_degrees, double tilt_degrees, int id)
 
 void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id)
 {
-  ROS_INFO ("---- enter panTiltAction");
   PanTiltMoveJointsGoal goal;
   goal.pan = pan_degrees * D2R;
   goal.tilt = tilt_degrees * D2R;
@@ -685,7 +684,6 @@ void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id
      default_action_active_cb (Op_PanTilt, args.str()),
      default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (Op_PanTilt),
      default_action_done_cb<PanTiltMoveJointsResultConstPtr> (Op_PanTilt));
-  ROS_INFO ("---- exit panTiltAction");
 }
 
 void OwInterface::panTiltCartesian (int frame, double x, double y, double z, int id)

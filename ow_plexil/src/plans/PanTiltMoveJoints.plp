@@ -15,7 +15,7 @@ PanTiltMoveJoints:
   PostCondition !Lookup(AntennaFault);
 
   if Lookup(AntennaFault)
-  { 
+  {
     log_error ("Command pan_tilt not sent to lander ",
                "due to active antenna fault(s).");
     FaultDetected = true;

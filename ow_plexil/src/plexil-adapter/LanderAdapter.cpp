@@ -118,14 +118,6 @@ static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void default_lookup_handler (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("default_lookup_handler", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  debugMsg("Invalid State: ", state.name());
-  entry.update(Unknown);
-}
-
 LanderInterface* LanderAdapter::s_interface = NULL;
 
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
@@ -155,9 +147,6 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_stow", arm_stow);
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
-
-  // Telemetry
-  g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

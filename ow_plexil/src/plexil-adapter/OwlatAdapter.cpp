@@ -31,7 +31,6 @@ using namespace PLEXIL;
 
 using std::string;
 
-/*
 static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
@@ -171,7 +170,6 @@ static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
                                               *normal_vector, CommandId);
   acknowledge_command_sent(*cr);
 }
-*/
 
 static void using_owlat (const State&, StateCacheEntry& entry)
 {
@@ -293,13 +291,12 @@ static void armPose (const State& state, StateCacheEntry &entry)
 
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 {
-  debugMsg("default_lookup_handler", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  debugMsg("Invalid State: ", state.name());
+  ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
+            state.name().c_str(), state.parameters().size());
   entry.update(Unknown);
 }
 
-wlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
+OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
                             const pugi::xml_node& configXml)
   : LanderAdapter (execInterface, configXml)
 {
@@ -312,7 +309,6 @@ bool OwlatAdapter::initialize()
 
   // Commands
 
-  /*
   g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
   g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
   g_configuration->registerCommandHandler("owlat_arm_move_joints",
@@ -323,7 +319,6 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_place_tool);
   g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
-  */
 
   // Telemetry
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
