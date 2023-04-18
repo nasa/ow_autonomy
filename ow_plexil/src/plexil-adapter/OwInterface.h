@@ -102,7 +102,7 @@ class OwInterface : public LanderInterface
                        double overdrive,
                        double force_threshold,
                        double torque_threshold,
-                       int id);
+                       int id) override;
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);

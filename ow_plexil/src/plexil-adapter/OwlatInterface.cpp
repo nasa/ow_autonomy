@@ -207,12 +207,15 @@ void OwlatInterface::initialize()
 /////////////////////////////// OWLAT Interface ////////////////////////////////
 
 
-void OwlatInterface::armFindSurface (int frame, bool relative,
-                                  const std::vector<double>& pos,
-                                  const std::vector<double>& normal,
-                                  double distance, double overdrive,
-                                  double force_threshold, double torque_threshold,
-                                  int id)
+void OwlatInterface::armFindSurface (int frame,
+                                     bool relative,
+                                     const std::vector<double>& pos,
+                                     const std::vector<double>& normal,
+                                     double distance,
+                                     double overdrive,
+                                     double force_threshold,
+                                     double torque_threshold,
+                                     int id)
 {
   if (! markOperationRunning (Name_ArmFindSurface, id)) return;
 

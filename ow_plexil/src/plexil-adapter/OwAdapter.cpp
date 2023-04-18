@@ -206,37 +206,6 @@ static bool lookup (const string& state_name,
   return retval;
 }
 
-static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double distance, overdrive, force_threshold, torque_threshold;
-
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *orientation_vector = nullptr;
-  RealArray const *position = nullptr;
-  RealArray const *orientation = nullptr;
-
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(orientation);
-  args[4].getValue(distance);
-  args[5].getValue(overdrive);
-  args[6].getValue(force_threshold);
-  args[7].getValue(torque_threshold);
-  position->getContentsVector(position_vector);
-  orientation->getContentsVector(orientation_vector);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armFindSurface (frame, relative,
-                                           *position_vector, *orientation_vector,
-                                           distance, overdrive,
-                                           force_threshold, torque_threshold,
-                                           CommandId);
-  acknowledge_command_sent(*cr);
-}
-
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -543,7 +512,6 @@ bool OwAdapter::initialize()
   LanderAdapter::initialize (OwInterface::instance());
 
   // Commands
-  g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
   g_configuration->registerCommandHandler("grind", grind);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);

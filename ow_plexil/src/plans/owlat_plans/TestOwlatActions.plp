@@ -17,6 +17,15 @@ TestOwlatActions:
   LibraryCall ArmUnstow();
   LibraryCall ArmTareFTSensor();
   LibraryCall ArmSetTool(Tool=0);
+  /* LibraryCall ArmFindSurface (Frame = 1, */
+  /*                             Relative = false, */
+  /*                             Position = #(0 0 0.15), */
+  /*                             Normal = #(0 0 -1), */
+  /*                             Distance = 0.15, */
+  /*                             Overdrive = 0, */
+  /*                             ForceThreshold = 5, */
+  /*                             TorqueThreshold = 1); */
+  LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
   LibraryCall OwlatArmMoveJointsGuarded(Relative=true,

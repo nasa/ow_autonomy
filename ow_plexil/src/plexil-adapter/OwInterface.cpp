@@ -961,11 +961,14 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
      default_action_done_cb<TaskGrindResultConstPtr> (Op_Grind));
 }
 
-void OwInterface::armFindSurface (int frame, bool relative,
+void OwInterface::armFindSurface (int frame,
+                                  bool relative,
                                   const std::vector<double>& position,
                                   const std::vector<double>& normal,
-                                  double distance, double overdrive,
-                                  double force_threshold, double torque_threshold,
+                                  double distance,
+                                  double overdrive,
+                                  double force_threshold,
+                                  double torque_threshold,
                                   int id)
 {
   if (! markOperationRunning (Op_ArmFindSurface, id)) return;

@@ -43,10 +43,12 @@ TestActions:
 
   LibraryCall ArmFindSurface (Frame = BASE_LINK,
                               Relative = false,
-                              PosX = 1.75, PosY = 0.1, PosZ = GP,
-                              NormX = 0, NormY = 0, NormZ = -1,
-                              Distance = 0.2, Overdrive = 0.05,
-                              ForceThreshold = 200, TorqueThreshold = 50);
+                              Position = #(1.75 0.1 -0.155),
+                              Normal = #(0 0 -1),
+                              Distance = 0.2,
+                              Overdrive = 0.05,
+                              ForceThreshold = 200,
+                              TorqueThreshold = 50);
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,

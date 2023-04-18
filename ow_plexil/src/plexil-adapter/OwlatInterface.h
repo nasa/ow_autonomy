@@ -61,14 +61,15 @@ class OwlatInterface : public LanderInterface
   void initialize();
 
   // Lander interface
-  void armFindSurface (int frame, bool relative,
+  void armFindSurface (int frame,
+                       bool relative,
                        const std::vector<double>& pos,
                        const std::vector<double>& normal,
                        double distance,
                        double overdrive,
                        double force_threshold,
                        double torque_threshold,
-                       int id);
+                       int id) override;
   void taskDiscard (int id);
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,

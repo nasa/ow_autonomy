@@ -67,6 +67,16 @@ class LanderInterface : public PlexilInterface
   void initialize();
 
   // Lander interface
+  virtual void armFindSurface (int frame,
+                               bool relative,
+                               const std::vector<double>& pos,
+                               const std::vector<double>& normal,
+                               double distance,
+                               double overdrive,
+                               double force_threshold,
+                               double torque_threshold,
+                               int id) = 0;
+
   void armMoveCartesian (int frame, bool relative,
                          const std::vector<double>& position,
                          const std::vector<double>& orientation,
