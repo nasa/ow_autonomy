@@ -13,5 +13,5 @@ TaskPSP:
   In Real MaxDepth;
   In Real MaxForce;
   
-  SynchronousCommand task_psp();
+  SynchronousCommand task_psp (Frame, Relative, Point, Normal, MaxDepth, MaxForce);
 }

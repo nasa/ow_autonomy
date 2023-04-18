@@ -2,22 +2,21 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// PLEXIL interface to lander that is OWLAT-specific.
+
 #ifndef Owlat_Plan_Interface_H
 #define Owlat_Plan_Interface_H
 
-// PLEXIL interface to lander: commands, lookups, library plans, PLEXIL utilities
 #include "../common/common-interface.h"
 #include "owlat-lander-commands.h"
 
-// PLEXIL library for lander operations specific to OWLAT.
-
 LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,
-                                           In Boolean Relative, 
+                                           In Boolean Relative,
                                            In Real Position[3],
                                            In Real Orientation[4],
                                            In Boolean Retracting,
                                            In Real ForceThreshold,
-                                           In Real TorqueThreshold); 
+                                           In Real TorqueThreshold);
 
 LibraryAction OwlatArmMoveJoints(In Boolean Relative,
                                  In Real Angles[7]);
@@ -68,6 +67,13 @@ LibraryAction OwlatTaskShearBevameter(In Integer Frame,
 LibraryAction PrintNodeStart(In String NodeName);
 
 LibraryAction PrintNodeFinish(In String NodeName);
+
+LibraryAction TaskPSP (In Integer Frame,
+		       In Boolean Relative,
+		       In Real Point[3],
+		       In Real Normal[3],
+		       In Real MaxDepth,
+		       In Real MaxForce);
 
 
 // Telemetry

@@ -24,12 +24,12 @@ using namespace PLEXIL;
 const string Name_ArmFindSurface = "ArmFindSurface";
 const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
+const string Name_TaskPSP =          "TaskPSP";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
 const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
-const string Name_OwlatTaskPSP =          "/owlat_sim/TASK_PSP";
 const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
 const string Name_Discard = "TaskDiscardSample";
 
@@ -43,7 +43,7 @@ static vector<string> LanderOpNames = {
   Name_OwlatArmPlaceTool,
   Name_SetTool,
   Name_Tare,
-  Name_OwlatTaskPSP,
+  Name_TaskPSP,
   Name_OwlatTaskScoop
 };
 
@@ -51,13 +51,12 @@ static vector<string> LanderOpNames = {
 static double PSPStopReasonVar = 0;
 
 static void task_psp_done_cb (const actionlib::SimpleClientGoalState& state,
-                              const TASK_PSPResultConstPtr& result)
+                              const TaskPSPResultConstPtr& result)
 {
   ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
   PSPStopReasonVar = result->stop_reason.value;
   publish("PSPStopReason", PSPStopReasonVar);
-  ROS_INFO ("/owlat_sim/TASK_PSP finished in state %s",
-            state.toString().c_str());
+  ROS_INFO ("TaskPSP finished in state %s", state.toString().c_str());
 }
 
 OwlatInterface* OwlatInterface::instance ()
@@ -160,8 +159,8 @@ void OwlatInterface::initialize()
       make_unique<ArmSetToolActionClient>(Name_SetTool, true);
     m_armTareFTSensorClient =
       make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
-    m_owlatTaskPSPClient =
-      make_unique<OwlatTaskPSPActionClient>(Name_OwlatTaskPSP, true);
+    m_taskPSPClient =
+      make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
     m_owlatTaskScoopClient =
       make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
@@ -192,9 +191,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmTareFTSensor action server did not connect!");
     }
-    if (! m_owlatTaskPSPClient->waitForServer
+    if (! m_taskPSPClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TASK_PSP action server did not connect!");
+      ROS_ERROR ("OWLAT TaskPSP action server did not connect!");
     }
     if (! m_owlatTaskScoopClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -432,26 +431,26 @@ void OwlatInterface::armTareFTSensor (int id)
   action_thread.detach();
 }
 
-void OwlatInterface::owlatTaskPSP (int frame, bool relative,
+void OwlatInterface::taskPSP (int frame, bool relative,
                                    const vector<double>& point,
                                    const vector<double>& normal,
                                    double max_depth,
                                    double max_force, int id)
 {
-  if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskPSPAction,
+  if (! markOperationRunning (Name_TaskPSP, id)) return;
+  thread action_thread (&OwlatInterface::taskPSPAction,
                         this, frame, relative, point, normal,
                         max_depth, max_force, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
-                                         const vector<double>& point,
-                                         const vector<double>& normal,
-                                         double max_depth,
-                                         double max_force, int id)
+void OwlatInterface::taskPSPAction (int frame, bool relative,
+				    const vector<double>& point,
+				    const vector<double>& normal,
+				    double max_depth,
+				    double max_force, int id)
 {
-  TASK_PSPGoal goal;
+  TaskPSPGoal goal;
   goal.frame.value = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.point.size(); i++){
@@ -460,15 +459,15 @@ void OwlatInterface::owlatTaskPSPAction (int frame, bool relative,
   }
   goal.max_depth = max_depth;
   goal.max_force = max_force;
-  string opname = Name_OwlatTaskPSP;  // shorter version
+  string opname = Name_TaskPSP;  // shorter version
 
-  runAction<actionlib::SimpleActionClient<TASK_PSPAction>,
-            TASK_PSPGoal,
-            TASK_PSPResultConstPtr,
-            TASK_PSPFeedbackConstPtr>
-    (opname, m_owlatTaskPSPClient, goal, id,
+  runAction<actionlib::SimpleActionClient<TaskPSPAction>,
+            TaskPSPGoal,
+            TaskPSPResultConstPtr,
+            TaskPSPFeedbackConstPtr>
+    (opname, m_taskPSPClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<TASK_PSPFeedbackConstPtr> (opname),
+     default_action_feedback_cb<TaskPSPFeedbackConstPtr> (opname),
      task_psp_done_cb);
 }
 
@@ -476,7 +475,7 @@ void OwlatInterface::owlatTaskScoop (int frame, bool relative,
                                      const vector<double>& point,
                                      const vector<double>& normal, int id)
 {
-  if (! markOperationRunning (Name_OwlatTaskPSP, id)) return;
+  if (! markOperationRunning (Name_TaskPSP, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskScoopAction,
                         this, frame, relative, point, normal,
                         id);

@@ -123,7 +123,7 @@ static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_task_psp (Command* cmd, AdapterExecInterface* intf)
+static void task_psp (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
@@ -317,8 +317,8 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_move_joints_guarded);
   g_configuration->registerCommandHandler("owlat_arm_place_tool",
                                           owlat_arm_place_tool);
-  g_configuration->registerCommandHandler("owlat_task_psp", owlat_task_psp);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
+  g_configuration->registerCommandHandler("task_psp", task_psp);
 
   // Telemetry
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
