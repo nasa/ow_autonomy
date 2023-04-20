@@ -47,18 +47,6 @@ static vector<string> LanderOpNames = {
   Name_OwlatTaskScoop
 };
 
-// Task PSP Callback
-static double PSPStopReasonVar = 0;
-
-static void task_psp_done_cb (const actionlib::SimpleClientGoalState& state,
-                              const TaskPSPResultConstPtr& result)
-{
-  ROS_INFO("PSP Stop Reason: : %d", result->stop_reason.value);
-  PSPStopReasonVar = result->stop_reason.value;
-  publish("PSPStopReason", PSPStopReasonVar);
-  ROS_INFO ("TaskPSP finished in state %s", state.toString().c_str());
-}
-
 OwlatInterface* OwlatInterface::instance ()
 {
   // Very simple singleton
@@ -444,14 +432,16 @@ void OwlatInterface::taskPSP (int frame, bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::taskPSPAction (int frame, bool relative,
+void OwlatInterface::taskPSPAction (int frame,
+                                    bool relative,
 				    const vector<double>& point,
 				    const vector<double>& normal,
 				    double max_depth,
-				    double max_force, int id)
+				    double max_force,
+                                    int id)
 {
   TaskPSPGoal goal;
-  goal.frame.value = frame;
+  goal.frame = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.point.size(); i++){
     goal.point[i] = point[i];
@@ -468,7 +458,7 @@ void OwlatInterface::taskPSPAction (int frame, bool relative,
     (opname, m_taskPSPClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<TaskPSPFeedbackConstPtr> (opname),
-     task_psp_done_cb);
+     default_action_done_cb<TaskPSPResultConstPtr> (opname));
 }
 
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
@@ -617,11 +607,6 @@ Value OwlatInterface::getArmPose() const
 Value OwlatInterface::getArmTool() const
 {
   return(Value(m_arm_tool));
-}
-
-Value OwlatInterface::getPSPStopReason() const
-{
-  return(Value(PSPStopReasonVar));
 }
 
 Value OwlatInterface::getPanRadians() const

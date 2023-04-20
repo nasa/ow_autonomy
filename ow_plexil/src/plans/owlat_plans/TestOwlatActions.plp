@@ -2,29 +2,46 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Temporary declarations.  Replace with inclusion of owlat-interface.h.
-
 #include "owlat-interface.h"
+
+LibraryAction ArmSetup;
 
 TestOwlatActions:
 {
   Real angles1[7] = #(0.0 -0.5 0.0 2.0 0.0 0.0 0.0);
   Real angles2[7] = #(0.0 0.6 0.0 0.0 0.0 0.0 0.0);
-  Real orientation[4] = #(0.0 0.0 0.0 1.0);
   Real force_threshold = 5.0;
   Real torque_threshold = 1.0;
 
-  LibraryCall ArmUnstow();
+  log_info ("Starting OWLAT action test...");
+
   LibraryCall ArmTareFTSensor();
-  LibraryCall ArmSetTool(Tool=0);
-  /* LibraryCall ArmFindSurface (Frame = 1, */
-  /*                             Relative = false, */
-  /*                             Position = #(0 0 0.15), */
-  /*                             Normal = #(0 0 -1), */
-  /*                             Distance = 0.15, */
-  /*                             Overdrive = 0, */
-  /*                             ForceThreshold = 5, */
-  /*                             TorqueThreshold = 1); */
+  LibraryCall ArmSetup();
+  LibraryCall ArmMoveCartesianGuarded(Frame=TOOL_FRAME,
+                                      Relative=false,
+                                      Position=#(0.0 0.0 0.15),
+                                      Orientation=#(0.0 0.0 0.0 1.0),
+                                      ForceThreshold=force_threshold,
+                                      TorqueThreshold=torque_threshold);
+  LibraryCall ArmSetup();
+  LibraryCall ArmFindSurface (Frame = 1,
+                              Relative = false,
+                              Position = #(0 0 0.15),
+                              Normal = #(0 0 -1),
+                              Distance = 0.15,
+                              Overdrive = 0,
+                              ForceThreshold = 5,
+                              TorqueThreshold = 1);
+  LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=1); // Pressure Sinkage Plate
+  LibraryCall TaskPSP (Frame = 1,
+                       Relative = false,
+                       Point = #(0 0 0.5 ),
+                       Normal = #(0 0 -1 ),
+                       MaxDepth = 0.3,
+                       MaxForce = 10);
+
+
   LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
@@ -33,16 +50,8 @@ TestOwlatActions:
                                         Retracting=false,
                                         ForceThreshold=force_threshold,
                                         TorqueThreshold=torque_threshold);
-  LibraryCall ArmMoveCartesian(Frame=TOOL_FRAME,
-                               Relative=false,
-                               Position=#(0.0 0.0 0.43),
-                               Orientation=orientation);
-  LibraryCall ArmMoveCartesianGuarded(Frame=TOOL_FRAME,
-                                      Relative=false,
-                                      Position=#(0.0 0.0 0.15),
-                                      Orientation=orientation,
-                                      ForceThreshold=force_threshold,
-                                      TorqueThreshold=torque_threshold);
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();
+
+  log_info ("Finished OWLAT action test.");
 }

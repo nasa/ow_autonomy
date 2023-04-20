@@ -4,6 +4,9 @@
 
 // Operate the Pressure Sinkage Plate
 
+Command task_psp (Integer frame, Boolean relative, Real point[3],
+		  Real normal[3], Real max_depth, Real max_force);
+
 TaskPSP:
 {
   In Integer Frame;
@@ -12,6 +15,6 @@ TaskPSP:
   In Real Normal[3];
   In Real MaxDepth;
   In Real MaxForce;
-  
+
   SynchronousCommand task_psp (Frame, Relative, Point, Normal, MaxDepth, MaxForce);
 }

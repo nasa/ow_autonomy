@@ -143,9 +143,9 @@ static void task_psp (Command* cmd, AdapterExecInterface* intf)
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatTaskPSP (frame, relative,*point_vector,
-                                            *normal_vector, max_depth, max_force,
-                                            CommandId);
+  OwlatInterface::instance()->taskPSP (frame, relative,*point_vector,
+                                       *normal_vector, max_depth, max_force,
+                                       CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -207,13 +207,6 @@ static void armTool (const State& state, StateCacheEntry &entry)
   debugMsg("getArmTool ", "lookup called for " << state.name()
            << " with " << state.parameters().size() << " args");
   entry.update(OwlatInterface::instance()->getArmTool());
-}
-
-static void pspStopReason (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getPSPStopReason ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getPSPStopReason());
 }
 
 static void joint_velocity (const State& state, StateCacheEntry &entry)
@@ -327,7 +320,6 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("ArmFTTorque", armFTTorque);
   g_configuration->registerLookupHandler("ArmFTForce", armFTForce);
   g_configuration->registerLookupHandler("ArmTool", armTool);
-  g_configuration->registerLookupHandler("PSPStopReason", pspStopReason);
   g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
   g_configuration->registerLookupHandler("JointPosition", joint_position);
   g_configuration->registerLookupHandler("JointEffort", joint_effort);

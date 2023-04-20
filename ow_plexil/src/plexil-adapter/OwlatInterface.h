@@ -102,7 +102,6 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getArmFTForce() const;
   PLEXIL::Value getArmPose() const;
   PLEXIL::Value getArmTool() const;
-  PLEXIL::Value getPSPStopReason() const;
   PLEXIL::Value getPanDegrees() const;
   PLEXIL::Value getPanRadians() const;
   PLEXIL::Value getTiltRadians() const;
