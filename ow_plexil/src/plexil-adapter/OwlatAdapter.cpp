@@ -19,7 +19,6 @@ using namespace PLEXIL;
 // C++
 #include <map>
 
-
 // PLEXIL API
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
@@ -123,7 +122,7 @@ static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void task_psp (Command* cmd, AdapterExecInterface* intf)
+static void task_p (bool psp, Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
@@ -143,10 +142,29 @@ static void task_psp (Command* cmd, AdapterExecInterface* intf)
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->taskPSP (frame, relative,*point_vector,
-                                       *normal_vector, max_depth, max_force,
-                                       CommandId);
+  if (psp) {
+    OwlatInterface::instance()->taskPSP (frame, relative,*point_vector,
+                                         *normal_vector, max_depth, max_force,
+                                         CommandId);
+  }
+  else {
+    OwlatInterface::instance()->taskPenetrometer (frame, relative,
+                                                  *point_vector,
+                                                  *normal_vector,
+                                                  max_depth, max_force,
+                                                  CommandId);
+  }
   acknowledge_command_sent(*cr);
+}
+
+static void task_psp (Command* cmd, AdapterExecInterface* intf)
+{
+  task_p (true, cmd, intf);
+}
+
+static void task_penetrometer (Command* cmd, AdapterExecInterface* intf)
+{
+  task_p (false, cmd, intf);
 }
 
 static void owlat_task_scoop (Command* cmd, AdapterExecInterface* intf)
@@ -312,6 +330,7 @@ bool OwlatAdapter::initialize()
                                           owlat_arm_place_tool);
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   g_configuration->registerCommandHandler("task_psp", task_psp);
+  g_configuration->registerCommandHandler("task_penetrometer", task_penetrometer);
 
   // Telemetry
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);

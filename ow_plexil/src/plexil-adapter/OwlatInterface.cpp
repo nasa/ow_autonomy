@@ -25,6 +25,7 @@ const string Name_ArmFindSurface = "ArmFindSurface";
 const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
 const string Name_TaskPSP =          "TaskPSP";
+const string Name_TaskPenetrometer =          "TaskPenetrometer";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
@@ -44,6 +45,7 @@ static vector<string> LanderOpNames = {
   Name_SetTool,
   Name_Tare,
   Name_TaskPSP,
+  Name_TaskPenetrometer,
   Name_OwlatTaskScoop
 };
 
@@ -149,6 +151,8 @@ void OwlatInterface::initialize()
       make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
     m_taskPSPClient =
       make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
+    m_taskPenetrometerClient =
+      make_unique<TaskPenetrometerActionClient>(Name_TaskPenetrometer, true);
     m_owlatTaskScoopClient =
       make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
 
@@ -181,7 +185,11 @@ void OwlatInterface::initialize()
     }
     if (! m_taskPSPClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TaskPSP action server did not connect!");
+      ROS_ERROR ("TaskPSP action server did not connect!");
+    }
+    if (! m_taskPenetrometerClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("TaskPenetrometer action server did not connect!");
     }
     if (! m_owlatTaskScoopClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -420,13 +428,26 @@ void OwlatInterface::armTareFTSensor (int id)
 }
 
 void OwlatInterface::taskPSP (int frame, bool relative,
-                                   const vector<double>& point,
-                                   const vector<double>& normal,
-                                   double max_depth,
-                                   double max_force, int id)
+                              const vector<double>& point,
+                              const vector<double>& normal,
+                              double max_depth, double max_force,
+                              int id)
 {
   if (! markOperationRunning (Name_TaskPSP, id)) return;
   thread action_thread (&OwlatInterface::taskPSPAction,
+                        this, frame, relative, point, normal,
+                        max_depth, max_force, id);
+  action_thread.detach();
+}
+
+void OwlatInterface::taskPenetrometer (int frame, bool relative,
+                                       const vector<double>& point,
+                                       const vector<double>& normal,
+                                       double max_depth,
+                                       double max_force, int id)
+{
+  if (! markOperationRunning (Name_TaskPenetrometer, id)) return;
+  thread action_thread (&OwlatInterface::taskPenetrometerAction,
                         this, frame, relative, point, normal,
                         max_depth, max_force, id);
   action_thread.detach();
@@ -461,11 +482,40 @@ void OwlatInterface::taskPSPAction (int frame,
      default_action_done_cb<TaskPSPResultConstPtr> (opname));
 }
 
+void OwlatInterface::taskPenetrometerAction (int frame,
+                                             bool relative,
+                                             const vector<double>& point,
+                                             const vector<double>& normal,
+                                             double max_depth,
+                                             double max_force,
+                                             int id)
+{
+  TaskPenetrometerGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i];
+    goal.normal[i] = normal[i];
+  }
+  goal.max_depth = max_depth;
+  goal.max_force = max_force;
+  string opname = Name_TaskPenetrometer;  // shorter version
+
+  runAction<actionlib::SimpleActionClient<TaskPenetrometerAction>,
+            TaskPenetrometerGoal,
+            TaskPenetrometerResultConstPtr,
+            TaskPenetrometerFeedbackConstPtr>
+    (opname, m_taskPenetrometerClient, goal, id,
+     default_action_active_cb (opname),
+     default_action_feedback_cb<TaskPenetrometerFeedbackConstPtr> (opname),
+     default_action_done_cb<TaskPenetrometerResultConstPtr> (opname));
+}
+
 void OwlatInterface::owlatTaskScoop (int frame, bool relative,
                                      const vector<double>& point,
                                      const vector<double>& normal, int id)
 {
-  if (! markOperationRunning (Name_TaskPSP, id)) return;
+  if (! markOperationRunning (Name_OwlatTaskScoop, id)) return;
   thread action_thread (&OwlatInterface::owlatTaskScoopAction,
                         this, frame, relative, point, normal,
                         id);

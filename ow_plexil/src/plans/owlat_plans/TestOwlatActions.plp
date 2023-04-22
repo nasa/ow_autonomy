@@ -40,9 +40,16 @@ TestOwlatActions:
                        Normal = #(0 0 -1 ),
                        MaxDepth = 0.3,
                        MaxForce = 10);
-
-
   LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=4); // Cone Penetrometer
+  LibraryCall TaskPenetrometer (Frame = 1,
+                                Relative = false,
+                                Point = #(0 0 0.43),
+                                Normal = #(0 0 -1),
+                                MaxDepth = 0.3,
+                                MaxForce = 10);
+  LibraryCall ArmUnstow();
+  
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
   LibraryCall OwlatArmMoveJointsGuarded(Relative=true,

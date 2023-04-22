@@ -15,6 +15,7 @@
 #include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owl_msgs/ArmSetToolAction.h>
 #include <owl_msgs/TaskPSPAction.h>
+#include <owl_msgs/TaskPenetrometerAction.h>
 
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
@@ -39,6 +40,8 @@ using ArmSetToolActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
 using TaskPSPActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskPSPAction>;
+using TaskPenetrometerActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskPenetrometerAction>;
 
 using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
@@ -87,9 +90,16 @@ class OwlatInterface : public LanderInterface
                           double torque_threshold, int id);
   void armSetTool (int tool, int id);
   void armTareFTSensor (int id);
-  void taskPSP (int frame, bool relative, const std::vector<double>& point,
-                     const std::vector<double>& normal, double max_depth,
-                     double max_force, int id);
+  void taskPSP (int frame, bool relative,
+                const std::vector<double>& point,
+                const std::vector<double>& normal,
+                double max_depth, double max_force,
+                int id);
+  void taskPenetrometer (int frame, bool relative,
+                         const std::vector<double>& point,
+                         const std::vector<double>& normal,
+                         double max_depth, double max_force,
+                         int id);
   void owlatTaskScoop (int frame, bool relative, const std::vector<double>& point,
                        const std::vector<double>& normal, int id);
 
@@ -130,9 +140,14 @@ class OwlatInterface : public LanderInterface
                                 double torque_threshold, int id);
   void armSetToolAction (int tool, int id);
   void taskPSPAction (int frame, bool relative,
-                           const std::vector<double>& point,
-                           const std::vector<double>& normal, double max_depth,
-                           double max_force, int id);
+                      const std::vector<double>& point,
+                      const std::vector<double>& normal,
+                      double max_depth, double max_force,
+                      int id);
+  void taskPenetrometerAction (int frame, bool relative,
+                               const std::vector<double>& point,
+                               const std::vector<double>& normal,
+                               double max_depth, double max_force, int id);
   void owlatTaskScoopAction (int frame, bool relative,
                              const std::vector<double>& point,
                              const std::vector<double>& normal, int id);
@@ -161,6 +176,7 @@ class OwlatInterface : public LanderInterface
   std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
   std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<TaskPSPActionClient> m_taskPSPClient;
+  std::unique_ptr<TaskPenetrometerActionClient> m_taskPenetrometerClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
 
   // Member variables

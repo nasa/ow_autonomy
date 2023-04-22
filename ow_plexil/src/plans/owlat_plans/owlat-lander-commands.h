@@ -50,4 +50,7 @@ Command owlat_task_shear_bevameter(Integer frame,
 Command task_psp (Integer frame, Boolean relative, Real point[3],
 		  Real normal[3], Real max_depth, Real max_force);
 
+Command task_penetrometer (Integer frame, Boolean relative, Real point[3],
+                           Real normal[3], Real max_depth, Real max_force);
+
 #endif

@@ -45,13 +45,6 @@ LibraryAction OwlatTaskDropoff(In Integer Frame,
                                In Boolean Relative,
                                In Real Point[3]);
 
-LibraryAction OwlatTaskPSP(In Integer Frame,
-                           In Boolean Relative,
-                           In Real Point[3],
-                           In Real Normal[3],
-                           In Real MaxDepth,
-                           In Real MaxForce);
-
 LibraryAction OwlatTaskScoop(In Integer Frame,
                              In Boolean Relative,
                              In Real Point[3],
@@ -74,6 +67,13 @@ LibraryAction TaskPSP (In Integer Frame,
 		       In Real Normal[3],
 		       In Real MaxDepth,
 		       In Real MaxForce);
+
+LibraryAction TaskPenetrometer (In Integer Frame,
+                                In Boolean Relative,
+                                In Real Point[3],
+                                In Real Normal[3],
+                                In Real MaxDepth,
+                                In Real MaxForce);
 
 
 // Telemetry
