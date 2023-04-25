@@ -122,6 +122,35 @@ static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void task_shear_bevameter (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  double max_torque, preload;
+  vector<double> const *point_vector = nullptr;
+  vector<double> const *normal_vector = nullptr;
+  RealArray const *point = nullptr;
+  RealArray const *normal = nullptr;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValuePointer(point);
+  args[3].getValuePointer(normal);
+  args[4].getValue(preload);
+  args[5].getValue(max_torque);
+  point->getContentsVector(point_vector);
+  normal->getContentsVector(normal_vector);
+  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwlatInterface::instance()->taskShearBevameter (frame,
+                                                  relative,
+                                                  *point_vector,
+                                                  *normal_vector,
+                                                  preload,
+                                                  max_torque,
+                                                  CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 static void task_p (bool psp, Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
@@ -331,6 +360,8 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("owlat_task_scoop", owlat_task_scoop);
   g_configuration->registerCommandHandler("task_psp", task_psp);
   g_configuration->registerCommandHandler("task_penetrometer", task_penetrometer);
+  g_configuration->registerCommandHandler("task_shear_bevameter",
+                                          task_shear_bevameter);
 
   // Telemetry
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);

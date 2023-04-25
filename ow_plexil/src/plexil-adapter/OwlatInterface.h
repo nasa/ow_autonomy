@@ -15,6 +15,7 @@
 #include <owl_msgs/ArmTareFTSensorAction.h>
 #include <owl_msgs/ArmSetToolAction.h>
 #include <owl_msgs/TaskPSPAction.h>
+#include <owl_msgs/TaskShearBevameterAction.h>
 #include <owl_msgs/TaskPenetrometerAction.h>
 
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
@@ -40,6 +41,8 @@ using ArmSetToolActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
 using TaskPSPActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskPSPAction>;
+using TaskShearBevameterActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskShearBevameterAction>;
 using TaskPenetrometerActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskPenetrometerAction>;
 
@@ -100,6 +103,11 @@ class OwlatInterface : public LanderInterface
                          const std::vector<double>& normal,
                          double max_depth, double max_force,
                          int id);
+  void taskShearBevameter (int frame, bool relative,
+                           const std::vector<double>& point,
+                           const std::vector<double>& normal,
+                           double preload, double max_torque,
+                           int id);
   void owlatTaskScoop (int frame, bool relative, const std::vector<double>& point,
                        const std::vector<double>& normal, int id);
 
@@ -144,6 +152,11 @@ class OwlatInterface : public LanderInterface
                       const std::vector<double>& normal,
                       double max_depth, double max_force,
                       int id);
+  void taskShearBevameterAction (int frame, bool relative,
+                                 const std::vector<double>& point,
+                                 const std::vector<double>& normal,
+                                 double preload, double max_torque,
+                                 int id);
   void taskPenetrometerAction (int frame, bool relative,
                                const std::vector<double>& point,
                                const std::vector<double>& normal,
@@ -176,6 +189,7 @@ class OwlatInterface : public LanderInterface
   std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
   std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<TaskPSPActionClient> m_taskPSPClient;
+  std::unique_ptr<TaskShearBevameterActionClient> m_taskShearBevameterClient;
   std::unique_ptr<TaskPenetrometerActionClient> m_taskPenetrometerClient;
   std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
 

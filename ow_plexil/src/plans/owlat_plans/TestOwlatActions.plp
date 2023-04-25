@@ -32,24 +32,38 @@ TestOwlatActions:
                               Overdrive = 0,
                               ForceThreshold = 5,
                               TorqueThreshold = 1);
+
+  // Pressure Sinkage Plate test
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=1); // Pressure Sinkage Plate
+  LibraryCall ArmSetTool(Tool=1);
   LibraryCall TaskPSP (Frame = 1,
                        Relative = false,
                        Point = #(0 0 0.5 ),
                        Normal = #(0 0 -1 ),
                        MaxDepth = 0.3,
                        MaxForce = 10);
+
+  // Cone Penetrometer test
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=4); // Cone Penetrometer
+  LibraryCall ArmSetTool(Tool=4);
   LibraryCall TaskPenetrometer (Frame = 1,
                                 Relative = false,
                                 Point = #(0 0 0.43),
                                 Normal = #(0 0 -1),
                                 MaxDepth = 0.3,
                                 MaxForce = 10);
+
+  // Shear Bevameter test
   LibraryCall ArmUnstow();
-  
+  LibraryCall ArmSetTool(Tool=2);
+  LibraryCall TaskShearBevameter (Frame = 1,
+                                  Relative = false,
+                                  Point = #(0 0 0.43),
+                                  Normal = #(0 0 -1),
+                                  Preload = 5.0,
+                                  MaxTorque = 0.1);
+
+  LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
   LibraryCall OwlatArmMoveJointsGuarded(Relative=true,

@@ -25,6 +25,7 @@ const string Name_ArmFindSurface = "ArmFindSurface";
 const string Name_Tare = "ArmTareFTSensor";
 const string Name_SetTool =       "ArmSetTool";
 const string Name_TaskPSP =          "TaskPSP";
+const string Name_TaskShearBevameter =          "TaskShearBevameter";
 const string Name_TaskPenetrometer =          "TaskPenetrometer";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
@@ -45,6 +46,7 @@ static vector<string> LanderOpNames = {
   Name_SetTool,
   Name_Tare,
   Name_TaskPSP,
+  Name_TaskShearBevameter,
   Name_TaskPenetrometer,
   Name_OwlatTaskScoop
 };
@@ -151,6 +153,8 @@ void OwlatInterface::initialize()
       make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
     m_taskPSPClient =
       make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
+    m_taskShearBevameterClient =
+      make_unique<TaskShearBevameterActionClient>(Name_TaskShearBevameter, true);
     m_taskPenetrometerClient =
       make_unique<TaskPenetrometerActionClient>(Name_TaskPenetrometer, true);
     m_owlatTaskScoopClient =
@@ -183,9 +187,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("ArmTareFTSensor action server did not connect!");
     }
-    if (! m_taskPSPClient->waitForServer
+    if (! m_taskShearBevameterClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskPSP action server did not connect!");
+      ROS_ERROR ("TaskShearBevameter action server did not connect!");
     }
     if (! m_taskPenetrometerClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
@@ -292,7 +296,7 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative,
   for(int i = 0; i < goal.angles.size(); i++){
     goal.angles[i] = angles[i];
   }
-  string opname = Name_OwlatArmMoveJoints;  // shorter version
+  string opname = Name_OwlatArmMoveJoints;
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTSAction>,
             ARM_MOVE_JOINTSGoal,
@@ -334,7 +338,7 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmMoveJointsGuarded;  // shorter version
+  string opname = Name_OwlatArmMoveJointsGuarded;
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTS_GUARDEDAction>,
             ARM_MOVE_JOINTS_GUARDEDGoal,
@@ -380,7 +384,7 @@ void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmPlaceTool;  // shorter version
+  string opname = Name_OwlatArmPlaceTool;
 
   runAction<actionlib::SimpleActionClient<ARM_PLACE_TOOLAction>,
             ARM_PLACE_TOOLGoal,
@@ -427,6 +431,22 @@ void OwlatInterface::armTareFTSensor (int id)
   action_thread.detach();
 }
 
+void OwlatInterface::taskShearBevameter (int frame,
+                                         bool relative,
+                                         const std::vector<double>& point,
+                                         const std::vector<double>& normal,
+                                         double preload,
+                                         double max_torque,
+                                         int id)
+{
+  if (! markOperationRunning (Name_TaskShearBevameter, id)) return;
+  thread action_thread (&OwlatInterface::taskShearBevameterAction,
+                        this, frame, relative, point, normal,
+                        preload, max_torque, id);
+  action_thread.detach();
+}
+
+
 void OwlatInterface::taskPSP (int frame, bool relative,
                               const vector<double>& point,
                               const vector<double>& normal,
@@ -470,7 +490,7 @@ void OwlatInterface::taskPSPAction (int frame,
   }
   goal.max_depth = max_depth;
   goal.max_force = max_force;
-  string opname = Name_TaskPSP;  // shorter version
+  string opname = Name_TaskPSP;
 
   runAction<actionlib::SimpleActionClient<TaskPSPAction>,
             TaskPSPGoal,
@@ -481,6 +501,36 @@ void OwlatInterface::taskPSPAction (int frame,
      default_action_feedback_cb<TaskPSPFeedbackConstPtr> (opname),
      default_action_done_cb<TaskPSPResultConstPtr> (opname));
 }
+
+void OwlatInterface::taskShearBevameterAction (int frame,
+                                               bool relative,
+                                               const std::vector<double>& point,
+                                               const std::vector<double>& normal,
+                                               double preload,
+                                               double max_torque,
+                                               int id)
+{
+  TaskShearBevameterGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i];
+    goal.normal[i] = normal[i];
+  }
+  goal.preload = preload;
+  goal.max_torque = max_torque;
+  string opname = Name_TaskShearBevameter;
+
+  runAction<actionlib::SimpleActionClient<TaskShearBevameterAction>,
+            TaskShearBevameterGoal,
+            TaskShearBevameterResultConstPtr,
+            TaskShearBevameterFeedbackConstPtr>
+    (opname, m_taskShearBevameterClient, goal, id,
+     default_action_active_cb (opname),
+     default_action_feedback_cb<TaskShearBevameterFeedbackConstPtr> (opname),
+     default_action_done_cb<TaskShearBevameterResultConstPtr> (opname));
+}
+
 
 void OwlatInterface::taskPenetrometerAction (int frame,
                                              bool relative,
@@ -499,7 +549,7 @@ void OwlatInterface::taskPenetrometerAction (int frame,
   }
   goal.max_depth = max_depth;
   goal.max_force = max_force;
-  string opname = Name_TaskPenetrometer;  // shorter version
+  string opname = Name_TaskPenetrometer;
 
   runAction<actionlib::SimpleActionClient<TaskPenetrometerAction>,
             TaskPenetrometerGoal,
@@ -533,7 +583,7 @@ void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
     goal.point[i] = point[i];
     goal.normal[i] = normal[i];
   }
-  string opname = Name_OwlatTaskScoop;  // shorter version
+  string opname = Name_OwlatTaskScoop;
 
   runAction<actionlib::SimpleActionClient<TASK_SCOOPAction>,
             TASK_SCOOPGoal,

@@ -68,6 +68,13 @@ LibraryAction TaskPSP (In Integer Frame,
 		       In Real MaxDepth,
 		       In Real MaxForce);
 
+LibraryAction TaskShearBevameter (In Integer Frame,
+                                  In Boolean Relative,
+                                  In Real Point[3],
+                                  In Real Normal[3],
+                                  In Real Preload,
+                                  In Real MaxTorque);
+
 LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Boolean Relative,
                                 In Real Point[3],

@@ -39,13 +39,12 @@ Command owlat_task_scoop(Integer frame,
 			 Real point[3],
                          Real normal[3]);
 
-// Task for Shear Bevameter, more info in user guide.
-Command owlat_task_shear_bevameter(Integer frame,
-				   Boolean relative,
-				   Real point[3],
-                                   Real normal[3],
-				   Real preload,
-				   Real max_torque);
+Command task_shear_bevameter(Integer frame,
+                             Boolean relative,
+                             Real point[3],
+                             Real normal[3],
+                             Real preload,
+                             Real max_torque);
 
 Command task_psp (Integer frame, Boolean relative, Real point[3],
 		  Real normal[3], Real max_depth, Real max_force);
