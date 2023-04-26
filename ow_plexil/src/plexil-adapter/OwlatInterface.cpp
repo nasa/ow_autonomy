@@ -27,12 +27,13 @@ const string Name_SetTool =       "ArmSetTool";
 const string Name_TaskPSP =          "TaskPSP";
 const string Name_TaskShearBevameter =          "TaskShearBevameter";
 const string Name_TaskPenetrometer =          "TaskPenetrometer";
+const string Name_TaskScoopCircular =        "TaskScoopCircular";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
 const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
-const string Name_OwlatTaskScoop =        "/owlat_sim/TASK_SCOOP";
+
 const string Name_Discard = "TaskDiscardSample";
 
 const size_t OwlatJoints = 6;
@@ -48,7 +49,7 @@ static vector<string> LanderOpNames = {
   Name_TaskPSP,
   Name_TaskShearBevameter,
   Name_TaskPenetrometer,
-  Name_OwlatTaskScoop
+  Name_TaskScoopCircular
 };
 
 OwlatInterface* OwlatInterface::instance ()
@@ -157,8 +158,8 @@ void OwlatInterface::initialize()
       make_unique<TaskShearBevameterActionClient>(Name_TaskShearBevameter, true);
     m_taskPenetrometerClient =
       make_unique<TaskPenetrometerActionClient>(Name_TaskPenetrometer, true);
-    m_owlatTaskScoopClient =
-      make_unique<OwlatTaskScoopActionClient>(Name_OwlatTaskScoop, true);
+    m_taskScoopCircularClient =
+      make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
 
     // Connect to action servers
     connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
@@ -195,9 +196,9 @@ void OwlatInterface::initialize()
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("TaskPenetrometer action server did not connect!");
     }
-    if (! m_owlatTaskScoopClient->waitForServer
+    if (! m_taskScoopCircularClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT TASK_SCOOP action server did not connect!");
+      ROS_ERROR ("TaskScoopCircular action server did not connect!");
     }
   }
 }
@@ -561,38 +562,44 @@ void OwlatInterface::taskPenetrometerAction (int frame,
      default_action_done_cb<TaskPenetrometerResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatTaskScoop (int frame, bool relative,
-                                     const vector<double>& point,
-                                     const vector<double>& normal, int id)
+void OwlatInterface::taskScoopCircular (int frame, bool relative,
+                                        const vector<double>& point,
+                                        const vector<double>& normal,
+                                        double depth, double scoop_angle,
+                                        int id)
 {
-  if (! markOperationRunning (Name_OwlatTaskScoop, id)) return;
-  thread action_thread (&OwlatInterface::owlatTaskScoopAction,
-                        this, frame, relative, point, normal,
+  if (! markOperationRunning (Name_TaskScoopCircular, id)) return;
+  thread action_thread (&OwlatInterface::taskScoopCircularAction,
+                        this, frame, relative, point, normal, depth, scoop_angle,
                         id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatTaskScoopAction (int frame, bool relative,
-                                           const vector<double>& point,
-                                           const vector<double>& normal, int id)
+void OwlatInterface::taskScoopCircularAction (int frame, bool relative,
+                                              const vector<double>& point,
+                                              const vector<double>& normal,
+                                              double depth, double scoop_angle,
+                                              int id)
 {
-  TASK_SCOOPGoal goal;
-  goal.frame.value = frame;
+  TaskScoopCircularGoal goal;
+  goal.frame = frame;
   goal.relative = relative;
   for(int i = 0; i < goal.point.size(); i++){
     goal.point[i] = point[i];
     goal.normal[i] = normal[i];
   }
-  string opname = Name_OwlatTaskScoop;
+  goal.depth = depth;
+  goal.scoop_angle = scoop_angle;
+  string opname = Name_TaskScoopCircular;
 
-  runAction<actionlib::SimpleActionClient<TASK_SCOOPAction>,
-            TASK_SCOOPGoal,
-            TASK_SCOOPResultConstPtr,
-            TASK_SCOOPFeedbackConstPtr>
-    (opname, m_owlatTaskScoopClient, goal, id,
+  runAction<actionlib::SimpleActionClient<TaskScoopCircularAction>,
+            TaskScoopCircularGoal,
+            TaskScoopCircularResultConstPtr,
+            TaskScoopCircularFeedbackConstPtr>
+    (opname, m_taskScoopCircularClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<TASK_SCOOPFeedbackConstPtr> (opname),
-     default_action_done_cb<TASK_SCOOPResultConstPtr> (opname));
+     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (opname),
+     default_action_done_cb<TaskScoopCircularResultConstPtr> (opname));
 }
 
 void OwlatInterface::armJointAnglesCallback

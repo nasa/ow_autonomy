@@ -1,0 +1,23 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+Command task_scoop_circular (Integer frame,
+                             Boolean relative,
+                             Real point[3],
+                             Real normal[3],
+                             Real depth,
+                             Real scoop_angle);
+
+OwlatTaskScoopCircular:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Point[3];
+  In Real Normal[3];
+  In Real Depth;
+  In Real ScoopAngle;
+
+  SynchronousCommand task_scoop_circular (Frame, Relative, Point, Normal,
+                                          Depth, ScoopAngle);
+}

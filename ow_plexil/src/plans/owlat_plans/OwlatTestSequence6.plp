@@ -2,6 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// NOTE: this plan is either deprecated, or needs to be updated to use
+// TaskScoopCircular (or linear, or both).
+
 // This Test Sequence is found in the User Guide under section 4.15.1
 // It uses Test Sequence 2 for setup and uses TASK_SCOOP
 
@@ -33,7 +36,7 @@ OwlatTestSequence6:
 
   // Scoops ground
   log_info("Performing scoop operation with TASK_SCOOP.");
-  LibraryCall OwlatTaskScoop(Frame=frame, Relative=relative, Point=point, Normal=normal);
+  //  LibraryCall OwlatTaskScoop(Frame=frame, Relative=relative, Point=point, Normal=normal);
 
   LibraryCall PrintNodeFinish(NodeName="OwlatTestSequence6");
 }

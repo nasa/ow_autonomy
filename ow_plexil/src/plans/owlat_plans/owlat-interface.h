@@ -45,10 +45,12 @@ LibraryAction OwlatTaskDropoff(In Integer Frame,
                                In Boolean Relative,
                                In Real Point[3]);
 
-LibraryAction OwlatTaskScoop(In Integer Frame,
-                             In Boolean Relative,
-                             In Real Point[3],
-                             In Real Normal[3]);
+LibraryAction OwlatTaskScoopCircular (In Integer Frame,
+                                      In Boolean Relative,
+                                      In Real Point[3],
+                                      In Real Normal[3],
+                                      In Real Depth,
+                                      In Real ScoopAngle);
 
 LibraryAction OwlatTaskShearBevameter(In Integer Frame,
                                       In Boolean Relative,
