@@ -55,14 +55,14 @@ TestOwlatActions:
 
   // Fails with goal error: cannot achieve given torque.
   // Shear Bevameter test
-  //  LibraryCall ArmUnstow();
-  //  LibraryCall ArmSetTool(Tool=2);
-  //  LibraryCall TaskShearBevameter (Frame = 1,
-  //                                  Relative = false,
-  //                                  Point = #(0 0 0.43),
-  //                                  Normal = #(0 0 -1),
-  //                                  Preload = 5.0,
-  //                                  MaxTorque = 0.1);
+   LibraryCall ArmUnstow();
+   LibraryCall ArmSetTool(Tool=2);
+   LibraryCall TaskShearBevameter (Frame = 1,
+                                   Relative = false,
+                                   Point = #(0 0 0.43),
+                                   Normal = #(0 0 -1),
+                                   Preload = 5.0,
+                                   MaxTorque = 0.05);  // 0.1 not achievable
 
   // Task Scoop Circular
   LibraryCall ArmUnstow();
@@ -82,6 +82,8 @@ TestOwlatActions:
                                     Normal = #(0 0 -1),
                                     Depth = 0.025,
                                     Length = 0.1);
+
+  LibraryCall TaskDeliverSample();
 
   LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);

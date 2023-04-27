@@ -46,8 +46,6 @@ Command scoop_linear (Integer frame,
                       Real depth,
                       Real length);
 
-Command deliver_sample ();
-
 Command discard_sample (Integer frame,
                         Boolean relative,
                         Real x,

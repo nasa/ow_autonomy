@@ -69,7 +69,6 @@ const string Op_LightSetIntensity       = "LightSetIntensity";
 const string Op_Pan                     = "Pan";
 const string Op_PanTilt                 = "PanTiltMoveJoints";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesian";
-const string Op_TaskDeliverSample       = "TaskDeliverSample";
 const string Op_TaskDiscardSample       = "TaskDiscardSample";
 const string Op_TaskScoopCircular       = "TaskScoopCircular";
 const string Op_TaskScoopLinear         = "TaskScoopLinear";
@@ -80,7 +79,6 @@ static vector<string> LanderOpNames = {
   Op_GuardedMove,
   Op_ArmMoveJoints,
   Op_ArmMoveJointsGuarded,
-  Op_TaskDeliverSample,
   Op_Pan,
   Op_Tilt,
   Op_PanTilt,
@@ -479,8 +477,6 @@ void OwInterface::initialize()
       make_unique<ArmMoveJointsGuardedActionClient>(Op_ArmMoveJointsGuarded, true);
     m_grindClient =
       make_unique<TaskGrindActionClient>(Op_Grind, true);
-    m_taskDeliverSampleClient =
-      make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
     m_scoopCircularClient =
       make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
     m_scoopLinearClient =
@@ -593,8 +589,6 @@ void OwInterface::initialize()
                          "/TaskScoopCircular/status");
     connectActionServer (m_scoopLinearClient, Op_TaskScoopLinear,
                          "/TaskScoopLinear/status");
-    connectActionServer (m_taskDeliverSampleClient, Op_TaskDeliverSample,
-                         "/TaskDeliverSample/status");
     connectActionServer (m_discardClient, Op_TaskDiscardSample,
                          "/TaskDiscardSample/status");
     connectActionServer (m_cameraCaptureClient, Op_CameraCapture,
@@ -790,29 +784,6 @@ void OwInterface::dockIngestSampleAction (int id)
      default_action_active_cb (Op_Ingest),
      default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Op_Ingest),
      default_action_done_cb<DockIngestSampleResultConstPtr> (Op_Ingest));
-}
-
-void OwInterface::taskDeliverSample (int id)
-{
-  if (! markOperationRunning (Op_TaskDeliverSample, id)) return;
-  thread action_thread (&OwInterface::taskDeliverSampleAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::taskDeliverSampleAction (int id)
-{
-  TaskDeliverSampleGoal goal;
-
-  ROS_INFO ("Starting TaskDeliverSample()");
-
-  runAction<actionlib::SimpleActionClient<TaskDeliverSampleAction>,
-            TaskDeliverSampleGoal,
-            TaskDeliverSampleResultConstPtr,
-            TaskDeliverSampleFeedbackConstPtr>
-    (Op_TaskDeliverSample, m_taskDeliverSampleClient, goal, id,
-     default_action_active_cb (Op_TaskDeliverSample),
-     default_action_feedback_cb<TaskDeliverSampleFeedbackConstPtr> (Op_TaskDeliverSample),
-     default_action_done_cb<TaskDeliverSampleResultConstPtr> (Op_TaskDeliverSample));
 }
 
 void OwInterface::discardSample (int frame, bool relative,

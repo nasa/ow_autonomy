@@ -63,6 +63,8 @@ LibraryAction ArmFindSurface (In Integer Frame,
                               In Real ForceThreshold,
                               In Real TorqueThreshold);
 
+LibraryAction TaskDeliverSample ();
+
 // Lander queries and telemetry
 
 // Antenna

@@ -76,8 +76,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
-LibraryAction TaskDeliverSample ();
-
 LibraryAction TaskDiscardSample (In Integer Frame,
                                  In Boolean Relative,
                                  In Real X,

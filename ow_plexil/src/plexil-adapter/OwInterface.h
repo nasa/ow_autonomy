@@ -13,7 +13,6 @@
 
 // owl_msgs (lander commands)
 #include <owl_msgs/ArmFindSurfaceAction.h>
-#include <owl_msgs/TaskDeliverSampleAction.h>
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
@@ -50,8 +49,6 @@ using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 using ArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
-using TaskDeliverSampleActionClient =
-  actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
@@ -132,7 +129,6 @@ class OwInterface : public LanderInterface
   void armStop (int id);
   void armStow (int id);
   void armUnstow (int id);
-  void taskDeliverSample (int id);
   void discardSample (int frame, bool relative, double x, double y, double z,
                       double height, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
@@ -184,7 +180,6 @@ class OwInterface : public LanderInterface
                                    int id);
   void identifySampleLocationAction (int num_images,
                                      const std::string& filter_type, int id);
-  void taskDeliverSampleAction (int id);
   void panAction (double degrees, int id);
   void tiltAction (double degrees, int id);
   void panTiltAction (double pan_degrees, double tilt_degrees, int id);
@@ -307,7 +302,6 @@ class OwInterface : public LanderInterface
   std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
   std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
   std::unique_ptr<TaskGrindActionClient> m_grindClient;
-  std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanActionClient> m_panClient;
   std::unique_ptr<TiltActionClient> m_tiltClient;
   std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltClient;

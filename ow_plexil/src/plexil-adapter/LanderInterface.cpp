@@ -34,6 +34,7 @@ const string Name_ArmMoveJoint =     "ArmMoveJoint";
 const string Name_ArmStop = "ArmStop";
 const string Name_ArmStow = "ArmStow";
 const string Name_ArmUnstow = "ArmUnstow";
+const string Name_TaskDeliverSample       = "TaskDeliverSample";
 
 static vector<string> LanderOpNames = {
   Name_ArmMoveCartesian,
@@ -41,7 +42,8 @@ static vector<string> LanderOpNames = {
   Name_ArmMoveJoint,
   Name_ArmStop,
   Name_ArmStow,
-  Name_ArmUnstow
+  Name_ArmUnstow,
+  Name_TaskDeliverSample
 };
 
 void LanderInterface::initialize()
@@ -71,6 +73,8 @@ void LanderInterface::initialize()
       make_unique<ArmStowActionClient>(Name_ArmStow, true);
     m_armUnstowClient =
       make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
+    m_taskDeliverSampleClient =
+      make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
 
     // Connect to action servers
     connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
@@ -82,11 +86,28 @@ void LanderInterface::initialize()
     connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
     connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
     connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
+    connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
+                         "/TaskDeliverSample/status");
+
   }
 }
 
 
 /////////////////////////////// Unified Lander Interface ////////////////////////
+
+void LanderInterface::taskDeliverSample (int id)
+{
+  if (! markOperationRunning (Name_TaskDeliverSample, id)) return;
+  thread action_thread (&LanderInterface::nullaryAction<
+                        TaskDeliverSampleActionClient,
+                        TaskDeliverSampleGoal,
+                        TaskDeliverSampleResultConstPtr,
+                        TaskDeliverSampleFeedbackConstPtr>,
+                        this, id, Name_TaskDeliverSample,
+                        std::ref(m_taskDeliverSampleClient));
+  action_thread.detach();
+}
+
 
 void LanderInterface::armMoveCartesian (int frame,
                                        bool relative,

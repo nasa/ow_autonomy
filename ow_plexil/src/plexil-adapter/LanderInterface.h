@@ -21,6 +21,7 @@
 #include <owl_msgs/ArmStopAction.h>
 #include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
+#include <owl_msgs/TaskDeliverSampleAction.h>
 
 // owl_msgs - telemetry
 #include <owl_msgs/PanTiltPosition.h>
@@ -54,6 +55,8 @@ using ArmStowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmStowAction>;
 using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
+using TaskDeliverSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 
 
 class LanderInterface : public PlexilInterface
@@ -91,6 +94,7 @@ class LanderInterface : public PlexilInterface
   void armStop (int id);
   void armStow (int id);
   void armUnstow (int id);
+  void taskDeliverSample (int id);
 
  private:
   // Actions
@@ -114,6 +118,7 @@ class LanderInterface : public PlexilInterface
   std::unique_ptr<ArmStopActionClient> m_armStopClient;
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
+  std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
 };
 
 #endif

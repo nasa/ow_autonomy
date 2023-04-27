@@ -147,6 +147,14 @@ static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void task_deliver_sample (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  LanderAdapter::s_interface->taskDeliverSample (CommandId);
+  acknowledge_command_sent(*cr);
+}
+
+
 LanderInterface* LanderAdapter::s_interface = NULL;
 
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
@@ -177,6 +185,9 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_stow", arm_stow);
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
+  g_configuration->registerCommandHandler("task_deliver_sample",
+                                          task_deliver_sample);
+
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

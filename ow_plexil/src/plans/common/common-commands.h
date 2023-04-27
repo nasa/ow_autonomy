@@ -55,4 +55,7 @@ Command arm_find_surface (Integer frame,
                           Real force_threshold,
                           Real torque_threshold);
 
+Command task_deliver_sample ();
+
+
 #endif

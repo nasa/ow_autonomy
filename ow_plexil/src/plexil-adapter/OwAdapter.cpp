@@ -315,13 +315,6 @@ static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->taskDeliverSample (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
 static void discard_sample (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
@@ -522,7 +515,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
   g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
-  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
   g_configuration->registerCommandHandler("discard_sample", discard_sample);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
