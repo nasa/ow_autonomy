@@ -32,6 +32,13 @@ Command owlat_arm_place_tool(Integer Frame,
 // Perform scoop dropoff over target point in a given frame.
 Command owlat_task_dropoff(Integer frame, Boolean relative, Real point[3]);
 
+Command task_scoop_linear (Integer frame,
+                           Boolean relative,
+                           Real point[3],
+                           Real normal[3],
+                           Real depth,
+                           Real length);
+
 Command task_scoop_circular (Integer frame,
                              Boolean relative,
                              Real point[3],

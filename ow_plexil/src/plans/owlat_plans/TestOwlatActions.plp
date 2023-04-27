@@ -71,9 +71,19 @@ TestOwlatActions:
                                       Relative = false,
                                       Point = #(0 0 0.43),
                                       Normal = #(0 0 -1),
-                                      Depth = 0.025,
+                                      Depth = 0.01, // 0.025 caused goal error
                                       ScoopAngle = 1.57);
 
+  // Task Scoop Linear
+  LibraryCall ArmUnstow();
+  LibraryCall OwlatTaskScoopLinear (Frame = 1,
+                                    Relative = false,
+                                    Point = #(0 0 0.43),
+                                    Normal = #(0 0 -1),
+                                    Depth = 0.025,
+                                    Length = 0.1);
+
+  LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
   LibraryCall OwlatArmMoveJointsGuarded(Relative=true,

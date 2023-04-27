@@ -59,6 +59,7 @@ class PlexilInterface
        default_action_feedback_cb<FeedbackPtr> (opname),
        default_action_done_cb<ResultPtr> (opname));
   }
+  
   template<typename T>
   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
 			    const std::string& name,

@@ -18,6 +18,7 @@
 #include <owl_msgs/TaskShearBevameterAction.h>
 #include <owl_msgs/TaskPenetrometerAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
+#include <owl_msgs/TaskScoopLinearAction.h>
 
 #include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
 #include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
@@ -47,6 +48,8 @@ using TaskPenetrometerActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskPenetrometerAction>;
 using TaskScoopCircularActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
+using TaskScoopLinearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
 
 using OwlatArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
@@ -108,11 +111,18 @@ class OwlatInterface : public LanderInterface
                            const std::vector<double>& normal,
                            double preload, double max_torque,
                            int id);
-  void taskScoopCircular (int frame, bool relative,
+  void taskScoopCircular (int frame,
+                          bool relative,
                           const std::vector<double>& point,
                           const std::vector<double>& normal,
                           double depth, double scoop_angle,
                           int id);
+  void taskScoopLinear (int frame,
+                        bool relative,
+                        const std::vector<double>& point,
+                        const std::vector<double>& normal,
+                        double depth, double scoop_angle,
+                        int id);
 
   // Lookups
   PLEXIL::Value getArmJointAngles() const;
@@ -164,6 +174,11 @@ class OwlatInterface : public LanderInterface
                                const std::vector<double>& point,
                                const std::vector<double>& normal,
                                double max_depth, double max_force, int id);
+  void taskScoopLinearAction (int frame, bool relative,
+                              const std::vector<double>& point,
+                              const std::vector<double>& normal,
+                              double depth, double length,
+                              int id);
   void taskScoopCircularAction (int frame, bool relative,
                                 const std::vector<double>& point,
                                 const std::vector<double>& normal,
@@ -197,6 +212,7 @@ class OwlatInterface : public LanderInterface
   std::unique_ptr<TaskShearBevameterActionClient> m_taskShearBevameterClient;
   std::unique_ptr<TaskPenetrometerActionClient> m_taskPenetrometerClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_taskScoopCircularClient;
+  std::unique_ptr<TaskScoopLinearActionClient> m_taskScoopLinearClient;
 
   // Member variables
   std::vector<double> m_arm_joint_angles;

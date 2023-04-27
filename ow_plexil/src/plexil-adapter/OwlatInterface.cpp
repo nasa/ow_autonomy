@@ -28,6 +28,7 @@ const string Name_TaskPSP =          "TaskPSP";
 const string Name_TaskShearBevameter =          "TaskShearBevameter";
 const string Name_TaskPenetrometer =          "TaskPenetrometer";
 const string Name_TaskScoopCircular =        "TaskScoopCircular";
+const string Name_TaskScoopLinear =        "TaskScoopLinear";
 
 const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
@@ -49,7 +50,8 @@ static vector<string> LanderOpNames = {
   Name_TaskPSP,
   Name_TaskShearBevameter,
   Name_TaskPenetrometer,
-  Name_TaskScoopCircular
+  Name_TaskScoopCircular,
+  Name_TaskScoopLinear
 };
 
 OwlatInterface* OwlatInterface::instance ()
@@ -160,6 +162,8 @@ void OwlatInterface::initialize()
       make_unique<TaskPenetrometerActionClient>(Name_TaskPenetrometer, true);
     m_taskScoopCircularClient =
       make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
+    m_taskScoopLinearClient =
+      make_unique<TaskScoopLinearActionClient>(Name_TaskScoopLinear, true);
 
     // Connect to action servers
     connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
@@ -199,6 +203,10 @@ void OwlatInterface::initialize()
     if (! m_taskScoopCircularClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("TaskScoopCircular action server did not connect!");
+    }
+    if (! m_taskScoopLinearClient->waitForServer
+        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+      ROS_ERROR ("TaskScoopLinear action server did not connect!");
     }
   }
 }
@@ -448,10 +456,12 @@ void OwlatInterface::taskShearBevameter (int frame,
 }
 
 
-void OwlatInterface::taskPSP (int frame, bool relative,
+void OwlatInterface::taskPSP (int frame,
+                              bool relative,
                               const vector<double>& point,
                               const vector<double>& normal,
-                              double max_depth, double max_force,
+                              double max_depth,
+                              double max_force,
                               int id)
 {
   if (! markOperationRunning (Name_TaskPSP, id)) return;
@@ -461,11 +471,13 @@ void OwlatInterface::taskPSP (int frame, bool relative,
   action_thread.detach();
 }
 
-void OwlatInterface::taskPenetrometer (int frame, bool relative,
+void OwlatInterface::taskPenetrometer (int frame,
+                                       bool relative,
                                        const vector<double>& point,
                                        const vector<double>& normal,
                                        double max_depth,
-                                       double max_force, int id)
+                                       double max_force,
+                                       int id)
 {
   if (! markOperationRunning (Name_TaskPenetrometer, id)) return;
   thread action_thread (&OwlatInterface::taskPenetrometerAction,
@@ -562,10 +574,12 @@ void OwlatInterface::taskPenetrometerAction (int frame,
      default_action_done_cb<TaskPenetrometerResultConstPtr> (opname));
 }
 
-void OwlatInterface::taskScoopCircular (int frame, bool relative,
+void OwlatInterface::taskScoopCircular (int frame,
+                                        bool relative,
                                         const vector<double>& point,
                                         const vector<double>& normal,
-                                        double depth, double scoop_angle,
+                                        double depth,
+                                        double scoop_angle,
                                         int id)
 {
   if (! markOperationRunning (Name_TaskScoopCircular, id)) return;
@@ -600,6 +614,48 @@ void OwlatInterface::taskScoopCircularAction (int frame, bool relative,
      default_action_active_cb (opname),
      default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (opname),
      default_action_done_cb<TaskScoopCircularResultConstPtr> (opname));
+}
+
+void OwlatInterface::taskScoopLinear (int frame,
+                                        bool relative,
+                                        const vector<double>& point,
+                                        const vector<double>& normal,
+                                        double depth,
+                                        double length,
+                                        int id)
+{
+  if (! markOperationRunning (Name_TaskScoopLinear, id)) return;
+  thread action_thread (&OwlatInterface::taskScoopLinearAction,
+                        this, frame, relative, point, normal, depth, length,
+                        id);
+  action_thread.detach();
+}
+
+void OwlatInterface::taskScoopLinearAction (int frame, bool relative,
+                                              const vector<double>& point,
+                                              const vector<double>& normal,
+                                              double depth, double length,
+                                              int id)
+{
+  TaskScoopLinearGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  for(int i = 0; i < goal.point.size(); i++){
+    goal.point[i] = point[i];
+    goal.normal[i] = normal[i];
+  }
+  goal.depth = depth;
+  goal.length = length;
+  string opname = Name_TaskScoopLinear;
+
+  runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
+            TaskScoopLinearGoal,
+            TaskScoopLinearResultConstPtr,
+            TaskScoopLinearFeedbackConstPtr>
+    (opname, m_taskScoopLinearClient, goal, id,
+     default_action_active_cb (opname),
+     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (opname),
+     default_action_done_cb<TaskScoopLinearResultConstPtr> (opname));
 }
 
 void OwlatInterface::armJointAnglesCallback

@@ -196,11 +196,11 @@ static void task_penetrometer (Command* cmd, AdapterExecInterface* intf)
   task_p (false, cmd, intf);
 }
 
-static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
+static void task_scoop (bool linear, Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
   bool relative;
-  double depth, scoop_angle;
+  double depth, length_or_scoop_angle;
   vector<double> const *point_vector = nullptr;
   vector<double> const *normal_vector = nullptr;
   RealArray const *point = nullptr;
@@ -211,15 +211,34 @@ static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
   args[2].getValuePointer(point);
   args[3].getValuePointer(normal);
   args[4].getValue(depth);
-  args[5].getValue(scoop_angle);
-  //change real array into a vector
+  args[5].getValue(length_or_scoop_angle);
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->taskScoopCircular (frame, relative,
+  if (linear) {
+    OwlatInterface::instance()->taskScoopLinear (frame, relative,
                                                  *point_vector, *normal_vector,
-                                                 depth, scoop_angle, CommandId);
+                                                 depth, length_or_scoop_angle,
+                                                 CommandId);
+  }
+  else {
+    OwlatInterface::instance()->taskScoopCircular (frame, relative,
+                                                   *point_vector, *normal_vector,
+                                                   depth, length_or_scoop_angle,
+                                                   CommandId);
+  }
   acknowledge_command_sent(*cr);
+}
+
+
+static void task_scoop_linear (Command* cmd, AdapterExecInterface* intf)
+{
+  task_scoop (true, cmd, intf);
+}
+
+static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
+{
+  task_scoop (false, cmd, intf);
 }
 
 static void using_owlat (const State&, StateCacheEntry& entry)
@@ -362,6 +381,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerCommandHandler("owlat_arm_place_tool",
                                           owlat_arm_place_tool);
   g_configuration->registerCommandHandler("task_scoop_circular", task_scoop_circular);
+  g_configuration->registerCommandHandler("task_scoop_linear", task_scoop_linear);
   g_configuration->registerCommandHandler("task_psp", task_psp);
   g_configuration->registerCommandHandler("task_penetrometer", task_penetrometer);
   g_configuration->registerCommandHandler("task_shear_bevameter",
