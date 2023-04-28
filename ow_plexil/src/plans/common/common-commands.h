@@ -64,4 +64,7 @@ Command task_discard_sample (Integer frame,
 
 Command pan_tilt_move_joints (Real pan_degrees, Real tilt_degrees);
 
+Command camera_capture ();
+
+
 #endif

@@ -202,6 +202,13 @@ static void pan_tilt_move_joints (Command* cmd, AdapterExecInterface* intf)
   }
 }
 
+static void camera_capture (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  LanderAdapter::s_interface->cameraCapture (CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
@@ -239,6 +246,7 @@ bool LanderAdapter::initialize (LanderInterface* li)
                                           task_discard_sample);
   g_configuration->registerCommandHandler("pan_tilt_move_joints",
                                           pan_tilt_move_joints);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

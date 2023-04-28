@@ -72,6 +72,9 @@ LibraryAction TaskDiscardSample (In Integer Frame,
 
 LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
 
+LibraryAction CameraCapture ();
+
+
 // Lander queries and telemetry
 
 // Antenna

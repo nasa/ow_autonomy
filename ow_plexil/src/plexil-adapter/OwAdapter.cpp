@@ -358,13 +358,6 @@ static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void camera_capture (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->cameraCapture (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
 static void camera_set_exposure (Command* cmd, AdapterExecInterface* intf)
 {
   double exposure_secs;
@@ -463,7 +456,6 @@ bool OwAdapter::initialize()
                                           pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("camera_capture", camera_capture);
   g_configuration->registerCommandHandler("camera_set_exposure",
                                           camera_set_exposure);
   g_configuration->registerCommandHandler("light_set_intensity",

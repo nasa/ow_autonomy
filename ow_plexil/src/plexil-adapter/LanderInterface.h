@@ -23,6 +23,7 @@
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/TaskDeliverSampleAction.h>
 #include <owl_msgs/PanTiltMoveJointsAction.h>
+#include <owl_msgs/CameraCaptureAction.h>
 
 // owl_msgs - telemetry
 #include <owl_msgs/PanTiltPosition.h>
@@ -60,6 +61,8 @@ using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 using PanTiltMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
+using CameraCaptureActionClient =
+  actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 
 class LanderInterface : public PlexilInterface
 {
@@ -107,6 +110,7 @@ class LanderInterface : public PlexilInterface
   void armUnstow (int id);
   void taskDeliverSample (int id);
   void panTiltMoveJoints (double pan_degrees, double tilt_degrees, int id);
+  void cameraCapture (int id);
 
  private:
   // Actions
@@ -133,6 +137,7 @@ class LanderInterface : public PlexilInterface
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltMoveJointsClient;
+  std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
 
 };
 

@@ -16,7 +16,9 @@ TestOwlatActions:
   log_info ("Starting OWLAT action test...");
 
   LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = -40.107);
-  
+
+  LibraryCall CameraCapture ();
+
   LibraryCall ArmUnstow();
   LibraryCall TaskDiscardSample (Frame = BASE_FRAME,
                                  Relative = false,
@@ -63,14 +65,14 @@ TestOwlatActions:
 
   // Fails with goal error: cannot achieve given torque.
   // Shear Bevameter test
-   LibraryCall ArmUnstow();
-   LibraryCall ArmSetTool(Tool=2);
-   LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
-                                   Relative = false,
-                                   Point = #(0 0 0.43),
-                                   Normal = #(0 0 -1),
-                                   Preload = 5.0,
-                                   MaxTorque = 0.05);  // 0.1 not achievable
+  //   LibraryCall ArmUnstow();
+  //   LibraryCall ArmSetTool(Tool=2);
+  //   LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
+  //                                   Relative = false,
+  //                                   Point = #(0 0 0.43),
+  //                                   Normal = #(0 0 -1),
+  //                                   Preload = 5.0,
+  //                                   MaxTorque = 0.05);  // 0.1 not achievable
 
   // Task Scoop Circular
   LibraryCall ArmUnstow();

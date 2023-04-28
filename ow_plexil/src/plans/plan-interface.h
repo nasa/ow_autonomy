@@ -76,7 +76,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Length);
 
 LibraryAction CameraSetExposure (In Real Seconds);
-LibraryAction CameraCapture ();
 
 // Lander queries
 

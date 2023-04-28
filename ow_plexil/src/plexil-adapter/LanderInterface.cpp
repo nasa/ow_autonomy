@@ -28,14 +28,15 @@ using std::string;
 using std::vector;
 using std::make_unique;
 
-const string Name_ArmMoveCartesian = "ArmMoveCartesian";
+const string Name_ArmMoveCartesian        = "ArmMoveCartesian";
 const string Name_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
-const string Name_ArmMoveJoint =     "ArmMoveJoint";
-const string Name_ArmStop = "ArmStop";
-const string Name_ArmStow = "ArmStow";
-const string Name_ArmUnstow = "ArmUnstow";
+const string Name_ArmMoveJoint            = "ArmMoveJoint";
+const string Name_ArmStop                 = "ArmStop";
+const string Name_ArmStow                 = "ArmStow";
+const string Name_ArmUnstow               = "ArmUnstow";
+const string Name_CameraCapture           = "CameraCapture";
+const string Name_PanTiltMoveJoints       = "PanTiltMoveJoints";
 const string Name_TaskDeliverSample       = "TaskDeliverSample";
-const string Name_PanTiltMoveJoints                 = "PanTiltMoveJoints";
 
 static vector<string> LanderOpNames = {
   Name_ArmMoveCartesian,
@@ -44,8 +45,9 @@ static vector<string> LanderOpNames = {
   Name_ArmStop,
   Name_ArmStow,
   Name_ArmUnstow,
-  Name_TaskDeliverSample,
-  Name_PanTiltMoveJoints
+  Name_CameraCapture,
+  Name_PanTiltMoveJoints,
+  Name_TaskDeliverSample
 };
 
 void LanderInterface::initialize()
@@ -62,8 +64,7 @@ void LanderInterface::initialize()
     // Initialize action clients
 
     m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian,
-                                                true);
+      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian, true);
     m_armMoveCartesianGuardedClient =
       make_unique<ArmMoveCartesianGuardedActionClient>
       (Name_ArmMoveCartesianGuarded, true);
@@ -75,12 +76,15 @@ void LanderInterface::initialize()
       make_unique<ArmStowActionClient>(Name_ArmStow, true);
     m_armUnstowClient =
       make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
-    m_taskDeliverSampleClient =
-      make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
+    m_cameraCaptureClient =
+      make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
     m_panTiltMoveJointsClient =
       make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
+    m_taskDeliverSampleClient =
+      make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
 
     // Connect to action servers
+    
     connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
                          "/ArmMoveCartesian/status");
     connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
@@ -93,6 +97,8 @@ void LanderInterface::initialize()
     connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
                          "/TaskDeliverSample/status");
     connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
+    connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
+                         "/CameraCapture/status");
   }
 }
 
@@ -327,4 +333,17 @@ void LanderInterface::panTiltMoveJointsAction (double pan_degrees,
      default_action_active_cb (opname, args.str()),
      default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (opname),
      default_action_done_cb<PanTiltMoveJointsResultConstPtr> (opname));
+}
+
+void LanderInterface::cameraCapture (int id)
+{
+  if (! markOperationRunning (Name_CameraCapture, id)) return;
+  thread action_thread (&LanderInterface::nullaryAction<
+                        CameraCaptureActionClient,
+                        CameraCaptureGoal,
+                        CameraCaptureResultConstPtr,
+                        CameraCaptureFeedbackConstPtr>,
+                        this, id, Name_CameraCapture,
+                        std::ref(m_cameraCaptureClient));
+  action_thread.detach();
 }

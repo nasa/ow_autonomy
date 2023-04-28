@@ -23,7 +23,6 @@
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
-#include <owl_msgs/CameraCaptureAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
@@ -56,8 +55,6 @@ using TaskScoopCircularActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
 using TaskScoopLinearActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
-using CameraCaptureActionClient =
-  actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 using CameraSetExposureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
 using DockIngestSampleActionClient =
@@ -116,7 +113,6 @@ class OwInterface : public LanderInterface
   void pan (double degrees, int id);
   void tilt (double degrees, int id);
   void panTiltCartesian (int frame, double x, double y, double z, int id);
-  void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
   void dockIngestSample (int id);
   void scoopLinear (int frame, bool relative, double x, double y, double z,
@@ -187,7 +183,6 @@ class OwInterface : public LanderInterface
                           double depth, double length, int id);
   void scoopCircularAction (int frame, bool relative, double x, double y, double z,
                             double depth, bool parallel, int id);
-  void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
@@ -302,7 +297,6 @@ class OwInterface : public LanderInterface
   std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
-  std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;

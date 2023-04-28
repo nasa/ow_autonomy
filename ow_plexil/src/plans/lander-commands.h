@@ -13,7 +13,6 @@
 // and the OceanWATERS-specific ones that follow.
 
 Command camera_set_exposure (Real seconds);
-Command camera_capture ();
 
 Command pan (Real degrees);
 Command tilt (Real degrees);
