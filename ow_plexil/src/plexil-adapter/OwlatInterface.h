@@ -79,7 +79,9 @@ class OwlatInterface : public LanderInterface
                        double force_threshold,
                        double torque_threshold,
                        int id) override;
-  void taskDiscard (int id);
+  void taskDiscardSample (int frame, bool relative,
+                          const std::vector<double>& point,
+                          double height, int id) override;
   void owlatArmMoveJoints (bool relative,
                            const std::vector<double>& angles,
                            int id);
@@ -147,6 +149,9 @@ class OwlatInterface : public LanderInterface
                              double distance, double overdrive,
                              double force_threshold, double torque_threshold,
                              int id);
+  void taskDiscardSampleAction (int frame, bool relative,
+                                const std::vector<double>& point,
+                                double height, int id);
   void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
                                  int id);
   void owlatArmMoveJointsGuardedAction (bool relative,
@@ -202,7 +207,7 @@ class OwlatInterface : public LanderInterface
 
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
-  std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
   std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
   std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
   std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;

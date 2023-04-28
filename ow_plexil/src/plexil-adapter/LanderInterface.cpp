@@ -294,3 +294,4 @@ void LanderInterface::armUnstow (int id)
                         this, id, Name_ArmUnstow, std::ref(m_armUnstowClient));
   action_thread.detach();
 }
+

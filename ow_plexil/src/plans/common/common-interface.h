@@ -65,6 +65,12 @@ LibraryAction ArmFindSurface (In Integer Frame,
 
 LibraryAction TaskDeliverSample ();
 
+LibraryAction TaskDiscardSample (In Integer Frame,
+                                 In Boolean Relative,
+                                 In Real Point[3],
+                                 In Real Height);
+
+
 // Lander queries and telemetry
 
 // Antenna

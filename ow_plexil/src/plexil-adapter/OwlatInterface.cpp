@@ -34,7 +34,6 @@ const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
 const string Name_OwlatArmMoveJointsGuarded =
   "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
 const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
-
 const string Name_Discard = "TaskDiscardSample";
 
 const size_t OwlatJoints = 6;
@@ -141,7 +140,7 @@ void OwlatInterface::initialize()
     // Initialize pointers
     m_armFindSurfaceClient =
       make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-    m_taskDiscardClient =
+    m_taskDiscardSampleClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
     m_owlatArmMoveJointsClient =
       make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
@@ -168,10 +167,9 @@ void OwlatInterface::initialize()
     // Connect to action servers
     connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
                          "/ArmFindSurface/status");
-    if (! m_taskDiscardClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskDiscardSample action server did not connect!");
-    }
+    connectActionServer (m_taskDiscardSampleClient, Name_Discard,
+                         "/TaskDiscardSample/status");
+
     if (! m_owlatArmMoveJointsClient->waitForServer
         (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
       ROS_ERROR ("OWLAT ARM_MOVE_JOINTS action server did not connect!");
@@ -271,19 +269,41 @@ void OwlatInterface::armFindSurfaceAction (int frame, bool relative,
 }
 
 
-void OwlatInterface::taskDiscard (int id)
+void OwlatInterface::taskDiscardSample (int frame, bool relative,
+                                        const std::vector<double>& point,
+                                        double height, int id)
 {
   if (! markOperationRunning (Name_Discard, id)) return;
-  /*
-  thread action_thread (&OwlatInterface::nullaryAction<
-                        TaskDiscardSampleActionClient,
-                        TaskDiscardSampleGoal,
-                        TaskDiscardSampleResultConstPtr,
-                        TaskDiscardSampleFeedbackConstPtr>,
-                        this, id, Name_Discard, std::ref(m_taskDiscardClient));
+  thread action_thread (&OwlatInterface::taskDiscardSampleAction, this,
+                        frame, relative, point, height, id);
   action_thread.detach();
-  */
 }
+
+void OwlatInterface::taskDiscardSampleAction (int frame, bool relative,
+                                              const std::vector<double>& point,
+                                              double height, int id)
+{
+  TaskDiscardSampleGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  for (size_t i = 0; i < 3; i++) {
+    goal.point[i] = point[i];
+  }
+  goal.height = height;
+
+  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)",
+            point[0], point[1], point[2]);
+
+  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
+            TaskDiscardSampleGoal,
+            TaskDiscardSampleResultConstPtr,
+            TaskDiscardSampleFeedbackConstPtr>
+    (Name_Discard, m_taskDiscardSampleClient, goal, id,
+     default_action_active_cb (Name_Discard),
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_Discard),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_Discard));
+}
+
 
 void OwlatInterface::owlatArmMoveJoints (bool relative,
                                          const vector<double>& angles,

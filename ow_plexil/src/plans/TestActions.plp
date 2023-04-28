@@ -78,8 +78,7 @@ TestActions:
                                  Depth = 0.045, Parallel = false);
 
   LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
-                                 X = 1.5, Y = 0.8, Z = 0.65,
-                                 Height = 0.1);
+                                 Point = #(1.5 0.8 0.65), Height = 0.1);
 
   LibraryCall TaskGrind (X = 1.6, Y = 0.02, Depth = 0.05,
                          Length = 0.6, Parallel = true,

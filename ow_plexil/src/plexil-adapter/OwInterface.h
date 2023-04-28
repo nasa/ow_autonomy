@@ -13,6 +13,7 @@
 
 // owl_msgs (lander commands)
 #include <owl_msgs/ArmFindSurfaceAction.h>
+#include <owl_msgs/TaskDiscardSampleAction.h>
 #include <ow_lander/PanAction.h>
 #include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
@@ -23,7 +24,6 @@
 #include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
-#include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
@@ -59,8 +59,6 @@ using TaskScoopCircularActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
 using TaskScoopLinearActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
-using TaskDiscardSampleActionClient =
-  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 using CameraSetExposureActionClient =
@@ -69,6 +67,8 @@ using DockIngestSampleActionClient =
   actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 using LightSetIntensityActionClient =
   actionlib::SimpleActionClient<owl_msgs::LightSetIntensityAction>;
+using TaskDiscardSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 
 // The only ow_plexil-defined action.
 using IdentifySampleLocationActionClient =
@@ -100,6 +100,9 @@ class OwInterface : public LanderInterface
                        double force_threshold,
                        double torque_threshold,
                        int id) override;
+  void taskDiscardSample (int frame, bool relative,
+                          const std::vector<double>& point,
+                          double height, int id) override;
   void guardedMove (double x, double y, double z,
                     double direction_x, double direction_y, double direction_z,
                     double search_distance, int id);
@@ -129,8 +132,6 @@ class OwInterface : public LanderInterface
   void armStop (int id);
   void armStow (int id);
   void armUnstow (int id);
-  void discardSample (int frame, bool relative, double x, double y, double z,
-                      double height, int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
@@ -166,6 +167,9 @@ class OwInterface : public LanderInterface
                              double distance, double overdrive,
                              double force_threshold, double torque_threshold,
                              int id);
+  void taskDiscardSampleAction (int frame, bool relative,
+                                const std::vector<double>& point,
+                                double height, int id);
   void grindAction (double x, double y, double depth, double length,
                     bool parallel, double ground_pos, int id);
   void guardedMoveAction (double x, double y, double z,
@@ -189,9 +193,6 @@ class OwInterface : public LanderInterface
   void scoopCircularAction (int frame, bool relative, double x, double y, double z,
                             double depth, bool parallel, int id);
   void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
-  void discardSampleAction (int frame, bool relative,
-                            double x, double y, double z,
-                            double height, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
@@ -308,12 +309,12 @@ class OwInterface : public LanderInterface
   std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
-  std::unique_ptr<TaskDiscardSampleActionClient> m_discardClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
 
   // Misc state
   double m_currentPanRadians, m_currentTiltRadians;

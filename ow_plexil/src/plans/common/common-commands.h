@@ -57,5 +57,9 @@ Command arm_find_surface (Integer frame,
 
 Command task_deliver_sample ();
 
+Command task_discard_sample (Integer frame,
+                             Boolean relative,
+                             Real point[3],
+                             Real height);
 
 #endif

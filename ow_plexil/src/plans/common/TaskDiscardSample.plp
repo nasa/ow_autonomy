@@ -1,0 +1,21 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Discard material in the scoop to the given point.  This is
+// typically used to dump tailings from digging a trench.
+
+Command task_discard_sample (Integer frame,
+                             Boolean relative,
+                             Real point[3],
+                             Real height);
+
+TaskDiscardSample:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Point[3];
+  In Real Height;
+
+  SynchronousCommand task_discard_sample (Frame, Relative, Point, Height);
+}

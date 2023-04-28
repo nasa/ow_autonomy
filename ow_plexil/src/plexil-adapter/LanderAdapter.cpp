@@ -154,6 +154,26 @@ static void task_deliver_sample (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void task_discard_sample (Command* cmd, AdapterExecInterface* intf)
+{
+  int frame;
+  bool relative;
+  RealArray const* point = nullptr;
+  vector<double> const* point_vector = nullptr;
+  double height;
+
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue(frame);
+  args[1].getValue(relative);
+  args[2].getValuePointer(point);
+  args[3].getValue(height);
+  point->getContentsVector(point_vector);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  LanderAdapter::s_interface->taskDiscardSample (frame, relative, *point_vector,
+                                                 height, CommandId);
+  acknowledge_command_sent(*cr);
+}
+
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
@@ -187,7 +207,8 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
   g_configuration->registerCommandHandler("task_deliver_sample",
                                           task_deliver_sample);
-
+  g_configuration->registerCommandHandler("task_discard_sample",
+                                          task_discard_sample);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

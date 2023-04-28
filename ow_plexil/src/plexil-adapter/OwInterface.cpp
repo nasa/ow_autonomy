@@ -69,10 +69,10 @@ const string Op_LightSetIntensity       = "LightSetIntensity";
 const string Op_Pan                     = "Pan";
 const string Op_PanTilt                 = "PanTiltMoveJoints";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesian";
-const string Op_TaskDiscardSample       = "TaskDiscardSample";
 const string Op_TaskScoopCircular       = "TaskScoopCircular";
 const string Op_TaskScoopLinear         = "TaskScoopLinear";
 const string Op_Tilt                    = "Tilt";
+const string Op_TaskDiscardSample       = "TaskDiscardSample";
 
 static vector<string> LanderOpNames = {
   Op_ArmFindSurface,
@@ -85,12 +85,12 @@ static vector<string> LanderOpNames = {
   Op_PanTiltCartesian,
   Op_TaskScoopCircular,
   Op_TaskScoopLinear,
-  Op_TaskDiscardSample,
   Op_Grind,
   Op_CameraCapture,
   Op_CameraSetExposure,
   Op_Ingest,
   Op_IdentifySampleLocation,
+  Op_TaskDiscardSample,
   Op_LightSetIntensity
 };
 
@@ -481,8 +481,6 @@ void OwInterface::initialize()
       make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
     m_scoopLinearClient =
       make_unique<TaskScoopLinearActionClient>(Op_TaskScoopLinear, true);
-    m_discardClient =
-      make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
     m_cameraCaptureClient =
       make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
     m_cameraSetExposureClient =
@@ -499,6 +497,8 @@ void OwInterface::initialize()
     m_panTiltClient = make_unique<PanTiltMoveJointsActionClient>(Op_PanTilt, true);
     m_panTiltCartesianClient =
       make_unique<PanTiltMoveCartesianActionClient>(Op_PanTiltCartesian, true);
+    m_taskDiscardSampleClient =
+      make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
 
     // Initialize publishers.  For now, latching in lieu of waiting
     // for publishers.
@@ -589,8 +589,6 @@ void OwInterface::initialize()
                          "/TaskScoopCircular/status");
     connectActionServer (m_scoopLinearClient, Op_TaskScoopLinear,
                          "/TaskScoopLinear/status");
-    connectActionServer (m_discardClient, Op_TaskDiscardSample,
-                         "/TaskDiscardSample/status");
     connectActionServer (m_cameraCaptureClient, Op_CameraCapture,
                          "/CameraCapture/status");
     connectActionServer (m_cameraSetExposureClient, Op_CameraSetExposure,
@@ -606,6 +604,9 @@ void OwInterface::initialize()
     connectActionServer (m_panTiltClient, Op_PanTilt);
     connectActionServer (m_panTiltCartesianClient, Op_PanTiltCartesian);
     connectActionServer (m_identifySampleLocationClient, Op_IdentifySampleLocation);
+    connectActionServer (m_taskDiscardSampleClient, Op_TaskDiscardSample,
+                         "/TaskDiscardSample/status");
+
   }
 }
 
@@ -784,41 +785,6 @@ void OwInterface::dockIngestSampleAction (int id)
      default_action_active_cb (Op_Ingest),
      default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Op_Ingest),
      default_action_done_cb<DockIngestSampleResultConstPtr> (Op_Ingest));
-}
-
-void OwInterface::discardSample (int frame, bool relative,
-                                 double x, double y, double z,
-                                 double height, int id)
-{
-  if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
-  thread action_thread (&OwInterface::discardSampleAction, this, frame, relative,
-                        x, y, z, height, id);
-  action_thread.detach();
-}
-
-void OwInterface::discardSampleAction (int frame, bool relative,
-                                       double x, double y, double z,
-                                       double height, int id)
-{
-  geometry_msgs::Point p;
-  p.x = x; p.y = y; p.z = z;
-
-  TaskDiscardSampleGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.point = p;
-  goal.height = height;
-
-  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-
-  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
-            TaskDiscardSampleGoal,
-            TaskDiscardSampleResultConstPtr,
-            TaskDiscardSampleFeedbackConstPtr>
-    (Op_TaskDiscardSample, m_discardClient, goal, id,
-     default_action_active_cb (Op_TaskDiscardSample),
-     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Op_TaskDiscardSample),
-     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
 }
 
 void OwInterface::scoopLinear (int frame, bool relative,
@@ -1192,6 +1158,40 @@ void OwInterface::lightSetIntensityAction (const string& side, double intensity,
      (Op_LightSetIntensity));
 }
 
+void OwInterface::taskDiscardSample (int frame, bool relative,
+                                     const std::vector<double>& point,
+                                     double height, int id)
+{
+  if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
+  thread action_thread (&OwInterface::taskDiscardSampleAction, this,
+                        frame, relative, point, height, id);
+  action_thread.detach();
+}
+
+void OwInterface::taskDiscardSampleAction (int frame, bool relative,
+                                           const std::vector<double>& point,
+                                           double height, int id)
+{
+  geometry_msgs::Point p;
+  p.x = point[0]; p.y = point[1]; p.z = point[2];
+
+  TaskDiscardSampleGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
+  goal.height = height;
+
+  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", p.x, p.y, p.z);
+
+  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
+            TaskDiscardSampleGoal,
+            TaskDiscardSampleResultConstPtr,
+            TaskDiscardSampleFeedbackConstPtr>
+    (Op_TaskDiscardSample, m_taskDiscardSampleClient, goal, id,
+     default_action_active_cb (Op_TaskDiscardSample),
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Op_TaskDiscardSample),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
+}
 
 double OwInterface::getTiltRadians () const
 {

@@ -58,7 +58,6 @@ using ArmUnstowActionClient =
 using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
 
-
 class LanderInterface : public PlexilInterface
 {
  public:
@@ -69,7 +68,9 @@ class LanderInterface : public PlexilInterface
 
   void initialize();
 
-  // Lander interface
+  // Actions with a shared interface but different implementations in
+  // OceanWATERS and OWLAT.
+
   virtual void armFindSurface (int frame,
                                bool relative,
                                const std::vector<double>& pos,
@@ -79,6 +80,13 @@ class LanderInterface : public PlexilInterface
                                double force_threshold,
                                double torque_threshold,
                                int id) = 0;
+
+  virtual void taskDiscardSample (int frame, bool relative,
+                                  const std::vector<double>& point,
+                                  double height, int id) = 0;
+
+  // Actions with identical interface and implementation between
+  // OceanWATERS and OWLAT.
 
   void armMoveCartesian (int frame, bool relative,
                          const std::vector<double>& position,

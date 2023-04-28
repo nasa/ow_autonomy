@@ -315,24 +315,6 @@ static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void discard_sample (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, height;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(height);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->discardSample (frame, relative, x, y, z,
-                                          height, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
 static bool check_angle (const char* name, double val,
                          double min, double max, double tolerance)
 // NOTE: tolerance is needed because there is apparently loss of
@@ -515,7 +497,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
   g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
-  g_configuration->registerCommandHandler("discard_sample", discard_sample);
   g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
                                           pan_tilt_cartesian);

@@ -76,13 +76,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
-LibraryAction TaskDiscardSample (In Integer Frame,
-                                 In Boolean Relative,
-                                 In Real X,
-                                 In Real Y,
-                                 In Real Z,
-                                 In Real Height);
-
 LibraryAction CameraSetExposure (In Real Seconds);
 LibraryAction CameraCapture ();
 
