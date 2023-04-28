@@ -17,7 +17,6 @@ Command camera_capture ();
 
 Command pan (Real degrees);
 Command tilt (Real degrees);
-Command pan_tilt (Real pan_degrees, Real tilt_degrees);
 Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
 
 Command arm_move_joints (Boolean relative,

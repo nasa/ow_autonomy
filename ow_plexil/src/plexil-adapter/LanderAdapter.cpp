@@ -27,6 +27,13 @@ using std::unique_ptr;
 #include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
+float LanderAdapter::PanMinDegrees  = -183.346; // -3.2 radians
+float LanderAdapter::PanMaxDegrees  =  183.346; //  3.2 radians
+float LanderAdapter::TiltMinDegrees = -89.38;   // Slightly more than -pi/2
+float LanderAdapter::TiltMaxDegrees =  89.38;   // Slightly less than pi/2
+float LanderAdapter::PanTiltInputTolerance =  0.0057; // 0.0001 R
+
+
 static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
@@ -174,6 +181,27 @@ static void task_discard_sample (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void pan_tilt_move_joints (Command* cmd, AdapterExecInterface* intf)
+{
+  double pan_degrees, tilt_degrees;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (pan_degrees);
+  args[1].getValue (tilt_degrees);
+  if (! LanderAdapter::checkAngle ("pan", pan_degrees, LanderAdapter::PanMinDegrees,
+                                   LanderAdapter::PanMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance) ||
+      ! LanderAdapter::checkAngle ("tilt", tilt_degrees, LanderAdapter::TiltMinDegrees,
+                                   LanderAdapter::TiltMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance)) {
+    acknowledge_command_denied (cmd, intf);
+  }
+  else {
+    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+    LanderAdapter::s_interface->panTiltMoveJoints (pan_degrees, tilt_degrees, CommandId);
+    acknowledge_command_sent(*cr);
+  }
+}
+
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
@@ -209,10 +237,29 @@ bool LanderAdapter::initialize (LanderInterface* li)
                                           task_deliver_sample);
   g_configuration->registerCommandHandler("task_discard_sample",
                                           task_discard_sample);
+  g_configuration->registerCommandHandler("pan_tilt_move_joints",
+                                          pan_tilt_move_joints);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;
 }
+
+bool LanderAdapter::checkAngle (const char* name, double val,
+                                double min, double max, double tolerance)
+// NOTE: tolerance is needed because there is apparently loss of
+// precision in the angle on its way into Python.  This could be
+// because the ROS action uses 32-bit floats for the input angles.
+// They will be updated to 64 bit as part of the ongoing command
+// unification with OWLAT.
+{
+  if (val < min - tolerance || val > max + tolerance) {
+    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
+              "rejecting PLEXIL command.", name, val, min, max);
+    return false;
+  }
+  return true;
+}
+
 
 extern "C" {
   void initlander_adapter() {

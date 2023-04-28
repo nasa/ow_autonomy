@@ -39,12 +39,6 @@ using std::shared_ptr;
 using std::make_unique;
 
 
-//////////////////// Utilities ////////////////////////
-
-const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
-const double VelocityTolerance       = 0.01;  // made up, unitless
-
-
 //////////////////// Lander Operation Support ////////////////////////
 
 // Index into /joint_states message and JointTelemetries vector.
@@ -67,7 +61,6 @@ const string Op_GuardedMove             = "GuardedMove";
 const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
 const string Op_LightSetIntensity       = "LightSetIntensity";
 const string Op_Pan                     = "Pan";
-const string Op_PanTilt                 = "PanTiltMoveJoints";
 const string Op_PanTiltCartesian        = "PanTiltMoveCartesian";
 const string Op_TaskScoopCircular       = "TaskScoopCircular";
 const string Op_TaskScoopLinear         = "TaskScoopLinear";
@@ -81,7 +74,6 @@ static vector<string> LanderOpNames = {
   Op_ArmMoveJointsGuarded,
   Op_Pan,
   Op_Tilt,
-  Op_PanTilt,
   Op_PanTiltCartesian,
   Op_TaskScoopCircular,
   Op_TaskScoopLinear,
@@ -494,7 +486,6 @@ void OwInterface::initialize()
       (Op_IdentifySampleLocation, true);
     m_panClient = make_unique<PanActionClient>(Op_Pan, true);
     m_tiltClient = make_unique<TiltActionClient>(Op_Tilt, true);
-    m_panTiltClient = make_unique<PanTiltMoveJointsActionClient>(Op_PanTilt, true);
     m_panTiltCartesianClient =
       make_unique<PanTiltMoveCartesianActionClient>(Op_PanTiltCartesian, true);
     m_taskDiscardSampleClient =
@@ -601,7 +592,6 @@ void OwInterface::initialize()
                          "/GuardedMove/status");
     connectActionServer (m_panClient, Op_Pan);
     connectActionServer (m_tiltClient, Op_Tilt);
-    connectActionServer (m_panTiltClient, Op_PanTilt);
     connectActionServer (m_panTiltCartesianClient, Op_PanTiltCartesian);
     connectActionServer (m_identifySampleLocationClient, Op_IdentifySampleLocation);
     connectActionServer (m_taskDiscardSampleClient, Op_TaskDiscardSample,
@@ -654,31 +644,6 @@ void OwInterface::tiltAction (double degrees, int id)
      default_action_active_cb (Op_Tilt, args.str()),
      default_action_feedback_cb<TiltFeedbackConstPtr> (Op_Tilt),
      default_action_done_cb<TiltResultConstPtr> (Op_Tilt));
-}
-
-void OwInterface::panTilt (double pan_degrees, double tilt_degrees, int id)
-{
-  if (! markOperationRunning (Op_PanTilt, id)) return;
-  thread action_thread (&OwInterface::panTiltAction, this,
-                        pan_degrees, tilt_degrees, id);
-  action_thread.detach();
-}
-
-void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id)
-{
-  PanTiltMoveJointsGoal goal;
-  goal.pan = pan_degrees * D2R;
-  goal.tilt = tilt_degrees * D2R;
-  std::stringstream args;
-  args << goal.pan << ", " << goal.tilt;
-  runAction<actionlib::SimpleActionClient<PanTiltMoveJointsAction>,
-            PanTiltMoveJointsGoal,
-            PanTiltMoveJointsResultConstPtr,
-            PanTiltMoveJointsFeedbackConstPtr>
-    (Op_PanTilt, m_panTiltClient, goal, id,
-     default_action_active_cb (Op_PanTilt, args.str()),
-     default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (Op_PanTilt),
-     default_action_done_cb<PanTiltMoveJointsResultConstPtr> (Op_PanTilt));
 }
 
 void OwInterface::panTiltCartesian (int frame, double x, double y, double z, int id)

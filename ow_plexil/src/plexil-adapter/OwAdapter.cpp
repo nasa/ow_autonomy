@@ -30,12 +30,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
-const float PanMinDegrees  = -183.346; // -3.2 radians
-const float PanMaxDegrees  =  183.346; //  3.2 radians
-const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
-const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
-const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
-
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
 static void stubbed_lookup (const string& name, const string& value)
@@ -315,29 +309,15 @@ static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static bool check_angle (const char* name, double val,
-                         double min, double max, double tolerance)
-// NOTE: tolerance is needed because there is apparently loss of
-// precision in the angle on its way into Python.  This could be
-// because the ROS action uses 32-bit floats for the input angles.
-// They will be updated to 64 bit as part of the ongoing command
-// unification with OWLAT.
-{
-  if (val < min - tolerance || val > max + tolerance) {
-    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.", name, val, min, max);
-    return false;
-  }
-  return true;
-}
-
 static void pan (Command* cmd, AdapterExecInterface* intf)
 {
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (! check_angle ("pan", degrees, PanMinDegrees, PanMaxDegrees,
-                     PanTiltInputTolerance)) {
+  if (! LanderAdapter::checkAngle ("pan", degrees,
+                                   LanderAdapter::PanMinDegrees,
+                                   LanderAdapter::PanMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
@@ -352,32 +332,14 @@ static void tilt (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (! check_angle ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
-                     PanTiltInputTolerance)) {
+  if (! LanderAdapter::checkAngle ("tilt", degrees, LanderAdapter::TiltMinDegrees,
+                                   LanderAdapter::TiltMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
     OwInterface::instance()->tilt (degrees, CommandId);
-    acknowledge_command_sent(*cr);
-  }
-}
-
-static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
-{
-  double pan_degrees, tilt_degrees;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (pan_degrees);
-  args[1].getValue (tilt_degrees);
-  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
-                     PanTiltInputTolerance) ||
-      ! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
-                     PanTiltInputTolerance)) {
-    acknowledge_command_denied (cmd, intf);
-  }
-  else {
-    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panTilt (pan_degrees, tilt_degrees, CommandId);
     acknowledge_command_sent(*cr);
   }
 }
@@ -497,7 +459,6 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
   g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
-  g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
                                           pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",

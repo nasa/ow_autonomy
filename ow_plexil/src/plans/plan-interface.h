@@ -32,7 +32,6 @@
 LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 LibraryAction Pan (In Real Degrees);
 LibraryAction Tilt (In Real Degrees);
-LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
 LibraryAction PanTiltMoveCartesian  (In Integer Frame,
                                      In Real X, In Real Y, In Real Z);
 LibraryAction GuardedMove (In Real X,

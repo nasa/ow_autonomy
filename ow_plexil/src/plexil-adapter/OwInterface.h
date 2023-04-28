@@ -21,7 +21,6 @@
 #include <ow_lander/GuardedMoveAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
-#include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
@@ -49,8 +48,6 @@ using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 using ArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
-using PanTiltMoveJointsActionClient =
-  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using PanTiltMoveCartesianActionClient =
@@ -118,7 +115,6 @@ class OwInterface : public LanderInterface
 
   void pan (double degrees, int id);
   void tilt (double degrees, int id);
-  void panTilt (double pan_degrees, double tilt_degrees, int id);
   void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraCapture (int id);
   void cameraSetExposure (double exposure_secs, int id);
@@ -186,13 +182,11 @@ class OwInterface : public LanderInterface
                                      const std::string& filter_type, int id);
   void panAction (double degrees, int id);
   void tiltAction (double degrees, int id);
-  void panTiltAction (double pan_degrees, double tilt_degrees, int id);
   void panTiltCartesianAction (int frame, double x, double y, double z, int id);
   void scoopLinearAction (int frame, bool relative, double x, double y, double z,
                           double depth, double length, int id);
   void scoopCircularAction (int frame, bool relative, double x, double y, double z,
                             double depth, bool parallel, int id);
-  void panTiltAntennaAction (double pan_degrees, double tilt_degrees, int id);
   void cameraCaptureAction (int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
@@ -305,7 +299,6 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskGrindActionClient> m_grindClient;
   std::unique_ptr<PanActionClient> m_panClient;
   std::unique_ptr<TiltActionClient> m_tiltClient;
-  std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltClient;
   std::unique_ptr<PanTiltMoveCartesianActionClient> m_panTiltCartesianClient;
   std::unique_ptr<TaskScoopCircularActionClient> m_scoopCircularClient;
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;

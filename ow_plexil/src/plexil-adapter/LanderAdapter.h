@@ -17,7 +17,15 @@ class LanderInterface;
 class LanderAdapter : public PlexilAdapter
 {
  public:
+  static bool checkAngle (const char* name, double val, double min, double max,
+                          double tolerance);
   static LanderInterface* s_interface;
+  static float PanMinDegrees;
+  static float PanMaxDegrees;
+  static float TiltMinDegrees;
+  static float TiltMaxDegrees;
+  static float PanTiltInputTolerance;
+
   // No default constructor, only this specialized one.
   LanderAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
   virtual ~LanderAdapter () = default;

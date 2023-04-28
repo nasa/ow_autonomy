@@ -22,6 +22,7 @@
 #include <owl_msgs/ArmStowAction.h>
 #include <owl_msgs/ArmUnstowAction.h>
 #include <owl_msgs/TaskDeliverSampleAction.h>
+#include <owl_msgs/PanTiltMoveJointsAction.h>
 
 // owl_msgs - telemetry
 #include <owl_msgs/PanTiltPosition.h>
@@ -57,6 +58,8 @@ using ArmUnstowActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmUnstowAction>;
 using TaskDeliverSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDeliverSampleAction>;
+using PanTiltMoveJointsActionClient =
+  actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 
 class LanderInterface : public PlexilInterface
 {
@@ -103,6 +106,7 @@ class LanderInterface : public PlexilInterface
   void armStow (int id);
   void armUnstow (int id);
   void taskDeliverSample (int id);
+  void panTiltMoveJoints (double pan_degrees, double tilt_degrees, int id);
 
  private:
   // Actions
@@ -117,6 +121,7 @@ class LanderInterface : public PlexilInterface
                                       double torque_threshold,
                                       int id);
   void armMoveJointAction (bool relative, int joint, double angle, int id);
+  void panTiltMoveJointsAction (double pan_degrees, double tilt_degrees, int id);
 
   // Action Clients
 
@@ -127,6 +132,8 @@ class LanderInterface : public PlexilInterface
   std::unique_ptr<ArmStowActionClient> m_armStowClient;
   std::unique_ptr<ArmUnstowActionClient> m_armUnstowClient;
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
+  std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltMoveJointsClient;
+
 };
 
 #endif

@@ -70,6 +70,7 @@ LibraryAction TaskDiscardSample (In Integer Frame,
                                  In Real Point[3],
                                  In Real Height);
 
+LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
 
 // Lander queries and telemetry
 

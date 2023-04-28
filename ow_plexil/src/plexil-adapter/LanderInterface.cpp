@@ -35,6 +35,7 @@ const string Name_ArmStop = "ArmStop";
 const string Name_ArmStow = "ArmStow";
 const string Name_ArmUnstow = "ArmUnstow";
 const string Name_TaskDeliverSample       = "TaskDeliverSample";
+const string Name_PanTiltMoveJoints                 = "PanTiltMoveJoints";
 
 static vector<string> LanderOpNames = {
   Name_ArmMoveCartesian,
@@ -43,7 +44,8 @@ static vector<string> LanderOpNames = {
   Name_ArmStop,
   Name_ArmStow,
   Name_ArmUnstow,
-  Name_TaskDeliverSample
+  Name_TaskDeliverSample,
+  Name_PanTiltMoveJoints
 };
 
 void LanderInterface::initialize()
@@ -75,6 +77,8 @@ void LanderInterface::initialize()
       make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
     m_taskDeliverSampleClient =
       make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
+    m_panTiltMoveJointsClient =
+      make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
 
     // Connect to action servers
     connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
@@ -88,7 +92,7 @@ void LanderInterface::initialize()
     connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
     connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
                          "/TaskDeliverSample/status");
-
+    connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
   }
 }
 
@@ -295,3 +299,32 @@ void LanderInterface::armUnstow (int id)
   action_thread.detach();
 }
 
+void LanderInterface::panTiltMoveJoints (double pan_degrees,
+                                         double tilt_degrees,
+                                         int id)
+{
+  if (! markOperationRunning (Name_PanTiltMoveJoints, id)) return;
+  thread action_thread (&LanderInterface::panTiltMoveJointsAction, this,
+                        pan_degrees, tilt_degrees, id);
+  action_thread.detach();
+}
+
+void LanderInterface::panTiltMoveJointsAction (double pan_degrees,
+                                               double tilt_degrees,
+                                               int id)
+{
+  PanTiltMoveJointsGoal goal;
+  goal.pan = pan_degrees * D2R;
+  goal.tilt = tilt_degrees * D2R;
+  std::stringstream args;
+  args << goal.pan << ", " << goal.tilt;
+  string opname = Name_PanTiltMoveJoints;
+  runAction<actionlib::SimpleActionClient<PanTiltMoveJointsAction>,
+            PanTiltMoveJointsGoal,
+            PanTiltMoveJointsResultConstPtr,
+            PanTiltMoveJointsFeedbackConstPtr>
+    (opname, m_panTiltMoveJointsClient, goal, id,
+     default_action_active_cb (opname, args.str()),
+     default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (opname),
+     default_action_done_cb<PanTiltMoveJointsResultConstPtr> (opname));
+}

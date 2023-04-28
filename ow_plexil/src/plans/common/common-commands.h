@@ -62,4 +62,6 @@ Command task_discard_sample (Integer frame,
                              Real point[3],
                              Real height);
 
+Command pan_tilt_move_joints (Real pan_degrees, Real tilt_degrees);
+
 #endif
