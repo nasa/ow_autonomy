@@ -1,0 +1,13 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// A Stow should always be preceded by Unstow, thus this convenience procedure.
+
+#include "owlat-interface.h"
+
+StowSequence:
+{
+  LibraryCall ArmUnstow();
+  LibraryCall ArmStow();
+}

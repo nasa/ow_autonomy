@@ -1,0 +1,27 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Test sequence 4.11.1 in the OWLAT 5.3 user guide.
+
+#include "owlat-interface.h"
+
+LibraryAction ArmSetup;
+
+TestOwlatArmFindSurface:
+{
+  log_info ("Starting ArmFindSurface test...");
+  LibraryCall ArmUnstow();
+  LibraryCall ArmTareFTSensor();
+  LibraryCall ArmSetup();
+  LibraryCall ArmFindSurface (Frame = TOOL_FRAME,
+                              Relative = false,
+                              Position = #(0 0 0.15),
+                              Normal = #(0 0 -1),
+                              Distance = 0.15,
+                              Overdrive = 0,
+                              ForceThreshold = 5,
+                              TorqueThreshold = 1);
+  LibraryCall StowSequence();
+  log_info ("Finished ArmFindSurface test.");
+}

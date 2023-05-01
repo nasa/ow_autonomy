@@ -2,109 +2,38 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Tests all OWLAT actions, using (when possible) the test sequences
+// provided in the OWLAT 5.3 user guide.  The order is approximately
+// that of their coverage in the user guide.
+
 #include "owlat-interface.h"
 
-LibraryAction ArmSetup;
+LibraryAction TestOwlatMiscActions;
+LibraryAction TestOwlatArmMoveJoints;
+LibraryAction TestOwlatArmMoveCartesian;
+LibraryAction TestOwlatArmFindSurface;
+LibraryAction TestTaskPSP;
+LibraryAction TestTaskPenetrometer;
+LibraryAction TestShearBevameter;
+LibraryAction TestOwlatTaskScoopCircular;
+LibraryAction TestOwlatTaskScoopLinear;
+LibraryAction TestTaskDiscardSample;
+LibraryAction TestPanTiltMoveJoints;
 
 TestOwlatActions:
 {
-  Real angles1[7] = #(0.0 -0.5 0.0 2.0 0.0 0.0 0.0);
-  Real angles2[7] = #(0.0 0.6 0.0 0.0 0.0 0.0 0.0);
-  Real force_threshold = 5.0;
-  Real torque_threshold = 1.0;
-
   log_info ("Starting OWLAT action test...");
-
-  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = -40.107);
-
-  LibraryCall CameraCapture ();
-
-  LibraryCall ArmUnstow();
-  LibraryCall TaskDiscardSample (Frame = BASE_FRAME,
-                                 Relative = false,
-                                 Point = #(0.1 0.2 0.5),
-                                 Height = 0.05);
-
-  LibraryCall ArmTareFTSensor();
-  LibraryCall ArmSetup();
-  LibraryCall ArmMoveCartesianGuarded(Frame=TOOL_FRAME,
-                                      Relative=false,
-                                      Position=#(0.0 0.0 0.15),
-                                      Orientation=#(0.0 0.0 0.0 1.0),
-                                      ForceThreshold=force_threshold,
-                                      TorqueThreshold=torque_threshold);
-  LibraryCall ArmSetup();
-  LibraryCall ArmFindSurface (Frame = TOOL_FRAME,
-                              Relative = false,
-                              Position = #(0 0 0.15),
-                              Normal = #(0 0 -1),
-                              Distance = 0.15,
-                              Overdrive = 0,
-                              ForceThreshold = 5,
-                              TorqueThreshold = 1);
-
-  // Pressure Sinkage Plate test
-  LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=1);
-  LibraryCall TaskPSP (Frame = TOOL_FRAME,
-                       Relative = false,
-                       Point = #(0 0 0.5 ),
-                       Normal = #(0 0 -1 ),
-                       MaxDepth = 0.3,
-                       MaxForce = 10);
-
-  // Cone Penetrometer test
-  LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=4);
-  LibraryCall TaskPenetrometer (Frame = TOOL_FRAME,
-                                Relative = false,
-                                Point = #(0 0 0.43),
-                                Normal = #(0 0 -1),
-                                MaxDepth = 0.3,
-                                MaxForce = 10);
-
-  // Fails with goal error: cannot achieve given torque.
-  // Shear Bevameter test
-  //   LibraryCall ArmUnstow();
-  //   LibraryCall ArmSetTool(Tool=2);
-  //   LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
-  //                                   Relative = false,
-  //                                   Point = #(0 0 0.43),
-  //                                   Normal = #(0 0 -1),
-  //                                   Preload = 5.0,
-  //                                   MaxTorque = 0.05);  // 0.1 not achievable
-
-  // Task Scoop Circular
-  LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=3);
-  LibraryCall OwlatTaskScoopCircular (Frame = TOOL_FRAME,
-                                      Relative = false,
-                                      Point = #(0 0 0.43),
-                                      Normal = #(0 0 -1),
-                                      Depth = 0.01, // 0.025 caused goal error
-                                      ScoopAngle = 1.57);
-
-  // Task Scoop Linear
-  LibraryCall ArmUnstow();
-  LibraryCall OwlatTaskScoopLinear (Frame = TOOL_FRAME,
-                                    Relative = false,
-                                    Point = #(0 0 0.43),
-                                    Normal = #(0 0 -1),
-                                    Depth = 0.025,
-                                    Length = 0.1);
-
-  LibraryCall TaskDeliverSample();
-
-  LibraryCall ArmUnstow();
-  LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
-  LibraryCall OwlatArmMoveJoints(Relative=false, Angles=angles1);
-  LibraryCall OwlatArmMoveJointsGuarded(Relative=true,
-                                        Angles=angles2,
-                                        Retracting=false,
-                                        ForceThreshold=force_threshold,
-                                        TorqueThreshold=torque_threshold);
-  LibraryCall ArmUnstow();
-  LibraryCall ArmStow();
-
+  LibraryCall TestOwlatMiscActions;
+  LibraryCall TestOwlatArmMoveJoints;
+  LibraryCall TestOwlatArmMoveCartesian;
+  LibraryCall TestOwlatArmFindSurface;
+  LibraryCall TestTaskPSP;
+  LibraryCall TestTaskPenetrometer;
+  // Does not work; JPL is investigating.
+  //  LibraryCall TestShearBevameter;
+  LibraryCall TestOwlatTaskScoopCircular;
+  LibraryCall TestOwlatTaskScoopLinear;
+  LibraryCall TestTaskDiscardSample;
+  LibraryCall TestPanTiltMoveJoints;
   log_info ("Finished OWLAT action test.");
 }

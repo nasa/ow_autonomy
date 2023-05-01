@@ -1,0 +1,26 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Test sequence 4.18.1 in the OWLAT 5.3 user guide.
+
+#include "owlat-interface.h"
+
+TestTaskDiscardSample:
+{
+  log_info ("Starting TaskDiscardSample test...");
+  LibraryCall ArmUnstow();
+  // Same as in TestOwlatTaskScoopLinear, test sequence 4.16.1
+  LibraryCall OwlatTaskScoopLinear (Frame = TOOL_FRAME,
+                                    Relative = false,
+                                    Point = #(0 0 0.43),
+                                    Normal = #(0 0 -1),
+                                    Depth = 0.025,
+                                    Length = 0.1);
+  LibraryCall TaskDiscardSample (Frame = BASE_FRAME,
+                                 Relative = false,
+                                 Point = #(0.1 0.2 0.5),
+                                 Height = 0.05);
+  LibraryCall StowSequence();
+  log_info ("Finished TaskDiscardSample test.");
+}

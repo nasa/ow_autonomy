@@ -10,6 +10,8 @@
 #include "../common/common-interface.h"
 #include "owlat-lander-commands.h"
 
+LibraryAction StowSequence();
+
 LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,
                                            In Boolean Relative,
                                            In Real Position[3],

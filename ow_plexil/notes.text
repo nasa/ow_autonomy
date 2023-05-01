@@ -1,0 +1,43 @@
+Temporary notes file for this branch, which is in development.
+
+ToDo Essential for this PR
+--------------------------
+
+Test OW
+  Ref Mission 1
+  Action Test
+    Flesh out if needed
+
+Fix RQT plan menu, which has duplicate files.
+  Should show testbed-specific plus 'common'
+
+Clean up the code
+  Order actions consistently (e.g. alphabetically)
+  Consistent file order and formatting
+  Comments as needed
+
+UML class diagram for hierarchy
+
+Decide target branch for merge
+
+
+ToDo Essential for Release 11.1
+-------------------------------
+
+Decide release/branching scheme
+Telemetry interface
+Add consistent action starting messages
+Update OWLAT release test
+Review autonomy release test
+
+
+ToDo Future Work
+----------------
+
+Reduce code repetition and verbosity
+  More templates
+  Metaprogramming, SFINAE
+Fault-handling wrappers/scheme (intern?)
+Are the virtual destructors correct?
+Eliminate action goal status enum
+Refactor ArmFindSurface
