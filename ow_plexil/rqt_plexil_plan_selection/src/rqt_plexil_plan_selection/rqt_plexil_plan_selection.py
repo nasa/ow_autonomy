@@ -79,11 +79,11 @@ class PlexilPlanSelectionGUI(Plugin):
     self._widget.resetButton.clicked[bool].connect(self.handle_reset_button_clicked)
 
   def populate_plan_list(self, plan_dirs):
-    '''Finds all .ple files in the plan directories and stores them in the widget list.'''
+    '''Finds all .plp files in the plan directories and stores them in the widget list.'''
     plan_list = []
     for plan_dir in plan_dirs:
       for p in os.listdir(plan_dir):
-        if p.endswith(".ple"):
+        if p.endswith(".plp"):
           plan_list.append(p.rsplit(".")[0])
     self._widget.planList.addItems(plan_list)
     self._widget.planList.sortItems()
