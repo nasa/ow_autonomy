@@ -5,8 +5,8 @@
 #ifndef Plexil_Interface_H
 #define Plexil_Interface_H
 
-// Interfacing support between the PLEXIL executive and various Ocean World
-// simulators and testbeds.
+// Interfacing support between the PLEXIL executive and various Ocean
+// World simulators and testbeds.
 
 #include "action_support.h"
 #include <cmath>  // for M_PI, fabs, fmod
@@ -71,7 +71,8 @@ class PlexilInterface
     else if (topic != "") subscribeToActionStatus (topic, name);
   }
 
-  void subscribeToActionStatus (const std::string& topic, const std::string& operation);
+  void subscribeToActionStatus (const std::string& topic,
+				const std::string& operation);
 
   template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,

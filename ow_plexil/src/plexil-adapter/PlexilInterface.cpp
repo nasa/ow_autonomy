@@ -68,7 +68,8 @@ void PlexilInterface::actionGoalStatusCallback
   }
 }
 
-void PlexilInterface::subscribeToActionStatus (const string& topic, const string& operation)
+void PlexilInterface::subscribeToActionStatus (const string& topic,
+					       const string& operation)
 {
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
@@ -82,8 +83,6 @@ int PlexilInterface::actionGoalStatus (const string& action_name) const
 {
   return ActionGoalStatusMap[action_name];
 }
-
-
 
 bool PlexilInterface::isLanderOperation (const string& name) const
 {

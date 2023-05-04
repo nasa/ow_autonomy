@@ -240,14 +240,13 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerCommandHandler("arm_stop", arm_stop);
   g_configuration->registerCommandHandler("arm_stow", arm_stow);
   g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
+  g_configuration->registerCommandHandler("camera_capture", camera_capture);
+  g_configuration->registerCommandHandler("pan_tilt_move_joints",
+                                          pan_tilt_move_joints);
   g_configuration->registerCommandHandler("task_deliver_sample",
                                           task_deliver_sample);
   g_configuration->registerCommandHandler("task_discard_sample",
                                           task_discard_sample);
-  g_configuration->registerCommandHandler("pan_tilt_move_joints",
-                                          pan_tilt_move_joints);
-  g_configuration->registerCommandHandler("camera_capture", camera_capture);
-
   debugMsg("LanderAdapter", " initialized.");
   return true;
 }
@@ -267,7 +266,6 @@ bool LanderAdapter::checkAngle (const char* name, double val,
   }
   return true;
 }
-
 
 extern "C" {
   void initlander_adapter() {

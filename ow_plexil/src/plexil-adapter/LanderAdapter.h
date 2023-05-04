@@ -5,7 +5,7 @@
 #ifndef Lander_Adapter
 #define Lander_Adapter
 
-// PLEXIL adapter base class for OceanWATERS and JPL's OWLAT
+// PLEXIL adapter base class for OceanWATERS and JPL's OWLAT.
 
 #include "PlexilAdapter.h"
 
@@ -37,7 +37,6 @@ class LanderAdapter : public PlexilAdapter
  protected:
   bool initialize (LanderInterface*);
 };
-
 
 extern "C" {
   void initLanderAdapter();

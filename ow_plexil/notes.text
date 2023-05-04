@@ -3,16 +3,11 @@ Temporary notes file for this branch, which is in development.
 ToDo Essential for this PR
 --------------------------
 
-Test OW
-  Action Test
-    Flesh out if needed
-
-Clean up the code
-  Order actions consistently (e.g. alphabetically)
-  Consistent file order and formatting
-  Comments as needed
+Update Owlat ArmMoveJoints/Guarded, ArmPlaceTool (remove)
 
 UML class diagram for hierarchy
+
+Remove this file!
 
 
 ToDo Essential for Release 11.1
@@ -34,3 +29,5 @@ Fault-handling wrappers/scheme (intern?)
 Are the virtual destructors correct?
 Eliminate action goal status enum
 Refactor ArmFindSurface
+JPL: ArmMoveJoints/Guarded: remove array size in action file
+JPL: remove owlat_sim_msgs package if possible

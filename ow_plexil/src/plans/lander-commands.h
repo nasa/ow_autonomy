@@ -12,11 +12,7 @@
 
 // and the OceanWATERS-specific ones that follow.
 
-Command camera_set_exposure (Real seconds);
-
-Command pan (Real degrees);
-Command tilt (Real degrees);
-Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
+// Arm commands
 
 Command arm_move_joints (Boolean relative,
                          Real angles[6]);
@@ -25,9 +21,6 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real angles[6],
                                  Real force_threshold,
                                  Real torque_threshold);
-
-Command dock_ingest_sample();
-
 Command scoop_circular (Integer frame,
                         Boolean relative,
                         Real x,
@@ -59,13 +52,22 @@ Command guarded_move (Real x,
                       Real dir_z,
                       Real search_distance);
 
+// Antenna commands
+
+Command pan (Real degrees);
+Command tilt (Real degrees);
+Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
+
+// Misc commands
+
+Command camera_set_exposure (Real seconds);
+Command dock_ingest_sample();
+Command light_set_intensity (String side,     // "left" or "right"
+			     Real intensity); // 0.0 to 1.0.  0 is off.
+
 // Processes number of images already taken with the stereo camera to
 // find the 3d point to sample.  filter_type can either be "Dark" or
 // "Brown".  (Dark chooses dark spots, brown chooses brown spots).
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
-
-// Set spotlight intensity
-Command light_set_intensity (String side,     // "left" or "right"
-			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif

@@ -2,12 +2,14 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Declarations for OWLAT-specific PLEXIL commands.
-
 #ifndef Owlat_commands_H
 #define Owlat_commands_H
 
+// Declarations for commands supported by OWLAT, which include the common ones:
+
 #include "../common/common-commands.h"
+
+// and those that are OWLAT-specific, which follow.
 
 // Move all joints to specified angles.
 Command owlat_arm_move_joints (Boolean relative, Real angles[7]);

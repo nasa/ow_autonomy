@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
 
   bool plan_given = false;
   std::string plan(argv[1]);
-  if(argc == 2 && plan.compare("None") != 0) {
+  if (argc == 2 && plan.compare("None") != 0) {
     plan_given = true;
   }
   TerminalPlanSelection terminal_interface;

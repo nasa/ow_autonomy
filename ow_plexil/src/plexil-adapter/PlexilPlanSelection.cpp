@@ -73,17 +73,18 @@ void PlexilPlanSelection::waitForPlan(){
   std_msgs::String status;
   ros::Rate rate(LOOP_RATE);
   //wait for current plan to finish before running next plan
-  while(!OwExecutive::instance()->allPlansFinished() && m_first_plan == false){
+  while(!OwExecutive::instance()->allPlansFinished() && m_first_plan == false) {
     ros::spinOnce();
     rate.sleep();
   }
 
-  //Once plan is finished set status to complete for GUI
+  // Once plan is finished set status to complete for GUI.
   status.data = "COMPLETE";
   m_planSelectionStatusPublisher->publish(status);
 }
 
-void PlexilPlanSelection::runCurrentPlan(){
+void PlexilPlanSelection::runCurrentPlan()
+{
   std_msgs::String status;
   ros::Rate rate(LOOP_RATE);
   const auto TIMEOUT = 3;

@@ -29,11 +29,17 @@
 
 // PLEXIL library for lander operations.
 
-LibraryAction LightSetIntensity (In String Side, In Real Intensity);
-LibraryAction Pan (In Real Degrees);
-LibraryAction Tilt (In Real Degrees);
-LibraryAction PanTiltMoveCartesian  (In Integer Frame,
-                                     In Real X, In Real Y, In Real Z);
+LibraryAction ArmMoveJoints (In Boolean Relative,
+                             In Real Angles[6]);
+
+LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
+                                    In Real Angles[6],
+                                    In Real ForceThreshold,
+                                    In Real TorqueThreshold);
+LibraryAction CameraSetExposure (In Real Seconds);
+
+LibraryAction DockIngestSample ();
+
 LibraryAction GuardedMove (In Real X,
                            In Real Y,
                            In Real Z,
@@ -42,15 +48,14 @@ LibraryAction GuardedMove (In Real X,
                            In Real DirZ,
                            In Real SearchDistance);
 
-LibraryAction ArmMoveJoints (In Boolean Relative,
-                             In Real Angles[6]);
+LibraryAction LightSetIntensity (In String Side, In Real Intensity);
 
-LibraryAction ArmMoveJointsGuarded (In Boolean Relative,
-                                    In Real Angles[6],
-                                    In Real ForceThreshold,
-                                    In Real TorqueThreshold);
+LibraryAction Pan (In Real Degrees);
 
-LibraryAction DockIngestSample ();
+LibraryAction Tilt (In Real Degrees);
+
+LibraryAction PanTiltMoveCartesian  (In Integer Frame,
+                                     In Real X, In Real Y, In Real Z);
 
 LibraryAction TaskGrind (In Real X,
                          In Real Y,
@@ -74,8 +79,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Z,
                                In Real Depth,
                                In Real Length);
-
-LibraryAction CameraSetExposure (In Real Seconds);
 
 // Lander queries
 

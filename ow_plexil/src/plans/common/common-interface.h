@@ -63,6 +63,10 @@ LibraryAction ArmFindSurface (In Integer Frame,
                               In Real ForceThreshold,
                               In Real TorqueThreshold);
 
+LibraryAction CameraCapture ();
+
+LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
+
 LibraryAction TaskDeliverSample ();
 
 LibraryAction TaskDiscardSample (In Integer Frame,
@@ -70,9 +74,8 @@ LibraryAction TaskDiscardSample (In Integer Frame,
                                  In Real Point[3],
                                  In Real Height);
 
-LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
-
-LibraryAction CameraCapture ();
+// Convenience
+LibraryAction StowSequence();
 
 
 // Lander queries and telemetry

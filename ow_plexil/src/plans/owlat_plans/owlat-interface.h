@@ -10,7 +10,13 @@
 #include "../common/common-interface.h"
 #include "owlat-lander-commands.h"
 
-LibraryAction StowSequence();
+// Note that in cases where OceanWATERS has an action with the same
+// name (but different signature, else it would be in ../common), the
+// one here is prefixed "Owlat".
+
+LibraryAction ArmSetTool(In Integer Tool);
+
+LibraryAction ArmTareFTSensor();
 
 LibraryAction OwlatArmMoveCartesianGuarded(In Integer Frame,
                                            In Boolean Relative,
@@ -38,10 +44,6 @@ LibraryAction OwlatArmPlaceTool(In Integer Frame,
                                 In Boolean Retracting,
                                 In Real ForceThreshold,
                                 In Real TorqueThreshold);
-
-LibraryAction ArmSetTool(In Integer Tool);
-
-LibraryAction ArmTareFTSensor();
 
 LibraryAction OwlatTaskDropoff(In Integer Frame,
                                In Boolean Relative,
@@ -93,7 +95,6 @@ LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Real MaxDepth,
                                 In Real MaxForce);
 
-
 // Telemetry
 
 Real Lookup ArmJointAngles;
@@ -105,6 +106,5 @@ Real Lookup ArmFTForce;
 Real Lookup ArmTool;
 Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
-
 
 #endif
