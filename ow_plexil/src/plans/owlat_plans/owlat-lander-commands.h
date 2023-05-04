@@ -12,27 +12,12 @@
 // and those that are OWLAT-specific, which follow.
 
 // Move all joints to specified angles.
-Command owlat_arm_move_joints (Boolean relative, Real angles[7]);
+Command arm_move_joints (Boolean relative, Real angles[7]);
 
 // Guarded version of owlat_arm_move_joints.
-Command owlat_arm_move_joints_guarded(Boolean relative, Real angles[7],
-                                      Boolean retracting, Real force_threshold,
-                                      Real torque_threshold);
-
-// Perform a guarded pose move to the specified position moving along
-// the given normal vector until meeting a force threshold.
-Command owlat_arm_place_tool(Integer Frame,
-			     Boolean relative,
-			     Real position[3],
-			     Real normal[3],
-                             Real distance,
-			     Real overdrive,
-			     Boolean retracting,
-			     Real force_threshold,
-                             Real torque_threshold);
-
-// Perform scoop dropoff over target point in a given frame.
-Command owlat_task_dropoff(Integer frame, Boolean relative, Real point[3]);
+Command arm_move_joints_guarded(Boolean relative, Real angles[7],
+                                Real force_threshold,
+                                Real torque_threshold);
 
 Command task_scoop_linear (Integer frame,
                            Boolean relative,

@@ -19,10 +19,10 @@
 #include <owl_msgs/TaskPenetrometerAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
+#include <owl_msgs/ArmMoveJointsAction.h>
+#include <owl_msgs/ArmMoveJointsGuardedAction.h>
 
-#include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
-#include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
+// TODO: convert these per unified telemetry interface
 #include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
 #include <owlat_sim_msgs/ARM_JOINT_ACCELERATIONS.h>
 #include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
@@ -50,13 +50,10 @@ using TaskScoopCircularActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
 using TaskScoopLinearActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
-
-using OwlatArmMoveJointsActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
-using OwlatArmMoveJointsGuardedActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTS_GUARDEDAction>;
-using OwlatArmPlaceToolActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_PLACE_TOOLAction>;
+using ArmMoveJointsGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
+using ArmMoveJointsActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 
 class OwlatInterface : public LanderInterface
 {
@@ -82,20 +79,10 @@ class OwlatInterface : public LanderInterface
   void taskDiscardSample (int frame, bool relative,
                           const std::vector<double>& point,
                           double height, int id) override;
-  void owlatArmMoveJoints (bool relative,
-                           const std::vector<double>& angles,
-                           int id);
-  void owlatArmMoveJointsGuarded (bool relative,
-                                  const std::vector<double>& angles,
-                                  bool retracting, double force_threshold,
-                                  double torque_threshold, int id);
-  void owlatArmPlaceTool (int frame,
-                          bool relative,
-                          const std::vector<double>& position,
-                          const std::vector<double>& normal,
-                          double distance, double overdrive,
-                          bool retracting, double force_threshold,
-                          double torque_threshold, int id);
+  void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
+  void armMoveJointsGuarded (bool relative, const std::vector<double>& angles,
+                             double force_threshold, double torque_threshold,
+                             int id);
   void armSetTool (int tool, int id);
   void armTareFTSensor (int id);
   void taskPSP (int frame, bool relative,
@@ -152,18 +139,12 @@ class OwlatInterface : public LanderInterface
   void taskDiscardSampleAction (int frame, bool relative,
                                 const std::vector<double>& point,
                                 double height, int id);
-  void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
-                                 int id);
-  void owlatArmMoveJointsGuardedAction (bool relative,
-                                        const std::vector<double>& angles,
-                                        bool retracting, double force_threshold,
-                                        double torque_threshold, int id);
-  void owlatArmPlaceToolAction (int frame, bool relative,
-                                const std::vector<double>& position,
-                                const std::vector<double>& normal,
-                                double distance, double overdrive,
-                                bool retracting, double force_threshold,
-                                double torque_threshold, int id);
+  void armMoveJointsAction (bool relative, const std::vector<double>& angles,
+                            int id);
+  void armMoveJointsGuardedAction (bool relative,
+                                   const std::vector<double>& angles,
+                                   double force_threshold,
+                                   double torque_threshold, int id);
   void armSetToolAction (int tool, int id);
   void taskPSPAction (int frame, bool relative,
                       const std::vector<double>& point,
@@ -208,9 +189,8 @@ class OwlatInterface : public LanderInterface
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_discardSampleClient;
-  std::unique_ptr<OwlatArmMoveJointsActionClient> m_armMoveJointsClient;
-  std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
-  std::unique_ptr<OwlatArmPlaceToolActionClient> m_armPlaceToolClient;
+  std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
+  std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
   std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
   std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<TaskPSPActionClient> m_taskPSPClient;

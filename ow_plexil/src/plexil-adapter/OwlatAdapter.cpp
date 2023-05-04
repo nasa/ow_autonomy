@@ -30,7 +30,7 @@ using namespace PLEXIL;
 
 using std::string;
 
-static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
+static void arm_move_joints (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
   vector<double> const *angles_vector = nullptr;
@@ -38,70 +38,30 @@ static void owlat_arm_move_joints (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValuePointer(angles);
-  //change real array into a vector
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJoints (relative, *angles_vector,
-                                                  CommandId);
+  OwlatInterface::instance()->armMoveJoints (relative, *angles_vector, CommandId);
   acknowledge_command_sent(*cr);
 }
 
-static void owlat_arm_move_joints_guarded (Command* cmd,
-                                           AdapterExecInterface* intf)
+static void arm_move_joints_guarded (Command* cmd, AdapterExecInterface* intf)
 {
-  bool relative, retracting;
+  bool relative;
   double force_threshold, torque_threshold;
   vector<double> const *angles_vector = nullptr;
   RealArray const *angles = nullptr;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValuePointer(angles);
-  args[2].getValue(retracting);
-  args[3].getValue(force_threshold);
-  args[4].getValue(torque_threshold);
-  //change real array into a vector
+  args[2].getValue(force_threshold);
+  args[3].getValue(torque_threshold);
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmMoveJointsGuarded (relative,
-                                                         *angles_vector,
-                                                         retracting,
-                                                         force_threshold,
-                                                         torque_threshold,
-                                                         CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void owlat_arm_place_tool (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative, retracting;
-  double force_threshold, torque_threshold, distance, overdrive;
-  vector<double> const *position_vector = nullptr;
-  vector<double> const *normal_vector = nullptr;
-  RealArray const *position = nullptr;
-  RealArray const *normal = nullptr;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValuePointer(position);
-  args[3].getValuePointer(normal);
-  args[4].getValue(distance);
-  args[5].getValue(overdrive);
-  args[6].getValue(retracting);
-  args[7].getValue(force_threshold);
-  args[8].getValue(torque_threshold);
-  //change real array into a vector
-  position->getContentsVector(position_vector);
-  normal->getContentsVector(normal_vector);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->owlatArmPlaceTool (frame, relative,
-                                                 *position_vector,
-                                                 *normal_vector,
-                                                 distance, overdrive,
-                                                 retracting,
-                                                 force_threshold,
-                                                 torque_threshold,
-                                                 CommandId);
+  OwlatInterface::instance()->armMoveJointsGuarded (relative,
+                                                    *angles_vector,
+                                                    force_threshold,
+                                                    torque_threshold,
+                                                    CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -167,7 +127,6 @@ static void task_p (bool psp, Command* cmd, AdapterExecInterface* intf)
   args[3].getValuePointer(normal);
   args[4].getValue(max_depth);
   args[5].getValue(max_force);
-  //change real array into a vector
   point->getContentsVector(point_vector);
   normal->getContentsVector(normal_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
@@ -374,12 +333,9 @@ bool OwlatAdapter::initialize()
 
   g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
   g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
-  g_configuration->registerCommandHandler("owlat_arm_move_joints",
-                                          owlat_arm_move_joints);
-  g_configuration->registerCommandHandler("owlat_arm_move_joints_guarded",
-                                          owlat_arm_move_joints_guarded);
-  g_configuration->registerCommandHandler("owlat_arm_place_tool",
-                                          owlat_arm_place_tool);
+  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
+  g_configuration->registerCommandHandler("arm_move_joints_guarded",
+                                          arm_move_joints_guarded);
   g_configuration->registerCommandHandler("task_scoop_circular", task_scoop_circular);
   g_configuration->registerCommandHandler("task_scoop_linear", task_scoop_linear);
   g_configuration->registerCommandHandler("task_psp", task_psp);

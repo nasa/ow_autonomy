@@ -3,9 +3,10 @@ Temporary notes file for this branch, which is in development.
 ToDo Essential for this PR
 --------------------------
 
-Update Owlat ArmMoveJoints/Guarded, ArmPlaceTool (remove)
+Retest OW
 
-UML class diagram for hierarchy
+Check 'identical' actions, find out why they are separated, and update
+either the implementation or unification doc.
 
 Remove this file!
 

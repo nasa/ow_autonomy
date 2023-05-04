@@ -90,8 +90,7 @@ TestActions:
 
   LibraryCall TaskDeliverSample ();
   LibraryCall DockIngestSample ();
-  LibraryCall ArmUnstow();
-  LibraryCall ArmStow();
+  LibraryCall StowSequence();
   LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
   LibraryCall Pan (Degrees = 90);
   LibraryCall Tilt (Degrees = 89);

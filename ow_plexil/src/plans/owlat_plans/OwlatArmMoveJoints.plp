@@ -2,12 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-Command owlat_arm_move_joints (Boolean relative, Real angles[7]);
+Command arm_move_joints (Boolean relative, Real angles[7]);
 
 OwlatArmMoveJoints:
 {
   In Boolean Relative;
   In Real Angles[7];
 
-  SynchronousCommand owlat_arm_move_joints(Relative, Angles);
+  SynchronousCommand arm_move_joints(Relative, Angles);
 }

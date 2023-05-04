@@ -25,7 +25,6 @@ const string Name_ArmFindSurface       = "ArmFindSurface";
 const string Name_ArmMoveJoints        = "ArmMoveJoints";
 const string Name_ArmMoveJointsGuarded = "ArmMoveJointsGuarded";
 const string Name_Tare                 = "ArmTareFTSensor";
-const string Name_ArmPlaceTool         = "ArmPlaceTool";
 const string Name_ArmSetTool           = "ArmSetTool";
 const string Name_TaskPSP              = "TaskPSP";
 const string Name_Discard              = "TaskDiscardSample";
@@ -41,7 +40,6 @@ static vector<string> LanderOpNames = {
   Name_Discard,
   Name_ArmMoveJoints,
   Name_ArmMoveJointsGuarded,
-  Name_ArmPlaceTool,
   Name_ArmSetTool,
   Name_Tare,
   Name_TaskPSP,
@@ -141,12 +139,10 @@ void OwlatInterface::initialize()
     m_discardSampleClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
     m_armMoveJointsClient =
-      make_unique<OwlatArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+      make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
     m_armMoveJointsGuardedClient =
-      make_unique<OwlatArmMoveJointsGuardedActionClient>
-      (Name_ArmMoveJointsGuarded, true);
-    m_armPlaceToolClient =
-      make_unique<OwlatArmPlaceToolActionClient>(Name_ArmPlaceTool, true);
+      make_unique<ArmMoveJointsGuardedActionClient> (Name_ArmMoveJointsGuarded,
+                                                     true);
     m_armSetToolClient =
       make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
     m_armTareFTSensorClient =
@@ -171,8 +167,6 @@ void OwlatInterface::initialize()
                          "/TaskArmMoveJoints/status");
     connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
                          "/TaskArmMoveJointsGuarded/status");
-    connectActionServer (m_armPlaceToolClient, Name_ArmPlaceTool,
-                         "/ArmPlaceTool/status");
     connectActionServer (m_armSetToolClient, Name_ArmSetTool,
                          "/ArmSetTool/status");
     connectActionServer (m_armTareFTSensorClient, Name_Tare,
@@ -283,127 +277,74 @@ void OwlatInterface::taskDiscardSampleAction (int frame, bool relative,
 }
 
 
-void OwlatInterface::owlatArmMoveJoints (bool relative,
-                                         const vector<double>& angles,
-                                         int id)
+void OwlatInterface::armMoveJoints (bool relative,
+                                    const vector<double>& angles,
+                                    int id)
 {
   if (! markOperationRunning (Name_ArmMoveJoints, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmMoveJointsAction,
+  thread action_thread (&OwlatInterface::armMoveJointsAction,
                         this, relative, angles, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointsAction (bool relative,
-                                               const vector<double>& angles,
-                                               int id)
+void OwlatInterface::armMoveJointsAction (bool relative,
+                                          const vector<double>& angles,
+                                          int id)
 {
-  ARM_MOVE_JOINTSGoal goal;
+  ArmMoveJointsGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
     goal.angles[i] = angles[i];
   }
   string opname = Name_ArmMoveJoints;
 
-  runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTSAction>,
-            ARM_MOVE_JOINTSGoal,
-            ARM_MOVE_JOINTSResultConstPtr,
-            ARM_MOVE_JOINTSFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<ArmMoveJointsAction>,
+            ArmMoveJointsGoal,
+            ArmMoveJointsResultConstPtr,
+            ArmMoveJointsFeedbackConstPtr>
     (opname, m_armMoveJointsClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_MOVE_JOINTSFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_MOVE_JOINTSResultConstPtr> (opname));
+     default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmMoveJointsResultConstPtr> (opname));
 }
 
-void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
-                                                const vector<double>& angles,
-                                                bool retracting,
-                                                double force_threshold,
-                                                double torque_threshold,
-                                                int id)
+void OwlatInterface::armMoveJointsGuarded (bool relative,
+                                           const vector<double>& angles,
+                                           double force_threshold,
+                                           double torque_threshold,
+                                           int id)
 {
   if (! markOperationRunning (Name_ArmMoveJointsGuarded, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmMoveJointsGuardedAction,
-                        this, relative, angles, retracting, force_threshold,
+  thread action_thread (&OwlatInterface::armMoveJointsGuardedAction,
+                        this, relative, angles, force_threshold,
                         torque_threshold, id);
   action_thread.detach();
 }
 
-void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
-                                                      const vector<double>& angles,
-                                                      bool retracting,
-                                                      double force_threshold,
-                                                      double torque_threshold,
-                                                      int id)
+void OwlatInterface::armMoveJointsGuardedAction (bool relative,
+                                                 const vector<double>& angles,
+                                                 double force_threshold,
+                                                 double torque_threshold,
+                                                 int id)
 {
 
-  ARM_MOVE_JOINTS_GUARDEDGoal goal;
+  ArmMoveJointsGuardedGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
     goal.angles[i] = angles[i];
   }
-  goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
   string opname = Name_ArmMoveJointsGuarded;
 
-  runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTS_GUARDEDAction>,
-            ARM_MOVE_JOINTS_GUARDEDGoal,
-            ARM_MOVE_JOINTS_GUARDEDResultConstPtr,
-            ARM_MOVE_JOINTS_GUARDEDFeedbackConstPtr>
+  runAction<actionlib::SimpleActionClient<ArmMoveJointsGuardedAction>,
+            ArmMoveJointsGuardedGoal,
+            ArmMoveJointsGuardedResultConstPtr,
+            ArmMoveJointsGuardedFeedbackConstPtr>
     (opname, m_armMoveJointsGuardedClient, goal, id,
      default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_MOVE_JOINTS_GUARDEDFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_MOVE_JOINTS_GUARDEDResultConstPtr> (opname));
-}
-
-void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
-                                        const vector<double>& position,
-                                        const vector<double>& normal,
-                                        double distance,
-					double overdrive,
-                                        bool retracting,
-					double force_threshold,
-                                        double torque_threshold, int id)
-{
-  if (! markOperationRunning (Name_ArmPlaceTool, id)) return;
-  thread action_thread (&OwlatInterface::owlatArmPlaceToolAction,
-                        this, frame, relative, position, normal,
-                        distance, overdrive, retracting, force_threshold,
-                        torque_threshold, id);
-  action_thread.detach();
-}
-
-void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
-                                              const vector<double>& position,
-                                              const vector<double>& normal,
-                                              double distance,
-					      double overdrive,
-                                              bool retracting,
-					      double force_threshold,
-                                              double torque_threshold, int id)
-{
-  ARM_PLACE_TOOLGoal goal;
-  goal.frame.value = frame;
-  goal.relative = relative;
-  for(int i = 0; i < goal.position.size(); i++){
-    goal.position[i] = position[i];
-    goal.normal[i] = normal[i];
-  }
-  goal.distance = distance;
-  goal.overdrive = overdrive;
-  goal.retracting = retracting;
-  goal.force_threshold = force_threshold;
-  goal.torque_threshold = torque_threshold;
-  string opname = Name_ArmPlaceTool;
-
-  runAction<actionlib::SimpleActionClient<ARM_PLACE_TOOLAction>,
-            ARM_PLACE_TOOLGoal,
-            ARM_PLACE_TOOLResultConstPtr,
-            ARM_PLACE_TOOLFeedbackConstPtr>
-    (opname, m_armPlaceToolClient, goal, id,
-     default_action_active_cb (opname),
-     default_action_feedback_cb<ARM_PLACE_TOOLFeedbackConstPtr> (opname),
-     default_action_done_cb<ARM_PLACE_TOOLResultConstPtr> (opname));
+     default_action_feedback_cb<ArmMoveJointsGuardedFeedbackConstPtr> (opname),
+     default_action_done_cb<ArmMoveJointsGuardedResultConstPtr> (opname));
 }
 
 void OwlatInterface::armSetTool (int tool, int id)

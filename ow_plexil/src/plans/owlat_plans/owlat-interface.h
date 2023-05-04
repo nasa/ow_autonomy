@@ -35,20 +35,6 @@ LibraryAction OwlatArmMoveJointsGuarded(In Boolean Relative,
                                         In Real ForceThreshold,
                                         In Real TorqueThreshold);
 
-LibraryAction OwlatArmPlaceTool(In Integer Frame,
-                                In Boolean Relative,
-                                In Real Position[3],
-                                In Real Normal[3],
-                                In Real Distance,
-                                In Real Overdrive,
-                                In Boolean Retracting,
-                                In Real ForceThreshold,
-                                In Real TorqueThreshold);
-
-LibraryAction OwlatTaskDropoff(In Integer Frame,
-                               In Boolean Relative,
-                               In Real Point[3]);
-
 LibraryAction OwlatTaskScoopCircular (In Integer Frame,
                                       In Boolean Relative,
                                       In Real Point[3],
@@ -62,13 +48,6 @@ LibraryAction OwlatTaskScoopLinear (In Integer Frame,
                                     In Real Normal[3],
                                     In Real Depth,
                                     In Real Length);
-
-LibraryAction OwlatTaskShearBevameter(In Integer Frame,
-                                      In Boolean Relative,
-                                      In Real Point[3],
-                                      In Real Normal[3],
-                                      In Real Preload,
-                                      In Real MaxTorque);
 
 LibraryAction PrintNodeStart(In String NodeName);
 
