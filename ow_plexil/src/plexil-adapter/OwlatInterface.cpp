@@ -21,36 +21,34 @@ using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
-const string Name_ArmFindSurface = "ArmFindSurface";
-const string Name_Tare = "ArmTareFTSensor";
-const string Name_SetTool =       "ArmSetTool";
-const string Name_TaskPSP =          "TaskPSP";
-const string Name_TaskShearBevameter =          "TaskShearBevameter";
-const string Name_TaskPenetrometer =          "TaskPenetrometer";
-const string Name_TaskScoopCircular =        "TaskScoopCircular";
-const string Name_TaskScoopLinear =        "TaskScoopLinear";
-
-const string Name_OwlatArmMoveJoints =    "/owlat_sim/ARM_MOVE_JOINTS";
-const string Name_OwlatArmMoveJointsGuarded =
-  "/owlat_sim/ARM_MOVE_JOINTS_GUARDED";
-const string Name_OwlatArmPlaceTool =     "/owlat_sim/ARM_PLACE_TOOL";
-const string Name_Discard = "TaskDiscardSample";
+const string Name_ArmFindSurface       = "ArmFindSurface";
+const string Name_ArmMoveJoints        = "ArmMoveJoints";
+const string Name_ArmMoveJointsGuarded = "ArmMoveJointsGuarded";
+const string Name_Tare                 = "ArmTareFTSensor";
+const string Name_ArmPlaceTool         = "ArmPlaceTool";
+const string Name_ArmSetTool           = "ArmSetTool";
+const string Name_TaskPSP              = "TaskPSP";
+const string Name_Discard              = "TaskDiscardSample";
+const string Name_ShearBevameter       = "TaskShearBevameter";
+const string Name_Penetrometer         = "TaskPenetrometer";
+const string Name_ScoopCircular        = "TaskScoopCircular";
+const string Name_ScoopLinear          = "TaskScoopLinear";
 
 const size_t OwlatJoints = 6;
 
 static vector<string> LanderOpNames = {
   Name_ArmFindSurface,
   Name_Discard,
-  Name_OwlatArmMoveJoints,
-  Name_OwlatArmMoveJointsGuarded,
-  Name_OwlatArmPlaceTool,
-  Name_SetTool,
+  Name_ArmMoveJoints,
+  Name_ArmMoveJointsGuarded,
+  Name_ArmPlaceTool,
+  Name_ArmSetTool,
   Name_Tare,
   Name_TaskPSP,
-  Name_TaskShearBevameter,
-  Name_TaskPenetrometer,
-  Name_TaskScoopCircular,
-  Name_TaskScoopLinear
+  Name_ShearBevameter,
+  Name_Penetrometer,
+  Name_ScoopCircular,
+  Name_ScoopLinear
 };
 
 OwlatInterface* OwlatInterface::instance ()
@@ -140,72 +138,51 @@ void OwlatInterface::initialize()
     // Initialize pointers
     m_armFindSurfaceClient =
       make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-    m_taskDiscardSampleClient =
+    m_discardSampleClient =
       make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_owlatArmMoveJointsClient =
-      make_unique<OwlatArmMoveJointsActionClient>(Name_OwlatArmMoveJoints, true);
-    m_owlatArmMoveJointsGuardedClient =
+    m_armMoveJointsClient =
+      make_unique<OwlatArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+    m_armMoveJointsGuardedClient =
       make_unique<OwlatArmMoveJointsGuardedActionClient>
-      (Name_OwlatArmMoveJointsGuarded, true);
-    m_owlatArmPlaceToolClient =
-      make_unique<OwlatArmPlaceToolActionClient>(Name_OwlatArmPlaceTool, true);
+      (Name_ArmMoveJointsGuarded, true);
+    m_armPlaceToolClient =
+      make_unique<OwlatArmPlaceToolActionClient>(Name_ArmPlaceTool, true);
     m_armSetToolClient =
-      make_unique<ArmSetToolActionClient>(Name_SetTool, true);
+      make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
     m_armTareFTSensorClient =
       make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
     m_taskPSPClient =
       make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
     m_taskShearBevameterClient =
-      make_unique<TaskShearBevameterActionClient>(Name_TaskShearBevameter, true);
+      make_unique<TaskShearBevameterActionClient>(Name_ShearBevameter, true);
     m_taskPenetrometerClient =
-      make_unique<TaskPenetrometerActionClient>(Name_TaskPenetrometer, true);
+      make_unique<TaskPenetrometerActionClient>(Name_Penetrometer, true);
     m_taskScoopCircularClient =
-      make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
+      make_unique<TaskScoopCircularActionClient>(Name_ScoopCircular, true);
     m_taskScoopLinearClient =
-      make_unique<TaskScoopLinearActionClient>(Name_TaskScoopLinear, true);
+      make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
 
     // Connect to action servers
     connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
                          "/ArmFindSurface/status");
-    connectActionServer (m_taskDiscardSampleClient, Name_Discard,
+    connectActionServer (m_discardSampleClient, Name_Discard,
                          "/TaskDiscardSample/status");
-
-    if (! m_owlatArmMoveJointsClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_MOVE_JOINTS action server did not connect!");
-    }
-    if (! m_owlatArmMoveJointsGuardedClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_MOVE_JOINTS_GUARDED action server did not connect!");
-    }
-    if (! m_owlatArmPlaceToolClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ARM_PLACE_TOOL action server did not connect!");
-    }
-    if (! m_armSetToolClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("OWLAT ArmSetTool action server did not connect!");
-    }
-    if (! m_armTareFTSensorClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("ArmTareFTSensor action server did not connect!");
-    }
-    if (! m_taskShearBevameterClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskShearBevameter action server did not connect!");
-    }
-    if (! m_taskPenetrometerClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskPenetrometer action server did not connect!");
-    }
-    if (! m_taskScoopCircularClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskScoopCircular action server did not connect!");
-    }
-    if (! m_taskScoopLinearClient->waitForServer
-        (ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
-      ROS_ERROR ("TaskScoopLinear action server did not connect!");
-    }
+    connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
+                         "/TaskArmMoveJoints/status");
+    connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
+                         "/TaskArmMoveJointsGuarded/status");
+    connectActionServer (m_armPlaceToolClient, Name_ArmPlaceTool,
+                         "/ArmPlaceTool/status");
+    connectActionServer (m_armSetToolClient, Name_ArmSetTool,
+                         "/ArmSetTool/status");
+    connectActionServer (m_armTareFTSensorClient, Name_Tare,
+                         "/ArmTareFTSensor/status");
+    connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
+                         "/TaskShearBevameter/status");
+    connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
+                         "/TaskPenetrometer/status");
+    connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
+                         "/TaskScoopLinear/status");
   }
 }
 
@@ -236,7 +213,8 @@ void OwlatInterface::armFindSurfaceAction (int frame, bool relative,
                                            const std::vector<double>& pos,
                                            const std::vector<double>& normal,
                                            double distance, double overdrive,
-                                           double force_threshold, double torque_threshold,
+                                           double force_threshold,
+					   double torque_threshold,
                                            int id)
 {
   ArmFindSurfaceGoal goal;
@@ -298,7 +276,7 @@ void OwlatInterface::taskDiscardSampleAction (int frame, bool relative,
             TaskDiscardSampleGoal,
             TaskDiscardSampleResultConstPtr,
             TaskDiscardSampleFeedbackConstPtr>
-    (Name_Discard, m_taskDiscardSampleClient, goal, id,
+    (Name_Discard, m_discardSampleClient, goal, id,
      default_action_active_cb (Name_Discard),
      default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_Discard),
      default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_Discard));
@@ -309,7 +287,7 @@ void OwlatInterface::owlatArmMoveJoints (bool relative,
                                          const vector<double>& angles,
                                          int id)
 {
-  if (! markOperationRunning (Name_OwlatArmMoveJoints, id)) return;
+  if (! markOperationRunning (Name_ArmMoveJoints, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointsAction,
                         this, relative, angles, id);
   action_thread.detach();
@@ -319,19 +297,18 @@ void OwlatInterface::owlatArmMoveJointsAction (bool relative,
                                                const vector<double>& angles,
                                                int id)
 {
-
   ARM_MOVE_JOINTSGoal goal;
   goal.relative = relative;
   for(int i = 0; i < goal.angles.size(); i++){
     goal.angles[i] = angles[i];
   }
-  string opname = Name_OwlatArmMoveJoints;
+  string opname = Name_ArmMoveJoints;
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTSAction>,
             ARM_MOVE_JOINTSGoal,
             ARM_MOVE_JOINTSResultConstPtr,
             ARM_MOVE_JOINTSFeedbackConstPtr>
-    (opname, m_owlatArmMoveJointsClient, goal, id,
+    (opname, m_armMoveJointsClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<ARM_MOVE_JOINTSFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_MOVE_JOINTSResultConstPtr> (opname));
@@ -344,7 +321,7 @@ void OwlatInterface::owlatArmMoveJointsGuarded (bool relative,
                                                 double torque_threshold,
                                                 int id)
 {
-  if (! markOperationRunning (Name_OwlatArmMoveJointsGuarded, id)) return;
+  if (! markOperationRunning (Name_ArmMoveJointsGuarded, id)) return;
   thread action_thread (&OwlatInterface::owlatArmMoveJointsGuardedAction,
                         this, relative, angles, retracting, force_threshold,
                         torque_threshold, id);
@@ -367,13 +344,13 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmMoveJointsGuarded;
+  string opname = Name_ArmMoveJointsGuarded;
 
   runAction<actionlib::SimpleActionClient<ARM_MOVE_JOINTS_GUARDEDAction>,
             ARM_MOVE_JOINTS_GUARDEDGoal,
             ARM_MOVE_JOINTS_GUARDEDResultConstPtr,
             ARM_MOVE_JOINTS_GUARDEDFeedbackConstPtr>
-    (opname, m_owlatArmMoveJointsGuardedClient, goal, id,
+    (opname, m_armMoveJointsGuardedClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<ARM_MOVE_JOINTS_GUARDEDFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_MOVE_JOINTS_GUARDEDResultConstPtr> (opname));
@@ -382,11 +359,13 @@ void OwlatInterface::owlatArmMoveJointsGuardedAction (bool relative,
 void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
                                         const vector<double>& position,
                                         const vector<double>& normal,
-                                        double distance, double overdrive,
-                                        bool retracting, double force_threshold,
+                                        double distance,
+					double overdrive,
+                                        bool retracting,
+					double force_threshold,
                                         double torque_threshold, int id)
 {
-  if (! markOperationRunning (Name_OwlatArmPlaceTool, id)) return;
+  if (! markOperationRunning (Name_ArmPlaceTool, id)) return;
   thread action_thread (&OwlatInterface::owlatArmPlaceToolAction,
                         this, frame, relative, position, normal,
                         distance, overdrive, retracting, force_threshold,
@@ -397,8 +376,10 @@ void OwlatInterface::owlatArmPlaceTool (int frame, bool relative,
 void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
                                               const vector<double>& position,
                                               const vector<double>& normal,
-                                              double distance, double overdrive,
-                                              bool retracting, double force_threshold,
+                                              double distance,
+					      double overdrive,
+                                              bool retracting,
+					      double force_threshold,
                                               double torque_threshold, int id)
 {
   ARM_PLACE_TOOLGoal goal;
@@ -413,13 +394,13 @@ void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
   goal.retracting = retracting;
   goal.force_threshold = force_threshold;
   goal.torque_threshold = torque_threshold;
-  string opname = Name_OwlatArmPlaceTool;
+  string opname = Name_ArmPlaceTool;
 
   runAction<actionlib::SimpleActionClient<ARM_PLACE_TOOLAction>,
             ARM_PLACE_TOOLGoal,
             ARM_PLACE_TOOLResultConstPtr,
             ARM_PLACE_TOOLFeedbackConstPtr>
-    (opname, m_owlatArmPlaceToolClient, goal, id,
+    (opname, m_armPlaceToolClient, goal, id,
      default_action_active_cb (opname),
      default_action_feedback_cb<ARM_PLACE_TOOLFeedbackConstPtr> (opname),
      default_action_done_cb<ARM_PLACE_TOOLResultConstPtr> (opname));
@@ -427,7 +408,7 @@ void OwlatInterface::owlatArmPlaceToolAction (int frame, bool relative,
 
 void OwlatInterface::armSetTool (int tool, int id)
 {
-  if (! markOperationRunning (Name_SetTool, id)) return;
+  if (! markOperationRunning (Name_ArmSetTool, id)) return;
   thread action_thread (&OwlatInterface::armSetToolAction, this, tool, id);
   action_thread.detach();
 }
@@ -436,7 +417,7 @@ void OwlatInterface::armSetToolAction (int tool, int id)
 {
   ArmSetToolGoal goal;
   goal.tool = tool;
-  string opname = Name_SetTool;
+  string opname = Name_ArmSetTool;
 
   runAction<actionlib::SimpleActionClient<ArmSetToolAction>,
             ArmSetToolGoal,
@@ -468,7 +449,7 @@ void OwlatInterface::taskShearBevameter (int frame,
                                          double max_torque,
                                          int id)
 {
-  if (! markOperationRunning (Name_TaskShearBevameter, id)) return;
+  if (! markOperationRunning (Name_ShearBevameter, id)) return;
   thread action_thread (&OwlatInterface::taskShearBevameterAction,
                         this, frame, relative, point, normal,
                         preload, max_torque, id);
@@ -499,7 +480,7 @@ void OwlatInterface::taskPenetrometer (int frame,
                                        double max_force,
                                        int id)
 {
-  if (! markOperationRunning (Name_TaskPenetrometer, id)) return;
+  if (! markOperationRunning (Name_Penetrometer, id)) return;
   thread action_thread (&OwlatInterface::taskPenetrometerAction,
                         this, frame, relative, point, normal,
                         max_depth, max_force, id);
@@ -517,7 +498,7 @@ void OwlatInterface::taskPSPAction (int frame,
   TaskPSPGoal goal;
   goal.frame = frame;
   goal.relative = relative;
-  for(int i = 0; i < goal.point.size(); i++){
+  for(int i = 0; i < goal.point.size(); i++) {
     goal.point[i] = point[i];
     goal.normal[i] = normal[i];
   }
@@ -552,7 +533,7 @@ void OwlatInterface::taskShearBevameterAction (int frame,
   }
   goal.preload = preload;
   goal.max_torque = max_torque;
-  string opname = Name_TaskShearBevameter;
+  string opname = Name_ShearBevameter;
 
   runAction<actionlib::SimpleActionClient<TaskShearBevameterAction>,
             TaskShearBevameterGoal,
@@ -582,7 +563,7 @@ void OwlatInterface::taskPenetrometerAction (int frame,
   }
   goal.max_depth = max_depth;
   goal.max_force = max_force;
-  string opname = Name_TaskPenetrometer;
+  string opname = Name_Penetrometer;
 
   runAction<actionlib::SimpleActionClient<TaskPenetrometerAction>,
             TaskPenetrometerGoal,
@@ -602,7 +583,7 @@ void OwlatInterface::taskScoopCircular (int frame,
                                         double scoop_angle,
                                         int id)
 {
-  if (! markOperationRunning (Name_TaskScoopCircular, id)) return;
+  if (! markOperationRunning (Name_ScoopCircular, id)) return;
   thread action_thread (&OwlatInterface::taskScoopCircularAction,
                         this, frame, relative, point, normal, depth, scoop_angle,
                         id);
@@ -624,7 +605,7 @@ void OwlatInterface::taskScoopCircularAction (int frame, bool relative,
   }
   goal.depth = depth;
   goal.scoop_angle = scoop_angle;
-  string opname = Name_TaskScoopCircular;
+  string opname = Name_ScoopCircular;
 
   runAction<actionlib::SimpleActionClient<TaskScoopCircularAction>,
             TaskScoopCircularGoal,
@@ -644,7 +625,7 @@ void OwlatInterface::taskScoopLinear (int frame,
                                         double length,
                                         int id)
 {
-  if (! markOperationRunning (Name_TaskScoopLinear, id)) return;
+  if (! markOperationRunning (Name_ScoopLinear, id)) return;
   thread action_thread (&OwlatInterface::taskScoopLinearAction,
                         this, frame, relative, point, normal, depth, length,
                         id);
@@ -666,7 +647,7 @@ void OwlatInterface::taskScoopLinearAction (int frame, bool relative,
   }
   goal.depth = depth;
   goal.length = length;
-  string opname = Name_TaskScoopLinear;
+  string opname = Name_ScoopLinear;
 
   runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
             TaskScoopLinearGoal,

@@ -207,10 +207,10 @@ class OwlatInterface : public LanderInterface
 
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
-  std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
-  std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
-  std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
-  std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_discardSampleClient;
+  std::unique_ptr<OwlatArmMoveJointsActionClient> m_armMoveJointsClient;
+  std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
+  std::unique_ptr<OwlatArmPlaceToolActionClient> m_armPlaceToolClient;
   std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
   std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
   std::unique_ptr<TaskPSPActionClient> m_taskPSPClient;
