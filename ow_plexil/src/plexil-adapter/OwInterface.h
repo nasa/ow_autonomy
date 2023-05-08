@@ -7,27 +7,26 @@
 
 // Interface specific to OceanWATERS' lander.
 
-// ow_plexil
+// ow_plexil ROS actions
 #include "LanderInterface.h"
 #include <ow_plexil/IdentifyLocationAction.h>
 
-// owl_msgs (lander commands)
+using IdentifySampleLocationActionClient =
+  actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
+
+// owl_msgs (testbed-common ROS actions)
 #include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
-#include <ow_lander/PanAction.h>
-#include <ow_lander/TiltAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
 #include <owl_msgs/TaskGrindAction.h>
-#include <ow_lander/GuardedMoveAction.h>
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 #include <owl_msgs/TaskScoopCircularAction.h>
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
-#include <ow_lander/DockIngestSampleAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
 
-// owl_msgs (telemetry)
+// owl_msgs (unified telemetry)
 #include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmFaultsStatus.h>
 #include <owl_msgs/PanTiltFaultsStatus.h>
@@ -41,14 +40,10 @@ using ArmFindSurfaceActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
 using TaskGrindActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskGrindAction>;
-using GuardedMoveActionClient =
-  actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 using ArmMoveJointsGuardedActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
-using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
-using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using PanTiltMoveCartesianActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveCartesianAction>;
 using TaskScoopCircularActionClient =
@@ -57,21 +52,27 @@ using TaskScoopLinearActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
 using CameraSetExposureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraSetExposureAction>;
-using DockIngestSampleActionClient =
-  actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 using LightSetIntensityActionClient =
   actionlib::SimpleActionClient<owl_msgs::LightSetIntensityAction>;
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 
-// The only ow_plexil-defined action.
-using IdentifySampleLocationActionClient =
-  actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
+// OceanWATERS-specific ROS actions
+#include <ow_lander/GuardedMoveAction.h>
+#include <ow_lander/DockIngestSampleAction.h>
+#include <ow_lander/TiltAction.h>
+#include <ow_lander/PanAction.h>
+
+using GuardedMoveActionClient =
+  actionlib::SimpleActionClient<ow_lander::GuardedMoveAction>;
+using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
+using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
+using DockIngestSampleActionClient =
+  actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 
 
 // Maps from fault name to the pair (fault value, is fault in progress?)
-using FaultMap32 = std::map<std::string,std::pair<uint32_t, bool>>;
-using FaultMap64 = std::map<std::string,std::pair<uint64_t, bool>>;
+using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
 
 class OwInterface : public LanderInterface
 {
@@ -208,7 +209,7 @@ class OwInterface : public LanderInterface
 
   // System level faults:
 
-  FaultMap64 m_systemErrors = {
+  FaultMap m_systemErrors = {
     {"SYSTEM", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
     {"ARM_GOAL_ERROR", std::make_pair(
@@ -229,7 +230,7 @@ class OwInterface : public LanderInterface
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
-  FaultMap64 m_armErrors = {
+  FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
         owl_msgs::ArmFaultsStatus::HARDWARE, false)},
     {"TRAJECTORY_GENERATION", std::make_pair(
@@ -250,7 +251,7 @@ class OwInterface : public LanderInterface
         owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
-  FaultMap64 m_powerErrors = {
+  FaultMap m_powerErrors = {
     {"LOW_STATE_OF_CHARGE", std::make_pair(
         owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
     {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
@@ -262,7 +263,7 @@ class OwInterface : public LanderInterface
   const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
   const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
 
-  FaultMap64 m_panTiltErrors = {
+  FaultMap m_panTiltErrors = {
     {FaultPanJointLocked, std::make_pair(
       owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
     {"TILT_JOINT_LOCKED", std::make_pair(
@@ -271,7 +272,7 @@ class OwInterface : public LanderInterface
 
   const char* FaultNoImage = "NO_IMAGE";
 
-  FaultMap64 m_cameraErrors = {
+  FaultMap m_cameraErrors = {
     {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
   };
 
