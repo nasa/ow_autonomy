@@ -28,8 +28,7 @@ TestArmMoveCartesian:
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = false,
                                   Position = #(1.7 -0.2 0.6),
-                                  // Should the following be (0 0 0 1)?
-                                  Orientation = #(1 0 0 0));
+                                  Orientation = #(0 0 0 1));
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();
 

@@ -10,7 +10,7 @@ TestTaskPSP:
 {
   log_info ("Starting TaskPSP test...");
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=1);
+  LibraryCall ArmSetTool(Tool=TOOL_PSP);
   LibraryCall TaskPSP (Frame = TOOL_FRAME,
                        Relative = false,
                        Point = #(0 0 0.5 ),

@@ -12,6 +12,7 @@ TestOwlatArmFindSurface:
 {
   log_info ("Starting ArmFindSurface test...");
   LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=TOOL_SCOOP);
   LibraryCall ArmTareFTSensor();
   LibraryCall ArmSetup();
   LibraryCall ArmFindSurface (Frame = TOOL_FRAME,

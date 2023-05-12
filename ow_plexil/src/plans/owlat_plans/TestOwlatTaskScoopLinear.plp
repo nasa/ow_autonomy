@@ -10,6 +10,7 @@ TestOwlatTaskScoopLinear:
 {
   log_info ("Starting TaskScoopLinear test...");
   LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=TOOL_SCOOP);
   LibraryCall OwlatTaskScoopLinear (Frame = TOOL_FRAME,
                                     Relative = false,
                                     Point = #(0 0 0.43),

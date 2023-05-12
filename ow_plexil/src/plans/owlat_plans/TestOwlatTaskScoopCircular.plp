@@ -10,7 +10,7 @@ TestOwlatTaskScoopCircular:
 {
   log_info ("Starting TaskScoopCircular test...");
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=3);
+  LibraryCall ArmSetTool(Tool=TOOL_SCOOP);
   LibraryCall OwlatTaskScoopCircular (Frame = TOOL_FRAME,
                                       Relative = false,
                                       Point = #(0 0 0.43),

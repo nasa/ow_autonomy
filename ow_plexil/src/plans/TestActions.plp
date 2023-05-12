@@ -8,7 +8,7 @@
 
 #include "plan-interface.h"
 
-TestActions:
+TestActions: UncheckedSequence
 {
   Real GP = -0.155;  // Ground position
   log_info ("Beginning action test...");

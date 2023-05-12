@@ -10,7 +10,7 @@ TestTaskPenetrometer:
 {
   log_info ("Starting TaskPenetrometer test...");
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool (Tool = 4);
+  LibraryCall ArmSetTool(Tool=TOOL_PENETROMETER);
   LibraryCall TaskPenetrometer (Frame = TOOL_FRAME,
                                 Relative = false,
                                 Point = #(0 0 0.43),

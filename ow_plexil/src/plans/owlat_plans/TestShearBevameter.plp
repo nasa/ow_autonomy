@@ -12,7 +12,7 @@ TestShearBevameter:
   //  Fails with goal error: cannot achieve given torque.
   //  Shear Bevameter test
   LibraryCall ArmUnstow();
-  LibraryCall ArmSetTool(Tool=2);
+  LibraryCall ArmSetTool(Tool=TOOL_BEVAMETER);
   LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
                                   Relative = false,
                                   Point = #(0 0 0.43),
