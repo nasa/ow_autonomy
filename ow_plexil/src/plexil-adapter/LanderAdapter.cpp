@@ -144,13 +144,13 @@ static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
 {
   bool relative;
   int joint;
-  double radians;
+  double joint_pos_rad;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(relative);
   args[1].getValue(joint);
-  args[2].getValue(radians);
+  args[2].getValue(joint_pos_rad);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->armMoveJoint (relative, joint, radians, CommandId);
+  LanderAdapter::s_interface->armMoveJoint (relative, joint, joint_pos_rad, CommandId);
   acknowledge_command_sent(*cr);
 }
 
