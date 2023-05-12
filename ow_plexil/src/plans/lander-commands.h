@@ -5,12 +5,9 @@
 #ifndef Ow_commands_H
 #define Ow_commands_H
 
-// Lander commands available in OceanWATERS.  These include the common
-// ones:
+// Lander commands available in OceanWATERS.
 
 #include "common/common-commands.h"
-
-// and the OceanWATERS-specific ones that follow.
 
 // Arm commands
 
@@ -21,6 +18,7 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real angles[6],
                                  Real force_threshold,
                                  Real torque_threshold);
+
 Command scoop_circular (Integer frame,
                         Boolean relative,
                         Real x,

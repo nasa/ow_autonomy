@@ -47,8 +47,8 @@ class PlexilInterface
   std::map<std::string, int> m_runningOperations;
 
   template <class Client, class Goal, class ResultPtr, class FeedbackPtr>
-  void nullaryAction (int id, const std::string& name,
-                      std::unique_ptr<Client>& ac)
+  void runNullaryAction (int id, const std::string& name,
+                         std::unique_ptr<Client>& ac)
   {
     Goal goal;
     std::string opname = name;

@@ -373,7 +373,7 @@ void OwlatInterface::armSetToolAction (int tool, int id)
 void OwlatInterface::armTareFTSensor (int id)
 {
   if (! markOperationRunning (Name_Tare, id)) return;
-  thread action_thread (&OwlatInterface::nullaryAction<
+  thread action_thread (&OwlatInterface::runNullaryAction<
                         ArmTareFTSensorActionClient,
                         ArmTareFTSensorGoal,
                         ArmTareFTSensorResultConstPtr,

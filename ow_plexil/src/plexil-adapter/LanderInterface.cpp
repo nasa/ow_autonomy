@@ -108,7 +108,7 @@ void LanderInterface::initialize()
 void LanderInterface::taskDeliverSample (int id)
 {
   if (! markOperationRunning (Name_TaskDeliverSample, id)) return;
-  thread action_thread (&LanderInterface::nullaryAction<
+  thread action_thread (&LanderInterface::runNullaryAction<
                         TaskDeliverSampleActionClient,
                         TaskDeliverSampleGoal,
                         TaskDeliverSampleResultConstPtr,
@@ -271,7 +271,7 @@ void LanderInterface::armMoveJointAction (bool relative,
 void LanderInterface::armStop (int id)
 {
   if (! markOperationRunning (Name_ArmStop, id)) return;
-  thread action_thread (&LanderInterface::nullaryAction<
+  thread action_thread (&LanderInterface::runNullaryAction<
                         ArmStopActionClient,
                         ArmStopGoal,
                         ArmStopResultConstPtr,
@@ -284,7 +284,7 @@ void LanderInterface::armStow (int id)
 {
   if (! markOperationRunning (Name_ArmStow, id)) return;
   //  thread action_thread (&LanderInterface::armStowAction, this, id);
-  thread action_thread (&LanderInterface::nullaryAction<
+  thread action_thread (&LanderInterface::runNullaryAction<
                         ArmStowActionClient,
                         ArmStowGoal,
                         ArmStowResultConstPtr,
@@ -296,7 +296,7 @@ void LanderInterface::armStow (int id)
 void LanderInterface::armUnstow (int id)
 {
   if (! markOperationRunning (Name_ArmUnstow, id)) return;
-  thread action_thread (&LanderInterface::nullaryAction<
+  thread action_thread (&LanderInterface::runNullaryAction<
                         ArmUnstowActionClient,
                         ArmUnstowGoal,
                         ArmUnstowResultConstPtr,
@@ -338,7 +338,7 @@ void LanderInterface::panTiltMoveJointsAction (double pan_degrees,
 void LanderInterface::cameraCapture (int id)
 {
   if (! markOperationRunning (Name_CameraCapture, id)) return;
-  thread action_thread (&LanderInterface::nullaryAction<
+  thread action_thread (&LanderInterface::runNullaryAction<
                         CameraCaptureActionClient,
                         CameraCaptureGoal,
                         CameraCaptureResultConstPtr,
