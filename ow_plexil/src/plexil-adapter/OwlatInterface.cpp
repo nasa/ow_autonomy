@@ -77,60 +77,65 @@ void OwlatInterface::initialize()
     m_arm_pose.resize(7);
     m_arm_tool = 0;
 
-    const int qsize = 3;
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
+        subscribe("/system_faults_status", QueueSize,
+                  &OwlatInterface::systemFaultMessageCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/owlat_sim/ARM_JOINT_ANGLES", QueueSize,
                   &OwlatInterface::armJointAnglesCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
+        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", QueueSize,
                   &OwlatInterface::armJointAccelerationsCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_TORQUES", qsize,
+        subscribe("/owlat_sim/ARM_JOINT_TORQUES", QueueSize,
                   &OwlatInterface::armJointTorquesCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
+        subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", QueueSize,
                   &OwlatInterface::armJointVelocitiesCallback, this)));
 
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_TORQUE", qsize,
+        subscribe("/owlat_sim/ARM_FT_TORQUE", QueueSize,
                   &OwlatInterface::armFTTorqueCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_FORCE", qsize,
+        subscribe("/owlat_sim/ARM_FT_FORCE", QueueSize,
                   &OwlatInterface::armFTForceCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_POSE", qsize,
+        subscribe("/owlat_sim/ARM_POSE", QueueSize,
                   &OwlatInterface::armPoseCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_TOOL", qsize,
+        subscribe("/owlat_sim/ARM_TOOL", QueueSize,
                   &OwlatInterface::armToolCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/pan_tilt_position", qsize,
+        subscribe("/pan_tilt_position", QueueSize,
                   &OwlatInterface::panTiltCallback, this)));
 
     // Initialize pointers
@@ -600,6 +605,12 @@ void OwlatInterface::taskScoopLinearAction (int frame, bool relative,
      default_action_done_cb<TaskScoopLinearResultConstPtr> (opname));
 }
 
+void OwlatInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
+}
+
 void OwlatInterface::armJointAnglesCallback
 (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
 {
@@ -750,4 +761,9 @@ Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
     ROS_ERROR ("getJointTelemetry: invalid joint index %d", joint);
   }
   return 0;
+}
+
+bool OwlatInterface::systemFault () const
+{
+  return faultActive (m_systemErrors);
 }

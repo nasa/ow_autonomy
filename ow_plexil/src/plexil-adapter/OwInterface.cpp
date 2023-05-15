@@ -24,7 +24,6 @@
 #include <functional>
 #include <set>
 #include <algorithm> // for std::copy
-#include <inttypes.h> // for int64 support
 
 using namespace ow_lander;
 using namespace owl_msgs;
@@ -133,60 +132,8 @@ static void handle_joint_fault (int joint_index,
   handle_overtorque (joint_index, msg->effort[joint_index]);
 }
 
-template <typename T1, typename T2>
-void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
-                                     const string& component,
-                                     const string& state_name)
-{
-  for (auto const& entry : fmap) {
-    string key = entry.first;
-    T1 value = entry.second.first;
-    bool fault_active = entry.second.second;
-    bool faulty = (msg_val & value) == value;
-    if (!fault_active && faulty) {
-      ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
-      fmap[key].second = true;
-      publish (state_name, true);
-    }
-    else if (fault_active && !faulty) {
-      ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
-      fmap[key].second = false;
-      publish (state_name, false);
-    }
-  }
-}
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
-
-void OwInterface::systemFaultMessageCallback
-(const  owl_msgs::SystemFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
-}
-
-void OwInterface::armFaultCallback
-(const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
-}
-
-void OwInterface::powerFaultCallback
-(const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
-}
-
-void OwInterface::antennaFaultCallback
-(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
-}
-
-void OwInterface::cameraFaultCallback
-(const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
-}
 
 void OwInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
@@ -315,12 +262,6 @@ static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& 
   publish ("BatteryTemperature", BatteryTemp);
 }
 
-//////////////////// Action Status support ////////////////////////////////
-
-/// Queue size for subscribers is a guess at adequacy.
-const int QSize = 3;
-
-
 //////////////////// GuardedMove Action support ////////////////////////////////
 
 // TODO: encapsulate GroundFound and GroundPosition in the PLEXIL command.  They
@@ -341,50 +282,6 @@ bool OwInterface::groundFound () const
 double OwInterface::groundPosition () const
 {
   return GroundPosition;
-}
-
-template <typename T>
-bool OwInterface::faultActive (const T& fmap) const
-{
-  for (auto const& entry : fmap) {
-    if (entry.second.second) return true;
-  }
-  return false;
-}
-
-bool OwInterface::systemFault () const
-{
-  return faultActive (m_systemErrors);
-}
-
-bool OwInterface::antennaFault () const
-{
-  return antennaPanFault() || antennaTiltFault();
-}
-
-bool OwInterface::antennaPanFault () const
-{
-  return m_panTiltErrors.at(FaultPanJointLocked).second;
-}
-
-bool OwInterface::antennaTiltFault () const
-{
-  return m_panTiltErrors.at(FaultTiltJointLocked).second;
-}
-
-bool OwInterface::armFault () const
-{
-  return faultActive (m_armErrors);
-}
-
-bool OwInterface::powerFault () const
-{
-  return faultActive (m_powerErrors);
-}
-
-bool OwInterface::cameraFault () const
-{
-  return faultActive (m_cameraErrors);
 }
 
 template<typename T>
@@ -493,77 +390,54 @@ void OwInterface::initialize()
     const bool latch = true;
     m_antennaTiltPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", QSize, latch));
+       ("/ant_tilt_position_controller/command", QueueSize, latch));
     m_antennaPanPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", QSize, latch));
+       ("/ant_pan_position_controller/command", QueueSize, latch));
     m_leftImageTriggerPublisher = make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", QSize, latch));
+       ("/StereoCamera/left/image_trigger", QueueSize, latch));
 
     // Initialize subscribers
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+       (m_genericNodeHandle ->
+        subscribe("/system_faults_status", QueueSize,
+                  &OwInterface::systemFaultMessageCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
                                         &OwInterface::jointStatesCallback,
                                         this)));
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
+       (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QueueSize,
                                         &OwInterface::armJointAccelerationsCb,
                                         this)));
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/battery_state_of_charge", QSize, soc_callback)));
+        subscribe("/battery_state_of_charge", QueueSize, soc_callback)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/battery_temperature", QSize,
+        subscribe("/battery_temperature", QueueSize,
                   temperature_callback)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/battery_remaining_useful_life", QSize,
+        subscribe("/battery_remaining_useful_life", QueueSize,
                   rul_callback)));
 
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/system_faults_status", QSize,
-                  &OwInterface::systemFaultMessageCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/arm_faults_status", QSize,
-                  &OwInterface::armFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/power_faults_status", QSize,
-                  &OwInterface::powerFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/pan_tilt_faults_status", QSize,
-                  &OwInterface::antennaFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/camera_faults_status", QSize,
-                  &OwInterface::cameraFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_end_effector_force_torque", QSize,
+        subscribe("/arm_end_effector_force_torque", QueueSize,
                   &OwInterface::ftCallback, this)));
 
     connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
@@ -593,6 +467,18 @@ void OwInterface::initialize()
 
   }
 }
+
+
+///////////////////////// Subscriber Callbacks ///////////////////////////////
+
+void OwInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
+}
+
+
+///////////////////////// ROS Actions ///////////////////////////////
 
 void OwInterface::pan (double degrees, int id)
 {
@@ -1214,4 +1100,9 @@ double OwInterface::jointTelemetry (int joint, TelemetryType type) const
     ROS_ERROR ("jointTelemetry: invalid joint index %d", joint);
   }
   return 0;
+}
+
+bool OwInterface::systemFault () const
+{
+  return faultActive (m_systemErrors);
 }

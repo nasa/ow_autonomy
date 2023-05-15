@@ -127,6 +127,7 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getTiltRadians() const;
   PLEXIL::Value getTiltDegrees() const;
   PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
+  bool systemFault () const override;
 
  private:
   // Actions
@@ -185,7 +186,8 @@ class OwlatInterface : public LanderInterface
   void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
-
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
+  
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_discardSampleClient;
@@ -200,6 +202,29 @@ class OwlatInterface : public LanderInterface
   std::unique_ptr<TaskScoopLinearActionClient> m_taskScoopLinearClient;
 
   // Member variables
+
+  // System-level faults:
+  FaultMap m_systemErrors = {
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_GOAL_ERROR,false)},
+    {"CAM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
+  };
+
   std::vector<double> m_arm_joint_angles;
   std::vector<double> m_arm_joint_accelerations;
   std::vector<double> m_arm_joint_torques;

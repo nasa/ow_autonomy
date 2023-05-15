@@ -84,7 +84,7 @@ void LanderInterface::initialize()
       make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
 
     // Connect to action servers
-    
+
     connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
                          "/ArmMoveCartesian/status");
     connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
@@ -100,6 +100,90 @@ void LanderInterface::initialize()
     connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
                          "/CameraCapture/status");
   }
+
+  // Initialize subscribers
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_faults_status", QueueSize,
+                &LanderInterface::armFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/power_faults_status", QueueSize,
+                &LanderInterface::powerFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_faults_status", QueueSize,
+                &LanderInterface::antennaFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/camera_faults_status", QueueSize,
+                &LanderInterface::cameraFaultCallback, this)));
+
+  initialized = true;
+}
+
+///////////////////////// Subscriber Callbacks ///////////////////////////////
+
+void LanderInterface::armFaultCallback
+(const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
+}
+
+void LanderInterface::powerFaultCallback
+(const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
+}
+
+void LanderInterface::antennaFaultCallback
+(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
+}
+
+void LanderInterface::cameraFaultCallback
+(const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
+}
+
+bool LanderInterface::antennaFault () const
+{
+  return antennaPanFault() || antennaTiltFault();
+}
+
+bool LanderInterface::antennaPanFault () const
+{
+  return m_panTiltErrors.at(FaultPanJointLocked).second;
+}
+
+bool LanderInterface::antennaTiltFault () const
+{
+  return m_panTiltErrors.at(FaultTiltJointLocked).second;
+}
+
+bool LanderInterface::armFault () const
+{
+  return faultActive (m_armErrors);
+}
+
+bool LanderInterface::powerFault () const
+{
+  return faultActive (m_powerErrors);
+}
+
+bool LanderInterface::cameraFault () const
+{
+  return faultActive (m_cameraErrors);
 }
 
 
