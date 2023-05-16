@@ -16,7 +16,9 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
 
   // wait for the first proper clock message before running the plan
   ros::Rate warmup_rate(0.1);
+
   ros::Time begin = ros::Time::now();
+
   while (ros::Time::now() - begin == ros::Duration(0.0))
   {
     ros::spinOnce();
@@ -27,7 +29,6 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
   if(initial_plan.compare("None") != 0) {
     m_plan_array.push_back(initial_plan);
   }
-  
   //workaround for the allPlansFinished not returning correctly for first plan
   m_first_plan = true;
 
@@ -36,12 +37,10 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
     (m_genericNodeHandle->
      advertiseService("/plexil_plan_selection",
                       &PlexilPlanSelection::planSelectionServiceCallback, this));
-
   //initialize publisher
   m_planSelectionStatusPublisher = std::make_unique<ros::Publisher>
       (m_genericNodeHandle->advertise<std_msgs::String>
        ("/plexil_plan_selection_status", 20));
-
   ROS_INFO("Executive node started, ready for PLEXIL plans.");
 }
 
@@ -74,17 +73,18 @@ void PlexilPlanSelection::waitForPlan(){
   std_msgs::String status;
   ros::Rate rate(LOOP_RATE);
   //wait for current plan to finish before running next plan
-  while(!OwExecutive::instance()->allPlansFinished() && m_first_plan == false){
+  while(!OwExecutive::instance()->allPlansFinished() && m_first_plan == false) {
     ros::spinOnce();
     rate.sleep();
   }
 
-  //Once plan is finished set status to complete for GUI
+  // Once plan is finished set status to complete for GUI.
   status.data = "COMPLETE";
   m_planSelectionStatusPublisher->publish(status);
 }
 
-void PlexilPlanSelection::runCurrentPlan(){
+void PlexilPlanSelection::runCurrentPlan()
+{
   std_msgs::String status;
   ros::Rate rate(LOOP_RATE);
   const auto TIMEOUT = 3;
@@ -100,7 +100,7 @@ void PlexilPlanSelection::runCurrentPlan(){
 
        // Times out, or the plan is registered as running.
        int timeout = 0;
-       while(OwExecutive::instance()->allPlansFinished() && 
+       while(OwExecutive::instance()->allPlansFinished() &&
        timeout < TIMEOUT * LOOP_RATE) {
        ros::spinOnce();
        rate.sleep();
@@ -130,7 +130,7 @@ void PlexilPlanSelection::runCurrentPlan(){
     // Wait for the plan to start running (assumes success)
     ros::spinOnce();
     rate.sleep();
-    
+
     status.data = "SUCCESS:" + m_plan_array[0];
     m_planSelectionStatusPublisher->publish(status);
   }

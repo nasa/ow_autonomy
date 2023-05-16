@@ -1,0 +1,39 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Tests all OWLAT actions, using (when possible) the test sequences
+// provided in the OWLAT 5.3 user guide.  The order is approximately
+// that of their coverage in the user guide.
+
+#include "owlat-interface.h"
+
+LibraryAction TestOwlatMiscActions;
+LibraryAction TestOwlatArmMoveJoints;
+LibraryAction TestOwlatArmMoveCartesian;
+LibraryAction TestOwlatArmFindSurface;
+LibraryAction TestTaskPSP;
+LibraryAction TestTaskPenetrometer;
+LibraryAction TestShearBevameter;
+LibraryAction TestOwlatTaskScoopCircular;
+LibraryAction TestOwlatTaskScoopLinear;
+LibraryAction TestTaskDiscardSample;
+LibraryAction TestPanTiltMoveJoints;
+
+TestOwlatActions:
+{
+  log_info ("Starting OWLAT action test...");
+  LibraryCall TestOwlatMiscActions;
+  LibraryCall TestOwlatArmMoveJoints;
+  LibraryCall TestOwlatArmMoveCartesian;
+  LibraryCall TestOwlatArmFindSurface;
+  LibraryCall TestTaskPSP;
+  LibraryCall TestTaskPenetrometer;
+  // Does not work; JPL is investigating.
+  //  LibraryCall TestShearBevameter;
+  LibraryCall TestOwlatTaskScoopCircular;
+  LibraryCall TestOwlatTaskScoopLinear;
+  LibraryCall TestTaskDiscardSample;
+  LibraryCall TestPanTiltMoveJoints;
+  log_info ("Finished OWLAT action test.");
+}

@@ -1,0 +1,17 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This is test sequence 4.9.1 in the OWLAT 5.3 User Guide.  It is
+// reused in several other test sequences.
+
+#include "owlat-interface.h"
+
+ArmSetup:
+{
+  LibraryCall ArmUnstow();
+  LibraryCall ArmMoveCartesian(Frame=TOOL_FRAME,
+                               Relative=false,
+                               Position=#(0.0 0.0 0.43),
+                               Orientation=#(0.0 0.0 0.0 1.0));
+}

@@ -6,7 +6,7 @@
 #include "OwInterface.h"
 #include "subscriber.h"
 
-// OW - external
+// owl_msgs
 #include <owl_msgs/BatteryRemainingUsefulLife.h>
 #include <owl_msgs/BatteryStateOfCharge.h>
 #include <owl_msgs/BatteryTemperature.h>
@@ -17,32 +17,26 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Vector3.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 // C++
-#include <set>
-#include <vector>
-#include <map>
 #include <thread>
+#include <vector>
+#include <functional>
+#include <set>
 #include <algorithm> // for std::copy
 #include <inttypes.h> // for int64 support
 
+using namespace ow_lander;
+using namespace owl_msgs;
+using namespace PLEXIL;
+
 using std::set;
-using std::map;
 using std::vector;
 using std::thread;
 using std::ref;
 using std::string;
 using std::shared_ptr;
 using std::make_unique;
-
-using namespace ow_lander;
-using namespace owl_msgs;
-
-//////////////////// Utilities ////////////////////////
-
-const double PanTiltToleranceDegrees = 2.865; // 0.05 radians, matching simulator
-const double VelocityTolerance       = 0.01;  // made up, unitless
 
 
 //////////////////// Lander Operation Support ////////////////////////
@@ -56,115 +50,40 @@ const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 // Lander operation names.  In general these match those used in PLEXIL and
 // owl_msgs.
 
-const string Op_ArmMoveJoint            = "ArmMoveJoint";
-const string Op_ArmMoveJoints           = "ArmMoveJoints";
-const string Op_ArmStop                 = "ArmStop";
-const string Op_ArmStow                 = "ArmStow";
-const string Op_ArmUnstow               = "ArmUnstow";
-const string Op_ArmFindSurface          = "ArmFindSurface";
-const string Op_ArmMoveCartesian        = "ArmMoveCartesian";
-const string Op_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
-const string Op_ArmMoveJointsGuarded    = "ArmMoveJointsGuarded";
-const string Op_CameraCapture           = "CameraCapture";
-const string Op_CameraSetExposure       = "CameraSetExposure";
-const string Op_Ingest                  = "DockIngestSample";
-const string Op_Grind                   = "TaskGrind";
-const string Op_GuardedMove             = "GuardedMove";
-const string Op_IdentifySampleLocation  = "IdentifySampleLocation";
-const string Op_LightSetIntensity       = "LightSetIntensity";
-const string Op_Pan                     = "Pan";
-const string Op_PanTilt                 = "PanTiltMoveJoints";
-const string Op_PanTiltCartesian        = "PanTiltMoveCartesian";
-const string Op_TaskDeliverSample       = "TaskDeliverSample";
-const string Op_TaskDiscardSample       = "TaskDiscardSample";
-const string Op_TaskScoopCircular       = "TaskScoopCircular";
-const string Op_TaskScoopLinear         = "TaskScoopLinear";
-const string Op_Tilt                    = "Tilt";
+const string Name_ArmFindSurface         = "ArmFindSurface";
+const string Name_ArmMoveJoints          = "ArmMoveJoints";
+const string Name_ArmMoveJointsGuarded   = "ArmMoveJointsGuarded";
+const string Name_CameraSetExposure      = "CameraSetExposure";
+const string Name_Ingest                 = "DockIngestSample";
+const string Name_Grind                  = "TaskGrind";
+const string Name_GuardedMove            = "GuardedMove";
+const string Name_IdentifySampleLocation = "IdentifySampleLocation";
+const string Name_LightSetIntensity      = "LightSetIntensity";
+const string Name_Pan                    = "Pan";
+const string Name_PanTiltCartesian       = "PanTiltMoveCartesian";
+const string Name_TaskScoopCircular      = "TaskScoopCircular";
+const string Name_TaskScoopLinear        = "TaskScoopLinear";
+const string Name_Tilt                   = "Tilt";
+const string Name_TaskDiscardSample      = "TaskDiscardSample";
 
 static vector<string> LanderOpNames = {
-  Op_GuardedMove,
-  Op_ArmFindSurface,
-  Op_ArmMoveCartesian,
-  Op_ArmMoveCartesianGuarded,
-  Op_ArmMoveJoint,
-  Op_ArmMoveJoints,
-  Op_ArmMoveJointsGuarded,
-  Op_TaskDeliverSample,
-  Op_Pan,
-  Op_Tilt,
-  Op_PanTilt,
-  Op_PanTiltCartesian,
-  Op_TaskScoopCircular,
-  Op_TaskScoopLinear,
-  Op_TaskDiscardSample,
-  Op_Grind,
-  Op_ArmStop,
-  Op_ArmStow,
-  Op_ArmUnstow,
-  Op_CameraCapture,
-  Op_CameraSetExposure,
-  Op_Ingest,
-  Op_IdentifySampleLocation,
-  Op_LightSetIntensity
+  Name_ArmFindSurface,
+  Name_GuardedMove,
+  Name_ArmMoveJoints,
+  Name_ArmMoveJointsGuarded,
+  Name_Pan,
+  Name_Tilt,
+  Name_PanTiltCartesian,
+  Name_TaskScoopCircular,
+  Name_TaskScoopLinear,
+  Name_Grind,
+  Name_CameraSetExposure,
+  Name_Ingest,
+  Name_IdentifySampleLocation,
+  Name_TaskDiscardSample,
+  Name_LightSetIntensity
 };
 
-
-///////////////////////// Action Goal Status Support /////////////////////////
-
-// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
-// NOGOAL status for when the action is not running.
-//
-enum ActionGoalStatus {
-  NOGOAL = -1,
-  PENDING = 0,
-  ACTIVE = 1,
-  PREEMPTED = 2,
-  SUCCEEDED = 3,
-  ABORTED = 4,
-  REJECTED = 5,
-  PREEMPTING = 6,
-  RECALLING = 7,
-  RECALLED = 8,
-  LOST = 9
-};
-
-static map<string, int> ActionGoalStatusMap {
-  // ROS action name -> Action goal status
-  { Op_ArmFindSurface, NOGOAL },
-  { Op_ArmMoveCartesian, NOGOAL },
-  { Op_ArmMoveCartesianGuarded, NOGOAL },
-  { Op_ArmStop, NOGOAL },
-  { Op_ArmStow, NOGOAL },
-  { Op_ArmUnstow, NOGOAL },
-  { Op_Grind, NOGOAL },
-  { Op_GuardedMove, NOGOAL },
-  { Op_ArmMoveJoint, NOGOAL },
-  { Op_ArmMoveJoints, NOGOAL },
-  { Op_ArmMoveJointsGuarded, NOGOAL },
-  { Op_TaskDeliverSample, NOGOAL },
-  { Op_TaskScoopCircular, NOGOAL },
-  { Op_TaskScoopLinear, NOGOAL },
-  { Op_TaskDiscardSample, NOGOAL },
-  { Op_CameraCapture, NOGOAL },
-  { Op_CameraSetExposure, NOGOAL },
-  { Op_Ingest, NOGOAL },
-  { Op_Pan, NOGOAL },
-  { Op_Tilt, NOGOAL },
-  { Op_PanTilt, NOGOAL },
-  { Op_PanTiltCartesian, NOGOAL },
-  { Op_IdentifySampleLocation, NOGOAL },
-  { Op_LightSetIntensity, NOGOAL }
-};
-
-static void update_action_goal_state (string action, int state)
-{
-  if (ActionGoalStatusMap.find(action) != ActionGoalStatusMap.end()) {
-    ActionGoalStatusMap[action] = state;
-  }
-  else {
-    ROS_ERROR("Unknown action: %s", action.c_str());
-  }
-}
 
 /////////////////////////// Joint/Torque Support ///////////////////////////////
 
@@ -401,23 +320,6 @@ static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& 
 /// Queue size for subscribers is a guess at adequacy.
 const int QSize = 3;
 
-void OwInterface::actionGoalStatusCallback
-(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
-
-// Update ActionGoalStatusMap of action action_name with the status
-// from first goal in GoalStatusArray msg. This is based on the
-// assumption that no action will have more than one goal in our
-// system.
-{
-  if (msg->status_list.size() == 0) {
-    int status = NOGOAL;
-    update_action_goal_state (action_name, status);
-  }
-  else {
-    int status = msg->status_list[0].status;
-    update_action_goal_state (action_name, status);
-  }
-}
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -544,199 +446,152 @@ OwInterface::OwInterface ()
 
 void OwInterface::initialize()
 {
-  static bool initialized = false;
+  LanderInterface::initialize();
 
-  if (not initialized) {
-
-    for (const string& name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
-
-    m_genericNodeHandle = make_unique<ros::NodeHandle>();
-
-    // Initialize action clients
-
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Op_ArmFindSurface, true);
-    m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Op_ArmMoveCartesian, true);
-    m_armMoveCartesianGuardedClient =
-      make_unique<ArmMoveCartesianGuardedActionClient>(Op_ArmMoveCartesianGuarded,
-                                                       true);
-    m_guardedMoveClient =
-      make_unique<GuardedMoveActionClient>(Op_GuardedMove, true);
-    m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Op_ArmMoveJoint, true);
-    m_armMoveJointsClient =
-      make_unique<ArmMoveJointsActionClient>(Op_ArmMoveJoints, true);
-    m_armMoveJointsGuardedClient =
-      make_unique<ArmMoveJointsGuardedActionClient>(Op_ArmMoveJointsGuarded, true);
-    m_armStopClient =
-      make_unique<ArmStopActionClient>(Op_ArmStop, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Op_ArmUnstow, true);
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Op_ArmStow, true);
-    m_grindClient =
-      make_unique<TaskGrindActionClient>(Op_Grind, true);
-    m_taskDeliverSampleClient =
-      make_unique<TaskDeliverSampleActionClient>(Op_TaskDeliverSample, true);
-    m_scoopCircularClient =
-      make_unique<TaskScoopCircularActionClient>(Op_TaskScoopCircular, true);
-    m_scoopLinearClient =
-      make_unique<TaskScoopLinearActionClient>(Op_TaskScoopLinear, true);
-    m_discardClient =
-      make_unique<TaskDiscardSampleActionClient>(Op_TaskDiscardSample, true);
-    m_cameraCaptureClient =
-      make_unique<CameraCaptureActionClient>(Op_CameraCapture, true);
-    m_cameraSetExposureClient =
-      make_unique<CameraSetExposureActionClient>(Op_CameraSetExposure, true);
-    m_dockIngestSampleClient =
-      make_unique<DockIngestSampleActionClient>(Op_Ingest, true);
-    m_lightSetIntensityClient =
-      make_unique<LightSetIntensityActionClient>(Op_LightSetIntensity, true);
-    m_identifySampleLocationClient =
-      make_unique<IdentifySampleLocationActionClient>
-      (Op_IdentifySampleLocation, true);
-    m_panClient = make_unique<PanActionClient>(Op_Pan, true);
-    m_tiltClient = make_unique<TiltActionClient>(Op_Tilt, true);
-    m_panTiltClient = make_unique<PanTiltMoveJointsActionClient>(Op_PanTilt, true);
-    m_panTiltCartesianClient =
-      make_unique<PanTiltMoveCartesianActionClient>(Op_PanTiltCartesian, true);
-
-    // Initialize publishers.  For now, latching in lieu of waiting
-    // for publishers.
-
-    const bool latch = true;
-    m_antennaTiltPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", QSize, latch));
-    m_antennaPanPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", QSize, latch));
-    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", QSize, latch));
-
-    // Initialize subscribers
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/joint_states", QSize,
-                                        &OwInterface::jointStatesCallback,
-                                        this)));
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
-                                        &OwInterface::armJointAccelerationsCb,
-                                        this)));
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_state_of_charge", QSize, soc_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_temperature", QSize,
-                  temperature_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_remaining_useful_life", QSize,
-                  rul_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/system_faults_status", QSize,
-                  &OwInterface::systemFaultMessageCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_faults_status", QSize,
-                  &OwInterface::armFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/power_faults_status", QSize,
-                  &OwInterface::powerFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/pan_tilt_faults_status", QSize,
-                  &OwInterface::antennaFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/camera_faults_status", QSize,
-                  &OwInterface::cameraFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_end_effector_force_torque", QSize,
-                  &OwInterface::ftCallback, this)));
-
-    connectActionServer (m_armStopClient, Op_ArmStop, "/ArmStop/status");
-    connectActionServer (m_armUnstowClient, Op_ArmUnstow, "/ArmUnstow/status");
-    connectActionServer (m_armStowClient, Op_ArmStow, "/ArmStow/status");
-    connectActionServer (m_armMoveJointClient, Op_ArmMoveJoint,
-                         "/ArmMoveJoint/status");
-    connectActionServer (m_armMoveJointsClient, Op_ArmMoveJoints,
-                         "/ArmMoveJoints/status");
-    connectActionServer (m_armMoveJointsGuardedClient, Op_ArmMoveJointsGuarded,
-                         "/ArmMoveJointsGuarded/status");
-    connectActionServer (m_scoopCircularClient, Op_TaskScoopCircular,
-                         "/TaskScoopCircular/status");
-    connectActionServer (m_scoopLinearClient, Op_TaskScoopLinear,
-                         "/TaskScoopLinear/status");
-    connectActionServer (m_taskDeliverSampleClient, Op_TaskDeliverSample,
-                         "/TaskDeliverSample/status");
-    connectActionServer (m_discardClient, Op_TaskDiscardSample,
-                         "/TaskDiscardSample/status");
-    connectActionServer (m_cameraCaptureClient, Op_CameraCapture,
-                         "/CameraCapture/status");
-    connectActionServer (m_cameraSetExposureClient, Op_CameraSetExposure,
-                         "/CameraSetExposure/status");
-    connectActionServer (m_dockIngestSampleClient, Op_Ingest,
-                         "/DockIngestSample/status");
-    connectActionServer (m_lightSetIntensityClient, Op_LightSetIntensity,
-                         "/LightSetIntensity/status");
-    connectActionServer (m_guardedMoveClient, Op_GuardedMove,
-                         "/GuardedMove/status");
-    connectActionServer (m_armMoveCartesianClient, Op_ArmMoveCartesian,
-                         "/ArmMoveCartesian/status");
-    connectActionServer (m_armMoveCartesianGuardedClient, Op_ArmMoveCartesianGuarded,
-                         "/ArmMoveCartesianGuarded/status");
-    connectActionServer (m_armFindSurfaceClient, Op_ArmFindSurface,
-                         "/ArmFindSurface/status");
-    connectActionServer (m_panClient, Op_Pan);
-    connectActionServer (m_tiltClient, Op_Tilt);
-    connectActionServer (m_panTiltClient, Op_PanTilt);
-    connectActionServer (m_panTiltCartesianClient, Op_PanTiltCartesian);
-    connectActionServer (m_identifySampleLocationClient, Op_IdentifySampleLocation);
+  for (const string& name : LanderOpNames) {
+    registerLanderOperation (name);
   }
-}
 
-void OwInterface::addSubscriber (const string& topic, const string& operation)
-{
+  // Initialize action clients
+
+  m_armFindSurfaceClient =
+    make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
+  m_guardedMoveClient =
+    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
+  m_armMoveJointsClient =
+    make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+  m_armMoveJointsGuardedClient =
+    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded,
+                                                  true);
+  m_grindClient = make_unique<TaskGrindActionClient>(Name_Grind, true);
+  m_scoopCircularClient =
+    make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
+  m_scoopLinearClient =
+    make_unique<TaskScoopLinearActionClient>(Name_TaskScoopLinear, true);
+  m_cameraSetExposureClient =
+    make_unique<CameraSetExposureActionClient>(Name_CameraSetExposure, true);
+  m_dockIngestSampleClient =
+    make_unique<DockIngestSampleActionClient>(Name_Ingest, true);
+  m_lightSetIntensityClient =
+    make_unique<LightSetIntensityActionClient>(Name_LightSetIntensity, true);
+  m_identifySampleLocationClient =
+    make_unique<IdentifySampleLocationActionClient>
+    (Name_IdentifySampleLocation, true);
+  m_panClient = make_unique<PanActionClient>(Name_Pan, true);
+  m_tiltClient = make_unique<TiltActionClient>(Name_Tilt, true);
+  m_panTiltCartesianClient =
+    make_unique<PanTiltMoveCartesianActionClient>(Name_PanTiltCartesian, true);
+  m_taskDiscardSampleClient =
+    make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
+
+  // Initialize publishers.  For now, latching in lieu of waiting
+  // for publishers.
+
+  const bool latch = true;
+  m_antennaTiltPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Float64>
+     ("/ant_tilt_position_controller/command", QSize, latch));
+  m_antennaPanPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Float64>
+     ("/ant_pan_position_controller/command", QSize, latch));
+  m_leftImageTriggerPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Empty>
+     ("/StereoCamera/left/image_trigger", QSize, latch));
+
+  // Initialize subscribers
+
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
-     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-      (topic, QSize,
-       boost::bind(&OwInterface::actionGoalStatusCallback,
-                   this, _1, operation))));
+     (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+                                      &OwInterface::jointStatesCallback,
+                                      this)));
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
+                                      &OwInterface::armJointAccelerationsCb,
+                                      this)));
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_state_of_charge", QSize, soc_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_temperature", QSize,
+                temperature_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_remaining_useful_life", QSize,
+                rul_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QSize,
+                &OwInterface::systemFaultMessageCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_faults_status", QSize,
+                &OwInterface::armFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/power_faults_status", QSize,
+                &OwInterface::powerFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_faults_status", QSize,
+                &OwInterface::antennaFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/camera_faults_status", QSize,
+                &OwInterface::cameraFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_end_effector_force_torque", QSize,
+                &OwInterface::ftCallback, this)));
+
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
+                       "/ArmFindSurface/status");
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
+                       "/ArmMoveJoints/status");
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
+                       "/ArmMoveJointsGuarded/status");
+  connectActionServer (m_scoopCircularClient, Name_TaskScoopCircular,
+                       "/TaskScoopCircular/status");
+  connectActionServer (m_scoopLinearClient, Name_TaskScoopLinear,
+                       "/TaskScoopLinear/status");
+  connectActionServer (m_cameraSetExposureClient, Name_CameraSetExposure,
+                       "/CameraSetExposure/status");
+  connectActionServer (m_dockIngestSampleClient, Name_Ingest,
+                       "/DockIngestSample/status");
+  connectActionServer (m_lightSetIntensityClient, Name_LightSetIntensity,
+                       "/LightSetIntensity/status");
+  connectActionServer (m_guardedMoveClient, Name_GuardedMove,
+                       "/GuardedMove/status");
+  connectActionServer (m_panClient, Name_Pan);
+  connectActionServer (m_tiltClient, Name_Tilt);
+  connectActionServer (m_panTiltCartesianClient, Name_PanTiltCartesian);
+  connectActionServer (m_identifySampleLocationClient, Name_IdentifySampleLocation);
+  connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
+                       "/TaskDiscardSample/status");
 }
 
 void OwInterface::pan (double degrees, int id)
 {
-  if (! markOperationRunning (Op_Pan, id)) return;
+  if (! markOperationRunning (Name_Pan, id)) return;
   thread action_thread (&OwInterface::panAction, this, degrees, id);
   action_thread.detach();
 }
@@ -751,15 +606,15 @@ void OwInterface::panAction (double degrees, int id)
             PanGoal,
             PanResultConstPtr,
             PanFeedbackConstPtr>
-    (Op_Pan, m_panClient, goal, id,
-     default_action_active_cb (Op_Pan, args.str()),
-     default_action_feedback_cb<PanFeedbackConstPtr> (Op_Pan),
-     default_action_done_cb<PanResultConstPtr> (Op_Pan));
+    (Name_Pan, m_panClient, goal, id,
+     default_action_active_cb (Name_Pan, args.str()),
+     default_action_feedback_cb<PanFeedbackConstPtr> (Name_Pan),
+     default_action_done_cb<PanResultConstPtr> (Name_Pan));
 }
 
 void OwInterface::tilt (double degrees, int id)
 {
-  if (! markOperationRunning (Op_Tilt, id)) return;
+  if (! markOperationRunning (Name_Tilt, id)) return;
   thread action_thread (&OwInterface::tiltAction, this, degrees, id);
   action_thread.detach();
 }
@@ -774,40 +629,15 @@ void OwInterface::tiltAction (double degrees, int id)
             TiltGoal,
             TiltResultConstPtr,
             TiltFeedbackConstPtr>
-    (Op_Tilt, m_tiltClient, goal, id,
-     default_action_active_cb (Op_Tilt, args.str()),
-     default_action_feedback_cb<TiltFeedbackConstPtr> (Op_Tilt),
-     default_action_done_cb<TiltResultConstPtr> (Op_Tilt));
-}
-
-void OwInterface::panTilt (double pan_degrees, double tilt_degrees, int id)
-{
-  if (! markOperationRunning (Op_PanTilt, id)) return;
-  thread action_thread (&OwInterface::panTiltAction, this,
-                        pan_degrees, tilt_degrees, id);
-  action_thread.detach();
-}
-
-void OwInterface::panTiltAction (double pan_degrees, double tilt_degrees, int id)
-{
-  PanTiltMoveJointsGoal goal;
-  goal.pan = pan_degrees * D2R;
-  goal.tilt = tilt_degrees * D2R;
-  std::stringstream args;
-  args << goal.pan << ", " << goal.tilt;
-  runAction<actionlib::SimpleActionClient<PanTiltMoveJointsAction>,
-            PanTiltMoveJointsGoal,
-            PanTiltMoveJointsResultConstPtr,
-            PanTiltMoveJointsFeedbackConstPtr>
-    (Op_PanTilt, m_panTiltClient, goal, id,
-     default_action_active_cb (Op_PanTilt, args.str()),
-     default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (Op_PanTilt),
-     default_action_done_cb<PanTiltMoveJointsResultConstPtr> (Op_PanTilt));
+    (Name_Tilt, m_tiltClient, goal, id,
+     default_action_active_cb (Name_Tilt, args.str()),
+     default_action_feedback_cb<TiltFeedbackConstPtr> (Name_Tilt),
+     default_action_done_cb<TiltResultConstPtr> (Name_Tilt));
 }
 
 void OwInterface::panTiltCartesian (int frame, double x, double y, double z, int id)
 {
-  if (! markOperationRunning (Op_PanTiltCartesian, id)) return;
+  if (! markOperationRunning (Name_PanTiltCartesian, id)) return;
   thread action_thread (&OwInterface::panTiltCartesianAction,
                         this, frame, x, y, z, id);
   action_thread.detach();
@@ -829,43 +659,17 @@ void OwInterface::panTiltCartesianAction (int frame,
             PanTiltMoveCartesianGoal,
             PanTiltMoveCartesianResultConstPtr,
             PanTiltMoveCartesianFeedbackConstPtr>
-    (Op_PanTiltCartesian, m_panTiltCartesianClient, goal, id,
-     default_action_active_cb (Op_PanTiltCartesian, args.str()),
+    (Name_PanTiltCartesian, m_panTiltCartesianClient, goal, id,
+     default_action_active_cb (Name_PanTiltCartesian, args.str()),
      default_action_feedback_cb<PanTiltMoveCartesianFeedbackConstPtr>
-     (Op_PanTiltCartesian),
+     (Name_PanTiltCartesian),
      default_action_done_cb<PanTiltMoveCartesianResultConstPtr>
-     (Op_PanTiltCartesian));
+     (Name_PanTiltCartesian));
 }
-
-
-void OwInterface::cameraCapture (int id)
-{
-  if (! markOperationRunning (Op_CameraCapture, id)) return;
-  thread action_thread (&OwInterface::cameraCaptureAction, this, id);
-  action_thread.detach();
-}
-
-
-void OwInterface::cameraCaptureAction (int id)
-{
-  CameraCaptureGoal goal;
-
-  ROS_INFO ("Starting CameraCapture()");
-
-  runAction<actionlib::SimpleActionClient<CameraCaptureAction>,
-            CameraCaptureGoal,
-            CameraCaptureResultConstPtr,
-            CameraCaptureFeedbackConstPtr>
-    (Op_CameraCapture, m_cameraCaptureClient, goal, id,
-     default_action_active_cb (Op_CameraCapture),
-     default_action_feedback_cb<CameraCaptureFeedbackConstPtr> (Op_CameraCapture),
-     default_action_done_cb<CameraCaptureResultConstPtr> (Op_CameraCapture));
-}
-
 
 void OwInterface::cameraSetExposure (double exposure_secs, int id)
 {
-  if (! markOperationRunning (Op_CameraSetExposure, id)) return;
+  if (! markOperationRunning (Name_CameraSetExposure, id)) return;
   thread action_thread (&OwInterface::cameraSetExposureAction, this, exposure_secs, id);
   action_thread.detach();
 }
@@ -882,15 +686,15 @@ void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
             CameraSetExposureGoal,
             CameraSetExposureResultConstPtr,
             CameraSetExposureFeedbackConstPtr>
-    (Op_CameraSetExposure, m_cameraSetExposureClient, goal, id,
-     default_action_active_cb (Op_CameraSetExposure),
-     default_action_feedback_cb<CameraSetExposureFeedbackConstPtr> (Op_CameraSetExposure),
-     default_action_done_cb<CameraSetExposureResultConstPtr> (Op_CameraSetExposure));
+    (Name_CameraSetExposure, m_cameraSetExposureClient, goal, id,
+     default_action_active_cb (Name_CameraSetExposure),
+     default_action_feedback_cb<CameraSetExposureFeedbackConstPtr> (Name_CameraSetExposure),
+     default_action_done_cb<CameraSetExposureResultConstPtr> (Name_CameraSetExposure));
 }
 
 void OwInterface::dockIngestSample (int id)
 {
-  if (! markOperationRunning (Op_Ingest, id)) return;
+  if (! markOperationRunning (Name_Ingest, id)) return;
   thread action_thread (&OwInterface::dockIngestSampleAction, this, id);
   action_thread.detach();
 }
@@ -905,75 +709,17 @@ void OwInterface::dockIngestSampleAction (int id)
             DockIngestSampleGoal,
             DockIngestSampleResultConstPtr,
             DockIngestSampleFeedbackConstPtr>
-    (Op_Ingest, m_dockIngestSampleClient, goal, id,
-     default_action_active_cb (Op_Ingest),
-     default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Op_Ingest),
-     default_action_done_cb<DockIngestSampleResultConstPtr> (Op_Ingest));
-}
-
-void OwInterface::taskDeliverSample (int id)
-{
-  if (! markOperationRunning (Op_TaskDeliverSample, id)) return;
-  thread action_thread (&OwInterface::taskDeliverSampleAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::taskDeliverSampleAction (int id)
-{
-  TaskDeliverSampleGoal goal;
-
-  ROS_INFO ("Starting TaskDeliverSample()");
-
-  runAction<actionlib::SimpleActionClient<TaskDeliverSampleAction>,
-            TaskDeliverSampleGoal,
-            TaskDeliverSampleResultConstPtr,
-            TaskDeliverSampleFeedbackConstPtr>
-    (Op_TaskDeliverSample, m_taskDeliverSampleClient, goal, id,
-     default_action_active_cb (Op_TaskDeliverSample),
-     default_action_feedback_cb<TaskDeliverSampleFeedbackConstPtr> (Op_TaskDeliverSample),
-     default_action_done_cb<TaskDeliverSampleResultConstPtr> (Op_TaskDeliverSample));
-}
-
-void OwInterface::discardSample (int frame, bool relative,
-                                 double x, double y, double z,
-                                 double height, int id)
-{
-  if (! markOperationRunning (Op_TaskDiscardSample, id)) return;
-  thread action_thread (&OwInterface::discardSampleAction, this, frame, relative,
-                        x, y, z, height, id);
-  action_thread.detach();
-}
-
-void OwInterface::discardSampleAction (int frame, bool relative,
-                                       double x, double y, double z,
-                                       double height, int id)
-{
-  geometry_msgs::Point p;
-  p.x = x; p.y = y; p.z = z;
-
-  TaskDiscardSampleGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.point = p;
-  goal.height = height;
-
-  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", x, y, z);
-
-  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
-            TaskDiscardSampleGoal,
-            TaskDiscardSampleResultConstPtr,
-            TaskDiscardSampleFeedbackConstPtr>
-    (Op_TaskDiscardSample, m_discardClient, goal, id,
-     default_action_active_cb (Op_TaskDiscardSample),
-     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Op_TaskDiscardSample),
-     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Op_TaskDiscardSample));
+    (Name_Ingest, m_dockIngestSampleClient, goal, id,
+     default_action_active_cb (Name_Ingest),
+     default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Name_Ingest),
+     default_action_done_cb<DockIngestSampleResultConstPtr> (Name_Ingest));
 }
 
 void OwInterface::scoopLinear (int frame, bool relative,
                                double x, double y, double z,
                                double depth, double length, int id)
 {
-  if (! markOperationRunning (Op_TaskScoopLinear, id)) return;
+  if (! markOperationRunning (Name_TaskScoopLinear, id)) return;
   thread action_thread (&OwInterface::scoopLinearAction, this,
                         frame, relative, x, y, z, depth, length, id);
   action_thread.detach();
@@ -1001,17 +747,17 @@ void OwInterface::scoopLinearAction (int frame, bool relative,
             TaskScoopLinearGoal,
             TaskScoopLinearResultConstPtr,
             TaskScoopLinearFeedbackConstPtr>
-    (Op_TaskScoopLinear, m_scoopLinearClient, goal, id,
-     default_action_active_cb (Op_TaskScoopLinear),
-     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (Op_TaskScoopLinear),
-     default_action_done_cb<TaskScoopLinearResultConstPtr> (Op_TaskScoopLinear));
+    (Name_TaskScoopLinear, m_scoopLinearClient, goal, id,
+     default_action_active_cb (Name_TaskScoopLinear),
+     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (Name_TaskScoopLinear),
+     default_action_done_cb<TaskScoopLinearResultConstPtr> (Name_TaskScoopLinear));
 }
 
 void OwInterface::scoopCircular (int frame, bool relative,
                                  double x, double y, double z,
                                  double depth, bool parallel, int id)
 {
-  if (! markOperationRunning (Op_TaskScoopCircular, id)) return;
+  if (! markOperationRunning (Name_TaskScoopCircular, id)) return;
   thread action_thread (&OwInterface::scoopCircularAction, this,
                         frame, relative, x, y, z, depth, parallel, id);
   action_thread.detach();
@@ -1038,80 +784,17 @@ void OwInterface::scoopCircularAction (int frame, bool relative,
             TaskScoopCircularGoal,
             TaskScoopCircularResultConstPtr,
             TaskScoopCircularFeedbackConstPtr>
-    (Op_TaskScoopCircular, m_scoopCircularClient, goal, id,
-     default_action_active_cb (Op_TaskScoopCircular),
-     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (Op_TaskScoopCircular),
-     default_action_done_cb<TaskScoopCircularResultConstPtr> (Op_TaskScoopCircular));
+    (Name_TaskScoopCircular, m_scoopCircularClient, goal, id,
+     default_action_active_cb (Name_TaskScoopCircular),
+     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (Name_TaskScoopCircular),
+     default_action_done_cb<TaskScoopCircularResultConstPtr> (Name_TaskScoopCircular));
 }
 
-
-void OwInterface::armStop (int id)
-{
-  if (! markOperationRunning (Op_ArmStop, id)) return;
-  thread action_thread (&OwInterface::armStop, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armStopAction (int id)
-{
-  ArmStopGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmStopAction>,
-            ArmStopGoal,
-            ArmStopResultConstPtr,
-            ArmStopFeedbackConstPtr>
-    (Op_ArmStop, m_armStopClient, goal, id,
-     default_action_active_cb (Op_ArmStop),
-     default_action_feedback_cb<ArmStopFeedbackConstPtr> (Op_ArmStop),
-     default_action_done_cb<ArmStopResultConstPtr> (Op_ArmStop));
-}
-
-void OwInterface::armUnstow (int id)
-{
-  if (! markOperationRunning (Op_ArmUnstow, id)) return;
-  thread action_thread (&OwInterface::armUnstowAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armUnstowAction (int id)
-{
-  ArmUnstowGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmUnstowAction>,
-            ArmUnstowGoal,
-            ArmUnstowResultConstPtr,
-            ArmUnstowFeedbackConstPtr>
-    (Op_ArmUnstow, m_armUnstowClient, goal, id,
-     default_action_active_cb (Op_ArmUnstow),
-     default_action_feedback_cb<ArmUnstowFeedbackConstPtr> (Op_ArmUnstow),
-     default_action_done_cb<ArmUnstowResultConstPtr> (Op_ArmUnstow));
-}
-
-void OwInterface::armStow (int id)  // as action
-{
-  if (! markOperationRunning (Op_ArmStow, id)) return;
-  thread action_thread (&OwInterface::armStowAction, this, id);
-  action_thread.detach();
-}
-
-void OwInterface::armStowAction (int id)
-{
-  ArmStowGoal goal; // empty/undefined
-
-  runAction<actionlib::SimpleActionClient<ArmStowAction>,
-            ArmStowGoal,
-            ArmStowResultConstPtr,
-            ArmStowFeedbackConstPtr>
-    (Op_ArmStow, m_armStowClient, goal, id,
-     default_action_active_cb (Op_ArmStow),
-     default_action_feedback_cb<ArmStowFeedbackConstPtr> (Op_ArmStow),
-     default_action_done_cb<ArmStowResultConstPtr> (Op_ArmStow));
-}
 
 void OwInterface::grind (double x, double y, double depth, double length,
                          bool parallel, double ground_pos, int id)
 {
-  if (! markOperationRunning (Op_Grind, id)) return;
+  if (! markOperationRunning (Name_Grind, id)) return;
   thread action_thread (&OwInterface::grindAction, this, x, y, depth, length,
                         parallel, ground_pos, id);
   action_thread.detach();
@@ -1137,33 +820,36 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
             TaskGrindGoal,
             TaskGrindResultConstPtr,
             TaskGrindFeedbackConstPtr>
-    (Op_Grind, m_grindClient, goal, id,
-     default_action_active_cb (Op_Grind),
-     default_action_feedback_cb<TaskGrindFeedbackConstPtr> (Op_Grind),
-     default_action_done_cb<TaskGrindResultConstPtr> (Op_Grind));
+    (Name_Grind, m_grindClient, goal, id,
+     default_action_active_cb (Name_Grind),
+     default_action_feedback_cb<TaskGrindFeedbackConstPtr> (Name_Grind),
+     default_action_done_cb<TaskGrindResultConstPtr> (Name_Grind));
 }
 
-void OwInterface::armFindSurface (int frame, bool relative,
-                                  double pos_x, double pos_y, double pos_z,
-                                  double norm_x, double norm_y, double norm_z,
-                                  double distance, double overdrive,
-                                  double force_threshold, double torque_threshold,
+void OwInterface::armFindSurface (int frame,
+                                  bool relative,
+                                  const std::vector<double>& position,
+                                  const std::vector<double>& normal,
+                                  double distance,
+                                  double overdrive,
+                                  double force_threshold,
+                                  double torque_threshold,
                                   int id)
 {
-  if (! markOperationRunning (Op_ArmFindSurface, id)) return;
+  if (! markOperationRunning (Name_ArmFindSurface, id)) return;
 
   geometry_msgs::Point pos;
-  pos.x = pos_x;
-  pos.y = pos_y;
-  pos.z = pos_z;
+  pos.x = position[0];
+  pos.y = position[1];
+  pos.z = position[2];
 
-  geometry_msgs::Vector3 normal;
-  normal.x = norm_x;
-  normal.y = norm_y;
-  normal.z = norm_z;
+  geometry_msgs::Vector3 norm;
+  norm.x = normal[0];
+  norm.y = normal[1];
+  norm.z = normal[2];
 
   thread action_thread (&OwInterface::armFindSurfaceAction, this,
-			frame, relative, pos, normal, distance, overdrive,
+			frame, relative, pos, norm, distance, overdrive,
                         force_threshold, torque_threshold,
                         id);
   action_thread.detach();
@@ -1193,185 +879,19 @@ void OwInterface::armFindSurfaceAction (int frame, bool relative,
             ArmFindSurfaceGoal,
             ArmFindSurfaceResultConstPtr,
             ArmFindSurfaceFeedbackConstPtr>
-	    (Op_ArmFindSurface, m_armFindSurfaceClient, goal, id,
-	     default_action_active_cb (Op_ArmFindSurface),
+	    (Name_ArmFindSurface, m_armFindSurfaceClient, goal, id,
+	     default_action_active_cb (Name_ArmFindSurface),
 	     default_action_feedback_cb<ArmFindSurfaceFeedbackConstPtr>
-	     (Op_ArmFindSurface),
+	     (Name_ArmFindSurface),
 	     default_action_done_cb<ArmFindSurfaceResultConstPtr>
-	     (Op_ArmFindSurface));
+	     (Name_ArmFindSurface));
 }
-
-void OwInterface::armMoveCartesian (int frame, bool relative,
-				    double x, double y, double z,
-				    double orient_x, double orient_y,
-				    double orient_z, int id)
-{
-  tf2::Quaternion q;
-  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
-  q.normalize();  // Recommended in ROS docs, not sure if needed here.
-
-  geometry_msgs::Quaternion qm = tf2::toMsg(q);
-
-  armMoveCartesianAux (frame, relative, x, y, z, qm, id);
-}
-
-
-void OwInterface::armMoveCartesian (int frame, bool relative,
-				    double x, double y, double z,
-				    double orient_x, double orient_y,
-				    double orient_z, double orient_w, int id)
-{
-  geometry_msgs::Quaternion q;
-  q.x = orient_x;
-  q.y = orient_y;
-  q.z = orient_z;
-  q.w = orient_w;
-
-  armMoveCartesianAux (frame, relative, x, y, z, q, id);
-}
-
-void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                           double x, double y, double z,
-                                           double orient_x,
-                                           double orient_y,
-                                           double orient_z,
-                                           double force_threshold,
-                                           double torque_threshold,
-                                           int id)
-{
-  tf2::Quaternion q;
-  q.setEuler (z,y,x);  // Yaw, pitch, roll, respectively.
-  q.normalize();  // Recommended in ROS docs, not sure if needed here.
-
-  geometry_msgs::Quaternion qm = tf2::toMsg(q);
-
-  armMoveCartesianGuardedAux (frame, relative, x, y, z, qm,
-                              force_threshold, torque_threshold, id);
-}
-
-void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
-                                           double x, double y, double z,
-                                           double orient_x, double orient_y,
-                                           double orient_z, double orient_w,
-                                           double force_threshold,
-                                           double torque_threshold,
-                                           int id)
-{
-  geometry_msgs::Quaternion q;
-  q.x = orient_x;
-  q.y = orient_y;
-  q.z = orient_z;
-  q.w = orient_w;
-
-  armMoveCartesianGuardedAux (frame, relative, x, y, z, q,
-                              force_threshold, torque_threshold, id);
-}
-
-void OwInterface::armMoveCartesianGuardedAux (int frame, bool relative,
-                                              double x, double y, double z,
-                                              const geometry_msgs::Quaternion& q,
-                                              double force_threshold,
-                                              double torque_threshold,
-                                              int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesianGuarded, id)) return;
-
-  geometry_msgs::Point p;
-  p.x = x;
-  p.y = y;
-  p.z = z;
-
-  geometry_msgs::Pose pose;
-  pose.position = p;
-  pose.orientation = q;
-
-  thread action_thread (&OwInterface::armMoveCartesianGuardedAction, this,
-			frame, relative, pose, force_threshold, torque_threshold,
-                        id);
-  action_thread.detach();
-}
-
-
-void OwInterface::armMoveCartesianAux (int frame, bool relative,
-                                       double x, double y, double z,
-                                       const geometry_msgs::Quaternion& q, int id)
-{
-  if (! markOperationRunning (Op_ArmMoveCartesian, id)) return;
-
-  geometry_msgs::Point p;
-  p.x = x;
-  p.y = y;
-  p.z = z;
-
-  geometry_msgs::Pose pose;
-  pose.position = p;
-  pose.orientation = q;
-
-  thread action_thread (&OwInterface::armMoveCartesianAction, this,
-			frame, relative, pose, id);
-  action_thread.detach();
-}
-
-
-
-void OwInterface::armMoveCartesianAction (int frame, bool relative,
-                                          const geometry_msgs::Pose& pose, int id)
-{
-  ArmMoveCartesianGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-
-  // Fill this out.
-  ROS_INFO ("Starting ArmMoveCartesian (frame=%d, relative=%d)", frame, relative);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianAction>,
-            ArmMoveCartesianGoal,
-            ArmMoveCartesianResultConstPtr,
-            ArmMoveCartesianFeedbackConstPtr>
-	    (Op_ArmMoveCartesian, m_armMoveCartesianClient, goal, id,
-	     default_action_active_cb (Op_ArmMoveCartesian),
-	     default_action_feedback_cb<ArmMoveCartesianFeedbackConstPtr>
-	     (Op_ArmMoveCartesian),
-	     default_action_done_cb<ArmMoveCartesianResultConstPtr>
-	     (Op_ArmMoveCartesian));
-}
-
-void OwInterface::armMoveCartesianGuardedAction (int frame, bool relative,
-                                                 const geometry_msgs::Pose& pose,
-                                                 double force_threshold,
-                                                 double torque_threshold,
-                                                 int id)
-{
-  ArmMoveCartesianGuardedGoal goal;
-  goal.frame = frame;
-  goal.relative = relative;
-  goal.pose = pose;
-  goal.force_threshold = force_threshold;
-  goal.torque_threshold = torque_threshold;
-
-  // Fill this out.
-  ROS_INFO ("Starting ArmMoveCartesianGuarded (frame=%d, relative=%d)",
-            frame, relative);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveCartesianGuardedAction>,
-            ArmMoveCartesianGuardedGoal,
-            ArmMoveCartesianGuardedResultConstPtr,
-            ArmMoveCartesianGuardedFeedbackConstPtr>
-	    (Op_ArmMoveCartesianGuarded, m_armMoveCartesianGuardedClient, goal, id,
-	     default_action_active_cb (Op_ArmMoveCartesianGuarded),
-	     default_action_feedback_cb<ArmMoveCartesianGuardedFeedbackConstPtr>
-	     (Op_ArmMoveCartesianGuarded),
-	     default_action_done_cb<ArmMoveCartesianGuardedResultConstPtr>
-	     (Op_ArmMoveCartesianGuarded));
-}
-
 
 void OwInterface::guardedMove (double x, double y, double z,
                                double dir_x, double dir_y, double dir_z,
                                double search_dist, int id)
 {
-  if (! markOperationRunning (Op_GuardedMove, id)) return;
+  if (! markOperationRunning (Name_GuardedMove, id)) return;
   thread action_thread (&OwInterface::guardedMoveAction, this, x, y, z,
                         dir_x, dir_y, dir_z, search_dist, id);
   action_thread.detach();
@@ -1399,53 +919,17 @@ void OwInterface::guardedMoveAction (double x, double y, double z,
             GuardedMoveGoal,
             GuardedMoveResultConstPtr,
             GuardedMoveFeedbackConstPtr>
-    (Op_GuardedMove, m_guardedMoveClient, goal, id,
-     default_action_active_cb (Op_GuardedMove),
-     default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Op_GuardedMove),
-     guarded_move_done_cb<GuardedMoveResultConstPtr> (Op_GuardedMove));
-}
-
-void OwInterface::armMoveJoint (bool relative,
-                                int joint, double angle,
-                                int id)
-{
-  if (! markOperationRunning (Op_ArmMoveJoint, id)) return;
-  thread action_thread (&OwInterface::armMoveJointAction,
-                        this, relative, joint, angle, id);
-  action_thread.detach();
-}
-
-void OwInterface::armMoveJointAction (bool relative,
-                                      int joint, double angle,
-                                      int id)
-{
-  ArmMoveJointGoal goal;
-  goal.relative = relative;
-  // NOTE: goal.joint is of type int64_t.  Assignment safe, but type
-  // should be either corrected all the way up the calling tree, or
-  // the message type should be changed to int32, which is more than
-  // sufficient and easiest to work with.
-  goal.joint = joint;
-  goal.angle = angle;
-
-  ROS_INFO ("Starting ArmMoveJoint (relative=%d, joint=%d, angle=%f)",
-            goal.relative, goal.joint, goal.angle);
-
-  runAction<actionlib::SimpleActionClient<ArmMoveJointAction>,
-            ArmMoveJointGoal,
-            ArmMoveJointResultConstPtr,
-            ArmMoveJointFeedbackConstPtr>
-    (Op_ArmMoveJoint, m_armMoveJointClient, goal, id,
-     default_action_active_cb (Op_ArmMoveJoint),
-     default_action_feedback_cb<ArmMoveJointFeedbackConstPtr> (Op_ArmMoveJoint),
-     default_action_done_cb<ArmMoveJointResultConstPtr> (Op_ArmMoveJoint));
+    (Name_GuardedMove, m_guardedMoveClient, goal, id,
+     default_action_active_cb (Name_GuardedMove),
+     default_action_feedback_cb<GuardedMoveFeedbackConstPtr> (Name_GuardedMove),
+     guarded_move_done_cb<GuardedMoveResultConstPtr> (Name_GuardedMove));
 }
 
 void OwInterface::armMoveJoints (bool relative,
                                  const vector<double>& angles,
                                  int id)
 {
-  if (! markOperationRunning (Op_ArmMoveJoints, id)) return;
+  if (! markOperationRunning (Name_ArmMoveJoints, id)) return;
   thread action_thread (&OwInterface::armMoveJointsAction,
                         this, relative, angles, id);
   action_thread.detach();
@@ -1470,10 +954,10 @@ void OwInterface::armMoveJointsAction (bool relative,
             ArmMoveJointsGoal,
             ArmMoveJointsResultConstPtr,
             ArmMoveJointsFeedbackConstPtr>
-    (Op_ArmMoveJoints, m_armMoveJointsClient, goal, id,
-     default_action_active_cb (Op_ArmMoveJoints),
-     default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (Op_ArmMoveJoints),
-     default_action_done_cb<ArmMoveJointsResultConstPtr> (Op_ArmMoveJoints));
+    (Name_ArmMoveJoints, m_armMoveJointsClient, goal, id,
+     default_action_active_cb (Name_ArmMoveJoints),
+     default_action_feedback_cb<ArmMoveJointsFeedbackConstPtr> (Name_ArmMoveJoints),
+     default_action_done_cb<ArmMoveJointsResultConstPtr> (Name_ArmMoveJoints));
 }
 
 void OwInterface::armMoveJointsGuarded (bool relative,
@@ -1482,7 +966,7 @@ void OwInterface::armMoveJointsGuarded (bool relative,
                                         double torque_threshold,
                                         int id)
 {
-  if (! markOperationRunning (Op_ArmMoveJointsGuarded, id)) return;
+  if (! markOperationRunning (Name_ArmMoveJointsGuarded, id)) return;
   thread action_thread (&OwInterface::armMoveJointsGuardedAction,
                         this, relative, angles,
                         force_threshold, torque_threshold, id);
@@ -1513,12 +997,12 @@ void OwInterface::armMoveJointsGuardedAction (bool relative,
             ArmMoveJointsGuardedGoal,
             ArmMoveJointsGuardedResultConstPtr,
             ArmMoveJointsGuardedFeedbackConstPtr>
-    (Op_ArmMoveJointsGuarded, m_armMoveJointsGuardedClient, goal, id,
-     default_action_active_cb (Op_ArmMoveJointsGuarded),
+    (Name_ArmMoveJointsGuarded, m_armMoveJointsGuardedClient, goal, id,
+     default_action_active_cb (Name_ArmMoveJointsGuarded),
      default_action_feedback_cb<ArmMoveJointsGuardedFeedbackConstPtr>
-     (Op_ArmMoveJointsGuarded),
+     (Name_ArmMoveJointsGuarded),
      default_action_done_cb<ArmMoveJointsGuardedResultConstPtr>
-     (Op_ArmMoveJointsGuarded));
+     (Name_ArmMoveJointsGuarded));
 }
 
 
@@ -1528,7 +1012,7 @@ vector<double> OwInterface::identifySampleLocation (int num_images,
 {
   SamplePoint.clear();
   GotSampleLocation = false;
-  if (! markOperationRunning (Op_IdentifySampleLocation, id)) return SamplePoint;
+  if (! markOperationRunning (Name_IdentifySampleLocation, id)) return SamplePoint;
   thread action_thread (&OwInterface::identifySampleLocationAction,
                         this, num_images, filter_type, id);
   action_thread.detach();
@@ -1562,10 +1046,10 @@ void OwInterface::identifySampleLocationAction (int num_images,
             ow_plexil::IdentifyLocationGoal,
             ow_plexil::IdentifyLocationResultConstPtr,
             ow_plexil::IdentifyLocationFeedbackConstPtr>
-    (Op_IdentifySampleLocation, m_identifySampleLocationClient, goal, id,
-     default_action_active_cb (Op_IdentifySampleLocation),
+    (Name_IdentifySampleLocation, m_identifySampleLocationClient, goal, id,
+     default_action_active_cb (Name_IdentifySampleLocation),
      default_action_feedback_cb<ow_plexil::IdentifyLocationFeedbackConstPtr>
-     (Op_IdentifySampleLocation),
+     (Name_IdentifySampleLocation),
      identify_sample_location_done_cb<ow_plexil::IdentifyLocationResultConstPtr>);
 }
 
@@ -1573,7 +1057,7 @@ void OwInterface::identifySampleLocationAction (int num_images,
 void OwInterface::lightSetIntensity (const string& side, double intensity,
                                      int id)
 {
-  if (! markOperationRunning (Op_LightSetIntensity, id)) return;
+  if (! markOperationRunning (Name_LightSetIntensity, id)) return;
   thread action_thread (&OwInterface::lightSetIntensityAction, this,
                         side, intensity, id);
   action_thread.detach();
@@ -1594,14 +1078,48 @@ void OwInterface::lightSetIntensityAction (const string& side, double intensity,
             LightSetIntensityGoal,
             LightSetIntensityResultConstPtr,
             LightSetIntensityFeedbackConstPtr>
-    (Op_LightSetIntensity, m_lightSetIntensityClient, goal, id,
-     default_action_active_cb (Op_LightSetIntensity),
+    (Name_LightSetIntensity, m_lightSetIntensityClient, goal, id,
+     default_action_active_cb (Name_LightSetIntensity),
      default_action_feedback_cb<LightSetIntensityFeedbackConstPtr>
-     (Op_LightSetIntensity),
+     (Name_LightSetIntensity),
      default_action_done_cb<LightSetIntensityResultConstPtr>
-     (Op_LightSetIntensity));
+     (Name_LightSetIntensity));
 }
 
+void OwInterface::taskDiscardSample (int frame, bool relative,
+                                     const std::vector<double>& point,
+                                     double height, int id)
+{
+  if (! markOperationRunning (Name_TaskDiscardSample, id)) return;
+  thread action_thread (&OwInterface::taskDiscardSampleAction, this,
+                        frame, relative, point, height, id);
+  action_thread.detach();
+}
+
+void OwInterface::taskDiscardSampleAction (int frame, bool relative,
+                                           const std::vector<double>& point,
+                                           double height, int id)
+{
+  geometry_msgs::Point p;
+  p.x = point[0]; p.y = point[1]; p.z = point[2];
+
+  TaskDiscardSampleGoal goal;
+  goal.frame = frame;
+  goal.relative = relative;
+  goal.point = p;
+  goal.height = height;
+
+  ROS_INFO ("Starting TaskDiscardSample(x=%.2f, y=%.2f, z=%.2f)", p.x, p.y, p.z);
+
+  runAction<actionlib::SimpleActionClient<TaskDiscardSampleAction>,
+            TaskDiscardSampleGoal,
+            TaskDiscardSampleResultConstPtr,
+            TaskDiscardSampleFeedbackConstPtr>
+    (Name_TaskDiscardSample, m_taskDiscardSampleClient, goal, id,
+     default_action_active_cb (Name_TaskDiscardSample),
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_TaskDiscardSample),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_TaskDiscardSample));
+}
 
 double OwInterface::getTiltRadians () const
 {
@@ -1668,12 +1186,6 @@ vector<double> OwInterface::getEndEffectorFT () const
 vector<double> OwInterface::getArmPose () const
 {
   return m_armPose;
-}
-
-
-int OwInterface::actionGoalStatus (const string& action_name) const
-{
-  return ActionGoalStatusMap[action_name];
 }
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const

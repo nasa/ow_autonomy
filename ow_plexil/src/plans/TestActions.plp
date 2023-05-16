@@ -8,7 +8,7 @@
 
 #include "plan-interface.h"
 
-TestActions:
+TestActions: UncheckedSequence
 {
   Real GP = -0.155;  // Ground position
   log_info ("Beginning action test...");
@@ -17,23 +17,18 @@ TestActions:
 
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
                                 Relative = false,
-                                X = 1.7, Y = -0.2, Z = 0.6,
-                                OrientX = 0, OrientY = 0, OrientZ = 0);
+                                Position = #(1.7 -0.2 0.6),
+                                Orientation = #(0 0 0));
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = false,
-                                  X = 1.7, Y = -0.2, Z = 0.6,
-                                  OrientX = 1, OrientY = 0, OrientZ = 0, OrientW = 0);
+                                  Position = #(1.7 -0.2 0.6),
+                                  Orientation = #(0 0 0));
 
   LibraryCall ArmMoveCartesianGuarded_Q (Frame = BASE_LINK,
                                          Relative = true,
-                                         X = 0,
-                                         Y = 0,
-                                         Z = 0.6,
-                                         OrientX = 0,
-                                         OrientY = 0,
-                                         OrientZ = 0,
-                                         OrientW = -1,
+                                         Position = #(0 0 0.6),
+                                         Orientation = #(0 0 0 -1),
                                          ForceThreshold = 200,
                                          TorqueThreshold = 100);
 
@@ -48,16 +43,17 @@ TestActions:
 
   LibraryCall ArmFindSurface (Frame = BASE_LINK,
                               Relative = false,
-                              PosX = 1.75, PosY = 0.1, PosZ = GP,
-                              NormX = 0, NormY = 0, NormZ = -1,
-                              Distance = 0.2, Overdrive = 0.05,
-                              ForceThreshold = 200, TorqueThreshold = 50);
+                              Position = #(1.75 0.1 -0.155),
+                              Normal = #(0 0 -1),
+                              Distance = 0.2,
+                              Overdrive = 0.05,
+                              ForceThreshold = 200,
+                              TorqueThreshold = 50);
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
-                                  OrientX = 0, OrientY = 0,
-                                  OrientZ = 0, OrientW = 1);
+                                  Position = #(0 0 -0.2),
+                                  Orientation = #(0 0 0 1));
 
   LibraryCall CameraSetExposure (Seconds = 1);
 
@@ -68,9 +64,8 @@ TestActions:
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
-                                  OrientX = 0, OrientY = 0,
-                                  OrientZ = 0, OrientW = 1);
+                                  Position = #(0 0 -0.2),
+                                  Orientation = #(0 0 0 1));
 
   LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
 
@@ -83,8 +78,7 @@ TestActions:
                                  Depth = 0.045, Parallel = false);
 
   LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
-                                 X = 1.5, Y = 0.8, Z = 0.65,
-                                 Height = 0.1);
+                                 Point = #(1.5 0.8 0.65), Height = 0.1);
 
   LibraryCall TaskGrind (X = 1.6, Y = 0.02, Depth = 0.05,
                          Length = 0.6, Parallel = true,
@@ -96,8 +90,7 @@ TestActions:
 
   LibraryCall TaskDeliverSample ();
   LibraryCall DockIngestSample ();
-  LibraryCall ArmUnstow();
-  LibraryCall ArmStow();
+  LibraryCall StowSequence();
   LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
   LibraryCall Pan (Degrees = 90);
   LibraryCall Tilt (Degrees = 89);

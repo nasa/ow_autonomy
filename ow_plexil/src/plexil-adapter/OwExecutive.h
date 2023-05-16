@@ -15,12 +15,12 @@
 class OwExecutive
 {
  public:
+  static OwExecutive* instance();
+  
   OwExecutive() = default;
   OwExecutive (const OwExecutive&) = delete;
   OwExecutive& operator= (const OwExecutive&) = delete;
   ~OwExecutive() = default;
-
-  static OwExecutive* instance();
 
   bool initialize (const std::string& config_file);
   bool allPlansFinished(); // See warning in implementation.

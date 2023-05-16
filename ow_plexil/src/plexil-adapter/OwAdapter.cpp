@@ -30,12 +30,6 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
-const float PanMinDegrees  = -183.346; // -3.2 radians
-const float PanMaxDegrees  =  183.346; //  3.2 radians
-const float TiltMinDegrees = -89.38;   // Slightly more than -pi/2
-const float TiltMaxDegrees =  89.38;   // Slightly less than pi/2
-const float PanTiltInputTolerance =  0.0057; // 0.0001 R, matching simulator
-
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
 static void stubbed_lookup (const string& name, const string& value)
@@ -206,29 +200,6 @@ static bool lookup (const string& state_name,
   return retval;
 }
 
-static void arm_stow (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armStow (CommandId);
-  acknowledge_command_sent(*cr);
-
-}
-
-static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armUnstow (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_stop (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armStop (CommandId);
-  acknowledge_command_sent(*cr);
-
-}
-
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -243,146 +214,6 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
                                         search_distance, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double pos_x, pos_y, pos_z, norm_x, norm_y, norm_z;
-  double distance, overdrive, force_threshold, torque_threshold;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(pos_x);
-  args[3].getValue(pos_y);
-  args[4].getValue(pos_z);
-  args[5].getValue(norm_x);
-  args[6].getValue(norm_y);
-  args[7].getValue(norm_z);
-  args[8].getValue(distance);
-  args[9].getValue(overdrive);
-  args[10].getValue(force_threshold);
-  args[11].getValue(torque_threshold);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armFindSurface (frame, relative, pos_x, pos_y, pos_z,
-                                           norm_x, norm_y, norm_z,
-                                           distance, overdrive,
-                                           force_threshold, torque_threshold,
-                                           CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-
-static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
-					     orient_x, orient_y, orient_z,
-					     CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_q (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, orient_w;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(orient_w);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesian (frame, relative, x, y, z,
-					     orient_x, orient_y, orient_z,
-					     orient_w, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_guarded (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, force_threshold, torque_threshold;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(force_threshold);
-  args[9].getValue(torque_threshold);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
-                                                    orient_x, orient_y, orient_z,
-                                                    force_threshold,
-                                                    torque_threshold,
-                                                    CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_cartesian_guarded_q (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, orient_x, orient_y, orient_z, orient_w;
-  double force_threshold, torque_threshold;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(orient_x);
-  args[6].getValue(orient_y);
-  args[7].getValue(orient_z);
-  args[8].getValue(orient_w);
-  args[9].getValue(force_threshold);
-  args[10].getValue(torque_threshold);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveCartesianGuarded (frame, relative, x, y, z,
-                                                    orient_x, orient_y, orient_z,
-                                                    orient_w,
-                                                    force_threshold,
-                                                    torque_threshold,
-                                                    CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void arm_move_joint (Command *cmd, AdapterExecInterface* intf)
-{
-  bool relative;
-  int joint;
-  double angle; // unit is radians
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(relative);
-  args[1].getValue(joint);
-  args[2].getValue(angle);
-  std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->armMoveJoint (relative, joint, angle,
-                                         CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -478,54 +309,15 @@ static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void deliver_sample (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->taskDeliverSample (CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void discard_sample (Command* cmd, AdapterExecInterface* intf)
-{
-  int frame;
-  bool relative;
-  double x, y, z, height;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue(frame);
-  args[1].getValue(relative);
-  args[2].getValue(x);
-  args[3].getValue(y);
-  args[4].getValue(z);
-  args[5].getValue(height);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->discardSample (frame, relative, x, y, z,
-                                          height, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static bool check_angle (const char* name, double val,
-                         double min, double max, double tolerance)
-// NOTE: tolerance is needed because there is apparently loss of
-// precision in the angle on its way into Python.  This could be
-// because the ROS action uses 32-bit floats for the input angles.
-// They will be updated to 64 bit as part of the ongoing command
-// unification with OWLAT.
-{
-  if (val < min - tolerance || val > max + tolerance) {
-    ROS_WARN ("Requested %s %f out of valid range [%f %f], "
-              "rejecting PLEXIL command.", name, val, min, max);
-    return false;
-  }
-  return true;
-}
-
 static void pan (Command* cmd, AdapterExecInterface* intf)
 {
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (! check_angle ("pan", degrees, PanMinDegrees, PanMaxDegrees,
-                     PanTiltInputTolerance)) {
+  if (! LanderAdapter::checkAngle ("pan", degrees,
+                                   LanderAdapter::PanMinDegrees,
+                                   LanderAdapter::PanMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
@@ -540,32 +332,14 @@ static void tilt (Command* cmd, AdapterExecInterface* intf)
   double degrees;
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (degrees);
-  if (! check_angle ("tilt", degrees, TiltMinDegrees, TiltMaxDegrees,
-                     PanTiltInputTolerance)) {
+  if (! LanderAdapter::checkAngle ("tilt", degrees, LanderAdapter::TiltMinDegrees,
+                                   LanderAdapter::TiltMaxDegrees,
+                                   LanderAdapter::PanTiltInputTolerance)) {
     acknowledge_command_denied (cmd, intf);
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
     OwInterface::instance()->tilt (degrees, CommandId);
-    acknowledge_command_sent(*cr);
-  }
-}
-
-static void pan_tilt (Command* cmd, AdapterExecInterface* intf)
-{
-  double pan_degrees, tilt_degrees;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (pan_degrees);
-  args[1].getValue (tilt_degrees);
-  if (! check_angle ("pan", pan_degrees, PanMinDegrees, PanMaxDegrees,
-                     PanTiltInputTolerance) ||
-      ! check_angle ("tilt", tilt_degrees, TiltMinDegrees, TiltMaxDegrees,
-                     PanTiltInputTolerance)) {
-    acknowledge_command_denied (cmd, intf);
-  }
-  else {
-    unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->panTilt (pan_degrees, tilt_degrees, CommandId);
     acknowledge_command_sent(*cr);
   }
 }
@@ -581,13 +355,6 @@ static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
   args[3].getValue (z);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->panTiltCartesian (frame, x, y, z, CommandId);
-  acknowledge_command_sent(*cr);
-}
-
-static void camera_capture (Command* cmd, AdapterExecInterface* intf)
-{
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->cameraCapture (CommandId);
   acknowledge_command_sent(*cr);
 }
 
@@ -660,31 +427,23 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+
+// Telemetry
+
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      const pugi::xml_node& configXml)
-  : CommonAdapter(execInterface, configXml)
+  : LanderAdapter(execInterface, configXml)
 {
   debugMsg("OwAdapter", " created.");
 }
 
 bool OwAdapter::initialize()
 {
-  CommonAdapter::initialize();
-  g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("arm_stow", arm_stow);
-  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
+  LanderAdapter::initialize (OwInterface::instance());
+
+  // Commands
   g_configuration->registerCommandHandler("grind", grind);
-  g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
-  g_configuration->registerCommandHandler("arm_move_cartesian",
-					  arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_q",
-					  arm_move_cartesian_q);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
-					  arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
-					  arm_move_cartesian_guarded_q);
   g_configuration->registerCommandHandler("guarded_move", guarded_move);
-  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
   g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
   g_configuration->registerCommandHandler("arm_move_joints_guarded",
                                           arm_move_joints_guarded);
@@ -693,19 +452,14 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
   g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
-  g_configuration->registerCommandHandler("deliver_sample", deliver_sample);
-  g_configuration->registerCommandHandler("discard_sample", discard_sample);
-  g_configuration->registerCommandHandler("pan_tilt", pan_tilt);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
                                           pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",
                                           identify_sample_location);
-  g_configuration->registerCommandHandler("camera_capture", camera_capture);
   g_configuration->registerCommandHandler("camera_set_exposure",
                                           camera_set_exposure);
   g_configuration->registerCommandHandler("light_set_intensity",
                                           light_set_intensity);
-  OwInterface::instance()->setCommandStatusCallback (command_status_callback);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }

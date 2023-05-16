@@ -10,14 +10,11 @@
 
 TestArmMoveCartesianGuarded:
 {
-  // The following defaults are defined in
-  // ow_lander/scripts/arm_move_cartesian_guarded.py.  These are not
-  // all the defaults, just those useful in this plan.
+  // The following defaults are used in
+  // ow_lander/scripts/arm_move_cartesian_guarded.py.
 
-  Real DefaultXYZ = 0; // Position, Euler and Quaternion orientation
-  Real DefaultForceThreshold = 200;
-  Real DefaultTorqueThreshold = 100;
-  Real DefaultW = 1;
+  Real ForceThreshold = 200;
+  Real TorqueThreshold = 100;
 
   log_info ("Beginning TestMoveCartesian...");
 
@@ -28,47 +25,30 @@ TestArmMoveCartesianGuarded:
   // Prime scoop to poke ground.
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
                                 Relative = false,
-                                X = 1.7,
-                                Y = DefaultXYZ,
-                                Z = DefaultXYZ,
-                                OrientX = 3.14,
-                                OrientY = 0,
-                                OrientZ = 0);
+                                Position = #(1.7 0 0),
+                                Orientation = #(3.14 0 0));
 
   // Move scoop down and into the ground.
   LibraryCall ArmMoveCartesianGuarded_Q (Frame = BASE_LINK,
                                          Relative = true,
-                                         X = DefaultXYZ,
-                                         Y = DefaultXYZ,
-                                         Z = 0.6,
-                                         OrientX = DefaultXYZ,
-                                         OrientY = DefaultXYZ,
-                                         OrientZ = DefaultXYZ,
-                                         OrientW = DefaultW,
-                                         ForceThreshold = DefaultForceThreshold,
-                                         TorqueThreshold = DefaultTorqueThreshold);
+                                         Position = #(0 0 0.6),
+                                         Orientation = #(0 0 0 1),
+                                         ForceThreshold = ForceThreshold,
+                                         TorqueThreshold = TorqueThreshold);
 
   // Lift scoop high
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
                                 Relative = false,
-                                X = 1.7,
-                                Y = DefaultXYZ,
-                                Z = 0.5,
-                                OrientX = 3.14,
-                                OrientY = 0,
-                                OrientZ = 0);
+                                Position = #(1.7 0 0.5),
+                                Orientation = #(3.14 0 0));
 
   // Repeat last guarded move (with Euler version), should not reach ground.
   LibraryCall ArmMoveCartesianGuarded (Frame = BASE_LINK,
                                        Relative = true,
-                                       X = DefaultXYZ,
-                                       Y = DefaultXYZ,
-                                       Z = 0.6,
-                                       OrientX = DefaultXYZ,
-                                       OrientY = DefaultXYZ,
-                                       OrientZ = DefaultXYZ,
-                                       ForceThreshold = DefaultForceThreshold,
-                                       TorqueThreshold = DefaultTorqueThreshold);
+                                       Position = #(0 0 0.6),
+                                       Orientation = #(0 0 0),
+                                       ForceThreshold = ForceThreshold,
+                                       TorqueThreshold = TorqueThreshold);
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();
 
