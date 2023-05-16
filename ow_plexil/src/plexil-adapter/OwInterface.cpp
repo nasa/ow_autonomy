@@ -387,77 +387,53 @@ void OwInterface::initialize()
   const bool latch = true;
   m_antennaTiltPublisher = make_unique<ros::Publisher>
     (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_tilt_position_controller/command", QSize, latch));
+     ("/ant_tilt_position_controller/command", QueueSize, latch));
   m_antennaPanPublisher = make_unique<ros::Publisher>
     (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_pan_position_controller/command", QSize, latch));
+     ("/ant_pan_position_controller/command", QueueSize, latch));
   m_leftImageTriggerPublisher = make_unique<ros::Publisher>
     (m_genericNodeHandle->advertise<std_msgs::Empty>
-     ("/StereoCamera/left/image_trigger", QSize, latch));
+     ("/StereoCamera/left/image_trigger", QueueSize, latch));
 
   // Initialize subscribers
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+     (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
                                       &OwInterface::jointStatesCallback,
                                       this)));
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
+     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QueueSize,
                                       &OwInterface::armJointAccelerationsCb,
                                       this)));
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/battery_state_of_charge", QSize, soc_callback)));
+      subscribe("/battery_state_of_charge", QueueSize, soc_callback)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/battery_temperature", QSize,
+      subscribe("/battery_temperature", QueueSize,
                 temperature_callback)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/battery_remaining_useful_life", QSize,
+      subscribe("/battery_remaining_useful_life", QueueSize,
                 rul_callback)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/system_faults_status", QSize,
+      subscribe("/system_faults_status", QueueSize,
                 &OwInterface::systemFaultMessageCallback, this)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/arm_faults_status", QSize,
-                &OwInterface::armFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/power_faults_status", QSize,
-                &OwInterface::powerFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/pan_tilt_faults_status", QSize,
-                &OwInterface::antennaFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/camera_faults_status", QSize,
-                &OwInterface::cameraFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/arm_end_effector_force_torque", QSize,
+      subscribe("/arm_end_effector_force_torque", QueueSize,
                 &OwInterface::ftCallback, this)));
 
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
