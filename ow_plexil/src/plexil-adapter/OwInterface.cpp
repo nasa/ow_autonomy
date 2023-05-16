@@ -446,152 +446,147 @@ OwInterface::OwInterface ()
 
 void OwInterface::initialize()
 {
-  static bool initialized = false;
+  LanderInterface::initialize();
 
-  if (not initialized) {
-    LanderInterface::initialize();
-
-    for (const string& name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
-
-    // Initialize action clients
-
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-    m_guardedMoveClient =
-      make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
-    m_armMoveJointsClient =
-      make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
-    m_armMoveJointsGuardedClient =
-      make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded,
-                                                    true);
-    m_grindClient = make_unique<TaskGrindActionClient>(Name_Grind, true);
-    m_scoopCircularClient =
-      make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
-    m_scoopLinearClient =
-      make_unique<TaskScoopLinearActionClient>(Name_TaskScoopLinear, true);
-    m_cameraSetExposureClient =
-      make_unique<CameraSetExposureActionClient>(Name_CameraSetExposure, true);
-    m_dockIngestSampleClient =
-      make_unique<DockIngestSampleActionClient>(Name_Ingest, true);
-    m_lightSetIntensityClient =
-      make_unique<LightSetIntensityActionClient>(Name_LightSetIntensity, true);
-    m_identifySampleLocationClient =
-      make_unique<IdentifySampleLocationActionClient>
-      (Name_IdentifySampleLocation, true);
-    m_panClient = make_unique<PanActionClient>(Name_Pan, true);
-    m_tiltClient = make_unique<TiltActionClient>(Name_Tilt, true);
-    m_panTiltCartesianClient =
-      make_unique<PanTiltMoveCartesianActionClient>(Name_PanTiltCartesian, true);
-    m_taskDiscardSampleClient =
-      make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
-
-    // Initialize publishers.  For now, latching in lieu of waiting
-    // for publishers.
-
-    const bool latch = true;
-    m_antennaTiltPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_tilt_position_controller/command", QSize, latch));
-    m_antennaPanPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Float64>
-       ("/ant_pan_position_controller/command", QSize, latch));
-    m_leftImageTriggerPublisher = make_unique<ros::Publisher>
-      (m_genericNodeHandle->advertise<std_msgs::Empty>
-       ("/StereoCamera/left/image_trigger", QSize, latch));
-
-    // Initialize subscribers
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/joint_states", QSize,
-                                        &OwInterface::jointStatesCallback,
-                                        this)));
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
-                                        &OwInterface::armJointAccelerationsCb,
-                                        this)));
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_state_of_charge", QSize, soc_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_temperature", QSize,
-                  temperature_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/battery_remaining_useful_life", QSize,
-                  rul_callback)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/system_faults_status", QSize,
-                  &OwInterface::systemFaultMessageCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_faults_status", QSize,
-                  &OwInterface::armFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/power_faults_status", QSize,
-                  &OwInterface::powerFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/pan_tilt_faults_status", QSize,
-                  &OwInterface::antennaFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/camera_faults_status", QSize,
-                  &OwInterface::cameraFaultCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_end_effector_force_torque", QSize,
-                  &OwInterface::ftCallback, this)));
-
-    connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
-                         "/ArmFindSurface/status");
-    connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
-                         "/ArmMoveJoints/status");
-    connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
-                         "/ArmMoveJointsGuarded/status");
-    connectActionServer (m_scoopCircularClient, Name_TaskScoopCircular,
-                         "/TaskScoopCircular/status");
-    connectActionServer (m_scoopLinearClient, Name_TaskScoopLinear,
-                         "/TaskScoopLinear/status");
-    connectActionServer (m_cameraSetExposureClient, Name_CameraSetExposure,
-                         "/CameraSetExposure/status");
-    connectActionServer (m_dockIngestSampleClient, Name_Ingest,
-                         "/DockIngestSample/status");
-    connectActionServer (m_lightSetIntensityClient, Name_LightSetIntensity,
-                         "/LightSetIntensity/status");
-    connectActionServer (m_guardedMoveClient, Name_GuardedMove,
-                         "/GuardedMove/status");
-    connectActionServer (m_panClient, Name_Pan);
-    connectActionServer (m_tiltClient, Name_Tilt);
-    connectActionServer (m_panTiltCartesianClient, Name_PanTiltCartesian);
-    connectActionServer (m_identifySampleLocationClient, Name_IdentifySampleLocation);
-    connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
-                         "/TaskDiscardSample/status");
-
+  for (const string& name : LanderOpNames) {
+    registerLanderOperation (name);
   }
+
+  // Initialize action clients
+
+  m_armFindSurfaceClient =
+    make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
+  m_guardedMoveClient =
+    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
+  m_armMoveJointsClient =
+    make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+  m_armMoveJointsGuardedClient =
+    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded,
+                                                  true);
+  m_grindClient = make_unique<TaskGrindActionClient>(Name_Grind, true);
+  m_scoopCircularClient =
+    make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
+  m_scoopLinearClient =
+    make_unique<TaskScoopLinearActionClient>(Name_TaskScoopLinear, true);
+  m_cameraSetExposureClient =
+    make_unique<CameraSetExposureActionClient>(Name_CameraSetExposure, true);
+  m_dockIngestSampleClient =
+    make_unique<DockIngestSampleActionClient>(Name_Ingest, true);
+  m_lightSetIntensityClient =
+    make_unique<LightSetIntensityActionClient>(Name_LightSetIntensity, true);
+  m_identifySampleLocationClient =
+    make_unique<IdentifySampleLocationActionClient>
+    (Name_IdentifySampleLocation, true);
+  m_panClient = make_unique<PanActionClient>(Name_Pan, true);
+  m_tiltClient = make_unique<TiltActionClient>(Name_Tilt, true);
+  m_panTiltCartesianClient =
+    make_unique<PanTiltMoveCartesianActionClient>(Name_PanTiltCartesian, true);
+  m_taskDiscardSampleClient =
+    make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
+
+  // Initialize publishers.  For now, latching in lieu of waiting
+  // for publishers.
+
+  const bool latch = true;
+  m_antennaTiltPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Float64>
+     ("/ant_tilt_position_controller/command", QSize, latch));
+  m_antennaPanPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Float64>
+     ("/ant_pan_position_controller/command", QSize, latch));
+  m_leftImageTriggerPublisher = make_unique<ros::Publisher>
+    (m_genericNodeHandle->advertise<std_msgs::Empty>
+     ("/StereoCamera/left/image_trigger", QSize, latch));
+
+  // Initialize subscribers
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+                                      &OwInterface::jointStatesCallback,
+                                      this)));
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
+                                      &OwInterface::armJointAccelerationsCb,
+                                      this)));
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_state_of_charge", QSize, soc_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_temperature", QSize,
+                temperature_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_remaining_useful_life", QSize,
+                rul_callback)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QSize,
+                &OwInterface::systemFaultMessageCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_faults_status", QSize,
+                &OwInterface::armFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/power_faults_status", QSize,
+                &OwInterface::powerFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_faults_status", QSize,
+                &OwInterface::antennaFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/camera_faults_status", QSize,
+                &OwInterface::cameraFaultCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_end_effector_force_torque", QSize,
+                &OwInterface::ftCallback, this)));
+
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
+                       "/ArmFindSurface/status");
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
+                       "/ArmMoveJoints/status");
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
+                       "/ArmMoveJointsGuarded/status");
+  connectActionServer (m_scoopCircularClient, Name_TaskScoopCircular,
+                       "/TaskScoopCircular/status");
+  connectActionServer (m_scoopLinearClient, Name_TaskScoopLinear,
+                       "/TaskScoopLinear/status");
+  connectActionServer (m_cameraSetExposureClient, Name_CameraSetExposure,
+                       "/CameraSetExposure/status");
+  connectActionServer (m_dockIngestSampleClient, Name_Ingest,
+                       "/DockIngestSample/status");
+  connectActionServer (m_lightSetIntensityClient, Name_LightSetIntensity,
+                       "/LightSetIntensity/status");
+  connectActionServer (m_guardedMoveClient, Name_GuardedMove,
+                       "/GuardedMove/status");
+  connectActionServer (m_panClient, Name_Pan);
+  connectActionServer (m_tiltClient, Name_Tilt);
+  connectActionServer (m_panTiltCartesianClient, Name_PanTiltCartesian);
+  connectActionServer (m_identifySampleLocationClient, Name_IdentifySampleLocation);
+  connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
+                       "/TaskDiscardSample/status");
 }
 
 void OwInterface::pan (double degrees, int id)

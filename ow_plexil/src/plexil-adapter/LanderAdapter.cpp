@@ -33,7 +33,6 @@ float LanderAdapter::TiltMinDegrees = -89.38;   // Slightly more than -pi/2
 float LanderAdapter::TiltMaxDegrees =  89.38;   // Slightly less than pi/2
 float LanderAdapter::PanTiltInputTolerance =  0.0057; // 0.0001 R
 
-
 static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
 {
   int frame;
@@ -253,11 +252,9 @@ bool LanderAdapter::initialize (LanderInterface* li)
 
 bool LanderAdapter::checkAngle (const char* name, double val,
                                 double min, double max, double tolerance)
-// NOTE: tolerance is needed because there is apparently loss of
-// precision in the angle on its way into Python.  This could be
-// because the ROS action uses 32-bit floats for the input angles.
-// They will be updated to 64 bit as part of the ongoing command
-// unification with OWLAT.
+// NOTE: tolerance is needed because there is a loss of precision in
+// the angle somewhere between its encoding in PLEXIL and when it gets
+// to this function.  Guessing a 32/64 bit conversion somewhere.
 {
   if (val < min - tolerance || val > max + tolerance) {
     ROS_WARN ("Requested %s %f out of valid range [%f %f], "

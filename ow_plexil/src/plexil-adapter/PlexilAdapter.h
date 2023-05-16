@@ -2,8 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#ifndef Common_Adapter
-#define Common_Adapter
+#ifndef Plexil_Adapter
+#define Plexil_Adapter
 
 // PLEXIL Interface adapter base class to be specialized for each testbed.
 
