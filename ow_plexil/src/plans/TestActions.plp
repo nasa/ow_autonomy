@@ -29,7 +29,7 @@ TestActions:
                                          Relative = true,
                                          X = 0,
                                          Y = 0,
-                                         Z = 0.6,
+                                         Z = -0.6,
                                          OrientX = 0,
                                          OrientY = 0,
                                          OrientZ = 0,
@@ -55,7 +55,7 @@ TestActions:
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
+                                  X = 0, Y = 0, Z = 0.2,
                                   OrientX = 0, OrientY = 0,
                                   OrientZ = 0, OrientW = 1);
 
@@ -68,7 +68,7 @@ TestActions:
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
                                   Relative = true,
-                                  X = 0, Y = 0, Z = -0.2,
+                                  X = 0, Y = 0, Z = 0.2,
                                   OrientX = 0, OrientY = 0,
                                   OrientZ = 0, OrientW = 1);
 
