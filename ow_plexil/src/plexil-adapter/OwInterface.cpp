@@ -166,6 +166,7 @@ static double normalize_degrees (double angle)
   return x - pi;
 }
 
+/*
 void OwInterface::armJointAccelerationsCb
 (const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
 {
@@ -188,6 +189,7 @@ void OwInterface::armJointAccelerationsCb
     publish ("JointAcceleration", acceleration, i + ArmJointStartIndex);
   }
 }
+*/
 
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
@@ -401,11 +403,6 @@ void OwInterface::initialize()
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
                                       &OwInterface::jointStatesCallback,
-                                      this)));
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QueueSize,
-                                      &OwInterface::armJointAccelerationsCb,
                                       this)));
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
@@ -1080,11 +1077,13 @@ double OwInterface::jointTelemetry (int joint, TelemetryType type) const
       case TelemetryType::Position: return JointTelemetries[joint].position;
       case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
       case TelemetryType::Effort: return JointTelemetries[joint].effort;
+/*
       case TelemetryType::Acceleration: {
         if (joint >= ArmJointStartIndex) return JointTelemetries[joint].acceleration;
         ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
         break;
       }
+*/
       default:
         ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
         break;

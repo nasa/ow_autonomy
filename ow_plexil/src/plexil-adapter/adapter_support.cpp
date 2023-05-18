@@ -28,7 +28,7 @@ PlexilAdapter* g_adapter;
 
 static mutex g_shared_mutex;
 
-int CommandId = 0;
+int g_cmd_id = 0;
 
 std::map<int, unique_ptr<CommandRecord>> CommandRegistry;
 
@@ -36,8 +36,8 @@ unique_ptr<CommandRecord>&
 new_command_record(Command* cmd, AdapterExecInterface* intf)
 {
   auto cr = std::make_tuple(cmd, intf, false);
-  CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
-  return CommandRegistry[CommandId];
+  CommandRegistry[++g_cmd_id] = std::make_unique<CommandRecord>(cr);
+  return CommandRegistry[g_cmd_id];
 }
 
 static void ack_command (Command* cmd,

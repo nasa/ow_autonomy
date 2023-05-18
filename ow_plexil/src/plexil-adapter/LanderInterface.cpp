@@ -52,54 +52,53 @@ static vector<string> LanderOpNames = {
 
 void LanderInterface::initialize()
 {
-  static bool initialized = false;
+  PlexilInterface::initialize();
 
-  if (not initialized) {
-    PlexilInterface::initialize();
+  m_arm_joint_accelerations.resize(7);
 
-    for (auto name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
 
-    // Initialize action clients
-
-    m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian, true);
-    m_armMoveCartesianGuardedClient =
-      make_unique<ArmMoveCartesianGuardedActionClient>
-      (Name_ArmMoveCartesianGuarded, true);
-    m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Name_ArmMoveJoint, true);
-    m_armStopClient =
-      make_unique<ArmStopActionClient>(Name_ArmStop, true);
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Name_ArmStow, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
-    m_cameraCaptureClient =
-      make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
-    m_panTiltMoveJointsClient =
-      make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
-    m_taskDeliverSampleClient =
-      make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
-
-    // Connect to action servers
-
-    connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
-                         "/ArmMoveCartesian/status");
-    connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
-                         "/ArmMoveCartesianGuarded/status");
-    connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
-                         "/ArmMoveJoint/status");
-    connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
-    connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
-    connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
-    connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
-                         "/TaskDeliverSample/status");
-    connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
-    connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
-                         "/CameraCapture/status");
+  for (auto name : LanderOpNames) {
+    registerLanderOperation (name);
   }
+
+  // Initialize action clients
+
+  m_armMoveCartesianClient =
+    make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian, true);
+  m_armMoveCartesianGuardedClient =
+    make_unique<ArmMoveCartesianGuardedActionClient>
+    (Name_ArmMoveCartesianGuarded, true);
+  m_armMoveJointClient =
+    make_unique<ArmMoveJointActionClient>(Name_ArmMoveJoint, true);
+  m_armStopClient =
+    make_unique<ArmStopActionClient>(Name_ArmStop, true);
+  m_armStowClient =
+    make_unique<ArmStowActionClient>(Name_ArmStow, true);
+  m_armUnstowClient =
+    make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
+  m_cameraCaptureClient =
+    make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
+  m_panTiltMoveJointsClient =
+    make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
+  m_taskDeliverSampleClient =
+    make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
+
+  // Connect to action servers
+
+  connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
+                       "/ArmMoveCartesian/status");
+  connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
+                       "/ArmMoveCartesianGuarded/status");
+  connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
+                       "/ArmMoveJoint/status");
+  connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
+  connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
+  connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
+  connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
+                       "/TaskDeliverSample/status");
+  connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
+  connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
+                       "/CameraCapture/status");
 
   // Initialize subscribers
 
@@ -107,50 +106,60 @@ void LanderInterface::initialize()
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
       subscribe("/arm_faults_status", QueueSize,
-                &LanderInterface::armFaultCallback, this)));
+                &LanderInterface::armFaultCb, this)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
       subscribe("/power_faults_status", QueueSize,
-                &LanderInterface::powerFaultCallback, this)));
+                &LanderInterface::powerFaultCb, this)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
       subscribe("/pan_tilt_faults_status", QueueSize,
-                &LanderInterface::antennaFaultCallback, this)));
+                &LanderInterface::antennaFaultCb, this)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
       subscribe("/camera_faults_status", QueueSize,
-                &LanderInterface::cameraFaultCallback, this)));
+                &LanderInterface::cameraFaultCb, this)));
 
-  initialized = true;
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/owl_msgs/ArmJointAccelerations", QueueSize,
+                &LanderInterface::armJointAccelCb, this)));
 }
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
 
-void LanderInterface::armFaultCallback
-(const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
+void LanderInterface::armJointAccelCb
+(const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin());
+  publish("ArmJointAccelerations", m_arm_joint_accelerations);
+}
+
+void LanderInterface::armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
 }
 
-void LanderInterface::powerFaultCallback
+void LanderInterface::powerFaultCb
 (const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
 }
 
-void LanderInterface::antennaFaultCallback
+void LanderInterface::antennaFaultCb
 (const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
 }
 
-void LanderInterface::cameraFaultCallback
+void LanderInterface::cameraFaultCb
 (const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
 {
   updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
@@ -430,4 +439,9 @@ void LanderInterface::cameraCapture (int id)
                         this, id, Name_CameraCapture,
                         std::ref(m_cameraCaptureClient));
   action_thread.detach();
+}
+
+double LanderInterface::getArmJointAcceleration (int index) const
+{
+  return (m_arm_joint_accelerations[index]);
 }

@@ -24,7 +24,6 @@
 
 // TODO: convert these per unified telemetry interface
 #include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
-#include <owlat_sim_msgs/ARM_JOINT_ACCELERATIONS.h>
 #include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
 #include <owlat_sim_msgs/ARM_JOINT_VELOCITIES.h>
 #include <owlat_sim_msgs/ARM_FT_TORQUE.h>
@@ -115,7 +114,6 @@ class OwlatInterface : public LanderInterface
 
   // Lookups
   PLEXIL::Value getArmJointAngles() const;
-  PLEXIL::Value getArmJointAccelerations() const;
   PLEXIL::Value getArmJointTorques() const ;
   PLEXIL::Value getArmJointVelocities() const;
   PLEXIL::Value getArmFTTorque() const;
@@ -175,8 +173,6 @@ class OwlatInterface : public LanderInterface
   // Callbacks
   void armJointAnglesCallback
   (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
-  void armJointAccelerationsCallback
-  (const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr&);
   void armJointTorquesCallback
   (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
   void armJointVelocitiesCallback
@@ -226,7 +222,6 @@ class OwlatInterface : public LanderInterface
   };
 
   std::vector<double> m_arm_joint_angles;
-  std::vector<double> m_arm_joint_accelerations;
   std::vector<double> m_arm_joint_torques;
   std::vector<double> m_arm_joint_velocities;
   std::vector<double> m_arm_ft_torque;

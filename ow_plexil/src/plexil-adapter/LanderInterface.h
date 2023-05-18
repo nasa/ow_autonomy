@@ -32,6 +32,7 @@
 #include <owl_msgs/PowerFaultsStatus.h>
 #include <owl_msgs/CameraFaultsStatus.h>
 #include <owl_msgs/SystemFaultsStatus.h>
+#include <owl_msgs/ArmJointAccelerations.h>
 
 // ROS
 #include <ros/ros.h>
@@ -128,6 +129,7 @@ class LanderInterface : public PlexilInterface
   bool armFault () const;
   bool powerFault () const;
   bool cameraFault () const;
+  double getArmJointAcceleration (int index) const;
 
  protected:
 
@@ -160,11 +162,12 @@ class LanderInterface : public PlexilInterface
 
   // Fault support
 
-  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
-  void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
-  void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
-  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
-  void cameraFaultCallback (const owl_msgs::CameraFaultsStatus::ConstPtr&);
+  void systemFaultMessageCb (const owl_msgs::SystemFaultsStatus::ConstPtr&);
+  void armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr&);
+  void powerFaultCb (const owl_msgs::PowerFaultsStatus::ConstPtr&);
+  void antennaFaultCb (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
+  void cameraFaultCb (const owl_msgs::CameraFaultsStatus::ConstPtr&);
+  void armJointAccelCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
 
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
@@ -211,6 +214,10 @@ class LanderInterface : public PlexilInterface
   FaultMap m_cameraErrors = {
     {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
   };
+
+  // Telemetry
+
+  std::vector<double> m_arm_joint_accelerations;
 
   // Action Clients
 

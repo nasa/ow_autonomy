@@ -37,7 +37,7 @@ extern PlexilAdapter* g_adapter;
 //////////////////////////// Command Handling //////////////////////////////
 
 // Unique ID for every instance of a command from a Plexil plan.
-extern int CommandId;
+extern int g_cmd_id;
 
 // Record that combines a Plexil command instance with its executive interface
 // and a flag indicating whether the command has been acknowledged.

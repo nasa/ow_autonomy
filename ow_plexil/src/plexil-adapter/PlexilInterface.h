@@ -59,13 +59,16 @@ class PlexilInterface
        default_action_feedback_cb<FeedbackPtr> (opname),
        default_action_done_cb<ResultPtr> (opname));
   }
-  
+
   template<typename T>
   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
 			    const std::string& name,
 			    const std::string& topic = "")
   {
-    if (! c->waitForServer(ros::Duration(ACTION_SERVER_TIMEOUT_SECS))) {
+    if (! c->waitForServer(ros::Duration(10))) {
+      // Connection typically happens very fast, so this timeout is
+      // only to prevent indefinite wait when an action server is down
+      // for some reason.
       ROS_ERROR ("%s action server did not connect!", name.c_str());
     }
     else if (topic != "") subscribeToActionStatus (topic, name);

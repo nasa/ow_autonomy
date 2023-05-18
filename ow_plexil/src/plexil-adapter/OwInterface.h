@@ -27,7 +27,6 @@ using IdentifySampleLocationActionClient =
 #include <owl_msgs/LightSetIntensityAction.h>
 
 // owl_msgs (unified telemetry)
-#include <owl_msgs/ArmJointAccelerations.h>
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
 #include <owl_msgs/ArmPose.h>
 
@@ -173,7 +172,6 @@ class OwInterface : public LanderInterface
   void dockIngestSampleAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);

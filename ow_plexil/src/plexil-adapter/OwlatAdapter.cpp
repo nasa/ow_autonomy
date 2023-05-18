@@ -40,7 +40,7 @@ static void arm_move_joints (Command* cmd, AdapterExecInterface* intf)
   args[1].getValuePointer(angles);
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armMoveJoints (relative, *angles_vector, CommandId);
+  OwlatInterface::instance()->armMoveJoints (relative, *angles_vector, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -61,7 +61,7 @@ static void arm_move_joints_guarded (Command* cmd, AdapterExecInterface* intf)
                                                     *angles_vector,
                                                     force_threshold,
                                                     torque_threshold,
-                                                    CommandId);
+                                                    g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -71,14 +71,14 @@ static void arm_set_tool (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue(tool);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armSetTool (tool, CommandId);
+  OwlatInterface::instance()->armSetTool (tool, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_tare_ft_sensor (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwlatInterface::instance()->armTareFTSensor (CommandId);
+  OwlatInterface::instance()->armTareFTSensor (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -107,7 +107,7 @@ static void task_shear_bevameter (Command* cmd, AdapterExecInterface* intf)
                                                   *normal_vector,
                                                   preload,
                                                   max_torque,
-                                                  CommandId);
+                                                  g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -133,14 +133,14 @@ static void task_p (bool psp, Command* cmd, AdapterExecInterface* intf)
   if (psp) {
     OwlatInterface::instance()->taskPSP (frame, relative,*point_vector,
                                          *normal_vector, max_depth, max_force,
-                                         CommandId);
+                                         g_cmd_id);
   }
   else {
     OwlatInterface::instance()->taskPenetrometer (frame, relative,
                                                   *point_vector,
                                                   *normal_vector,
                                                   max_depth, max_force,
-                                                  CommandId);
+                                                  g_cmd_id);
   }
   acknowledge_command_sent(*cr);
 }
@@ -178,13 +178,13 @@ static void task_scoop (bool linear, Command* cmd, AdapterExecInterface* intf)
     OwlatInterface::instance()->taskScoopLinear (frame, relative,
                                                  *point_vector, *normal_vector,
                                                  depth, length_or_scoop_angle,
-                                                 CommandId);
+                                                 g_cmd_id);
   }
   else {
     OwlatInterface::instance()->taskScoopCircular (frame, relative,
                                                    *point_vector, *normal_vector,
                                                    depth, length_or_scoop_angle,
-                                                   CommandId);
+                                                   g_cmd_id);
   }
   acknowledge_command_sent(*cr);
 }
@@ -271,46 +271,6 @@ static void joint_effort (const State& state, StateCacheEntry &entry)
                getJointTelemetry(joint, TelemetryType::Effort));
 }
 
-static void joint_acceleration (const State& state, StateCacheEntry &entry)
-{
-  const vector<PLEXIL::Value>& args = state.parameters();
-  debugMsg("joint_effort ", "lookup called for " << state.name()
-           << " with " << args.size() << " args");
-  int joint;
-  args[0].getValue(joint);
-  entry.update(OwlatInterface::instance()->
-               getJointTelemetry(joint, TelemetryType::Acceleration));
-}
-
-static void armJointAccelerations (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmJointAccelerations ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointAccelerations());
-}
-
-static void armJointTorques (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmJointTorques ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointTorques());
-}
-
-static void armJointVelocities (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmJointVelocities ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmJointVelocities());
-}
-
-static void armPose (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmPose ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmPose());
-}
-
-
 static void default_lookup_handler (const State& state, StateCacheEntry &entry)
 {
   ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
@@ -353,7 +313,6 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("JointVelocity", joint_velocity);
   g_configuration->registerLookupHandler("JointPosition", joint_position);
   g_configuration->registerLookupHandler("JointEffort", joint_effort);
-  g_configuration->registerLookupHandler("JointAcceleration", joint_acceleration);
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");

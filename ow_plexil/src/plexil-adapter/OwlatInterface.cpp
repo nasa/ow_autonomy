@@ -69,7 +69,6 @@ void OwlatInterface::initialize()
 
     m_genericNodeHandle = make_unique<ros::NodeHandle>();
     m_arm_joint_angles.resize(7);
-    m_arm_joint_accelerations.resize(7);
     m_arm_joint_torques.resize(7);
     m_arm_joint_velocities.resize(7);
     m_arm_ft_torque.resize(3);
@@ -88,12 +87,6 @@ void OwlatInterface::initialize()
        (m_genericNodeHandle ->
         subscribe("/owlat_sim/ARM_JOINT_ANGLES", QueueSize,
                   &OwlatInterface::armJointAnglesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", QueueSize,
-                  &OwlatInterface::armJointAccelerationsCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
@@ -618,14 +611,6 @@ void OwlatInterface::armJointAnglesCallback
   publish("ArmJointAngles", m_arm_joint_angles);
 }
 
-void OwlatInterface::armJointAccelerationsCallback
-(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(),
-            m_arm_joint_accelerations.begin());
-  publish("ArmJointAccelerations", m_arm_joint_accelerations);
-}
-
 void OwlatInterface::armJointTorquesCallback
 (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
 {
@@ -690,11 +675,6 @@ Value OwlatInterface::getArmJointAngles() const
   return(Value(m_arm_joint_angles));
 }
 
-Value OwlatInterface::getArmJointAccelerations() const
-{
-  return(Value(m_arm_joint_accelerations));
-}
-
 Value OwlatInterface::getArmJointTorques() const
 {
   return(Value(m_arm_joint_torques));
@@ -752,7 +732,6 @@ Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
       case TelemetryType::Position: return m_arm_joint_angles[joint];
       case TelemetryType::Velocity: return m_arm_joint_velocities[joint];
       case TelemetryType::Effort: return m_arm_joint_torques[joint];
-      case TelemetryType::Acceleration: return m_arm_joint_accelerations[joint];
     default:
       ROS_ERROR ("getJointTelemetry: unsupported telemetry type.");
     }
