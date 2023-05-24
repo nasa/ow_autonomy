@@ -1,0 +1,26 @@
+NOTE: temporary file to be removed before PR is opened.
+
+To Do
+-----
+
+See that pan/tilt joint telemetry is supported and tested.
+
+
+
+Code Refactoring
+----------------
+
+Obsolete joint-support.h, or use its structures?
+
+Subscribe by iterating over pairs of topic names and callback
+functions.
+
+Condense the 4 arm joint telemetry handling sets of repeated code.
+
+Replace single-use functions with lambdas.
+
+
+Code Cleanup
+------------
+
+Order things consistently.

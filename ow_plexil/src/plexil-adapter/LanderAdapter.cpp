@@ -211,13 +211,34 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 static void arm_joint_acceleration (const State& state, StateCacheEntry &entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
-  debugMsg("arm_joint_acceleration ", "lookup called for " << state.name()
-           << " with " << args.size() << " args");
   int joint;
   args[0].getValue(joint);
   entry.update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
 }
 
+static void arm_joint_position (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointPosition(joint));
+}
+
+static void arm_joint_torque (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointTorque(joint));
+}
+
+static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
+}
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
@@ -260,6 +281,12 @@ bool LanderAdapter::initialize (LanderInterface* li)
   // Lookups
   g_configuration->registerLookupHandler("ArmJointAcceleration",
                                          arm_joint_acceleration);
+  g_configuration->registerLookupHandler("ArmJointPosition",
+                                         arm_joint_position);
+  g_configuration->registerLookupHandler("ArmJointTorque",
+                                         arm_joint_torque);
+  g_configuration->registerLookupHandler("ArmJointVelocity",
+                                         arm_joint_velocity);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

@@ -15,6 +15,11 @@
 
 const size_t NumJoints = 9;
 
+// Supports both OceanWATERS lander (6 joints) and OWLAT (7 joints).
+// Many message files define a 7-element array for both testbeds; the
+// 7th position will be ignored for OceanWATERS.
+const size_t NumArmJoints = 7;
+
 enum Joint {
   // This enumeration must list all joints and in the same order as
   // the topic /joint_states, which is alphabetical by joint name.

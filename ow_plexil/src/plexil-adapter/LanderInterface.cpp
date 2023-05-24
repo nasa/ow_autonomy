@@ -54,8 +54,10 @@ void LanderInterface::initialize()
 {
   PlexilInterface::initialize();
 
-  m_arm_joint_accelerations.resize(7);
-
+  m_arm_joint_accelerations.resize(NumArmJoints);
+  m_arm_joint_positions.resize(NumArmJoints);
+  m_arm_joint_velocities.resize(NumArmJoints);
+  m_arm_joint_torques.resize(NumArmJoints);
 
   for (auto name : LanderOpNames) {
     registerLanderOperation (name);
@@ -129,8 +131,26 @@ void LanderInterface::initialize()
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/owl_msgs/ArmJointAccelerations", QueueSize,
+      subscribe("/arm_joint_accelerations", QueueSize,
                 &LanderInterface::armJointAccelCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_positions", QueueSize,
+                &LanderInterface::armJointPositionCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_torques", QueueSize,
+                &LanderInterface::armJointTorqueCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_velocities", QueueSize,
+                &LanderInterface::armJointVelocityCb, this)));
 }
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
@@ -139,7 +159,27 @@ void LanderInterface::armJointAccelCb
 (const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin());
-  publish("ArmJointAccelerations", m_arm_joint_accelerations);
+  // No lookup for this (yet), not sure if there will be.  This
+  // applies to all arm joint telemetries.
+  // publish("ArmJointAccelerations", m_arm_joint_accelerations);
+}
+
+void LanderInterface::armJointPositionCb
+(const owl_msgs::ArmJointPositions::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_positions.begin());
+}
+
+void LanderInterface::armJointVelocityCb
+(const owl_msgs::ArmJointVelocities::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
+}
+
+void LanderInterface::armJointTorqueCb
+(const owl_msgs::ArmJointTorques::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
 }
 
 void LanderInterface::armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
@@ -444,4 +484,19 @@ void LanderInterface::cameraCapture (int id)
 double LanderInterface::getArmJointAcceleration (int index) const
 {
   return (m_arm_joint_accelerations[index]);
+}
+
+double LanderInterface::getArmJointVelocity (int index) const
+{
+  return (m_arm_joint_velocities[index]);
+}
+
+double LanderInterface::getArmJointTorque (int index) const
+{
+  return (m_arm_joint_torques[index]);
+}
+
+double LanderInterface::getArmJointPosition (int index) const
+{
+  return (m_arm_joint_positions[index]);
 }

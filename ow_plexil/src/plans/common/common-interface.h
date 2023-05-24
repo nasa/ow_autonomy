@@ -86,11 +86,11 @@ Real Lookup PanDegrees;
 Real Lookup TiltRadians;
 Real Lookup TiltDegrees;
 
-// Joints
-Real Lookup JointAcceleration (Integer joint);
-Real Lookup JointVelocity     (Integer joint);
-Real Lookup JointPosition     (Integer joint);
-Real Lookup JointEffort       (Integer joint);
+// Arm Joints
+Real Lookup ArmJointAcceleration (Integer joint);
+Real Lookup ArmJointVelocity     (Integer joint);
+Real Lookup ArmJointPosition     (Integer joint);
+Real Lookup ArmJointTorque       (Integer joint);
 
 // Misc
 

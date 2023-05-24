@@ -33,6 +33,9 @@
 #include <owl_msgs/CameraFaultsStatus.h>
 #include <owl_msgs/SystemFaultsStatus.h>
 #include <owl_msgs/ArmJointAccelerations.h>
+#include <owl_msgs/ArmJointVelocities.h>
+#include <owl_msgs/ArmJointTorques.h>
+#include <owl_msgs/ArmJointPositions.h>
 
 // ROS
 #include <ros/ros.h>
@@ -129,7 +132,11 @@ class LanderInterface : public PlexilInterface
   bool armFault () const;
   bool powerFault () const;
   bool cameraFault () const;
+
   double getArmJointAcceleration (int index) const;
+  double getArmJointPosition (int index) const;
+  double getArmJointTorque (int index) const;
+  double getArmJointVelocity (int index) const;
 
  protected:
 
@@ -161,13 +168,17 @@ class LanderInterface : public PlexilInterface
   void panTiltMoveJointsAction (double pan_degrees, double tilt_degrees, int id);
 
   // Fault support
-
   void systemFaultMessageCb (const owl_msgs::SystemFaultsStatus::ConstPtr&);
   void armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr&);
   void powerFaultCb (const owl_msgs::PowerFaultsStatus::ConstPtr&);
   void antennaFaultCb (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
   void cameraFaultCb (const owl_msgs::CameraFaultsStatus::ConstPtr&);
+
+  // Joint support
   void armJointAccelCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
+  void armJointPositionCb (const owl_msgs::ArmJointPositions::ConstPtr&);
+  void armJointVelocityCb (const owl_msgs::ArmJointVelocities::ConstPtr&);
+  void armJointTorqueCb (const owl_msgs::ArmJointTorques::ConstPtr&);
 
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
@@ -218,6 +229,9 @@ class LanderInterface : public PlexilInterface
   // Telemetry
 
   std::vector<double> m_arm_joint_accelerations;
+  std::vector<double> m_arm_joint_positions;
+  std::vector<double> m_arm_joint_velocities;
+  std::vector<double> m_arm_joint_torques;
 
   // Action Clients
 
