@@ -36,6 +36,7 @@
 #include <owl_msgs/ArmJointVelocities.h>
 #include <owl_msgs/ArmJointTorques.h>
 #include <owl_msgs/ArmJointPositions.h>
+#include <owl_msgs/ArmPose.h>
 
 // ROS
 #include <ros/ros.h>
@@ -137,6 +138,7 @@ class LanderInterface : public PlexilInterface
   double getArmJointPosition (int index) const;
   double getArmJointTorque (int index) const;
   double getArmJointVelocity (int index) const;
+  std::vector<double> getArmPose () const;
 
  protected:
 
@@ -179,6 +181,9 @@ class LanderInterface : public PlexilInterface
   void armJointPositionCb (const owl_msgs::ArmJointPositions::ConstPtr&);
   void armJointVelocityCb (const owl_msgs::ArmJointVelocities::ConstPtr&);
   void armJointTorqueCb (const owl_msgs::ArmJointTorques::ConstPtr&);
+
+  // Misc
+  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
 
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
@@ -232,6 +237,7 @@ class LanderInterface : public PlexilInterface
   std::vector<double> m_arm_joint_positions;
   std::vector<double> m_arm_joint_velocities;
   std::vector<double> m_arm_joint_torques;
+  std::vector<double> m_arm_pose;
 
   // Action Clients
 

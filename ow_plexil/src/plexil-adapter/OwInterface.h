@@ -28,7 +28,6 @@ using IdentifySampleLocationActionClient =
 
 // owl_msgs (unified telemetry)
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
-#include <owl_msgs/ArmPose.h>
 
 using ArmFindSurfaceActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
@@ -128,7 +127,6 @@ class OwInterface : public LanderInterface
   double getBatteryRemainingUsefulLife () const;
   double getBatteryTemperature () const;
   std::vector<double> getEndEffectorFT () const;
-  std::vector<double> getArmPose () const;
   bool   groundFound () const;
   double groundPosition () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
@@ -175,7 +173,6 @@ class OwInterface : public LanderInterface
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
-  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
   
   // Publishers and subscribers
@@ -228,7 +225,6 @@ class OwInterface : public LanderInterface
   // Misc state
   double m_currentPanRadians, m_currentTiltRadians;
   std::vector<double> m_endEffectorFT;
-  std::vector<double> m_armPose;
 };
 
 #endif

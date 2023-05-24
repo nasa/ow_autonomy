@@ -3,6 +3,10 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
+Debug all 0s in ArmPose on both testbeds.
+  Properly get a Value from a vector of doubles (e.g. use proper cast
+  if needed).
+
 See that pan/tilt joint telemetry is supported and tested.
 
 

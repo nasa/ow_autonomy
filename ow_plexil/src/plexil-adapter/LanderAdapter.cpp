@@ -240,6 +240,11 @@ static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
 }
 
+static void arm_pose (const State& state, StateCacheEntry &entry)
+{
+  entry.update((Value) LanderAdapter::s_interface->getArmPose());
+}
+
 LanderInterface* LanderAdapter::s_interface = NULL;
 
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
@@ -287,6 +292,7 @@ bool LanderAdapter::initialize (LanderInterface* li)
                                          arm_joint_torque);
   g_configuration->registerLookupHandler("ArmJointVelocity",
                                          arm_joint_velocity);
+  g_configuration->registerLookupHandler("ArmPose", arm_pose);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

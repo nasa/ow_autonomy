@@ -146,17 +146,6 @@ void OwInterface::ftCallback
   m_endEffectorFT[5] = msg->value.torque.z;
 }
 
-void OwInterface::armPoseCallback (const owl_msgs::ArmPose::ConstPtr& msg)
-{
-  m_armPose[0] = msg->value.position.x;
-  m_armPose[1] = msg->value.position.y;
-  m_armPose[2] = msg->value.position.z;
-  m_armPose[3] = msg->value.orientation.x;
-  m_armPose[4] = msg->value.orientation.y;
-  m_armPose[5] = msg->value.orientation.z;
-  m_armPose[6] = msg->value.orientation.w;
-}
-
 static double normalize_degrees (double angle)
 {
   static double pi = R2D * M_PI;
@@ -339,8 +328,6 @@ OwInterface::OwInterface ()
 {
   m_endEffectorFT.resize(6);
   m_endEffectorFT = {0,0,0,0,0,0};
-  m_armPose.resize(7);
-  m_armPose = {0,0,0,0,0,0,0};
 }
 
 void OwInterface::initialize()
@@ -1063,11 +1050,6 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_endEffectorFT;
-}
-
-vector<double> OwInterface::getArmPose () const
-{
-  return m_armPose;
 }
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const

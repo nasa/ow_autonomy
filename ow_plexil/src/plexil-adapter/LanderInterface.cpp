@@ -58,6 +58,8 @@ void LanderInterface::initialize()
   m_arm_joint_positions.resize(NumArmJoints);
   m_arm_joint_velocities.resize(NumArmJoints);
   m_arm_joint_torques.resize(NumArmJoints);
+  m_arm_pose.resize(7);
+  m_arm_pose = {0,0,0,0,0,0,0};
 
   for (auto name : LanderOpNames) {
     registerLanderOperation (name);
@@ -204,6 +206,20 @@ void LanderInterface::cameraFaultCb
 {
   updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
 }
+
+void LanderInterface::armPoseCallback (const owl_msgs::ArmPose::ConstPtr& msg)
+{
+  m_arm_pose[0] = msg->value.position.x;
+  m_arm_pose[1] = msg->value.position.y;
+  m_arm_pose[2] = msg->value.position.z;
+  m_arm_pose[3] = msg->value.orientation.x;
+  m_arm_pose[4] = msg->value.orientation.y;
+  m_arm_pose[5] = msg->value.orientation.z;
+  m_arm_pose[6] = msg->value.orientation.w;
+}
+
+
+////////////////////// Fault support ///////////////////////////////////////
 
 bool LanderInterface::antennaFault () const
 {
@@ -499,4 +515,8 @@ double LanderInterface::getArmJointTorque (int index) const
 double LanderInterface::getArmJointPosition (int index) const
 {
   return (m_arm_joint_positions[index]);
+}
+vector<double> LanderInterface::getArmPose () const
+{
+  return m_arm_pose;
 }
