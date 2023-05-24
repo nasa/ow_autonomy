@@ -153,6 +153,12 @@ void LanderInterface::initialize()
      (m_genericNodeHandle ->
       subscribe("/arm_joint_velocities", QueueSize,
                 &LanderInterface::armJointVelocityCb, this)));
+  
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_pose", QueueSize,
+                &LanderInterface::armPoseCb, this)));
 }
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
@@ -207,7 +213,7 @@ void LanderInterface::cameraFaultCb
   updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
 }
 
-void LanderInterface::armPoseCallback (const owl_msgs::ArmPose::ConstPtr& msg)
+void LanderInterface::armPoseCb (const owl_msgs::ArmPose::ConstPtr& msg)
 {
   m_arm_pose[0] = msg->value.position.x;
   m_arm_pose[1] = msg->value.position.y;

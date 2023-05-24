@@ -242,7 +242,13 @@ static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
 
 static void arm_pose (const State& state, StateCacheEntry &entry)
 {
-  entry.update((Value) LanderAdapter::s_interface->getArmPose());
+  vector<Value> v;
+  v.resize(7);
+  vector<double> pose = LanderAdapter::s_interface->getArmPose();
+  for (size_t i = 0; i < 7; i++) {
+    v[i] = pose[i];  // implicit construction of Value from double
+  }
+  entry.update(v);
 }
 
 LanderInterface* LanderAdapter::s_interface = NULL;

@@ -183,7 +183,7 @@ class LanderInterface : public PlexilInterface
   void armJointTorqueCb (const owl_msgs::ArmJointTorques::ConstPtr&);
 
   // Misc
-  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
+  void armPoseCb (const owl_msgs::ArmPose::ConstPtr&);
 
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
