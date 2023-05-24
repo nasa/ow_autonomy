@@ -3,8 +3,32 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
-See that pan/tilt joint telemetry is supported and tested.
+Decide if we want pan/tilt velocity and acceleration.
 
+Add a default ctor for LanderInterface and move initialize() parts
+there.
+
+Debug TestPanTilt:
+ERROR:
+/usr/local/home/kdalal/ow/src/ow_autonomy/ow_plexil/src/plans/TestPanTilt.ple:316:7:
+In variable Pan not found and no default InitialValue provided
+ExecApplication::addPlan: Plan parser error:
+In variable Pan not found and no default InitialValue provided
+
+Fix printout:
+[ INFO]: PanTiltMoveCartesian (0, x: 0
+y: 0
+z: -5
+) started...
+[ INFO]: PanTiltMoveCartesian finished in state ABORTED
+[ INFO]: PanTiltMoveCartesian (0, x: 1.46
+y: -0.4
+z: -0.05
+) started...
+[ INFO]: PanTiltMoveCartesian finished in state SUCCEEDED
+[ INFO]: PanTiltMoveCartesian (0, x: 125800
+y: -81170
+z: -80533
 
 
 Code Refactoring
@@ -18,6 +42,12 @@ functions.
 Condense the 4 arm joint telemetry handling sets of repeated code.
 
 Replace single-use functions with lambdas.
+
+
+Extra
+-----
+
+Add radian commanding for pan/tilt to Plexil, to compliment lookups.
 
 
 Code Cleanup

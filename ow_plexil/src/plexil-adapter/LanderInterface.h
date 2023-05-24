@@ -134,6 +134,9 @@ class LanderInterface : public PlexilInterface
   bool powerFault () const;
   bool cameraFault () const;
 
+  // Telemetry
+  double getTiltRadians () const;
+  double getPanRadians () const;
   double getArmJointAcceleration (int index) const;
   double getArmJointPosition (int index) const;
   double getArmJointTorque (int index) const;
@@ -184,7 +187,8 @@ class LanderInterface : public PlexilInterface
 
   // Misc
   void armPoseCb (const owl_msgs::ArmPose::ConstPtr&);
-
+  void panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr&);
+  
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
         owl_msgs::ArmFaultsStatus::HARDWARE, false)},
@@ -238,6 +242,8 @@ class LanderInterface : public PlexilInterface
   std::vector<double> m_arm_joint_velocities;
   std::vector<double> m_arm_joint_torques;
   std::vector<double> m_arm_pose;
+  double m_current_pan_radians;
+  double m_current_tilt_radians;
 
   // Action Clients
 

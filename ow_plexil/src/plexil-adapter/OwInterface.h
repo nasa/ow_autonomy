@@ -117,10 +117,6 @@ class OwInterface : public LanderInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getTiltRadians () const;
-  double getTiltDegrees () const;
-  double getPanRadians () const;
-  double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
   double getBatteryStateOfCharge () const;
@@ -174,13 +170,16 @@ class OwInterface : public LanderInterface
                   std::unique_ptr<ros::Publisher>&, int id);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
-  
-  // Publishers and subscribers
 
+
+  // Publishers and subscribers
+  
+/* Unused ?
   std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
   std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
   std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
-
+*/
+  
   // System-level faults:
 
   FaultMap m_systemErrors = {
@@ -223,7 +222,6 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
 
   // Misc state
-  double m_currentPanRadians, m_currentTiltRadians;
   std::vector<double> m_endEffectorFT;
 };
 

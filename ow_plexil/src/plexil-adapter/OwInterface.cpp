@@ -155,31 +155,6 @@ static double normalize_degrees (double angle)
   return x - pi;
 }
 
-/*
-void OwInterface::armJointAccelerationsCb
-(const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
-{
-  // Joint acceleration is computed only for arm joints and not the
-  // two antenna joints, so appropiate sanity check.
-  size_t arm_joints = NumJoints - ArmJointStartIndex;
-  size_t msg_size = msg->value.size();
-  if (msg_size != arm_joints) {
-    ROS_ERROR_ONCE ("OwInterface::armJointAccelerationsCb: "
-                    "Number of actual joints, %zu, "
-                    "doesn't match number of known arm joints, %zu. "
-                    "This should never happen.",
-                    msg_size, ArmJointStartIndex);
-    return;
-  }
-
-  for (int i = 0; i < msg_size; i++) {
-    double acceleration = msg->value[i];
-    JointTelemetries[i + ArmJointStartIndex].acceleration = acceleration;
-    publish ("JointAcceleration", acceleration, i + ArmJointStartIndex);
-  }
-}
-*/
-
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -202,6 +177,7 @@ void OwInterface::jointStatesCallback
     double position = msg->position[i];
     double velocity = msg->velocity[i];
     double effort = msg->effort[i];
+/* Obsolete
     if (i == ANTENNA_PAN) {
       m_currentPanRadians = position;
       publish ("PanRadians", m_currentPanRadians);
@@ -212,6 +188,7 @@ void OwInterface::jointStatesCallback
       publish ("TiltRadians", m_currentTiltRadians);
       publish ("TiltDegrees", m_currentTiltRadians * R2D);
     }
+*/
     JointTelemetries[i] = JointTelemetry {position, velocity, effort};
     publish ("JointPosition", position, i);
     publish ("JointVelocity", velocity, i);
@@ -323,8 +300,6 @@ OwInterface* OwInterface::instance ()
 }
 
 OwInterface::OwInterface ()
-  : m_currentPanRadians (0),
-    m_currentTiltRadians (0)
 {
   m_endEffectorFT.resize(6);
   m_endEffectorFT = {0,0,0,0,0,0};
@@ -370,6 +345,7 @@ void OwInterface::initialize()
   m_taskDiscardSampleClient =
     make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
 
+/* Unused ?
   // Initialize publishers.  For now, latching in lieu of waiting
   // for publishers.
 
@@ -383,7 +359,8 @@ void OwInterface::initialize()
   m_leftImageTriggerPublisher = make_unique<ros::Publisher>
     (m_genericNodeHandle->advertise<std_msgs::Empty>
      ("/StereoCamera/left/image_trigger", QueueSize, latch));
-
+*/
+  
   // Initialize subscribers
 
   m_subscribers.push_back
@@ -988,26 +965,6 @@ void OwInterface::taskDiscardSampleAction (int frame, bool relative,
      default_action_active_cb (Name_TaskDiscardSample),
      default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_TaskDiscardSample),
      default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_TaskDiscardSample));
-}
-
-double OwInterface::getTiltRadians () const
-{
-  return m_currentTiltRadians;
-}
-
-double OwInterface::getTiltDegrees () const
-{
-  return m_currentTiltRadians * R2D;
-}
-
-double OwInterface::getPanRadians () const
-{
-  return m_currentPanRadians;
-}
-
-double OwInterface::getPanDegrees () const
-{
-  return m_currentPanRadians * R2D;
 }
 
 double OwInterface::getPanVelocity () const

@@ -240,7 +240,7 @@ static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
 }
 
-static void arm_pose (const State& state, StateCacheEntry &entry)
+static void arm_pose (const State&, StateCacheEntry &entry)
 {
   vector<Value> v;
   v.resize(7);
@@ -249,6 +249,26 @@ static void arm_pose (const State& state, StateCacheEntry &entry)
     v[i] = pose[i];  // implicit construction of Value from double
   }
   entry.update(v);
+}
+
+static void pan_radians (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getPanRadians());
+}
+
+static void pan_degrees (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getPanRadians() * R2D);
+}
+
+static void tilt_radians (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getTiltRadians());
+}
+
+static void tilt_degrees (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getTiltRadians() * R2D);
 }
 
 LanderInterface* LanderAdapter::s_interface = NULL;
@@ -299,6 +319,10 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerLookupHandler("ArmJointVelocity",
                                          arm_joint_velocity);
   g_configuration->registerLookupHandler("ArmPose", arm_pose);
+  g_configuration->registerLookupHandler("PanRadians", pan_radians);
+  g_configuration->registerLookupHandler("PanDegrees", pan_degrees);
+  g_configuration->registerLookupHandler("TiltRadians", tilt_radians);
+  g_configuration->registerLookupHandler("TiltDegrees", tilt_degrees);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

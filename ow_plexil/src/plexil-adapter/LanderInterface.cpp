@@ -54,6 +54,8 @@ void LanderInterface::initialize()
 {
   PlexilInterface::initialize();
 
+  m_current_pan_radians = 0;
+  m_current_tilt_radians = 0;
   m_arm_joint_accelerations.resize(NumArmJoints);
   m_arm_joint_positions.resize(NumArmJoints);
   m_arm_joint_velocities.resize(NumArmJoints);
@@ -153,12 +155,18 @@ void LanderInterface::initialize()
      (m_genericNodeHandle ->
       subscribe("/arm_joint_velocities", QueueSize,
                 &LanderInterface::armJointVelocityCb, this)));
-  
+
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
       subscribe("/arm_pose", QueueSize,
                 &LanderInterface::armPoseCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_position", QueueSize,
+                &LanderInterface::panTiltCb, this)));
 }
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
@@ -167,9 +175,6 @@ void LanderInterface::armJointAccelCb
 (const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin());
-  // No lookup for this (yet), not sure if there will be.  This
-  // applies to all arm joint telemetries.
-  // publish("ArmJointAccelerations", m_arm_joint_accelerations);
 }
 
 void LanderInterface::armJointPositionCb
@@ -188,6 +193,18 @@ void LanderInterface::armJointTorqueCb
 (const owl_msgs::ArmJointTorques::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
+}
+
+void LanderInterface::panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr& msg)
+{
+  m_current_pan_radians = msg->value[0];
+  m_current_tilt_radians = msg->value[1];
+
+  // Update PLEXIL lookups
+  publish ("PanRadians", m_current_pan_radians);
+  publish ("PanDegrees", m_current_pan_radians * R2D);
+  publish ("TiltRadians", m_current_tilt_radians);
+  publish ("TiltDegrees", m_current_tilt_radians * R2D);
 }
 
 void LanderInterface::armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
@@ -525,4 +542,14 @@ double LanderInterface::getArmJointPosition (int index) const
 vector<double> LanderInterface::getArmPose () const
 {
   return m_arm_pose;
+}
+
+double LanderInterface::getTiltRadians () const
+{
+  return m_current_tilt_radians;
+}
+
+double LanderInterface::getPanRadians () const
+{
+  return m_current_pan_radians;
 }
