@@ -6,11 +6,6 @@
 #include "OwInterface.h"
 #include "subscriber.h"
 
-// owl_msgs
-#include <owl_msgs/BatteryRemainingUsefulLife.h>
-#include <owl_msgs/BatteryStateOfCharge.h>
-#include <owl_msgs/BatteryTemperature.h>
-
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
@@ -205,31 +200,6 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
 
-///////////////////////// Power support /////////////////////////////////////
-
-static double SOC = NAN;
-static double RUL = NAN;
-static double BatteryTemp = NAN;
-
-static void soc_callback (const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
-{
-  SOC = msg->value;
-  publish ("StateOfCharge", SOC);
-}
-
-static void rul_callback (const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
-{
-  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
-  RUL = msg->value;
-  publish ("RemainingUsefulLife", RUL);
-}
-
-static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& msg)
-{
-  BatteryTemp = msg->value;
-  publish ("BatteryTemperature", BatteryTemp);
-}
-
 //////////////////// GuardedMove Action support ////////////////////////////////
 
 // TODO: encapsulate GroundFound and GroundPosition in the PLEXIL command.  They
@@ -345,22 +315,6 @@ void OwInterface::initialize()
   m_taskDiscardSampleClient =
     make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
 
-/* Unused ?
-  // Initialize publishers.  For now, latching in lieu of waiting
-  // for publishers.
-
-  const bool latch = true;
-  m_antennaTiltPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_tilt_position_controller/command", QueueSize, latch));
-  m_antennaPanPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_pan_position_controller/command", QueueSize, latch));
-  m_leftImageTriggerPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Empty>
-     ("/StereoCamera/left/image_trigger", QueueSize, latch));
-*/
-  
   // Initialize subscribers
 
   m_subscribers.push_back
@@ -368,23 +322,6 @@ void OwInterface::initialize()
      (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
                                       &OwInterface::jointStatesCallback,
                                       this)));
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/battery_state_of_charge", QueueSize, soc_callback)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/battery_temperature", QueueSize,
-                temperature_callback)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/battery_remaining_useful_life", QueueSize,
-                rul_callback)));
-
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
@@ -975,21 +912,6 @@ double OwInterface::getPanVelocity () const
 double OwInterface::getTiltVelocity () const
 {
   return JointTelemetries[ANTENNA_TILT].velocity;
-}
-
-double OwInterface::getBatteryStateOfCharge () const
-{
-  return SOC;
-}
-
-double OwInterface::getBatteryRemainingUsefulLife () const
-{
-  return RUL;
-}
-
-double OwInterface::getBatteryTemperature () const
-{
-  return BatteryTemp;
 }
 
 bool OwInterface::hardTorqueLimitReached (const string& joint_name) const

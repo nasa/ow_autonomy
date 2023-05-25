@@ -82,9 +82,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
 
 // Lander queries
 
-Real Lookup StateOfCharge;
-Real Lookup RemainingUsefulLife;
-Real Lookup BatteryTemperature;
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 

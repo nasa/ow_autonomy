@@ -92,6 +92,11 @@ Real Lookup ArmJointVelocity     (Integer joint);
 Real Lookup ArmJointPosition     (Integer joint);
 Real Lookup ArmJointTorque       (Integer joint);
 
+// Battery
+Real Lookup BatteryStateOfCharge;
+Real Lookup BatteryRemainingUsefulLife;
+Real Lookup BatteryTemperature;
+
 // Misc
 
 Real[6] Lookup ArmEndEffectorForceTorque;

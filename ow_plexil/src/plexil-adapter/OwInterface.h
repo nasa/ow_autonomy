@@ -119,9 +119,6 @@ class OwInterface : public LanderInterface
   // State/Lookup interface
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getBatteryStateOfCharge () const;
-  double getBatteryRemainingUsefulLife () const;
-  double getBatteryTemperature () const;
   std::vector<double> getEndEffectorFT () const;
   bool   groundFound () const;
   double groundPosition () const;
@@ -171,16 +168,7 @@ class OwInterface : public LanderInterface
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
-
-  // Publishers and subscribers
-  
-/* Unused ?
-  std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
-  std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
-  std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
-*/
-  
-  // System-level faults:
+  // System-level faults
 
   FaultMap m_systemErrors = {
     {"SYSTEM", std::make_pair(

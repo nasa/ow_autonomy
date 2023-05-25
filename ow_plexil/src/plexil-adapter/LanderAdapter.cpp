@@ -271,6 +271,21 @@ static void tilt_degrees (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getTiltRadians() * R2D);
 }
 
+static void battery_soc (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatterySOC());
+}
+
+static void battery_temp (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatteryTemperature());
+}
+
+static void battery_rul (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatteryRUL());
+}
+
 LanderInterface* LanderAdapter::s_interface = NULL;
 
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
@@ -323,6 +338,12 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerLookupHandler("PanDegrees", pan_degrees);
   g_configuration->registerLookupHandler("TiltRadians", tilt_radians);
   g_configuration->registerLookupHandler("TiltDegrees", tilt_degrees);
+  g_configuration->registerLookupHandler("BatteryStateOfCharge",
+                                         battery_soc);
+  g_configuration->registerLookupHandler("BatteryRemainingUsefulLife",
+                                         battery_rul);
+  g_configuration->registerLookupHandler("BatteryTemperature",
+                                         battery_temp);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;

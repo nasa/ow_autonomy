@@ -102,15 +102,6 @@ static bool lookup (const string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
-  else if (state_name == "StateOfCharge") {
-    value_out = OwInterface::instance()->getBatteryStateOfCharge();
-  }
-  else if (state_name == "RemainingUsefulLife") {
-    value_out = OwInterface::instance()->getBatteryRemainingUsefulLife();
-  }
-  else if (state_name == "BatteryTemperature") {
-    value_out = OwInterface::instance()->getBatteryTemperature();
-  }
   else if (state_name == "GroundFound") {
     value_out = OwInterface::instance()->groundFound();
   }

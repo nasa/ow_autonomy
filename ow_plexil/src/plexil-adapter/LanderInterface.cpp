@@ -54,8 +54,12 @@ void LanderInterface::initialize()
 {
   PlexilInterface::initialize();
 
-  m_current_pan_radians = 0;
-  m_current_tilt_radians = 0;
+  m_current_pan_radians = NAN;
+  m_current_tilt_radians = NAN;
+  m_battery_soc = NAN;
+  m_battery_rul = NAN;
+  m_battery_temp = NAN;
+
   m_arm_joint_accelerations.resize(NumArmJoints);
   m_arm_joint_positions.resize(NumArmJoints);
   m_arm_joint_velocities.resize(NumArmJoints);
@@ -167,9 +171,49 @@ void LanderInterface::initialize()
      (m_genericNodeHandle ->
       subscribe("/pan_tilt_position", QueueSize,
                 &LanderInterface::panTiltCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_state_of_charge", QueueSize,
+                &LanderInterface::batteryChargeCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_temperature", QueueSize,
+                &LanderInterface::batteryTempCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_remaining_useful_life", QueueSize,
+                &LanderInterface::batteryLifeCb, this)));
 }
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
+
+void LanderInterface::batteryChargeCb
+(const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
+{
+  m_battery_soc = msg->value;
+  publish ("BatteryStateOfCharge", m_battery_soc);
+}
+
+void LanderInterface::batteryLifeCb
+(const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
+{
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
+  m_battery_rul = msg->value;
+  publish ("BatteryRemainingUsefulLife", m_battery_rul);
+}
+
+void LanderInterface::batteryTempCb
+(const owl_msgs::BatteryTemperature::ConstPtr& msg)
+{
+  m_battery_temp = msg->value;
+  publish ("BatteryTemperature", m_battery_temp);
+}
 
 void LanderInterface::armJointAccelCb
 (const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
@@ -552,4 +596,19 @@ double LanderInterface::getTiltRadians () const
 double LanderInterface::getPanRadians () const
 {
   return m_current_pan_radians;
+}
+
+double LanderInterface::getBatterySOC () const
+{
+  return m_battery_soc;
+}
+
+double LanderInterface::getBatteryRUL () const
+{
+  return m_battery_rul;
+}
+
+double LanderInterface::getBatteryTemperature () const
+{
+  return m_battery_temp;
 }

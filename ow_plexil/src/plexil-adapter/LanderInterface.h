@@ -37,6 +37,9 @@
 #include <owl_msgs/ArmJointTorques.h>
 #include <owl_msgs/ArmJointPositions.h>
 #include <owl_msgs/ArmPose.h>
+#include <owl_msgs/BatteryRemainingUsefulLife.h>
+#include <owl_msgs/BatteryStateOfCharge.h>
+#include <owl_msgs/BatteryTemperature.h>
 
 // ROS
 #include <ros/ros.h>
@@ -142,6 +145,9 @@ class LanderInterface : public PlexilInterface
   double getArmJointTorque (int index) const;
   double getArmJointVelocity (int index) const;
   std::vector<double> getArmPose () const;
+  double getBatterySOC () const;
+  double getBatteryRUL() const;
+  double getBatteryTemperature () const;
 
  protected:
 
@@ -185,10 +191,15 @@ class LanderInterface : public PlexilInterface
   void armJointVelocityCb (const owl_msgs::ArmJointVelocities::ConstPtr&);
   void armJointTorqueCb (const owl_msgs::ArmJointTorques::ConstPtr&);
 
+  // Battery
+  void batteryLifeCb (const owl_msgs::BatteryRemainingUsefulLife::ConstPtr&);
+  void batteryTempCb (const owl_msgs::BatteryTemperature::ConstPtr&);
+  void batteryChargeCb (const owl_msgs::BatteryStateOfCharge::ConstPtr&);
+
   // Misc
   void armPoseCb (const owl_msgs::ArmPose::ConstPtr&);
   void panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr&);
-  
+
   FaultMap m_armErrors = {
     {"HARDWARE", std::make_pair(
         owl_msgs::ArmFaultsStatus::HARDWARE, false)},
@@ -244,6 +255,9 @@ class LanderInterface : public PlexilInterface
   std::vector<double> m_arm_pose;
   double m_current_pan_radians;
   double m_current_tilt_radians;
+  double m_battery_soc;
+  double m_battery_rul;
+  double m_battery_temp;
 
   // Action Clients
 
