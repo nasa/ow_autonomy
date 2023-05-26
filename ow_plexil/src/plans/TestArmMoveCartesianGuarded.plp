@@ -14,16 +14,16 @@ TestArmMoveCartesianGuarded:
   // ow_lander/scripts/arm_move_cartesian_guarded.py.  These are not
   // all the defaults, just those useful in this plan.
 
-  Real DefaultXYZ = 0; // Position, Euler and Quaternion orientation
+  Real DefaultXYZ = 0.0; // Position, Euler and Quaternion orientation
   Real DefaultForceThreshold = 200;
   Real DefaultTorqueThreshold = 100;
-  Real DefaultW = 1;
+  Real DefaultW = -1.0;
 
   log_info ("Beginning TestMoveCartesian...");
 
   // TO INVESTIGATE: With unstow done first, the grinder gets stuck in
   // the ground on the guarded move.
-  // LibraryCall ArmUnstow();
+  LibraryCall ArmUnstow();
 
   // Prime scoop to poke ground.
   LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
@@ -40,7 +40,7 @@ TestArmMoveCartesianGuarded:
                                          Relative = true,
                                          X = DefaultXYZ,
                                          Y = DefaultXYZ,
-                                         Z = 0.6,
+                                         Z = -0.6,
                                          OrientX = DefaultXYZ,
                                          OrientY = DefaultXYZ,
                                          OrientZ = DefaultXYZ,
@@ -63,7 +63,7 @@ TestArmMoveCartesianGuarded:
                                        Relative = true,
                                        X = DefaultXYZ,
                                        Y = DefaultXYZ,
-                                       Z = 0.6,
+                                       Z = -0.6,
                                        OrientX = DefaultXYZ,
                                        OrientY = DefaultXYZ,
                                        OrientZ = DefaultXYZ,
