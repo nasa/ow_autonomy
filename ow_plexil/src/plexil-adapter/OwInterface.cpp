@@ -1207,7 +1207,7 @@ void OwInterface::armMoveCartesian (int frame, bool relative,
 				    double orient_z, int id)
 {
   tf2::Quaternion q;
-  q.setEuler (orient_z,orient_y,orient_x);  // Yaw, pitch, roll, respectively.
+  q.setRPY (orient_x,orient_y,orient_z);  // roll, pitch, yaw, respectively.
   q.normalize();  // Recommended in ROS docs, not sure if needed here.
 
   geometry_msgs::Quaternion qm = tf2::toMsg(q);
@@ -1240,7 +1240,7 @@ void OwInterface::armMoveCartesianGuarded (int frame, bool relative,
                                            int id)
 {
   tf2::Quaternion q;
-  q.setEuler (orient_z,orient_y,orient_x);  // Yaw, pitch, roll, respectively.
+  q.setRPY (orient_x,orient_y,orient_z);  // roll, pitch, yaw, respectively.
   q.normalize();  // Recommended in ROS docs, not sure if needed here.
 
   geometry_msgs::Quaternion qm = tf2::toMsg(q);
