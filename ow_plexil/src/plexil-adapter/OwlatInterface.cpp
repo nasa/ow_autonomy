@@ -71,8 +71,7 @@ void OwlatInterface::initialize()
     m_arm_joint_angles.resize(7);
     m_arm_joint_torques.resize(7);
     m_arm_joint_velocities.resize(7);
-    m_arm_ft_torque.resize(3);
-    m_arm_ft_force.resize(3);
+    m_end_effector_ft.resize(6);
     m_arm_pose.resize(7);
     m_arm_tool = 0;
 
@@ -625,18 +624,11 @@ void OwlatInterface::armJointVelocitiesCallback
   publish("ArmJointVelocities", m_arm_joint_velocities);
 }
 
-void OwlatInterface::armFTTorqueCallback
-(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg)
+void OwlatInterface::ftCallback
+(const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
-  copy(msg->value.begin(), msg->value.end(), m_arm_ft_torque.begin());
-  publish("ArmFTTorque", m_arm_ft_torque);
-}
-
-void OwlatInterface::armFTForceCallback
-(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_ft_force.begin());
-  publish("ArmFTForce", m_arm_ft_force);
+  copy(msg->value.begin(), msg->value.end(), m_end_effector_ft.begin());
+  publish("ArmEndEffectorForceTorque", m_end_effector_ft);
 }
 
 void OwlatInterface::armPoseCallback
@@ -745,4 +737,9 @@ Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
 bool OwlatInterface::systemFault () const
 {
   return faultActive (m_systemErrors);
+}
+
+vector<double> OwlatInterface::getEndEffectorFT () const
+{
+  return m_end_effector_ft;
 }

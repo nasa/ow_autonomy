@@ -2,19 +2,23 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Interface specific to OceanWATERS' lander.
+
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
-// Interface specific to OceanWATERS' lander.
-
-// ow_plexil ROS actions
 #include "LanderInterface.h"
+
+// ROS action used only in this package
+
 #include <ow_plexil/IdentifyLocationAction.h>
 
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
-// owl_msgs (testbed-common ROS actions)
+
+// Testbed-common ROS actions
+
 #include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
@@ -25,9 +29,6 @@ using IdentifySampleLocationActionClient =
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
-
-// owl_msgs (unified telemetry)
-#include <owl_msgs/ArmEndEffectorForceTorque.h>
 
 using ArmFindSurfaceActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
@@ -50,7 +51,9 @@ using LightSetIntensityActionClient =
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 
+
 // OceanWATERS-specific ROS actions
+
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
 #include <ow_lander/TiltAction.h>
@@ -62,6 +65,10 @@ using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using DockIngestSampleActionClient =
   actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
+
+
+// Telemetry
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
 
 class OwInterface : public LanderInterface
 {
@@ -127,6 +134,7 @@ class OwInterface : public LanderInterface
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   double jointTelemetry (int joint, TelemetryType type) const;
   bool   systemFault () const override;
+  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,
@@ -210,7 +218,7 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
 
   // Misc state
-  std::vector<double> m_endEffectorFT;
+  std::vector<double> m_end_effector_ft;
 };
 
 #endif

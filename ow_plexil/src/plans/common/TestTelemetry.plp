@@ -57,7 +57,7 @@ TestTelemetry:
     log_info ("  ", FT[i]);
   }
   log_info ("}");
-
+  
   ArmPose = Lookup(ArmPose);
   log_info ("Arm pose: {");
   for (Integer i = 0; i < 7; i + 1) {

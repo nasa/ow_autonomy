@@ -54,6 +54,8 @@ using ArmMoveJointsGuardedActionClient =
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+
 class OwlatInterface : public LanderInterface
 {
  public:
@@ -171,19 +173,18 @@ class OwlatInterface : public LanderInterface
                                 int id);
 
   // Callbacks
+  void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void armJointAnglesCallback
   (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
   void armJointTorquesCallback
   (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
   void armJointVelocitiesCallback
   (const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
-  void armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg);
-  void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
   void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
   void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
-  
+
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_discardSampleClient;
@@ -224,12 +225,12 @@ class OwlatInterface : public LanderInterface
   std::vector<double> m_arm_joint_angles;
   std::vector<double> m_arm_joint_torques;
   std::vector<double> m_arm_joint_velocities;
-  std::vector<double> m_arm_ft_torque;
-  std::vector<double> m_arm_ft_force;
   std::vector<double> m_arm_pose;
+  std::vector<double> m_end_effector_ft;
   double m_arm_tool;
   double m_pan_radians;
   double m_tilt_radians;
+
 };
 
 #endif

@@ -251,6 +251,17 @@ static void arm_pose (const State&, StateCacheEntry &entry)
   entry.update(v);
 }
 
+static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
+{
+  vector<Value> v;
+  v.resize(6);
+  vector<double> ft = LanderAdapter::s_interface->getArmEndEffectorFT();
+  for (size_t i = 0; i < 6; i++) {
+    v[i] = ft[i];  // implicit construction of Value from double
+  }
+  entry.update(v);
+}
+
 static void pan_radians (const State& state, StateCacheEntry &entry)
 {
   entry.update(LanderAdapter::s_interface->getPanRadians());
@@ -334,6 +345,8 @@ bool LanderAdapter::initialize (LanderInterface* li)
   g_configuration->registerLookupHandler("ArmJointVelocity",
                                          arm_joint_velocity);
   g_configuration->registerLookupHandler("ArmPose", arm_pose);
+  g_configuration->registerLookupHandler("ArmEndEffectorForceTorque",
+                                         arm_end_effector_ft);
   g_configuration->registerLookupHandler("PanRadians", pan_radians);
   g_configuration->registerLookupHandler("PanDegrees", pan_degrees);
   g_configuration->registerLookupHandler("TiltRadians", tilt_radians);

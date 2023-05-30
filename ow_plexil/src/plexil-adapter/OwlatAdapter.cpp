@@ -217,20 +217,6 @@ static void armJointAngles (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getArmJointAngles());
 }
 
-static void armFTTorque (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmFTTorque ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmFTTorque());
-}
-
-static void armFTForce (const State& state, StateCacheEntry &entry)
-{
-  debugMsg("getArmFTForce ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
-  entry.update(OwlatInterface::instance()->getArmFTForce());
-}
-
 static void armTool (const State& state, StateCacheEntry &entry)
 {
   debugMsg("getArmTool ", "lookup called for " << state.name()
@@ -274,8 +260,6 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
   g_configuration->registerLookupHandler("UsingOceanWATERS", using_oceanwaters);
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
-  g_configuration->registerLookupHandler("ArmFTTorque", armFTTorque);
-  g_configuration->registerLookupHandler("ArmFTForce", armFTForce);
   g_configuration->registerLookupHandler("ArmTool", armTool);
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 

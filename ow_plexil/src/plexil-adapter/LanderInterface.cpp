@@ -583,6 +583,7 @@ double LanderInterface::getArmJointPosition (int index) const
 {
   return (m_arm_joint_positions[index]);
 }
+
 vector<double> LanderInterface::getArmPose () const
 {
   return m_arm_pose;

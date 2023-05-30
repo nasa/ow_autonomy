@@ -138,6 +138,7 @@ class LanderInterface : public PlexilInterface
   bool cameraFault () const;
 
   // Telemetry
+  virtual std::vector<double> getArmEndEffectorFT () const = 0;
   double getTiltRadians () const;
   double getPanRadians () const;
   double getArmJointAcceleration (int index) const;

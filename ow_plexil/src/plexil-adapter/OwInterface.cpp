@@ -133,12 +133,18 @@ static void handle_joint_fault (int joint_index,
 void OwInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
-  m_endEffectorFT[0] = msg->value.force.x;
-  m_endEffectorFT[1] = msg->value.force.y;
-  m_endEffectorFT[2] = msg->value.force.z;
-  m_endEffectorFT[3] = msg->value.torque.x;
-  m_endEffectorFT[4] = msg->value.torque.y;
-  m_endEffectorFT[5] = msg->value.torque.z;
+  ROS_INFO ("----1");
+  // ROS Wrench -> vector
+  m_end_effector_ft[0] = msg->value.force.x;
+  m_end_effector_ft[1] = msg->value.force.y;
+  m_end_effector_ft[2] = msg->value.force.z;
+  m_end_effector_ft[3] = msg->value.torque.x;
+  m_end_effector_ft[4] = msg->value.torque.y;
+  m_end_effector_ft[5] = msg->value.torque.z;
+
+  ROS_INFO ("----2");
+  publish("ArmEndEffectorForceTorque", m_end_effector_ft);
+  ROS_INFO ("----3");
 }
 
 static double normalize_degrees (double angle)
@@ -271,8 +277,8 @@ OwInterface* OwInterface::instance ()
 
 OwInterface::OwInterface ()
 {
-  m_endEffectorFT.resize(6);
-  m_endEffectorFT = {0,0,0,0,0,0};
+  m_end_effector_ft.resize(6);
+  m_end_effector_ft = {0,0,0,0,0,0};
 }
 
 void OwInterface::initialize()
@@ -928,7 +934,7 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 
 vector<double> OwInterface::getEndEffectorFT () const
 {
-  return m_endEffectorFT;
+  return m_end_effector_ft;
 }
 
 double OwInterface::jointTelemetry (int joint, TelemetryType type) const
@@ -959,4 +965,8 @@ double OwInterface::jointTelemetry (int joint, TelemetryType type) const
 bool OwInterface::systemFault () const
 {
   return faultActive (m_systemErrors);
+}
+
+vector<double> OwInterface::getArmEndEffectorFT () const
+{
 }
