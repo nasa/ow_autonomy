@@ -133,7 +133,6 @@ static void handle_joint_fault (int joint_index,
 void OwInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
-  ROS_INFO ("----1");
   // ROS Wrench -> vector
   m_end_effector_ft[0] = msg->value.force.x;
   m_end_effector_ft[1] = msg->value.force.y;
@@ -142,9 +141,7 @@ void OwInterface::ftCallback
   m_end_effector_ft[4] = msg->value.torque.y;
   m_end_effector_ft[5] = msg->value.torque.z;
 
-  ROS_INFO ("----2");
   publish("ArmEndEffectorForceTorque", m_end_effector_ft);
-  ROS_INFO ("----3");
 }
 
 static double normalize_degrees (double angle)
@@ -969,4 +966,5 @@ bool OwInterface::systemFault () const
 
 vector<double> OwInterface::getArmEndEffectorFT () const
 {
+  return m_end_effector_ft;
 }

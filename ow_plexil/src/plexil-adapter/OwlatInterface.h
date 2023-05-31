@@ -118,8 +118,6 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getArmJointAngles() const;
   PLEXIL::Value getArmJointTorques() const ;
   PLEXIL::Value getArmJointVelocities() const;
-  PLEXIL::Value getArmFTTorque() const;
-  PLEXIL::Value getArmFTForce() const;
   PLEXIL::Value getArmPose() const;
   PLEXIL::Value getArmTool() const;
   PLEXIL::Value getPanDegrees() const;
@@ -128,6 +126,7 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getTiltDegrees() const;
   PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
   bool systemFault () const override;
+  vector<double> getArmEndEffectorFT () const override;
 
  private:
   // Actions

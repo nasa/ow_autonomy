@@ -30,7 +30,7 @@ TestOwlatActions:
   LibraryCall TestTaskPSP;
   LibraryCall TestTaskPenetrometer;
   // Does not work; JPL is investigating.
-  //  LibraryCall TestShearBevameter;
+  LibraryCall TestShearBevameter;
   LibraryCall TestOwlatTaskScoopCircular;
   LibraryCall TestOwlatTaskScoopLinear;
   LibraryCall TestTaskDiscardSample;

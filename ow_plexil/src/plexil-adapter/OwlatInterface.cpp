@@ -99,19 +99,6 @@ void OwlatInterface::initialize()
         subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", QueueSize,
                   &OwlatInterface::armJointVelocitiesCallback, this)));
 
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_TORQUE", QueueSize,
-                  &OwlatInterface::armFTTorqueCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_FORCE", QueueSize,
-                  &OwlatInterface::armFTForceCallback, this)));
-
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
@@ -129,6 +116,12 @@ void OwlatInterface::initialize()
        (m_genericNodeHandle ->
         subscribe("/pan_tilt_position", QueueSize,
                   &OwlatInterface::panTiltCallback, this)));
+
+    m_subscribers.push_back
+      (make_unique<ros::Subscriber>
+       (m_genericNodeHandle ->
+        subscribe("/arm_end_effector_force_torque", QueueSize,
+                  &OwlatInterface::ftCallback, this)));
 
     // Initialize pointers
     m_armFindSurfaceClient =
@@ -677,16 +670,6 @@ Value OwlatInterface::getArmJointVelocities() const
   return(Value(m_arm_joint_velocities));
 }
 
-Value OwlatInterface::getArmFTTorque() const
-{
-  return(Value(m_arm_ft_torque));
-}
-
-Value OwlatInterface::getArmFTForce() const
-{
-  return(Value(m_arm_ft_force));
-}
-
 Value OwlatInterface::getArmPose() const
 {
   return(Value(m_arm_pose));
@@ -739,7 +722,7 @@ bool OwlatInterface::systemFault () const
   return faultActive (m_systemErrors);
 }
 
-vector<double> OwlatInterface::getEndEffectorFT () const
+vector<double> OwlatInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
