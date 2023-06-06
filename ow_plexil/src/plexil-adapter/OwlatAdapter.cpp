@@ -217,10 +217,8 @@ static void armJointAngles (const State& state, StateCacheEntry &entry)
   entry.update(OwlatInterface::instance()->getArmJointAngles());
 }
 
-static void armTool (const State& state, StateCacheEntry &entry)
+static void arm_tool (const State&, StateCacheEntry &entry)
 {
-  debugMsg("getArmTool ", "lookup called for " << state.name()
-           << " with " << state.parameters().size() << " args");
   entry.update(OwlatInterface::instance()->getArmTool());
 }
 
@@ -260,7 +258,7 @@ bool OwlatAdapter::initialize()
   g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
   g_configuration->registerLookupHandler("UsingOceanWATERS", using_oceanwaters);
   g_configuration->registerLookupHandler("ArmJointAngles", armJointAngles);
-  g_configuration->registerLookupHandler("ArmTool", armTool);
+  g_configuration->registerLookupHandler("ArmTool", arm_tool);
   g_configuration->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");

@@ -18,6 +18,8 @@ TestShearBevameter:
                                   Point = #(0 0 0.43),
                                   Normal = #(0 0 -1),
                                   Preload = 5.0,
-                                  MaxTorque = 1.0);  // 0.1 not achievable
+                                  // 0.1 is given in user manual but not achievable
+                                  // 1.0 produces an error
+                                  MaxTorque = 0.1);
   LibraryCall StowSequence();
 }

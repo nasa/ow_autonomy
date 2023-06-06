@@ -12,9 +12,10 @@
 
 #define TOOL_NONE 0
 #define TOOL_PSP  1
-#define TOOL_BEVAMETER 2
-#define TOOL_SCOOP 3
-#define TOOL_PENETROMETER 4
+#define TOOL_PENETROMETER 2
+#define TOOL_BEVAMETER 3
+#define TOOL_SCOOP 4
+#define TOOL_DRILL 5
 
 // Note that in cases where OceanWATERS has an action with the same
 // name (but different signature, else it would be in ../common), the
@@ -88,7 +89,7 @@ Real Lookup ArmJointTorques;
 Real Lookup ArmJointVelocities;
 Real Lookup ArmFTTorque;
 Real Lookup ArmFTForce;
-Real Lookup ArmTool;
+Integer Lookup ArmTool;
 Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
 
