@@ -16,5 +16,5 @@ TestPanTiltMoveCartesian:
   LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=1.46, Y=-0.4, Z=-0.05);
 
   // Point at Jupiter
-  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=125800, Y=-81170, Z=-80533);
+  LibraryCall PanTiltMoveCartesian (Frame=BASE_LINK, X=-125800, Y=-81170, Z=80533);
 }
