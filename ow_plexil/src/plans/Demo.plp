@@ -24,7 +24,7 @@ Demo:
   if (Lookup(GroundFound)) {
     log_info ("A grind...");
     LibraryCall TaskGrind (X = 2.0, Y = 0, Depth = 0.05,
-                           Length = 0.3, Parallel = true,
+                           Length = 0.5, Parallel = true,
                            GroundPos = Lookup(GroundPosition));
     log_info ("A circular dig...");
     LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
