@@ -226,7 +226,7 @@ class OwlatInterface : public LanderInterface
   std::vector<double> m_arm_joint_velocities;
   std::vector<double> m_arm_pose;
   std::vector<double> m_end_effector_ft;
-  double m_arm_tool;
+  int m_arm_tool;
   double m_pan_radians;
   double m_tilt_radians;
 

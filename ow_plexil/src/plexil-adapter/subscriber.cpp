@@ -12,6 +12,7 @@
 // where value-type and param-type are ad hoc, CamelCase names.
 
 static SubscribeBool SubscriberBool = nullptr;
+static SubscribeInt SubscriberInt = nullptr;
 static SubscribeDouble SubscriberDouble = nullptr;
 static SubscribeString SubscriberString = nullptr;
 static SubscribeDoubleVector SubscriberDoubleVector = nullptr;
@@ -19,6 +20,7 @@ static SubscribeBoolFromString SubscriberBoolFromString = nullptr;
 static SubscribeDoubleFromInt SubscriberDoubleFromInt = nullptr;
 
 void setSubscriber (SubscribeBool s) { SubscriberBool = s; }
+void setSubscriber (SubscribeInt s) { SubscriberInt = s; }
 void setSubscriber (SubscribeDouble s) { SubscriberDouble = s; }
 void setSubscriber (SubscribeString s) { SubscriberString = s; }
 void setSubscriber (SubscribeBoolFromString s) { SubscriberBoolFromString = s; }
@@ -31,6 +33,11 @@ void setSubscriber (SubscribeDoubleFromInt s) { SubscriberDoubleFromInt = s; }
 void publish (const string& state_name, bool val)
 {
   SubscriberBool (state_name, val);
+}
+
+void publish (const string& state_name, int val)
+{
+  SubscriberInt (state_name, val);
 }
 
 void publish (const string& state_name, double val)

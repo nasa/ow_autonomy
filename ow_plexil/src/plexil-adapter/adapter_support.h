@@ -61,6 +61,7 @@ void command_status_callback (int id, bool success);
 
 // "Receivers" for the pub/sub mechanism in subscriber.h
 void receiveBool (const std::string& state_name, bool val);
+void receiveInt (const std::string& state_name, int val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
 void receiveBoolFromString (const std::string& state_name,

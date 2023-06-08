@@ -124,8 +124,12 @@ static void propagate (const State& state, const vector<Value>& value)
 
 void receiveBool (const string& state_name, bool val)
 {
-  debugMsg("OwAdapter:receiveBool", " propagating " << state_name
-           << " with value " << (val ? "true" : "false"));
+  propagate (create_state(state_name, EmptyArgs),
+             vector<Value> (1, val));
+}
+
+void receiveInt (const string& state_name, int val)
+{
   propagate (create_state(state_name, EmptyArgs),
              vector<Value> (1, val));
 }

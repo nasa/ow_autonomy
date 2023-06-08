@@ -1,0 +1,30 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Tests the setting/reading of a given arm tool.
+
+#include "owlat-interface.h"
+
+TestArmTool:
+{
+  In Integer Tool;
+  String names[5] = #("None"
+                      "Pressure Sinkage Plate"
+                      "Shear Bevameter"
+                      "Scoop"
+                      "Cone Penetrometer"
+                      );
+  Integer result;
+
+  LibraryCall ArmSetTool(Tool=Tool);
+  Wait 1;
+  result = Lookup(ArmTool);
+  if (isKnown(result)) {
+    if (result == Tool) log_info ("Test of tool ", names[Tool], " succeeded.");
+    else log_error ("Test of tool ", names[Tool], " failed. Got ", names[result]);
+    endif
+  }
+  else log_error ("Test of tool ", names[Tool], " failed. Result tool unknown.");
+  endif
+}

@@ -20,6 +20,7 @@ using std::vector;
 
 // Subscriber types
 typedef void (* SubscribeBool) (const string& state_name, bool val);
+typedef void (* SubscribeInt) (const string& state_name, int val);
 typedef void (* SubscribeDouble) (const string& state_name, double val);
 typedef void (* SubscribeString) (const string& state_name,
                                   const string& val);
@@ -34,6 +35,7 @@ typedef void (* SubscribeDoubleFromInt) (const string& state_name,
 
 // Setters for subscribers of each supported type signature
 void setSubscriber (SubscribeBool);
+void setSubscriber (SubscribeInt);
 void setSubscriber (SubscribeDouble);
 void setSubscriber (SubscribeString);
 void setSubscriber (SubscribeDoubleVector);
@@ -43,6 +45,7 @@ void setSubscriber (SubscribeDoubleFromInt);
 
 // Publish a state name, which notifies the subscriber.
 void publish (const string& state_name, bool val);
+void publish (const string& state_name, int val);
 void publish (const string& state_name, double val);
 void publish (const string& state_name, const string& val);
 void publish (const string& state_name, vector<double> vals);

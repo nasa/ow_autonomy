@@ -6,25 +6,13 @@
 
 #include "owlat-interface.h"
 
+LibraryAction TestArmTools();
+
 TestOwlatTelemetry:
 {
-  Integer tool;
-  String tools[6] = #("None"
-                      "Pressure Sinkage Plate"
-                      "Cone Penetrometer"
-                      "Shear Bevameter"
-                      "Scoop"
-                      "Drill"
-                      );
-
   log_info ("Starting OWLAT telemetry tests...");
 
-  tool = Lookup(ArmTool);
-  if (isKnown(tool)) {
-    log_info ("Arm tool", tools[tool]);
-  }
-  else log_warning ("Arm tool: UNKNOWN");
-  endif
-
-  log_info ("OWLAT telemetry tests finished.");
+  LibraryCall TestArmTools ();
+  
+  log_info ("Finished OWLAT telemetry tests.");
 }
