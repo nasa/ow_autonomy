@@ -126,7 +126,7 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getTiltDegrees() const;
   PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
   bool systemFault () const override;
-  vector<double> getArmEndEffectorFT () const override;
+  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   // Actions
