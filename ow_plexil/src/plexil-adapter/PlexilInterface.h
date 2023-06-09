@@ -37,7 +37,6 @@ class PlexilInterface
   int actionGoalStatus (const std::string& action_name) const;
 
  protected:
-  void initialize();
   bool operationRunning (const std::string& name) const;
   void registerLanderOperation (const std::string& name);
 

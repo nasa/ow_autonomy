@@ -57,7 +57,7 @@ class OwlatInterface : public LanderInterface
 {
  public:
   static OwlatInterface* instance();
-  OwlatInterface() = default;
+  OwlatInterface();
   ~OwlatInterface() = default;
   OwlatInterface (const OwlatInterface&) = delete;
   OwlatInterface& operator= (const OwlatInterface&) = delete;

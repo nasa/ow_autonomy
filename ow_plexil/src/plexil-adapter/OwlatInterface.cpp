@@ -56,84 +56,82 @@ OwlatInterface* OwlatInterface::instance ()
   return &instance;
 }
 
+OwlatInterface::OwlatInterface ()
+  : m_arm_tool (0)
+{
+    m_end_effector_ft.resize(6);
+}
+
 void OwlatInterface::initialize()
 {
-  static bool initialized = false;
+  LanderInterface::initialize();
 
-  if (not initialized) {
-    LanderInterface::initialize();
-
-    for (auto name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
-
-    m_genericNodeHandle = make_unique<ros::NodeHandle>();
-    m_end_effector_ft.resize(6);
-    m_arm_tool = 0;
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/system_faults_status", QueueSize,
-                  &OwlatInterface::systemFaultMessageCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_TOOL", QueueSize,
-                  &OwlatInterface::armToolCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/arm_end_effector_force_torque", QueueSize,
-                  &OwlatInterface::ftCallback, this)));
-
-    // Initialize pointers
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-    m_discardSampleClient =
-      make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_armMoveJointsClient =
-      make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
-    m_armMoveJointsGuardedClient =
-      make_unique<ArmMoveJointsGuardedActionClient> (Name_ArmMoveJointsGuarded,
-                                                     true);
-    m_armSetToolClient =
-      make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
-    m_armTareFTSensorClient =
-      make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
-    m_taskPSPClient =
-      make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
-    m_taskShearBevameterClient =
-      make_unique<TaskShearBevameterActionClient>(Name_ShearBevameter, true);
-    m_taskPenetrometerClient =
-      make_unique<TaskPenetrometerActionClient>(Name_Penetrometer, true);
-    m_taskScoopCircularClient =
-      make_unique<TaskScoopCircularActionClient>(Name_ScoopCircular, true);
-    m_taskScoopLinearClient =
-      make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
-
-    // Connect to action servers
-    connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
-                         "/ArmFindSurface/status");
-    connectActionServer (m_discardSampleClient, Name_Discard,
-                         "/TaskDiscardSample/status");
-    connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
-                         "/TaskArmMoveJoints/status");
-    connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
-                         "/TaskArmMoveJointsGuarded/status");
-    connectActionServer (m_armSetToolClient, Name_ArmSetTool,
-                         "/ArmSetTool/status");
-    connectActionServer (m_armTareFTSensorClient, Name_Tare,
-                         "/ArmTareFTSensor/status");
-    connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
-                         "/TaskShearBevameter/status");
-    connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
-                         "/TaskPenetrometer/status");
-    connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
-                         "/TaskScoopLinear/status");
+  for (auto name : LanderOpNames) {
+    registerLanderOperation (name);
   }
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QueueSize,
+                &OwlatInterface::systemFaultMessageCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/owlat_sim/ARM_TOOL", QueueSize,
+                &OwlatInterface::armToolCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_end_effector_force_torque", QueueSize,
+                &OwlatInterface::ftCallback, this)));
+
+  // Initialize pointers
+  m_armFindSurfaceClient =
+    make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
+  m_discardSampleClient =
+    make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
+  m_armMoveJointsClient =
+    make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+  m_armMoveJointsGuardedClient =
+    make_unique<ArmMoveJointsGuardedActionClient> (Name_ArmMoveJointsGuarded,
+                                                   true);
+  m_armSetToolClient =
+    make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
+  m_armTareFTSensorClient =
+    make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
+  m_taskPSPClient =
+    make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
+  m_taskShearBevameterClient =
+    make_unique<TaskShearBevameterActionClient>(Name_ShearBevameter, true);
+  m_taskPenetrometerClient =
+    make_unique<TaskPenetrometerActionClient>(Name_Penetrometer, true);
+  m_taskScoopCircularClient =
+    make_unique<TaskScoopCircularActionClient>(Name_ScoopCircular, true);
+  m_taskScoopLinearClient =
+    make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
+
+  // Connect to action servers
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
+                       "/ArmFindSurface/status");
+  connectActionServer (m_discardSampleClient, Name_Discard,
+                       "/TaskDiscardSample/status");
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
+                       "/TaskArmMoveJoints/status");
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
+                       "/TaskArmMoveJointsGuarded/status");
+  connectActionServer (m_armSetToolClient, Name_ArmSetTool,
+                       "/ArmSetTool/status");
+  connectActionServer (m_armTareFTSensorClient, Name_Tare,
+                       "/ArmTareFTSensor/status");
+  connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
+                       "/TaskShearBevameter/status");
+  connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
+                       "/TaskPenetrometer/status");
+  connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
+                       "/TaskScoopLinear/status");
 }
 
 

@@ -37,7 +37,8 @@ static map<string, int> ActionGoalStatusMap { };
 ///////////////////////////////// Class Interface ///////////////////////////////
 
 PlexilInterface::PlexilInterface ()
-  : m_commandStatusCallback (nullptr)
+  : m_commandStatusCallback (nullptr),
+    m_genericNodeHandle (make_unique<ros::NodeHandle>())
 { }
 
 PlexilInterface::~PlexilInterface ()
@@ -45,12 +46,6 @@ PlexilInterface::~PlexilInterface ()
   // No memory leak, since memory wasn't allocated.
   m_commandStatusCallback = nullptr;
 }
-
-void PlexilInterface::initialize()
-{
-  m_genericNodeHandle = make_unique<ros::NodeHandle>();
-}
-
 
 void PlexilInterface::actionGoalStatusCallback
 (const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)

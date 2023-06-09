@@ -68,8 +68,6 @@ LanderInterface::LanderInterface()
 
 void LanderInterface::initialize()
 {
-  PlexilInterface::initialize();
-
   for (auto name : LanderOpNames) {
     registerLanderOperation (name);
   }
