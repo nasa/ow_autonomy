@@ -175,18 +175,6 @@ void OwInterface::jointStatesCallback
     double position = msg->position[i];
     double velocity = msg->velocity[i];
     double effort = msg->effort[i];
-/* Obsolete
-    if (i == ANTENNA_PAN) {
-      m_currentPanRadians = position;
-      publish ("PanRadians", m_currentPanRadians);
-      publish ("PanDegrees", m_currentPanRadians * R2D);
-    }
-    else if (i == ANTENNA_TILT) {
-      m_currentTiltRadians = position;
-      publish ("TiltRadians", m_currentTiltRadians);
-      publish ("TiltDegrees", m_currentTiltRadians * R2D);
-    }
-*/
     JointTelemetries[i] = JointTelemetry {position, velocity, effort};
     publish ("JointPosition", position, i);
     publish ("JointVelocity", velocity, i);

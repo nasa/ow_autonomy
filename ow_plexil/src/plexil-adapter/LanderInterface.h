@@ -55,7 +55,7 @@
 // C++
 #include <string>
 #include <memory>
-#include <inttypes.h> // for int64 support (needed?)
+#include <inttypes.h> // for int64 support
 
 
 // Action client short forms

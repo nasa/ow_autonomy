@@ -68,11 +68,7 @@ void OwlatInterface::initialize()
     }
 
     m_genericNodeHandle = make_unique<ros::NodeHandle>();
-    m_arm_joint_angles.resize(7);
-    m_arm_joint_torques.resize(7);
-    m_arm_joint_velocities.resize(7);
     m_end_effector_ft.resize(6);
-    m_arm_pose.resize(7);
     m_arm_tool = 0;
 
     m_subscribers.push_back
@@ -84,38 +80,8 @@ void OwlatInterface::initialize()
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
        (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ANGLES", QueueSize,
-                  &OwlatInterface::armJointAnglesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_TORQUES", QueueSize,
-                  &OwlatInterface::armJointTorquesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", QueueSize,
-                  &OwlatInterface::armJointVelocitiesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_POSE", QueueSize,
-                  &OwlatInterface::armPoseCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
         subscribe("/owlat_sim/ARM_TOOL", QueueSize,
                   &OwlatInterface::armToolCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/pan_tilt_position", QueueSize,
-                  &OwlatInterface::panTiltCallback, this)));
 
     m_subscribers.push_back
       (make_unique<ros::Subscriber>
@@ -596,45 +562,11 @@ void OwlatInterface::systemFaultMessageCallback
   updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
-void OwlatInterface::armJointAnglesCallback
-(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_angles.begin());
-  publish("ArmJointAngles", m_arm_joint_angles);
-}
-
-void OwlatInterface::armJointTorquesCallback
-(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
-  publish("ArmJointTorques", m_arm_joint_torques);
-}
-
-void OwlatInterface::armJointVelocitiesCallback
-(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
-  publish("ArmJointVelocities", m_arm_joint_velocities);
-}
-
 void OwlatInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_end_effector_ft.begin());
   publish("ArmEndEffectorForceTorque", m_end_effector_ft);
-}
-
-void OwlatInterface::armPoseCallback
-(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
-{
-  m_arm_pose[0] = msg->value.position.x;
-  m_arm_pose[1] = msg->value.position.y;
-  m_arm_pose[2] = msg->value.position.z;
-  m_arm_pose[3] = msg->value.orientation.x;
-  m_arm_pose[4] = msg->value.orientation.y;
-  m_arm_pose[5] = msg->value.orientation.z;
-  m_arm_pose[6] = msg->value.orientation.w;
-  publish("ArmPose", m_arm_pose);
 }
 
 void OwlatInterface::armToolCallback
@@ -644,77 +576,9 @@ void OwlatInterface::armToolCallback
   publish("ArmTool", m_arm_tool);
 }
 
-void OwlatInterface::panTiltCallback
-(const owl_msgs::PanTiltPosition::ConstPtr& msg)
-{
-  m_pan_radians = msg->value[0];
-  m_tilt_radians = msg->value[1];
-  publish("PanRadians", m_pan_radians);
-  publish("PanDegrees", m_pan_radians * R2D);
-  publish("TiltRadians", m_tilt_radians);
-  publish("TiltDegrees", m_tilt_radians * R2D);
-}
-
-Value OwlatInterface::getArmJointAngles() const
-{
-  return(Value(m_arm_joint_angles));
-}
-
-Value OwlatInterface::getArmJointTorques() const
-{
-  return(Value(m_arm_joint_torques));
-}
-
-Value OwlatInterface::getArmJointVelocities() const
-{
-  return(Value(m_arm_joint_velocities));
-}
-
-Value OwlatInterface::getArmPose() const
-{
-  return(Value(m_arm_pose));
-}
-
 Value OwlatInterface::getArmTool() const
 {
   return(Value(m_arm_tool));
-}
-
-Value OwlatInterface::getPanRadians() const
-{
-  return m_pan_radians;
-}
-
-Value OwlatInterface::getPanDegrees() const
-{
-  return m_pan_radians * R2D;
-}
-
-Value OwlatInterface::getTiltRadians() const
-{
-  return m_tilt_radians;
-}
-
-Value OwlatInterface::getTiltDegrees() const
-{
-  return m_tilt_radians * R2D;
-}
-
-Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
-{
-  if (joint >= 0 && joint < OwlatJoints) {
-    switch (type) {
-      case TelemetryType::Position: return m_arm_joint_angles[joint];
-      case TelemetryType::Velocity: return m_arm_joint_velocities[joint];
-      case TelemetryType::Effort: return m_arm_joint_torques[joint];
-    default:
-      ROS_ERROR ("getJointTelemetry: unsupported telemetry type.");
-    }
-  }
-  else {
-    ROS_ERROR ("getJointTelemetry: invalid joint index %d", joint);
-  }
-  return 0;
 }
 
 bool OwlatInterface::systemFault () const

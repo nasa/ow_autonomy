@@ -22,13 +22,10 @@
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 
-// TODO: convert these per unified telemetry interface
-#include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
-#include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
-#include <owlat_sim_msgs/ARM_JOINT_VELOCITIES.h>
-#include <owlat_sim_msgs/ARM_FT_TORQUE.h>
-#include <owlat_sim_msgs/ARM_FT_FORCE.h>
-#include <owlat_sim_msgs/ARM_POSE.h>
+// Note that the older message file is still used, and not the newer
+// one in owl_msgs/ArmTool.h.  There is also an
+// owlat_sim_msgs/ArmTool.h that we assume is not supported because it
+// includes a Drill.
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
 using ArmFindSurfaceActionClient =
@@ -115,16 +112,7 @@ class OwlatInterface : public LanderInterface
                         int id);
 
   // Lookups
-  PLEXIL::Value getArmJointAngles() const;
-  PLEXIL::Value getArmJointTorques() const ;
-  PLEXIL::Value getArmJointVelocities() const;
-  PLEXIL::Value getArmPose() const;
   PLEXIL::Value getArmTool() const;
-  PLEXIL::Value getPanDegrees() const;
-  PLEXIL::Value getPanRadians() const;
-  PLEXIL::Value getTiltRadians() const;
-  PLEXIL::Value getTiltDegrees() const;
-  PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
   bool systemFault () const override;
   std::vector<double> getArmEndEffectorFT () const override;
 
@@ -173,15 +161,7 @@ class OwlatInterface : public LanderInterface
 
   // Callbacks
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
-  void armJointAnglesCallback
-  (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
-  void armJointTorquesCallback
-  (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
-  void armJointVelocitiesCallback
-  (const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
-  void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
-  void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
   // Action Clients
@@ -221,15 +201,8 @@ class OwlatInterface : public LanderInterface
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
-  std::vector<double> m_arm_joint_angles;
-  std::vector<double> m_arm_joint_torques;
-  std::vector<double> m_arm_joint_velocities;
-  std::vector<double> m_arm_pose;
   std::vector<double> m_end_effector_ft;
   int m_arm_tool;
-  double m_pan_radians;
-  double m_tilt_radians;
-
 };
 
 #endif
