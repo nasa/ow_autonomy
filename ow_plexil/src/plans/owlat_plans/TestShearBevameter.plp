@@ -3,14 +3,15 @@
 // this repository.
 
 // Test sequence 4.14.1 in the OWLAT 5.3 user guide.
-// Note: as of 5/3/23 this test fails.  JPL is investigating.
+
+// Fails during bevameter action.  For some reason, the MaxTorque
+// threshold is never reached, and we've tried values as high as 1.0.
+// Reproducable at Ames, but not JPL.  We have given up as of 6/9/23.
 
 #include "owlat-interface.h"
 
 TestShearBevameter:
 {
-  //  Fails with goal error: cannot achieve given torque.
-  //  Shear Bevameter test
   LibraryCall ArmUnstow();
   LibraryCall ArmSetTool(Tool=TOOL_BEVAMETER);
   LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
@@ -18,8 +19,6 @@ TestShearBevameter:
                                   Point = #(0 0 0.43),
                                   Normal = #(0 0 -1),
                                   Preload = 5.0,
-                                  // 0.1 is given in user manual but not achievable
-                                  // 1.0 produces an error
                                   MaxTorque = 0.1);
   LibraryCall StowSequence();
 }

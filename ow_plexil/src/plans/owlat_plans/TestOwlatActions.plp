@@ -23,13 +23,14 @@ LibraryAction TestPanTiltMoveJoints;
 TestOwlatActions:
 {
   log_info ("Starting OWLAT action test...");
+  LibraryCall ArmSetTool(Tool=TOOL_SCOOP);
   LibraryCall TestOwlatMiscActions;
   LibraryCall TestOwlatArmMoveJoints;
   LibraryCall TestOwlatArmMoveCartesian;
   LibraryCall TestOwlatArmFindSurface;
   LibraryCall TestTaskPSP;
   LibraryCall TestTaskPenetrometer;
-  // Does not work; JPL is investigating.
+  // Does not work. See comments in that plan.
   //  LibraryCall TestShearBevameter;
   LibraryCall TestOwlatTaskScoopCircular;
   LibraryCall TestOwlatTaskScoopLinear;
