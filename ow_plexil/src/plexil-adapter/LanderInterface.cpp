@@ -50,22 +50,25 @@ static vector<string> LanderOpNames = {
   Name_TaskDeliverSample
 };
 
-void LanderInterface::initialize()
+LanderInterface::LanderInterface()
+  : m_current_pan_radians (NAN),
+    m_current_tilt_radians (NAN),
+    m_battery_soc (NAN),
+    m_battery_rul (NAN),
+    m_battery_temp (NAN)
 {
-  PlexilInterface::initialize();
-
-  m_current_pan_radians = NAN;
-  m_current_tilt_radians = NAN;
-  m_battery_soc = NAN;
-  m_battery_rul = NAN;
-  m_battery_temp = NAN;
-
   m_arm_joint_accelerations.resize(NumArmJoints);
   m_arm_joint_positions.resize(NumArmJoints);
   m_arm_joint_velocities.resize(NumArmJoints);
   m_arm_joint_torques.resize(NumArmJoints);
   m_arm_pose.resize(7);
   m_arm_pose = {0,0,0,0,0,0,0};
+}
+
+
+void LanderInterface::initialize()
+{
+  PlexilInterface::initialize();
 
   for (auto name : LanderOpNames) {
     registerLanderOperation (name);

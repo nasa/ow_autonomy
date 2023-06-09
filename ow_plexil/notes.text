@@ -3,32 +3,7 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
-Decide if we want pan/tilt velocity and acceleration.
-
-Add a default ctor for LanderInterface and move initialize() parts
-there.
-
-Debug TestPanTilt:
-ERROR:
-/usr/local/home/kdalal/ow/src/ow_autonomy/ow_plexil/src/plans/TestPanTilt.ple:316:7:
-In variable Pan not found and no default InitialValue provided
-ExecApplication::addPlan: Plan parser error:
-In variable Pan not found and no default InitialValue provided
-
-Fix printout:
-[ INFO]: PanTiltMoveCartesian (0, x: 0
-y: 0
-z: -5
-) started...
-[ INFO]: PanTiltMoveCartesian finished in state ABORTED
-[ INFO]: PanTiltMoveCartesian (0, x: 1.46
-y: -0.4
-z: -0.05
-) started...
-[ INFO]: PanTiltMoveCartesian finished in state SUCCEEDED
-[ INFO]: PanTiltMoveCartesian (0, x: 125800
-y: -81170
-z: -80533
+Remove this file!
 
 
 Code Refactoring
@@ -66,12 +41,11 @@ Switch to Plexil 6
   Update interface as needed
   Stop using LookupNow
 
+Fix printout:
+[ INFO]: PanTiltMoveCartesian (0, x: 0
+y: 0
+z: -5
+
 
 Notes for JPL team
 ------------------
-
-ArmTool
- - manual defines 0..4
- - msg file has 0..5 (adds Drill) and different ordering
- - msg file has mix of CamelCase and UPPERCASE enums
- 

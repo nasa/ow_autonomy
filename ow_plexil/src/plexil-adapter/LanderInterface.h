@@ -85,7 +85,7 @@ using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
 class LanderInterface : public PlexilInterface
 {
  public:
-  LanderInterface() = default;
+  LanderInterface();
   virtual ~LanderInterface() = default;
   LanderInterface (const LanderInterface&) = delete;
   LanderInterface& operator= (const LanderInterface&) = delete;

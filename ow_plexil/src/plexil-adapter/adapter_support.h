@@ -68,7 +68,8 @@ void receiveBoolFromString (const std::string& state_name,
                             bool val,
                             const std::string& arg);
 void receiveDoubleFromInt (const std::string& state_name, double val, int arg);
-void receiveDoubleVector (const std::string& state_name, vector<double> vals);
+void receiveDoubleVector (const std::string& state_name,
+                          const vector<double>& vals);
 
 
 /////////////////////////////// ROS Logging ///////////////////////////////////

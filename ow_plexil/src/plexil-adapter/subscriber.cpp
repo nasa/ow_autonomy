@@ -4,6 +4,10 @@
 
 #include "subscriber.h"
 
+using std::string;
+using std::vector;
+
+
 // The subscribers.
 // The naming convention for Lookups without parameters is:
 //   Subscribe<value-type><param-type>...
@@ -50,7 +54,7 @@ void publish (const string& state_name, const string& val)
   SubscriberString (state_name, val);
 }
 
-void publish (const std::string& state_name, vector<double> vals)
+void publish (const std::string& state_name, const vector<double>& vals)
 {
   SubscriberDoubleVector (state_name, vals);
 }

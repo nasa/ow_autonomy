@@ -120,53 +120,61 @@ static void propagate (const State& state, const vector<Value>& value)
   g_adapter->propagateValueChange (state, value);
 }
 
-// To do: templatize the following few
+template<class V>
+void receive_value (const std::string& state_name, const V& val)
+{
+  propagate (create_state(state_name, EmptyArgs),
+             std::vector<Value> (1, val));
+}
+
+template<class V, class A>
+void receive_value_from_arg (const std::string& state_name,
+                             const V& val,
+                             const A& arg)
+{
+  propagate (create_state(state_name, std::vector<Value> (1, arg)),
+             std::vector<Value> (1, val));
+}
 
 void receiveBool (const string& state_name, bool val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<bool> (state_name, val);
 }
 
 void receiveInt (const string& state_name, int val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<int> (state_name, val);
 }
 
 void receiveDouble (const string& state_name, double val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<double> (state_name, val);
 }
 
 void receiveString (const string& state_name, const string& val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<string> (state_name, val);
 }
 
 void receiveBoolFromString (const string& state_name, bool val, const string& arg)
 {
-  propagate (create_state(state_name, vector<Value> (1, arg)),
-             vector<Value> (1, val));
+  receive_value_from_arg<bool, string> (state_name, val, arg);
 }
 
 void receiveDoubleFromInt (const string& state_name, double val, int arg)
 {
-  propagate (create_state(state_name, vector<Value> (1, arg)),
-             vector<Value> (1, val));
+  receive_value_from_arg<double, int> (state_name, val, arg);
 }
 
-void receiveDoubleVector (const string& state_name, vector<double> vals)
+void receiveDoubleVector (const string& state_name,
+                          const vector<double>& vals)
 {
   vector<Value> vector_values;
   for(int i = 0; i < vals.size(); i++){
     Value temp = Value(vals[i]);
     vector_values.push_back(temp);
   }
-  propagate (create_state(state_name, EmptyArgs),
-             vector_values);
+  propagate (create_state(state_name, EmptyArgs), vector_values);
 }
 
 static string log_string (const vector<Value>& args)
