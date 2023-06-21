@@ -17,7 +17,6 @@ using std::thread;
 using std::string;
 using std::vector;
 using std::make_unique;
-using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
@@ -568,6 +567,7 @@ void OwlatInterface::ftCallback
 }
 
 void OwlatInterface::armToolCallback
+// NOTE that this older message file is still used (see header).
 (const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
 {
   m_arm_tool = msg->value.value;

@@ -220,24 +220,36 @@ void LanderInterface::armJointAccelCb
 (const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointAcceleration", m_arm_joint_accelerations[i], i);
+  }
 }
 
 void LanderInterface::armJointPositionCb
 (const owl_msgs::ArmJointPositions::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_positions.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointPosition", m_arm_joint_positions[i], i);
+  }
 }
 
 void LanderInterface::armJointVelocityCb
 (const owl_msgs::ArmJointVelocities::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointVelocity", m_arm_joint_velocities[i], i);
+  }
 }
 
 void LanderInterface::armJointTorqueCb
 (const owl_msgs::ArmJointTorques::ConstPtr& msg)
 {
   copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointTorque", m_arm_joint_torques[i], i);
+  }
 }
 
 void LanderInterface::panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr& msg)

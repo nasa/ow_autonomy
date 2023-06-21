@@ -246,7 +246,8 @@ static void arm_pose (const State&, StateCacheEntry &entry)
   v.resize(7);
   vector<double> pose = LanderAdapter::s_interface->getArmPose();
   for (size_t i = 0; i < 7; i++) {
-    v[i] = pose[i];  // implicit construction of Value from double
+    // Conversion from double to PLEXIL::Real (float)
+    v[i] = Value(static_cast<Real>(pose[i]));
   }
   entry.update(v);
 }
@@ -257,7 +258,8 @@ static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
   v.resize(6);
   vector<double> ft = LanderAdapter::s_interface->getArmEndEffectorFT();
   for (size_t i = 0; i < 6; i++) {
-    v[i] = ft[i];  // implicit construction of Value from double
+    // Conversion from double to PLEXIL::Real (float)
+    v[i] = static_cast<Real>(ft[i]);
   }
   entry.update(v);
 }

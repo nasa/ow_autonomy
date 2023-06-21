@@ -22,10 +22,8 @@
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 
-// Note that the older message file is still used, and not the newer
-// one in owl_msgs/ArmTool.h.  There is also an
-// owlat_sim_msgs/ArmTool.h that we assume is not supported because it
-// includes a Drill.
+// NOTE: The simulator still implements this older message file, and
+// not the newer one in owl_msgs/ArmTool.h.
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
 using ArmFindSurfaceActionClient =
