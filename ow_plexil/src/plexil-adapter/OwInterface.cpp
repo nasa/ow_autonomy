@@ -176,9 +176,6 @@ void OwInterface::jointStatesCallback
     double velocity = msg->velocity[i];
     double effort = msg->effort[i];
     JointTelemetries[i] = JointTelemetry {position, velocity, effort};
-    publish ("JointPosition", position, i);
-    publish ("JointVelocity", velocity, i);
-    publish ("JointEffort", effort, i);
     handle_joint_fault (i, msg);
   }
 }
@@ -920,31 +917,6 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_end_effector_ft;
-}
-
-double OwInterface::jointTelemetry (int joint, TelemetryType type) const
-{
-  if (joint >= 0 && joint < NumJoints) {
-    switch (type) {
-      case TelemetryType::Position: return JointTelemetries[joint].position;
-      case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
-      case TelemetryType::Effort: return JointTelemetries[joint].effort;
-/*
-      case TelemetryType::Acceleration: {
-        if (joint >= ArmJointStartIndex) return JointTelemetries[joint].acceleration;
-        ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
-        break;
-      }
-*/
-      default:
-        ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
-        break;
-    }
-  }
-  else {
-    ROS_ERROR ("jointTelemetry: invalid joint index %d", joint);
-  }
-  return 0;
 }
 
 bool OwInterface::systemFault () const
