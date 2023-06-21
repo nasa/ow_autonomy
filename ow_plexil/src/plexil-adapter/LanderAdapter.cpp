@@ -259,7 +259,7 @@ static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
   vector<double> ft = LanderAdapter::s_interface->getArmEndEffectorFT();
   for (size_t i = 0; i < 6; i++) {
     // Conversion from double to PLEXIL::Real (float)
-    v[i] = static_cast<Real>(ft[i]);
+    v[i] = Value(static_cast<Real>(ft[i]));
   }
   entry.update(v);
 }
