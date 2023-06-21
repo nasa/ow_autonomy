@@ -5,19 +5,15 @@
 #ifndef OW_AUTONOMY_JOINT_SUPPORT_H
 #define OW_AUTONOMY_JOINT_SUPPORT_H
 
-// Support for lander joints, based on ROS /joint_states message.
+// Support for lander joints.
 
-// NOTE: This package (ow_plexil) is implemented for the lander in the
-// ow_simulator package.  Specifically, the joints and joint ordering
-// (in /joint_states) is assumed fixed, and is often hardcoded.
+// NOTE: Most of this file supports OceanWATERS, and only a bit is
+// used in OWLAT.  Only OceanWATERS uses ROS's /joint_states topic,
+// and relies on its joint ordering, which is assumed fixed.
 
 #include <string>
 
-const size_t NumJoints = 9;
-
-// Supports both OceanWATERS lander (6 joints) and OWLAT (7 joints).
-// Many message files define a 7-element array for both testbeds; the
-// 7th position will be ignored for OceanWATERS.
+const size_t NumJoints = 9; // arm + antenna
 const size_t NumArmJoints = 7;
 
 enum Joint {
@@ -55,13 +51,6 @@ struct JointTelemetry
   double velocity = 0;
   double effort = 0;
   double acceleration = 0;
-};
-
-enum class TelemetryType {
-  Position,
-  Velocity,
-  Effort,
-  Acceleration
 };
 
 #endif
