@@ -124,8 +124,6 @@ class OwInterface : public LanderInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getPanVelocity () const;
-  double getTiltVelocity () const;
   std::vector<double> getEndEffectorFT () const;
   bool   groundFound () const;
   double groundPosition () const;

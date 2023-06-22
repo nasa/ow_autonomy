@@ -9,7 +9,6 @@
 
 // ow_plexil
 #include "PlexilInterface.h"
-#include "joint_support.h"
 
 // PLEXIL
 #include <Value.hh>

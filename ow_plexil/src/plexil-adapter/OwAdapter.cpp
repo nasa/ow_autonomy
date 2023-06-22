@@ -81,12 +81,6 @@ static bool lookup (const string& state_name,
   else if (state_name == "UsingOWLAT") {
     value_out = false;
   }
-  else if (state_name == "PanVelocity") {
-    value_out = OwInterface::instance()->getPanVelocity();
-  }
-  else if (state_name == "TiltVelocity") {
-    value_out = OwInterface::instance()->getTiltVelocity();
-  }
   else if (state_name == "HardTorqueLimitReached") {
     string s;
     args[0].getValue(s);

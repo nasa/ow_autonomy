@@ -6,7 +6,6 @@
 #include "LanderAdapter.h"
 #include "LanderInterface.h"
 #include "adapter_support.h"
-#include "joint_support.h"
 #include "subscriber.h"
 
 // ROS
