@@ -88,7 +88,7 @@ Real Lookup ArmJointTorques;
 Real Lookup ArmJointVelocities;
 Real Lookup ArmFTTorque;
 Real Lookup ArmFTForce;
-Real Lookup ArmTool;
+Integer Lookup ArmTool;
 Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
 

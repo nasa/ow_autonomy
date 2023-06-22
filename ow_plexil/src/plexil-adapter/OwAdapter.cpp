@@ -81,18 +81,6 @@ static bool lookup (const string& state_name,
   else if (state_name == "UsingOWLAT") {
     value_out = false;
   }
-  else if (state_name == "TiltRadians") {
-    value_out = OwInterface::instance()->getTiltRadians();
-  }
-  else if (state_name == "TiltDegrees") {
-    value_out = OwInterface::instance()->getTiltDegrees();
-  }
-  else if (state_name == "PanRadians") {
-    value_out = OwInterface::instance()->getPanRadians();
-  }
-  else if (state_name == "PanDegrees") {
-    value_out = OwInterface::instance()->getPanDegrees();
-  }
   else if (state_name == "PanVelocity") {
     value_out = OwInterface::instance()->getPanVelocity();
   }
@@ -113,15 +101,6 @@ static bool lookup (const string& state_name,
     string operation;
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
-  }
-  else if (state_name == "StateOfCharge") {
-    value_out = OwInterface::instance()->getBatteryStateOfCharge();
-  }
-  else if (state_name == "RemainingUsefulLife") {
-    value_out = OwInterface::instance()->getBatteryRemainingUsefulLife();
-  }
-  else if (state_name == "BatteryTemperature") {
-    value_out = OwInterface::instance()->getBatteryTemperature();
   }
   else if (state_name == "GroundFound") {
     value_out = OwInterface::instance()->groundFound();
@@ -155,38 +134,10 @@ static bool lookup (const string& state_name,
     vector<double> ft = OwInterface::instance()->getEndEffectorFT();
     value_out = (Value) ft;
   }
-  else if (state_name == "ArmPose") {
-    vector<double> pose = OwInterface::instance()->getArmPose();
-    value_out = (Value) pose;
-  }
   else if (state_name == "ActionGoalStatus") {
     string s;
     args[0].getValue(s);
     value_out = OwInterface::instance()->actionGoalStatus(s);
-  }
-  else if (state_name == "JointVelocity") {
-    int joint;
-    args[0].getValue(joint);
-    value_out = OwInterface::instance()->
-      jointTelemetry(joint, TelemetryType::Velocity);
-  }
-  else if (state_name == "JointEffort") {
-    int joint;
-    args[0].getValue(joint);
-    value_out = OwInterface::instance()->
-      jointTelemetry(joint, TelemetryType::Effort);
-  }
-  else if (state_name == "JointPosition") {
-    int joint;
-    args[0].getValue(joint);
-    value_out = OwInterface::instance()->
-      jointTelemetry(joint, TelemetryType::Position);
-  }
-  else if (state_name == "JointAcceleration") {
-    int joint;
-    args[0].getValue(joint);
-    value_out = OwInterface::instance()->
-      jointTelemetry(joint, TelemetryType::Acceleration);
   }
   else if (state_name == "AnglesEquivalent") {
     double deg1, deg2, tolerance;
@@ -213,7 +164,7 @@ static void guarded_move (Command* cmd, AdapterExecInterface* intf)
   args[6].getValue(search_distance);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->guardedMove (x, y, z, dir_x, dir_y, dir_z,
-                                        search_distance, CommandId);
+                                        search_distance, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -229,7 +180,7 @@ static void arm_move_joints (Command *cmd, AdapterExecInterface* intf)
   angles->getContentsVector(angles_vector);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->armMoveJoints (relative, *angles_vector,
-                                          CommandId);
+                                          g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -250,7 +201,7 @@ static void arm_move_joints_guarded (Command *cmd, AdapterExecInterface* intf)
   OwInterface::instance()->armMoveJointsGuarded (relative, *angles_vector,
                                                  force_threshold,
                                                  torque_threshold,
-                                                 CommandId);
+                                                 g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -267,7 +218,7 @@ static void grind (Command* cmd, AdapterExecInterface* intf)
   args[5].getValue(ground_pos);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->grind(x, y, depth, length, parallel, ground_pos,
-                                 CommandId);
+                                 g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -286,7 +237,7 @@ static void scoop_circular (Command* cmd, AdapterExecInterface* intf)
   args[6].getValue(parallel);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->scoopCircular(frame, relative, x, y, z, depth,
-                                         parallel, CommandId);
+                                         parallel, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -305,7 +256,7 @@ static void scoop_linear (Command* cmd, AdapterExecInterface* intf)
   args[6].getValue(length);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   OwInterface::instance()->scoopLinear(frame, relative, x, y, z, depth, length,
-                                       CommandId);
+                                       g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -322,7 +273,7 @@ static void pan (Command* cmd, AdapterExecInterface* intf)
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->pan (degrees, CommandId);
+    OwInterface::instance()->pan (degrees, g_cmd_id);
     acknowledge_command_sent(*cr);
   }
 }
@@ -339,7 +290,7 @@ static void tilt (Command* cmd, AdapterExecInterface* intf)
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->tilt (degrees, CommandId);
+    OwInterface::instance()->tilt (degrees, g_cmd_id);
     acknowledge_command_sent(*cr);
   }
 }
@@ -354,7 +305,7 @@ static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
   args[2].getValue (y);
   args[3].getValue (z);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->panTiltCartesian (frame, x, y, z, CommandId);
+  OwInterface::instance()->panTiltCartesian (frame, x, y, z, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -364,14 +315,14 @@ static void camera_set_exposure (Command* cmd, AdapterExecInterface* intf)
   const vector<Value>& args = cmd->getArgValues();
   args[0].getValue (exposure_secs);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->cameraSetExposure (exposure_secs, CommandId);
+  OwInterface::instance()->cameraSetExposure (exposure_secs, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->dockIngestSample (CommandId);
+  OwInterface::instance()->dockIngestSample (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -395,7 +346,7 @@ static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
   }
   if (valid_args) {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    OwInterface::instance()->lightSetIntensity (side, intensity, CommandId);
+    OwInterface::instance()->lightSetIntensity (side, intensity, g_cmd_id);
     acknowledge_command_sent(*cr);
   }
   else {
@@ -415,7 +366,7 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
   // Get our sample point from identifySampleLocation
   point_vector = OwInterface::instance()->identifySampleLocation (num_pictures,
                                                                   filter_type,
-                                                                  CommandId);
+                                                                  g_cmd_id);
   // Checks if we have a valid sized point
   if(point_vector.size() != 3){
     // Resizes the array and initializes values to -500 so we know to skip

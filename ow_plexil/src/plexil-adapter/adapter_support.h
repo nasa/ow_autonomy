@@ -37,7 +37,7 @@ extern PlexilAdapter* g_adapter;
 //////////////////////////// Command Handling //////////////////////////////
 
 // Unique ID for every instance of a command from a Plexil plan.
-extern int CommandId;
+extern int g_cmd_id;
 
 // Record that combines a Plexil command instance with its executive interface
 // and a flag indicating whether the command has been acknowledged.
@@ -61,13 +61,15 @@ void command_status_callback (int id, bool success);
 
 // "Receivers" for the pub/sub mechanism in subscriber.h
 void receiveBool (const std::string& state_name, bool val);
+void receiveInt (const std::string& state_name, int val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
 void receiveBoolFromString (const std::string& state_name,
                             bool val,
                             const std::string& arg);
 void receiveDoubleFromInt (const std::string& state_name, double val, int arg);
-void receiveDoubleVector (const std::string& state_name, vector<double> vals);
+void receiveDoubleVector (const std::string& state_name,
+                          const vector<double>& vals);
 
 
 /////////////////////////////// ROS Logging ///////////////////////////////////

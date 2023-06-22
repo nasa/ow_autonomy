@@ -6,11 +6,6 @@
 #include "OwInterface.h"
 #include "subscriber.h"
 
-// owl_msgs
-#include <owl_msgs/BatteryRemainingUsefulLife.h>
-#include <owl_msgs/BatteryStateOfCharge.h>
-#include <owl_msgs/BatteryTemperature.h>
-
 // ROS
 #include <std_msgs/Float64.h>
 #include <std_msgs/Empty.h>
@@ -24,7 +19,6 @@
 #include <functional>
 #include <set>
 #include <algorithm> // for std::copy
-#include <inttypes.h> // for int64 support
 
 using namespace ow_lander;
 using namespace owl_msgs;
@@ -133,81 +127,21 @@ static void handle_joint_fault (int joint_index,
   handle_overtorque (joint_index, msg->effort[joint_index]);
 }
 
-template <typename T1, typename T2>
-void OwInterface::updateFaultStatus (T1 msg_val, T2& fmap,
-                                     const string& component,
-                                     const string& state_name)
-{
-  for (auto const& entry : fmap) {
-    string key = entry.first;
-    T1 value = entry.second.first;
-    bool fault_active = entry.second.second;
-    bool faulty = (msg_val & value) == value;
-    if (!fault_active && faulty) {
-      ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
-      fmap[key].second = true;
-      publish (state_name, true);
-    }
-    else if (fault_active && !faulty) {
-      ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
-      fmap[key].second = false;
-      publish (state_name, false);
-    }
-  }
-}
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
-
-void OwInterface::systemFaultMessageCallback
-(const  owl_msgs::SystemFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
-}
-
-void OwInterface::armFaultCallback
-(const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
-}
-
-void OwInterface::powerFaultCallback
-(const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
-}
-
-void OwInterface::antennaFaultCallback
-(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
-}
-
-void OwInterface::cameraFaultCallback
-(const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
-}
 
 void OwInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
-  m_endEffectorFT[0] = msg->value.force.x;
-  m_endEffectorFT[1] = msg->value.force.y;
-  m_endEffectorFT[2] = msg->value.force.z;
-  m_endEffectorFT[3] = msg->value.torque.x;
-  m_endEffectorFT[4] = msg->value.torque.y;
-  m_endEffectorFT[5] = msg->value.torque.z;
-}
+  // ROS Wrench -> vector
+  m_end_effector_ft[0] = msg->value.force.x;
+  m_end_effector_ft[1] = msg->value.force.y;
+  m_end_effector_ft[2] = msg->value.force.z;
+  m_end_effector_ft[3] = msg->value.torque.x;
+  m_end_effector_ft[4] = msg->value.torque.y;
+  m_end_effector_ft[5] = msg->value.torque.z;
 
-void OwInterface::armPoseCallback (const owl_msgs::ArmPose::ConstPtr& msg)
-{
-  m_armPose[0] = msg->value.position.x;
-  m_armPose[1] = msg->value.position.y;
-  m_armPose[2] = msg->value.position.z;
-  m_armPose[3] = msg->value.orientation.x;
-  m_armPose[4] = msg->value.orientation.y;
-  m_armPose[5] = msg->value.orientation.z;
-  m_armPose[6] = msg->value.orientation.w;
+  publish("ArmEndEffectorForceTorque", m_end_effector_ft);
 }
 
 static double normalize_degrees (double angle)
@@ -217,29 +151,6 @@ static double normalize_degrees (double angle)
   double x = fmod(angle + pi, tau);
   if (x < 0) x += tau;
   return x - pi;
-}
-
-void OwInterface::armJointAccelerationsCb
-(const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
-{
-  // Joint acceleration is computed only for arm joints and not the
-  // two antenna joints, so appropiate sanity check.
-  size_t arm_joints = NumJoints - ArmJointStartIndex;
-  size_t msg_size = msg->value.size();
-  if (msg_size != arm_joints) {
-    ROS_ERROR_ONCE ("OwInterface::armJointAccelerationsCb: "
-                    "Number of actual joints, %zu, "
-                    "doesn't match number of known arm joints, %zu. "
-                    "This should never happen.",
-                    msg_size, ArmJointStartIndex);
-    return;
-  }
-
-  for (int i = 0; i < msg_size; i++) {
-    double acceleration = msg->value[i];
-    JointTelemetries[i + ArmJointStartIndex].acceleration = acceleration;
-    publish ("JointAcceleration", acceleration, i + ArmJointStartIndex);
-  }
 }
 
 void OwInterface::jointStatesCallback
@@ -264,20 +175,7 @@ void OwInterface::jointStatesCallback
     double position = msg->position[i];
     double velocity = msg->velocity[i];
     double effort = msg->effort[i];
-    if (i == ANTENNA_PAN) {
-      m_currentPanRadians = position;
-      publish ("PanRadians", m_currentPanRadians);
-      publish ("PanDegrees", m_currentPanRadians * R2D);
-    }
-    else if (i == ANTENNA_TILT) {
-      m_currentTiltRadians = position;
-      publish ("TiltRadians", m_currentTiltRadians);
-      publish ("TiltDegrees", m_currentTiltRadians * R2D);
-    }
     JointTelemetries[i] = JointTelemetry {position, velocity, effort};
-    publish ("JointPosition", position, i);
-    publish ("JointVelocity", velocity, i);
-    publish ("JointEffort", effort, i);
     handle_joint_fault (i, msg);
   }
 }
@@ -289,37 +187,6 @@ bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
 {
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
-
-///////////////////////// Power support /////////////////////////////////////
-
-static double SOC = NAN;
-static double RUL = NAN;
-static double BatteryTemp = NAN;
-
-static void soc_callback (const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
-{
-  SOC = msg->value;
-  publish ("StateOfCharge", SOC);
-}
-
-static void rul_callback (const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
-{
-  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
-  RUL = msg->value;
-  publish ("RemainingUsefulLife", RUL);
-}
-
-static void temperature_callback (const owl_msgs::BatteryTemperature::ConstPtr& msg)
-{
-  BatteryTemp = msg->value;
-  publish ("BatteryTemperature", BatteryTemp);
-}
-
-//////////////////// Action Status support ////////////////////////////////
-
-/// Queue size for subscribers is a guess at adequacy.
-const int QSize = 3;
-
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -341,50 +208,6 @@ bool OwInterface::groundFound () const
 double OwInterface::groundPosition () const
 {
   return GroundPosition;
-}
-
-template <typename T>
-bool OwInterface::faultActive (const T& fmap) const
-{
-  for (auto const& entry : fmap) {
-    if (entry.second.second) return true;
-  }
-  return false;
-}
-
-bool OwInterface::systemFault () const
-{
-  return faultActive (m_systemErrors);
-}
-
-bool OwInterface::antennaFault () const
-{
-  return antennaPanFault() || antennaTiltFault();
-}
-
-bool OwInterface::antennaPanFault () const
-{
-  return m_panTiltErrors.at(FaultPanJointLocked).second;
-}
-
-bool OwInterface::antennaTiltFault () const
-{
-  return m_panTiltErrors.at(FaultTiltJointLocked).second;
-}
-
-bool OwInterface::armFault () const
-{
-  return faultActive (m_armErrors);
-}
-
-bool OwInterface::powerFault () const
-{
-  return faultActive (m_powerErrors);
-}
-
-bool OwInterface::cameraFault () const
-{
-  return faultActive (m_cameraErrors);
 }
 
 template<typename T>
@@ -435,13 +258,9 @@ OwInterface* OwInterface::instance ()
 }
 
 OwInterface::OwInterface ()
-  : m_currentPanRadians (0),
-    m_currentTiltRadians (0)
 {
-  m_endEffectorFT.resize(6);
-  m_endEffectorFT = {0,0,0,0,0,0};
-  m_armPose.resize(7);
-  m_armPose = {0,0,0,0,0,0,0};
+  m_end_effector_ft.resize(6);
+  m_end_effector_ft = {0,0,0,0,0,0};
 }
 
 void OwInterface::initialize()
@@ -484,83 +303,23 @@ void OwInterface::initialize()
   m_taskDiscardSampleClient =
     make_unique<TaskDiscardSampleActionClient>(Name_TaskDiscardSample, true);
 
-  // Initialize publishers.  For now, latching in lieu of waiting
-  // for publishers.
-
-  const bool latch = true;
-  m_antennaTiltPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_tilt_position_controller/command", QSize, latch));
-  m_antennaPanPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Float64>
-     ("/ant_pan_position_controller/command", QSize, latch));
-  m_leftImageTriggerPublisher = make_unique<ros::Publisher>
-    (m_genericNodeHandle->advertise<std_msgs::Empty>
-     ("/StereoCamera/left/image_trigger", QSize, latch));
-
   // Initialize subscribers
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/joint_states", QSize,
+     (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
                                       &OwInterface::jointStatesCallback,
                                       this)));
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/arm_joint_accelerations", QSize,
-                                      &OwInterface::armJointAccelerationsCb,
-                                      this)));
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/battery_state_of_charge", QSize, soc_callback)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/battery_temperature", QSize,
-                temperature_callback)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/battery_remaining_useful_life", QSize,
-                rul_callback)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/system_faults_status", QSize,
+      subscribe("/system_faults_status", QueueSize,
                 &OwInterface::systemFaultMessageCallback, this)));
 
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/arm_faults_status", QSize,
-                &OwInterface::armFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/power_faults_status", QSize,
-                &OwInterface::powerFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/pan_tilt_faults_status", QSize,
-                &OwInterface::antennaFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/camera_faults_status", QSize,
-                &OwInterface::cameraFaultCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
-      subscribe("/arm_end_effector_force_torque", QSize,
+      subscribe("/arm_end_effector_force_torque", QueueSize,
                 &OwInterface::ftCallback, this)));
 
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
@@ -588,6 +347,18 @@ void OwInterface::initialize()
   connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
                        "/TaskDiscardSample/status");
 }
+
+
+///////////////////////// Subscriber Callbacks ///////////////////////////////
+
+void OwInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
+}
+
+
+///////////////////////// ROS Actions ///////////////////////////////
 
 void OwInterface::pan (double degrees, int id)
 {
@@ -1121,26 +892,6 @@ void OwInterface::taskDiscardSampleAction (int frame, bool relative,
      default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_TaskDiscardSample));
 }
 
-double OwInterface::getTiltRadians () const
-{
-  return m_currentTiltRadians;
-}
-
-double OwInterface::getTiltDegrees () const
-{
-  return m_currentTiltRadians * R2D;
-}
-
-double OwInterface::getPanRadians () const
-{
-  return m_currentPanRadians;
-}
-
-double OwInterface::getPanDegrees () const
-{
-  return m_currentPanRadians * R2D;
-}
-
 double OwInterface::getPanVelocity () const
 {
   return JointTelemetries[ANTENNA_PAN].velocity;
@@ -1149,21 +900,6 @@ double OwInterface::getPanVelocity () const
 double OwInterface::getTiltVelocity () const
 {
   return JointTelemetries[ANTENNA_TILT].velocity;
-}
-
-double OwInterface::getBatteryStateOfCharge () const
-{
-  return SOC;
-}
-
-double OwInterface::getBatteryRemainingUsefulLife () const
-{
-  return RUL;
-}
-
-double OwInterface::getBatteryTemperature () const
-{
-  return BatteryTemp;
 }
 
 bool OwInterface::hardTorqueLimitReached (const string& joint_name) const
@@ -1180,33 +916,15 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 
 vector<double> OwInterface::getEndEffectorFT () const
 {
-  return m_endEffectorFT;
+  return m_end_effector_ft;
 }
 
-vector<double> OwInterface::getArmPose () const
+bool OwInterface::systemFault () const
 {
-  return m_armPose;
+  return faultActive (m_systemErrors);
 }
 
-double OwInterface::jointTelemetry (int joint, TelemetryType type) const
+vector<double> OwInterface::getArmEndEffectorFT () const
 {
-  if (joint >= 0 && joint < NumJoints) {
-    switch (type) {
-      case TelemetryType::Position: return JointTelemetries[joint].position;
-      case TelemetryType::Velocity: return JointTelemetries[joint].velocity;
-      case TelemetryType::Effort: return JointTelemetries[joint].effort;
-      case TelemetryType::Acceleration: {
-        if (joint >= ArmJointStartIndex) return JointTelemetries[joint].acceleration;
-        ROS_WARN ("jointTelemetry: acceleration not available for antenna joint.");
-        break;
-      }
-      default:
-        ROS_ERROR ("jointTelemetry: unsupported telemetry type.");
-        break;
-    }
-  }
-  else {
-    ROS_ERROR ("jointTelemetry: invalid joint index %d", joint);
-  }
-  return 0;
+  return m_end_effector_ft;
 }

@@ -58,28 +58,28 @@ static void arm_find_surface (Command* cmd, AdapterExecInterface* intf)
                                               *position_vector, *orientation_vector,
                                               distance, overdrive,
                                               force_threshold, torque_threshold,
-                                              CommandId);
+                                              g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_unstow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->armUnstow (CommandId);
+  LanderAdapter::s_interface->armUnstow (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_stop (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->armStop (CommandId);
+  LanderAdapter::s_interface->armStop (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void arm_stow (Command* cmd, AdapterExecInterface* intf)
 {
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->armStow (CommandId);
+  LanderAdapter::s_interface->armStow (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -104,7 +104,7 @@ static void arm_move_cartesian (Command* cmd, AdapterExecInterface* intf)
   LanderAdapter::s_interface->armMoveCartesian (frame, relative,
                                                 *position_vector,
                                                 *orientation_vector,
-                                                CommandId);
+                                                g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -135,7 +135,7 @@ static void arm_move_cartesian_guarded (Command* cmd,
                                                        *orientation_vector,
                                                        force_threshold,
                                                        torque_threshold,
-                                                       CommandId);
+                                                       g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -149,14 +149,14 @@ static void arm_move_joint (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue(joint);
   args[2].getValue(joint_pos_rad);
   std::unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->armMoveJoint (relative, joint, joint_pos_rad, CommandId);
+  LanderAdapter::s_interface->armMoveJoint (relative, joint, joint_pos_rad, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
 static void task_deliver_sample (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->taskDeliverSample (CommandId);
+  LanderAdapter::s_interface->taskDeliverSample (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -176,7 +176,7 @@ static void task_discard_sample (Command* cmd, AdapterExecInterface* intf)
   point->getContentsVector(point_vector);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
   LanderAdapter::s_interface->taskDiscardSample (frame, relative, *point_vector,
-                                                 height, CommandId);
+                                                 height, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
@@ -196,7 +196,7 @@ static void pan_tilt_move_joints (Command* cmd, AdapterExecInterface* intf)
   }
   else {
     unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-    LanderAdapter::s_interface->panTiltMoveJoints (pan_degrees, tilt_degrees, CommandId);
+    LanderAdapter::s_interface->panTiltMoveJoints (pan_degrees, tilt_degrees, g_cmd_id);
     acknowledge_command_sent(*cr);
   }
 }
@@ -204,10 +204,100 @@ static void pan_tilt_move_joints (Command* cmd, AdapterExecInterface* intf)
 static void camera_capture (Command* cmd, AdapterExecInterface* intf)
 {
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->cameraCapture (CommandId);
+  LanderAdapter::s_interface->cameraCapture (g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
+static void arm_joint_acceleration (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
+}
+
+static void arm_joint_position (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointPosition(joint));
+}
+
+static void arm_joint_torque (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointTorque(joint));
+}
+
+static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
+{
+  const vector<PLEXIL::Value>& args = state.parameters();
+  int joint;
+  args[0].getValue(joint);
+  entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
+}
+
+static void arm_pose (const State&, StateCacheEntry &entry)
+{
+  vector<Value> v;
+  v.resize(7);
+  vector<double> pose = LanderAdapter::s_interface->getArmPose();
+  for (size_t i = 0; i < 7; i++) {
+    // Conversion from double to PLEXIL::Real (float)
+    v[i] = Value(static_cast<Real>(pose[i]));
+  }
+  entry.update(v);
+}
+
+static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
+{
+  vector<Value> v;
+  v.resize(6);
+  vector<double> ft = LanderAdapter::s_interface->getArmEndEffectorFT();
+  for (size_t i = 0; i < 6; i++) {
+    // Conversion from double to PLEXIL::Real (float)
+    v[i] = Value(static_cast<Real>(ft[i]));
+  }
+  entry.update(v);
+}
+
+static void pan_radians (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getPanRadians());
+}
+
+static void pan_degrees (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getPanRadians() * R2D);
+}
+
+static void tilt_radians (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getTiltRadians());
+}
+
+static void tilt_degrees (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getTiltRadians() * R2D);
+}
+
+static void battery_soc (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatterySOC());
+}
+
+static void battery_temp (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatteryTemperature());
+}
+
+static void battery_rul (const State& state, StateCacheEntry &entry)
+{
+  entry.update(LanderAdapter::s_interface->getBatteryRUL());
+}
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
@@ -246,6 +336,30 @@ bool LanderAdapter::initialize (LanderInterface* li)
                                           task_deliver_sample);
   g_configuration->registerCommandHandler("task_discard_sample",
                                           task_discard_sample);
+
+  // Lookups
+  g_configuration->registerLookupHandler("ArmJointAcceleration",
+                                         arm_joint_acceleration);
+  g_configuration->registerLookupHandler("ArmJointPosition",
+                                         arm_joint_position);
+  g_configuration->registerLookupHandler("ArmJointTorque",
+                                         arm_joint_torque);
+  g_configuration->registerLookupHandler("ArmJointVelocity",
+                                         arm_joint_velocity);
+  g_configuration->registerLookupHandler("ArmPose", arm_pose);
+  g_configuration->registerLookupHandler("ArmEndEffectorForceTorque",
+                                         arm_end_effector_ft);
+  g_configuration->registerLookupHandler("PanRadians", pan_radians);
+  g_configuration->registerLookupHandler("PanDegrees", pan_degrees);
+  g_configuration->registerLookupHandler("TiltRadians", tilt_radians);
+  g_configuration->registerLookupHandler("TiltDegrees", tilt_degrees);
+  g_configuration->registerLookupHandler("BatteryStateOfCharge",
+                                         battery_soc);
+  g_configuration->registerLookupHandler("BatteryRemainingUsefulLife",
+                                         battery_rul);
+  g_configuration->registerLookupHandler("BatteryTemperature",
+                                         battery_temp);
+
   debugMsg("LanderAdapter", " initialized.");
   return true;
 }

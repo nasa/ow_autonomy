@@ -55,6 +55,7 @@ bool PlexilAdapter::initialize()
   g_configuration->registerCommandHandler("log_error", log_error);
   g_configuration->registerCommandHandler("log_debug", log_debug);
   setSubscriber (receiveBool);
+  setSubscriber (receiveInt);
   setSubscriber (receiveString);
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolFromString);

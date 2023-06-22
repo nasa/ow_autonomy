@@ -22,14 +22,8 @@
 #include <owl_msgs/ArmMoveJointsAction.h>
 #include <owl_msgs/ArmMoveJointsGuardedAction.h>
 
-// TODO: convert these per unified telemetry interface
-#include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
-#include <owlat_sim_msgs/ARM_JOINT_ACCELERATIONS.h>
-#include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
-#include <owlat_sim_msgs/ARM_JOINT_VELOCITIES.h>
-#include <owlat_sim_msgs/ARM_FT_TORQUE.h>
-#include <owlat_sim_msgs/ARM_FT_FORCE.h>
-#include <owlat_sim_msgs/ARM_POSE.h>
+// NOTE: The simulator still implements this older message file, and
+// not the newer one in owl_msgs/ArmTool.h.
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
 using ArmFindSurfaceActionClient =
@@ -55,11 +49,13 @@ using ArmMoveJointsGuardedActionClient =
 using ArmMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+
 class OwlatInterface : public LanderInterface
 {
  public:
   static OwlatInterface* instance();
-  OwlatInterface() = default;
+  OwlatInterface();
   ~OwlatInterface() = default;
   OwlatInterface (const OwlatInterface&) = delete;
   OwlatInterface& operator= (const OwlatInterface&) = delete;
@@ -114,19 +110,9 @@ class OwlatInterface : public LanderInterface
                         int id);
 
   // Lookups
-  PLEXIL::Value getArmJointAngles() const;
-  PLEXIL::Value getArmJointAccelerations() const;
-  PLEXIL::Value getArmJointTorques() const ;
-  PLEXIL::Value getArmJointVelocities() const;
-  PLEXIL::Value getArmFTTorque() const;
-  PLEXIL::Value getArmFTForce() const;
-  PLEXIL::Value getArmPose() const;
   PLEXIL::Value getArmTool() const;
-  PLEXIL::Value getPanDegrees() const;
-  PLEXIL::Value getPanRadians() const;
-  PLEXIL::Value getTiltRadians() const;
-  PLEXIL::Value getTiltDegrees() const;
-  PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
+  bool systemFault () const override;
+  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   // Actions
@@ -172,19 +158,9 @@ class OwlatInterface : public LanderInterface
                                 int id);
 
   // Callbacks
-  void armJointAnglesCallback
-  (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
-  void armJointAccelerationsCallback
-  (const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr&);
-  void armJointTorquesCallback
-  (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
-  void armJointVelocitiesCallback
-  (const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
-  void armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg);
-  void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
-  void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
+  void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
-  void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
   // Action Clients
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
@@ -200,16 +176,31 @@ class OwlatInterface : public LanderInterface
   std::unique_ptr<TaskScoopLinearActionClient> m_taskScoopLinearClient;
 
   // Member variables
-  std::vector<double> m_arm_joint_angles;
-  std::vector<double> m_arm_joint_accelerations;
-  std::vector<double> m_arm_joint_torques;
-  std::vector<double> m_arm_joint_velocities;
-  std::vector<double> m_arm_ft_torque;
-  std::vector<double> m_arm_ft_force;
-  std::vector<double> m_arm_pose;
-  double m_arm_tool;
-  double m_pan_radians;
-  double m_tilt_radians;
+
+  // System-level faults:
+  FaultMap m_systemErrors = {
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_GOAL_ERROR,false)},
+    {"CAM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
+  };
+
+  std::vector<double> m_end_effector_ft;
+  int m_arm_tool;
 };
 
 #endif

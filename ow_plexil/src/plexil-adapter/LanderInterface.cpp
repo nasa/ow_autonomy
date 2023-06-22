@@ -50,56 +50,285 @@ static vector<string> LanderOpNames = {
   Name_TaskDeliverSample
 };
 
+LanderInterface::LanderInterface()
+  : m_current_pan_radians (NAN),
+    m_current_tilt_radians (NAN),
+    m_battery_soc (NAN),
+    m_battery_rul (NAN),
+    m_battery_temp (NAN)
+{
+  m_arm_joint_accelerations.resize(NumArmJoints);
+  m_arm_joint_positions.resize(NumArmJoints);
+  m_arm_joint_velocities.resize(NumArmJoints);
+  m_arm_joint_torques.resize(NumArmJoints);
+  m_arm_pose.resize(7);
+  m_arm_pose = {0,0,0,0,0,0,0};
+}
+
+
 void LanderInterface::initialize()
 {
-  static bool initialized = false;
-
-  if (not initialized) {
-    PlexilInterface::initialize();
-
-    for (auto name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
-
-    // Initialize action clients
-
-    m_armMoveCartesianClient =
-      make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian, true);
-    m_armMoveCartesianGuardedClient =
-      make_unique<ArmMoveCartesianGuardedActionClient>
-      (Name_ArmMoveCartesianGuarded, true);
-    m_armMoveJointClient =
-      make_unique<ArmMoveJointActionClient>(Name_ArmMoveJoint, true);
-    m_armStopClient =
-      make_unique<ArmStopActionClient>(Name_ArmStop, true);
-    m_armStowClient =
-      make_unique<ArmStowActionClient>(Name_ArmStow, true);
-    m_armUnstowClient =
-      make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
-    m_cameraCaptureClient =
-      make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
-    m_panTiltMoveJointsClient =
-      make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
-    m_taskDeliverSampleClient =
-      make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
-
-    // Connect to action servers
-    
-    connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
-                         "/ArmMoveCartesian/status");
-    connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
-                         "/ArmMoveCartesianGuarded/status");
-    connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
-                         "/ArmMoveJoint/status");
-    connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
-    connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
-    connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
-    connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
-                         "/TaskDeliverSample/status");
-    connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
-    connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
-                         "/CameraCapture/status");
+  for (auto name : LanderOpNames) {
+    registerLanderOperation (name);
   }
+
+  // Initialize action clients
+
+  m_armMoveCartesianClient =
+    make_unique<ArmMoveCartesianActionClient>(Name_ArmMoveCartesian, true);
+  m_armMoveCartesianGuardedClient =
+    make_unique<ArmMoveCartesianGuardedActionClient>
+    (Name_ArmMoveCartesianGuarded, true);
+  m_armMoveJointClient =
+    make_unique<ArmMoveJointActionClient>(Name_ArmMoveJoint, true);
+  m_armStopClient =
+    make_unique<ArmStopActionClient>(Name_ArmStop, true);
+  m_armStowClient =
+    make_unique<ArmStowActionClient>(Name_ArmStow, true);
+  m_armUnstowClient =
+    make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
+  m_cameraCaptureClient =
+    make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
+  m_panTiltMoveJointsClient =
+    make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
+  m_taskDeliverSampleClient =
+    make_unique<TaskDeliverSampleActionClient>(Name_TaskDeliverSample, true);
+
+  // Connect to action servers
+
+  connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
+                       "/ArmMoveCartesian/status");
+  connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
+                       "/ArmMoveCartesianGuarded/status");
+  connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
+                       "/ArmMoveJoint/status");
+  connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
+  connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
+  connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
+  connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
+                       "/TaskDeliverSample/status");
+  connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
+  connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
+                       "/CameraCapture/status");
+
+  // Initialize subscribers
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_faults_status", QueueSize,
+                &LanderInterface::armFaultCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/power_faults_status", QueueSize,
+                &LanderInterface::powerFaultCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_faults_status", QueueSize,
+                &LanderInterface::antennaFaultCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/camera_faults_status", QueueSize,
+                &LanderInterface::cameraFaultCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_accelerations", QueueSize,
+                &LanderInterface::armJointAccelCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_positions", QueueSize,
+                &LanderInterface::armJointPositionCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_torques", QueueSize,
+                &LanderInterface::armJointTorqueCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_joint_velocities", QueueSize,
+                &LanderInterface::armJointVelocityCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_pose", QueueSize,
+                &LanderInterface::armPoseCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/pan_tilt_position", QueueSize,
+                &LanderInterface::panTiltCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_state_of_charge", QueueSize,
+                &LanderInterface::batteryChargeCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_temperature", QueueSize,
+                &LanderInterface::batteryTempCb, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/battery_remaining_useful_life", QueueSize,
+                &LanderInterface::batteryLifeCb, this)));
+}
+
+///////////////////////// Subscriber Callbacks ///////////////////////////////
+
+void LanderInterface::batteryChargeCb
+(const owl_msgs::BatteryStateOfCharge::ConstPtr& msg)
+{
+  m_battery_soc = msg->value;
+  publish ("BatteryStateOfCharge", m_battery_soc);
+}
+
+void LanderInterface::batteryLifeCb
+(const owl_msgs::BatteryRemainingUsefulLife::ConstPtr& msg)
+{
+  // NOTE: This is not being called as of 4/12/21.  Jira OW-656 addresses.
+  m_battery_rul = msg->value;
+  publish ("BatteryRemainingUsefulLife", m_battery_rul);
+}
+
+void LanderInterface::batteryTempCb
+(const owl_msgs::BatteryTemperature::ConstPtr& msg)
+{
+  m_battery_temp = msg->value;
+  publish ("BatteryTemperature", m_battery_temp);
+}
+
+void LanderInterface::armJointAccelCb
+(const owl_msgs::ArmJointAccelerations::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_accelerations.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointAcceleration", m_arm_joint_accelerations[i], i);
+  }
+}
+
+void LanderInterface::armJointPositionCb
+(const owl_msgs::ArmJointPositions::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_positions.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointPosition", m_arm_joint_positions[i], i);
+  }
+}
+
+void LanderInterface::armJointVelocityCb
+(const owl_msgs::ArmJointVelocities::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointVelocity", m_arm_joint_velocities[i], i);
+  }
+}
+
+void LanderInterface::armJointTorqueCb
+(const owl_msgs::ArmJointTorques::ConstPtr& msg)
+{
+  copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
+  for (int i = 0; i < NumArmJoints; i++) {
+    publish ("ArmJointTorque", m_arm_joint_torques[i], i);
+  }
+}
+
+void LanderInterface::panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr& msg)
+{
+  m_current_pan_radians = msg->value[0];
+  m_current_tilt_radians = msg->value[1];
+
+  // Update PLEXIL lookups
+  publish ("PanRadians", m_current_pan_radians);
+  publish ("PanDegrees", m_current_pan_radians * R2D);
+  publish ("TiltRadians", m_current_tilt_radians);
+  publish ("TiltDegrees", m_current_tilt_radians * R2D);
+}
+
+void LanderInterface::armFaultCb (const owl_msgs::ArmFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_armErrors, "ARM", "ArmFault");
+}
+
+void LanderInterface::powerFaultCb
+(const owl_msgs::PowerFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_powerErrors, "POWER", "PowerFault");
+}
+
+void LanderInterface::antennaFaultCb
+(const owl_msgs::PanTiltFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_panTiltErrors, "ANTENNA", "AntennaFault");
+}
+
+void LanderInterface::cameraFaultCb
+(const owl_msgs::CameraFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_cameraErrors, "CAMERA", "CameraFault");
+}
+
+void LanderInterface::armPoseCb (const owl_msgs::ArmPose::ConstPtr& msg)
+{
+  m_arm_pose[0] = msg->value.position.x;
+  m_arm_pose[1] = msg->value.position.y;
+  m_arm_pose[2] = msg->value.position.z;
+  m_arm_pose[3] = msg->value.orientation.x;
+  m_arm_pose[4] = msg->value.orientation.y;
+  m_arm_pose[5] = msg->value.orientation.z;
+  m_arm_pose[6] = msg->value.orientation.w;
+}
+
+
+////////////////////// Fault support ///////////////////////////////////////
+
+bool LanderInterface::antennaFault () const
+{
+  return antennaPanFault() || antennaTiltFault();
+}
+
+bool LanderInterface::antennaPanFault () const
+{
+  return m_panTiltErrors.at(FaultPanJointLocked).second;
+}
+
+bool LanderInterface::antennaTiltFault () const
+{
+  return m_panTiltErrors.at(FaultTiltJointLocked).second;
+}
+
+bool LanderInterface::armFault () const
+{
+  return faultActive (m_armErrors);
+}
+
+bool LanderInterface::powerFault () const
+{
+  return faultActive (m_powerErrors);
+}
+
+bool LanderInterface::cameraFault () const
+{
+  return faultActive (m_cameraErrors);
 }
 
 
@@ -346,4 +575,54 @@ void LanderInterface::cameraCapture (int id)
                         this, id, Name_CameraCapture,
                         std::ref(m_cameraCaptureClient));
   action_thread.detach();
+}
+
+double LanderInterface::getArmJointAcceleration (int index) const
+{
+  return (m_arm_joint_accelerations[index]);
+}
+
+double LanderInterface::getArmJointVelocity (int index) const
+{
+  return (m_arm_joint_velocities[index]);
+}
+
+double LanderInterface::getArmJointTorque (int index) const
+{
+  return (m_arm_joint_torques[index]);
+}
+
+double LanderInterface::getArmJointPosition (int index) const
+{
+  return (m_arm_joint_positions[index]);
+}
+
+vector<double> LanderInterface::getArmPose () const
+{
+  return m_arm_pose;
+}
+
+double LanderInterface::getTiltRadians () const
+{
+  return m_current_tilt_radians;
+}
+
+double LanderInterface::getPanRadians () const
+{
+  return m_current_pan_radians;
+}
+
+double LanderInterface::getBatterySOC () const
+{
+  return m_battery_soc;
+}
+
+double LanderInterface::getBatteryRUL () const
+{
+  return m_battery_rul;
+}
+
+double LanderInterface::getBatteryTemperature () const
+{
+  return m_battery_temp;
 }

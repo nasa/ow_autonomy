@@ -17,7 +17,6 @@ using std::thread;
 using std::string;
 using std::vector;
 using std::make_unique;
-using namespace owlat_sim_msgs;
 using namespace owl_msgs;
 using namespace PLEXIL;
 
@@ -56,128 +55,82 @@ OwlatInterface* OwlatInterface::instance ()
   return &instance;
 }
 
+OwlatInterface::OwlatInterface ()
+  : m_arm_tool (0)
+{
+    m_end_effector_ft.resize(6);
+}
+
 void OwlatInterface::initialize()
 {
-  static bool initialized = false;
+  LanderInterface::initialize();
 
-  if (not initialized) {
-    LanderInterface::initialize();
-
-    for (auto name : LanderOpNames) {
-      registerLanderOperation (name);
-    }
-
-    m_genericNodeHandle = make_unique<ros::NodeHandle>();
-    m_arm_joint_angles.resize(7);
-    m_arm_joint_accelerations.resize(7);
-    m_arm_joint_torques.resize(7);
-    m_arm_joint_velocities.resize(7);
-    m_arm_ft_torque.resize(3);
-    m_arm_ft_force.resize(3);
-    m_arm_pose.resize(7);
-    m_arm_tool = 0;
-
-    const int qsize = 3;
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ANGLES", qsize,
-                  &OwlatInterface::armJointAnglesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_ACCELERATIONS", qsize,
-                  &OwlatInterface::armJointAccelerationsCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_TORQUES", qsize,
-                  &OwlatInterface::armJointTorquesCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_JOINT_VELOCITIES", qsize,
-                  &OwlatInterface::armJointVelocitiesCallback, this)));
-
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_TORQUE", qsize,
-                  &OwlatInterface::armFTTorqueCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_FT_FORCE", qsize,
-                  &OwlatInterface::armFTForceCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_POSE", qsize,
-                  &OwlatInterface::armPoseCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/owlat_sim/ARM_TOOL", qsize,
-                  &OwlatInterface::armToolCallback, this)));
-
-    m_subscribers.push_back
-      (make_unique<ros::Subscriber>
-       (m_genericNodeHandle ->
-        subscribe("/pan_tilt_position", qsize,
-                  &OwlatInterface::panTiltCallback, this)));
-
-    // Initialize pointers
-    m_armFindSurfaceClient =
-      make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-    m_discardSampleClient =
-      make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
-    m_armMoveJointsClient =
-      make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
-    m_armMoveJointsGuardedClient =
-      make_unique<ArmMoveJointsGuardedActionClient> (Name_ArmMoveJointsGuarded,
-                                                     true);
-    m_armSetToolClient =
-      make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
-    m_armTareFTSensorClient =
-      make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
-    m_taskPSPClient =
-      make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
-    m_taskShearBevameterClient =
-      make_unique<TaskShearBevameterActionClient>(Name_ShearBevameter, true);
-    m_taskPenetrometerClient =
-      make_unique<TaskPenetrometerActionClient>(Name_Penetrometer, true);
-    m_taskScoopCircularClient =
-      make_unique<TaskScoopCircularActionClient>(Name_ScoopCircular, true);
-    m_taskScoopLinearClient =
-      make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
-
-    // Connect to action servers
-    connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
-                         "/ArmFindSurface/status");
-    connectActionServer (m_discardSampleClient, Name_Discard,
-                         "/TaskDiscardSample/status");
-    connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
-                         "/TaskArmMoveJoints/status");
-    connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
-                         "/TaskArmMoveJointsGuarded/status");
-    connectActionServer (m_armSetToolClient, Name_ArmSetTool,
-                         "/ArmSetTool/status");
-    connectActionServer (m_armTareFTSensorClient, Name_Tare,
-                         "/ArmTareFTSensor/status");
-    connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
-                         "/TaskShearBevameter/status");
-    connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
-                         "/TaskPenetrometer/status");
-    connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
-                         "/TaskScoopLinear/status");
+  for (auto name : LanderOpNames) {
+    registerLanderOperation (name);
   }
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QueueSize,
+                &OwlatInterface::systemFaultMessageCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/owlat_sim/ARM_TOOL", QueueSize,
+                &OwlatInterface::armToolCallback, this)));
+
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/arm_end_effector_force_torque", QueueSize,
+                &OwlatInterface::ftCallback, this)));
+
+  // Initialize pointers
+  m_armFindSurfaceClient =
+    make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
+  m_discardSampleClient =
+    make_unique<TaskDiscardSampleActionClient>(Name_Discard, true);
+  m_armMoveJointsClient =
+    make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
+  m_armMoveJointsGuardedClient =
+    make_unique<ArmMoveJointsGuardedActionClient> (Name_ArmMoveJointsGuarded,
+                                                   true);
+  m_armSetToolClient =
+    make_unique<ArmSetToolActionClient>(Name_ArmSetTool, true);
+  m_armTareFTSensorClient =
+    make_unique<ArmTareFTSensorActionClient>(Name_Tare, true);
+  m_taskPSPClient =
+    make_unique<TaskPSPActionClient>(Name_TaskPSP, true);
+  m_taskShearBevameterClient =
+    make_unique<TaskShearBevameterActionClient>(Name_ShearBevameter, true);
+  m_taskPenetrometerClient =
+    make_unique<TaskPenetrometerActionClient>(Name_Penetrometer, true);
+  m_taskScoopCircularClient =
+    make_unique<TaskScoopCircularActionClient>(Name_ScoopCircular, true);
+  m_taskScoopLinearClient =
+    make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
+
+  // Connect to action servers
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
+                       "/ArmFindSurface/status");
+  connectActionServer (m_discardSampleClient, Name_Discard,
+                       "/TaskDiscardSample/status");
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
+                       "/TaskArmMoveJoints/status");
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
+                       "/TaskArmMoveJointsGuarded/status");
+  connectActionServer (m_armSetToolClient, Name_ArmSetTool,
+                       "/ArmSetTool/status");
+  connectActionServer (m_armTareFTSensorClient, Name_Tare,
+                       "/ArmTareFTSensor/status");
+  connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
+                       "/TaskShearBevameter/status");
+  connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
+                       "/TaskPenetrometer/status");
+  connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
+                       "/TaskScoopLinear/status");
 }
 
 
@@ -600,113 +553,25 @@ void OwlatInterface::taskScoopLinearAction (int frame, bool relative,
      default_action_done_cb<TaskScoopLinearResultConstPtr> (opname));
 }
 
-void OwlatInterface::armJointAnglesCallback
-(const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg)
+void OwlatInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
 {
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_angles.begin());
-  publish("ArmJointAngles", m_arm_joint_angles);
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
-void OwlatInterface::armJointAccelerationsCallback
-(const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr& msg)
+void OwlatInterface::ftCallback
+(const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
 {
-  copy(msg->value.begin(), msg->value.end(),
-            m_arm_joint_accelerations.begin());
-  publish("ArmJointAccelerations", m_arm_joint_accelerations);
-}
-
-void OwlatInterface::armJointTorquesCallback
-(const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_torques.begin());
-  publish("ArmJointTorques", m_arm_joint_torques);
-}
-
-void OwlatInterface::armJointVelocitiesCallback
-(const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_joint_velocities.begin());
-  publish("ArmJointVelocities", m_arm_joint_velocities);
-}
-
-void OwlatInterface::armFTTorqueCallback
-(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_ft_torque.begin());
-  publish("ArmFTTorque", m_arm_ft_torque);
-}
-
-void OwlatInterface::armFTForceCallback
-(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg)
-{
-  copy(msg->value.begin(), msg->value.end(), m_arm_ft_force.begin());
-  publish("ArmFTForce", m_arm_ft_force);
-}
-
-void OwlatInterface::armPoseCallback
-(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg)
-{
-  m_arm_pose[0] = msg->value.position.x;
-  m_arm_pose[1] = msg->value.position.y;
-  m_arm_pose[2] = msg->value.position.z;
-  m_arm_pose[3] = msg->value.orientation.x;
-  m_arm_pose[4] = msg->value.orientation.y;
-  m_arm_pose[5] = msg->value.orientation.z;
-  m_arm_pose[6] = msg->value.orientation.w;
-  publish("ArmPose", m_arm_pose);
+  copy(msg->value.begin(), msg->value.end(), m_end_effector_ft.begin());
+  publish("ArmEndEffectorForceTorque", m_end_effector_ft);
 }
 
 void OwlatInterface::armToolCallback
+// NOTE that this older message file is still used (see header).
 (const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg)
 {
   m_arm_tool = msg->value.value;
   publish("ArmTool", m_arm_tool);
-}
-
-void OwlatInterface::panTiltCallback
-(const owl_msgs::PanTiltPosition::ConstPtr& msg)
-{
-  m_pan_radians = msg->value[0];
-  m_tilt_radians = msg->value[1];
-  publish("PanRadians", m_pan_radians);
-  publish("PanDegrees", m_pan_radians * R2D);
-  publish("TiltRadians", m_tilt_radians);
-  publish("TiltDegrees", m_tilt_radians * R2D);
-}
-
-Value OwlatInterface::getArmJointAngles() const
-{
-  return(Value(m_arm_joint_angles));
-}
-
-Value OwlatInterface::getArmJointAccelerations() const
-{
-  return(Value(m_arm_joint_accelerations));
-}
-
-Value OwlatInterface::getArmJointTorques() const
-{
-  return(Value(m_arm_joint_torques));
-}
-
-Value OwlatInterface::getArmJointVelocities() const
-{
-  return(Value(m_arm_joint_velocities));
-}
-
-Value OwlatInterface::getArmFTTorque() const
-{
-  return(Value(m_arm_ft_torque));
-}
-
-Value OwlatInterface::getArmFTForce() const
-{
-  return(Value(m_arm_ft_force));
-}
-
-Value OwlatInterface::getArmPose() const
-{
-  return(Value(m_arm_pose));
 }
 
 Value OwlatInterface::getArmTool() const
@@ -714,40 +579,12 @@ Value OwlatInterface::getArmTool() const
   return(Value(m_arm_tool));
 }
 
-Value OwlatInterface::getPanRadians() const
+bool OwlatInterface::systemFault () const
 {
-  return m_pan_radians;
+  return faultActive (m_systemErrors);
 }
 
-Value OwlatInterface::getPanDegrees() const
+vector<double> OwlatInterface::getArmEndEffectorFT () const
 {
-  return m_pan_radians * R2D;
-}
-
-Value OwlatInterface::getTiltRadians() const
-{
-  return m_tilt_radians;
-}
-
-Value OwlatInterface::getTiltDegrees() const
-{
-  return m_tilt_radians * R2D;
-}
-
-Value OwlatInterface::getJointTelemetry (int joint, TelemetryType type) const
-{
-  if (joint >= 0 && joint < OwlatJoints) {
-    switch (type) {
-      case TelemetryType::Position: return m_arm_joint_angles[joint];
-      case TelemetryType::Velocity: return m_arm_joint_velocities[joint];
-      case TelemetryType::Effort: return m_arm_joint_torques[joint];
-      case TelemetryType::Acceleration: return m_arm_joint_accelerations[joint];
-    default:
-      ROS_ERROR ("getJointTelemetry: unsupported telemetry type.");
-    }
-  }
-  else {
-    ROS_ERROR ("getJointTelemetry: invalid joint index %d", joint);
-  }
-  return 0;
+  return m_end_effector_ft;
 }

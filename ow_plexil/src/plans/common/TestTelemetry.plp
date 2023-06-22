@@ -12,7 +12,7 @@ TestTelemetry:
   Real ArmPose[7]; // Position (x,y,z) followed by orientation (x,y,z,w).
 
   log_info ("Starting telemetry tests...");
-  
+
   // Testbed
   if (Lookup(UsingOceanWATERS)) log_info ("OceanWATERS is in use.");
   else log_info ("OceanWATERS is NOT in use.");
@@ -22,6 +22,12 @@ TestTelemetry:
   else log_info ("OWLAT is NOT in use.");
   endif;
 
+  // Battery
+  log_info ("Battery state of charge: ", Lookup(BatteryStateOfCharge));
+  log_info ("Battery remaining useful life: ",
+            Lookup(BatteryRemainingUsefulLife));
+  log_info ("Battery temperature: ", Lookup(BatteryTemperature));
+            
   // Pan/Tilt telemetry.
 
   // Note that the current version of OWLAT Sim has neither a pan/tilt
@@ -35,18 +41,14 @@ TestTelemetry:
   log_info ("Tilt degees: ", Lookup(TiltDegrees));
   log_info ("Tilt radians: ", Lookup(TiltRadians));
 
-  // Joint telemetry
+  // Arm joint telemetry
 
-  // This is coded for the 9 joints in OceanWATERS (7 arm, 2 antenna),
-  // while OWLAT has a total of 6 joints, all arm.  Nonetheless, this
-  // code will do the "right" thing on each testbed, which includes
-  // producing warnings/errors for invalid indices and options.
-
-  for (Integer j = 0; j < 9; j + 1) {
-    log_info ("Position of joint ", j, " = ", Lookup(JointPosition(j)));
-    log_info ("Velocity of joint ", j, " = ", Lookup(JointVelocity(j)));
-    log_info ("Effort of joint ", j, " = ", Lookup(JointEffort(j)));
-    log_info ("Acceleration of joint ", j, " = ", Lookup(JointAcceleration(j)));
+  for (Integer j = 0; j < 7; j + 1) {
+    log_info ("Position of arm joint ", j, " = ", Lookup(ArmJointPosition(j)));
+    log_info ("Velocity of arm joint ", j, " = ", Lookup(ArmJointVelocity(j)));
+    log_info ("Torque of arm joint ", j, " = ", Lookup(ArmJointTorque(j)));
+    log_info ("Acceleration of arm joint ", j, " = ",
+              Lookup(ArmJointAcceleration(j)));
   }
 
   FT = Lookup(ArmEndEffectorForceTorque);
@@ -55,7 +57,7 @@ TestTelemetry:
     log_info ("  ", FT[i]);
   }
   log_info ("}");
-
+  
   ArmPose = Lookup(ArmPose);
   log_info ("Arm pose: {");
   for (Integer i = 0; i < 7; i + 1) {

@@ -1,0 +1,18 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Queries all OWLAT-specific telemetry.
+
+#include "owlat-interface.h"
+
+LibraryAction TestArmTools();
+
+TestOwlatTelemetry:
+{
+  log_info ("Starting OWLAT telemetry tests...");
+
+  LibraryCall TestArmTools ();
+  
+  log_info ("Finished OWLAT telemetry tests.");
+}

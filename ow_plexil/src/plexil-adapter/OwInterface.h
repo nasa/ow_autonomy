@@ -2,19 +2,23 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Interface specific to OceanWATERS' lander.
+
 #ifndef Ow_Interface_H
 #define Ow_Interface_H
 
-// Interface specific to OceanWATERS' lander.
-
-// ow_plexil ROS actions
 #include "LanderInterface.h"
+
+// ROS action used only in this package
+
 #include <ow_plexil/IdentifyLocationAction.h>
 
 using IdentifySampleLocationActionClient =
   actionlib::SimpleActionClient<ow_plexil::IdentifyLocationAction>;
 
-// owl_msgs (testbed-common ROS actions)
+
+// Testbed-common ROS actions
+
 #include <owl_msgs/ArmFindSurfaceAction.h>
 #include <owl_msgs/TaskDiscardSampleAction.h>
 #include <owl_msgs/PanTiltMoveCartesianAction.h>
@@ -25,16 +29,6 @@ using IdentifySampleLocationActionClient =
 #include <owl_msgs/TaskScoopLinearAction.h>
 #include <owl_msgs/CameraSetExposureAction.h>
 #include <owl_msgs/LightSetIntensityAction.h>
-
-// owl_msgs (unified telemetry)
-#include <owl_msgs/ArmJointAccelerations.h>
-#include <owl_msgs/ArmFaultsStatus.h>
-#include <owl_msgs/PanTiltFaultsStatus.h>
-#include <owl_msgs/PowerFaultsStatus.h>
-#include <owl_msgs/CameraFaultsStatus.h>
-#include <owl_msgs/SystemFaultsStatus.h>
-#include <owl_msgs/ArmEndEffectorForceTorque.h>
-#include <owl_msgs/ArmPose.h>
 
 using ArmFindSurfaceActionClient =
   actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
@@ -57,7 +51,9 @@ using LightSetIntensityActionClient =
 using TaskDiscardSampleActionClient =
   actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
 
+
 // OceanWATERS-specific ROS actions
+
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
 #include <ow_lander/TiltAction.h>
@@ -71,8 +67,8 @@ using DockIngestSampleActionClient =
   actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
 
 
-// Maps from fault name to the pair (fault value, is fault in progress?)
-using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
+// Telemetry
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
 
 class OwInterface : public LanderInterface
 {
@@ -128,30 +124,16 @@ class OwInterface : public LanderInterface
   void lightSetIntensity (const std::string& side, double intensity, int id);
 
   // State/Lookup interface
-  double getTiltRadians () const;
-  double getTiltDegrees () const;
-  double getPanRadians () const;
-  double getPanDegrees () const;
   double getPanVelocity () const;
   double getTiltVelocity () const;
-  double getBatteryStateOfCharge () const;
-  double getBatteryRemainingUsefulLife () const;
-  double getBatteryTemperature () const;
   std::vector<double> getEndEffectorFT () const;
-  std::vector<double> getArmPose () const;
   bool   groundFound () const;
   double groundPosition () const;
-  bool   systemFault () const;
-  bool   antennaFault () const;
-  bool   antennaPanFault () const;
-  bool   antennaTiltFault () const;
-  bool   armFault () const;
-  bool   powerFault () const;
-  bool   cameraFault () const;
   bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
-  double jointTelemetry (int joint, TelemetryType type) const;
+  bool   systemFault () const override;
+  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,
@@ -188,26 +170,12 @@ class OwInterface : public LanderInterface
   void dockIngestSampleAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
-  void armJointAccelerationsCb (const owl_msgs::ArmJointAccelerations::ConstPtr&);
-  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr&);
-  void armFaultCallback (const owl_msgs::ArmFaultsStatus::ConstPtr&);
-  void powerFaultCallback (const owl_msgs::PowerFaultsStatus::ConstPtr&);
-  void antennaFaultCallback (const owl_msgs::PanTiltFaultsStatus::ConstPtr&);
-  void cameraFaultCallback (const owl_msgs::CameraFaultsStatus::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
                   std::unique_ptr<ros::Publisher>&, int id);
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
-  void armPoseCallback (const owl_msgs::ArmPose::ConstPtr&);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
-  template <typename T1, typename T2>
-    void updateFaultStatus (T1 msg_val, T2&,
-                            const std::string& component_name,
-                            const std::string& state_name); // PLEXIL Lookup name
-
-  template <typename T>
-    bool faultActive (const T& fault_map) const;
-
-  // System level faults:
+  // System-level faults
 
   FaultMap m_systemErrors = {
     {"SYSTEM", std::make_pair(
@@ -230,62 +198,6 @@ class OwInterface : public LanderInterface
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
 
-  FaultMap m_armErrors = {
-    {"HARDWARE", std::make_pair(
-        owl_msgs::ArmFaultsStatus::HARDWARE, false)},
-    {"TRAJECTORY_GENERATION", std::make_pair(
-        owl_msgs::ArmFaultsStatus::TRAJECTORY_GENERATION, false)},
-    {"COLLISION", std::make_pair(
-        owl_msgs::ArmFaultsStatus::COLLISION, false)},
-    {"E_STOP", std::make_pair(
-        owl_msgs::ArmFaultsStatus::E_STOP, false)},
-    {"POSITION_LIMIT", std::make_pair(
-        owl_msgs::ArmFaultsStatus::POSITION_LIMIT, false)},
-    {"JOINT_TORQUE_LIMIT", std::make_pair(
-        owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
-    {"VELOCITY_LIMIT", std::make_pair(
-        owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
-    {"NO_FORCE_DATA", std::make_pair(
-        owl_msgs::ArmFaultsStatus::NO_FORCE_DATA, false)},
-    {"FORCE_TORQUE_LIMIT", std::make_pair(
-        owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
-  };
-
-  FaultMap m_powerErrors = {
-    {"LOW_STATE_OF_CHARGE", std::make_pair(
-        owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
-    {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
-        owl_msgs::PowerFaultsStatus::INSTANTANEOUS_CAPACITY_LOSS, false)},
-    {"THERMAL_FAULT", std::make_pair(
-        owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
-  };
-
-  const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
-  const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
-
-  FaultMap m_panTiltErrors = {
-    {FaultPanJointLocked, std::make_pair(
-      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
-    {"TILT_JOINT_LOCKED", std::make_pair(
-      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
-  };
-
-  const char* FaultNoImage = "NO_IMAGE";
-
-  FaultMap m_cameraErrors = {
-    {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
-  };
-
-  // Publishers and subscribers
-
-  std::unique_ptr<ros::Publisher> m_antennaTiltPublisher;
-  std::unique_ptr<ros::Publisher> m_antennaPanPublisher;
-  std::unique_ptr<ros::Publisher> m_leftImageTriggerPublisher;
-
-  // Generic container because the subscribers are not referenced;
-  // only their callback functions are of use.
-  std::vector<std::unique_ptr<ros::Subscriber>> m_subscribers;
-
   // Action clients
 
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
@@ -305,9 +217,7 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
 
   // Misc state
-  double m_currentPanRadians, m_currentTiltRadians;
-  std::vector<double> m_endEffectorFT;
-  std::vector<double> m_armPose;
+  std::vector<double> m_end_effector_ft;
 };
 
 #endif
