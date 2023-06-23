@@ -1,0 +1,50 @@
+NOTE: temporary file to be removed before PR is opened.
+
+To Do
+-----
+
+Remove this file!
+
+
+Code Refactoring
+----------------
+
+Subscribe by iterating over pairs of topic names and callback
+functions.
+
+Condense the 4 arm joint telemetry handling sets of repeated code.
+
+Replace single-use functions with lambdas.
+
+
+Code Cleanup
+------------
+
+Minimize/rename plexil_defs.h
+  Move stuff to plan-interface.h or common-interface.h
+    Checkpointing
+Put individual tilt back in.
+
+
+Extra (* = release 11.1)
+-----
+
+Switch to Plexil 6
+  Use new headers
+  Update interface as needed
+  Stop using LookupNow
+
+Add radian commanding for pan/tilt to Plexil, to compliment lookups.
+
+Refine Plexil interface
+  See specific faults
+    See goal errors
+
+Fix printout (this comes from ROS):
+[ INFO]: PanTiltMoveCartesian (0, x: 0
+y: 0
+z: -5
+
+
+Notes for JPL team
+------------------

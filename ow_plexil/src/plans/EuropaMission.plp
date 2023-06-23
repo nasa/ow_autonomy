@@ -168,8 +168,7 @@ EuropaMission: Concurrence
       if (! Lookup(GroundFound)) {
         // Note that the default value of GroundFound is false, so
         log_error ("Failed to find ground. Stowing arm and stopping.");
-        LibraryCall ArmUnstow(); // For safety in stowing
-        LibraryCall ArmStow();
+        LibraryCall StowSequence();
         MissionInProgress = false;
       }
 
@@ -178,9 +177,13 @@ EuropaMission: Concurrence
         Dig:
         {
           InvariantCondition DiggingSafe;
-          LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                                 Length = trench_length, BiteDepth = 0.05,
-                                 NumPasses = 2, Parallel = parallel);
+          LibraryCall DigTrench (X = trench_x,
+                                 Y = trench_y,
+                                 GroundPos = ground_pos,
+                                 Length = trench_length,
+                                 BiteDepth = 0.05,
+                                 NumPasses = 2,
+                                 Parallel = parallel);
         }
         ImageDig:
         {
@@ -193,21 +196,25 @@ EuropaMission: Concurrence
         {
           Repeat Dig.state == EXECUTING;
           LibraryCall Stub (desc="Sensing dig");
-          DiggingSafe = STUB_TRUE;
+          DiggingSafe = true; // stub
           Wait SENSE_DIG_INTERVAL;
         }
       }
 
-      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
-                                  GroundPos = ground_pos, Parallel = parallel);
+      LibraryCall RemoveTailings (X = trench_x,
+                                  Y = trench_y,
+                                  GroundPos = ground_pos,
+                                  Parallel = parallel);
       LibraryCall Image(desc="trench");
       LibraryCall Downlink;
 
       LibraryCall CollectAndTransfer(IgnoreCrash = false,
                                      InstanceName="MissionSol1",
-                                     X = trench_x, Y = trench_y,
+                                     X = trench_x,
+                                     Y = trench_y,
                                      GroundPos = ground_pos,
-                                     Depth = 0.11, Length = trench_length,
+                                     Depth = 0.1105,
+                                     Length = trench_length,
                                      Parallel = parallel);
       set_checkpoint ("SampleCollected");
       SynchronousCommand flush_checkpoints();
@@ -226,8 +233,7 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
-      LibraryCall ArmUnstow(); // For safety in stowing
-      LibraryCall ArmStow();
+      LibraryCall StowSequence();
       set_checkpoint("ArmStowed");
       SynchronousCommand flush_checkpoints();
     }

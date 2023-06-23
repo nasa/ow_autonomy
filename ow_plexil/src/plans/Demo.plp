@@ -35,7 +35,6 @@ Demo:
   else log_error ("Failed to find ground, skipping grind and dig.");
   endif
   log_info ("Stowing arm...");
-  LibraryCall ArmUnstow(); // For safety in stowing
-  LibraryCall ArmStow();
+  LibraryCall StowSequence();
   log_info ("Autonomy demo finished.");
 }

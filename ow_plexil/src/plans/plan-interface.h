@@ -26,6 +26,7 @@
 #define SHOULDER_PITCH 7
 #define SHOULDER_YAW   8
 
+#define NUM_JOINTS 9
 
 // PLEXIL library for lander operations.
 

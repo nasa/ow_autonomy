@@ -5,9 +5,16 @@
 // Excavation procedure based on JPL's Europa Lander reference mission.
 // NOTE: this procedure is highly stubbed at the moment.
 
+#include "plan-interface.h"
 #include "plexil_defs.h"
 
-Real Lookup time;
+// OBSOLETE. This plan will not run.  This should be replaced with
+// TaskScoopLinear.
+Boolean Command dig_linear (Real startX, Real startY,
+                            Real depth, Real length, Real groundPosition,
+                            Real width, Real pitch, Real yaw,
+                            Real dumpX, Real dumpY, Real dumpZ);
+
 Real Lookup TrenchLength;
 Real Lookup TrenchGroundPosition;
 Real Lookup TrenchWidth;
@@ -25,12 +32,7 @@ Real Lookup ExcavationTimeout;
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
 
-Command log_info (...);
 
-Boolean Command dig_linear (Real startX, Real startY,
-                            Real depth, Real length, Real groundPosition,
-                            Real width, Real pitch, Real yaw,
-                            Real dumpX, Real dumpY, Real dumpZ);
 
 Excavation:
 {
@@ -70,25 +72,25 @@ Excavation:
                          Lookup(TrenchDumpY),
                          Lookup(TrenchDumpZ));
       }
-      
+
       FilmDig:
       {
         Repeat DigTheTrench.state == EXECUTING;
         LibraryCall Image(desc="trench");
         Wait FILM_INTERVAL;
       }
-      
+
       SenseDig:
       {
         Repeat DigTheTrench.state == EXECUTING;
         log_info ("Sensing dig...");
-        DiggingSafe = STUB_TRUE;
+        DiggingSafe = true; // stub
         Wait SENSE_DIG_INTERVAL;
       }
     }
 
     RemoveTailings: LibraryCall Stub(desc="Removing tailings");
     ImageDig: LibraryCall Image(desc="dig");
-    AssessDepth: DeepEnough = STUB_TRUE;
+    AssessDepth: DeepEnough = true; // stub
   }
 }

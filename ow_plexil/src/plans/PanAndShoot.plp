@@ -11,7 +11,7 @@
 // A renaming is pending discussion of re-introducing separate Pan and
 // Tilt commands.
 
-#include "plexil_defs.h"
+//#include "plexil_defs.h"
 #include "plan-interface.h"
 
 PanAndShoot:

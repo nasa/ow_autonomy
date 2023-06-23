@@ -14,15 +14,8 @@
 #define SENSE_DIG_INTERVAL 6
 #define DIG_TRENCH_TIMEOUT 10
 
-#define STUB_TRUE true
-#define STUB_FALSE false
-
-#define INSTRUMENT_ID Integer
-
 // Proposed, arbitrary small unitless value for zero velocity tolerance.
 #define ZERO_VEL 0.01
-
-#define NUM_JOINTS 9
 
 // The following are related to antenna and camera.
 

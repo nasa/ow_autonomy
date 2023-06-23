@@ -83,16 +83,25 @@ ReferenceMission1: Concurrence
                                       Parallel = parallel,
                                       FilterType = "Dark");
     if (isKnown(ground_pos)) {
-      LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                             Length = trench_length, BiteDepth = 0.05,
-                             NumPasses = 2, Parallel = parallel);
-      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
-                                  GroundPos = ground_pos, Parallel = parallel);
-      LibraryCall CollectSample (X = trench_x, Y = trench_y,
-                                 GroundPos = ground_pos, Depth = 0.1105,
-                                 Length = trench_length, Parallel = parallel);
-      LibraryCall ArmUnstow(); // For safety in stowing
-      LibraryCall ArmStow();
+      LibraryCall ArmUnstow();
+      LibraryCall DigTrench (X = trench_x,
+                             Y = trench_y,
+                             GroundPos = ground_pos,
+                             Length = trench_length,
+                             BiteDepth = 0.05,
+                             NumPasses = 2,
+                             Parallel = parallel);
+      LibraryCall RemoveTailings (X = trench_x,
+                                  Y = trench_y,
+                                  GroundPos = ground_pos,
+                                  Parallel = parallel);
+      LibraryCall CollectSample (X = trench_x,
+                                 Y = trench_y,
+                                 GroundPos = ground_pos,
+                                 Depth = 0.1105,
+                                 Length = trench_length,
+                                 Parallel = parallel);
+      LibraryCall StowSequence();
       LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
       Wait 2;  // Wait for (stubbed) sample analysis to finish.

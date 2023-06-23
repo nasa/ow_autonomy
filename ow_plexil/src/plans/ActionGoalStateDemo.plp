@@ -40,8 +40,7 @@ ActionGoalStateDemo:
       StartCondition !Lookup(ArmFault);
       InvariantCondition !Lookup(ArmFault);
 
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
+      LibraryCall StowSequence();
     }
   }
 }
