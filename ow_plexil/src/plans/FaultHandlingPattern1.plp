@@ -2,8 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Pan in 15 degree increments as long as no antenna fault is present.  If an
-// antenna fault is occurs, pause until the fault is removed.  This plan must be
+// Pan in 15 degree increments as long as no antenna pan fault is present.  If an
+// antenna pan fault occurs, pause until the fault is removed.  This plan must be
 // terminated with an interrupt (e.g. Control-C).
 
 #include "plan-interface.h"
@@ -18,14 +18,22 @@ FaultHandlingPattern1:
 
   LibraryCall InitializeAntennaAndArm ();
 
-  Pattern1Image:
+  UncheckedSequence
   {
-    Repeat true;
-    Start !Lookup(AntennaFault);
+    RepeatCondition true;
+    Wait .2;
+    Pattern1Image:
+    {
+      Start !Lookup(AntennaFault);
+      ExitCondition Lookup(AntennaFault);
+      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-    NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+      if NewAngle > 180{
+        NewAngle = NewAngle - 360;
+      }
 
-    LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+    }
   }
 }
 
