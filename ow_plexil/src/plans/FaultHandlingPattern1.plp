@@ -16,17 +16,27 @@ FaultHandlingPattern1:
 
   log_info ("Starting FaultHandlingPattern1 plan...");
 
-  LibraryCall InitializeAntennaAndArm ();
+  // Temporarily commented out to make testing shorter
+  //LibraryCall InitializeAntennaAndArm ();
 
   UncheckedSequence
   {
     RepeatCondition true;
     Wait .2;
+    log_info ("Currently in Top Level Unchecked Sequence");
+
     Pattern1Image:
     {
-      Start !Lookup(AntennaFault);
-      ExitCondition Lookup(AntennaFault);
+      Start !Lookup(AntennaPanFault);
+
+      // Exit Condition option (Correct behavior)
+      // ExitCondition Lookup(AntennaPanFault);
+
+      // Invariant Condition (Causes freezing)
+      InvariantCondition !Lookup(AntennaPanFault);
+
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+      log_info ("Currently in Child Level Pattern1Image");
 
       if NewAngle > 180{
         NewAngle = NewAngle - 360;
