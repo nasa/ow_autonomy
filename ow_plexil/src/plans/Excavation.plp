@@ -6,7 +6,9 @@
 // NOTE: this procedure is highly stubbed at the moment.
 
 #include "plan-interface.h"
-#include "plexil_defs.h"
+#include "europa_defs.h"
+
+#define DIG_TRENCH_TIMEOUT 10
 
 // OBSOLETE. This plan will not run.  This should be replaced with
 // TaskScoopLinear.

@@ -8,8 +8,12 @@
 // support for crash recovery and plan persistence using PLEXIL's checkpointing
 // facility.
 
-#include "plexil_defs.h"
 #include "plan-interface.h"
+#include "europa_defs.h"
+
+// Maximum number of crashes before assuming something has gone very wrong and
+// attempting to offload all data
+#define MAX_CRASHES 10
 
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,

@@ -5,8 +5,19 @@
 // Take a panoramic image, with specified tilt and pan range and
 // vertical/horizonal image overlaps.
 
-#include "plexil_defs.h"
 #include "plan-interface.h"
+
+// Lower value for testing. Camera's actual is 15.
+#define VERTICAL_FOV  10
+
+// Lower value for testing. Camera's actual is 21.
+#define HORIZONTAL_FOV 10
+
+// Copied in LanderAdapter.cpp
+#define PAN_MIN   -183.346
+#define PAN_MAX   183.346
+#define TILT_MIN  -89.38
+#define TILT_MAX  89.38
 
 LibraryAction TiltAndImagePass (In Real TiltAngle,
                                 InOut Real PanAngle,
@@ -74,13 +85,13 @@ TakePanorama:
   }
   endif
 
-  if (VERT_FOV/2 <= VertOverlap) {
+  if (VERTICAL_FOV/2 <= VertOverlap) {
     log_error ("TakePanorama: Vertical overlap too high, exiting.");
     exit = true;
   }
   endif
 
-  if (HORIZ_FOV/2 <= HorizOverlap) {
+  if (HORIZONTAL_FOV/2 <= HorizOverlap) {
     log_error ("TakePanorama: Horizontal overlap too high, exiting.");
     exit = true;
   }
@@ -90,8 +101,8 @@ TakePanorama:
   tilt = TiltLo;
   pan = PanLo;
 
-  tilt_increment = (VERT_FOV / 2) - VertOverlap;
-  pan_increment = (HORIZ_FOV / 2) - HorizOverlap;
+  tilt_increment = (VERTICAL_FOV / 2) - VertOverlap;
+  pan_increment = (HORIZONTAL_FOV / 2) - HorizOverlap;
 
   // Behavior: If the latest panorama with these arguments crashed, retake the
   // last image and continue from there

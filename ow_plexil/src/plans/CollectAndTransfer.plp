@@ -5,7 +5,6 @@
 // Collect the sample and transfer it to the receptacle.  This is a variant of
 // CollectSample that includes checkpointing.
 
-#include "plexil_defs.h"
 #include "plan-interface.h"
 
 Real Lookup CollectAndTransferTimeout;
