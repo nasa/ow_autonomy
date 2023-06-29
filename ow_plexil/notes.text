@@ -20,9 +20,6 @@ Replace single-use functions with lambdas.
 Code Cleanup
 ------------
 
-Minimize/rename plexil_defs.h
-  Move stuff to plan-interface.h or common-interface.h
-    Checkpointing
 Put individual tilt back in.
 
 

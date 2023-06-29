@@ -1,11 +1,11 @@
 // The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
- 
+
 // Unstow and stow the arm repeatedly. Pan the antenna
 // in 15 degree increments when 'Unstow' action goal status
-// is 'ACTIVE' and pan the antenna in 15 degree decrements 
-// when 'Stow' action goal status is 'ACTIVE'. 
+// is 'ACTIVE' and pan the antenna in 15 degree decrements
+// when 'Stow' action goal status is 'ACTIVE'.
 // This plan will be terminated if any fault occurs.
 
 #include "plan-interface.h"
@@ -16,6 +16,8 @@ ActionGoalStateDemo:
 
   log_info ("Starting ActionGoalStateDemo plan...");
 
+  LibraryCall Tilt (Degrees=0);
+  
   Run: Concurrence
   {
     ExitCondition Lookup(SystemFault);
@@ -30,8 +32,8 @@ ActionGoalStateDemo:
         NewAngle = (Lookup(PanDegrees) - 15) mod 360;
       }
       else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-  
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+
+      LibraryCall Pan (Degrees=NewAngle);
     }
 
     Pattern2UnstowStow:
