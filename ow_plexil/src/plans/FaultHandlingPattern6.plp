@@ -8,9 +8,10 @@
 // the battery level is sufficient. If/when the fault is cleared, the original
 // action will automatically be attempted again.
 
-// WARNING: As of 6/30/23 the Stow and Unstow actions will not be attempted again
+// WARNING: As of 6/30/23 the Stow action will not be attempted again
 // after a fault, this is due to limitations in goal fault support that will be 
-// added in a later release. 
+// added in a later release. The Unstow Action will also sometimes not repeat depending
+// on when the fault is triggered
 
 // More specifically: If no faults are occurring, this plan will pan 180
 // degrees, and then unstow and stow the arm.
