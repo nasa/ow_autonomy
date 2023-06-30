@@ -8,6 +8,10 @@
 // the battery level is sufficient. If/when the fault is cleared, the original
 // action will automatically be attempted again.
 
+// WARNING: As of 6/30/23 the Stow and Unstow actions will not be attempted again
+// after a fault, this is due to limitations in goal fault support that will be 
+// added in a later release. 
+
 // More specifically: If no faults are occurring, this plan will pan 180
 // degrees, and then unstow and stow the arm.
 
@@ -156,7 +160,11 @@ FaultHandlingPattern6:
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      if NewAngle > 180{
+        NewAngle = NewAngle - 360;
+      }
+
+      LibraryCall Pan (Degrees=NewAngle);
     }
 
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,

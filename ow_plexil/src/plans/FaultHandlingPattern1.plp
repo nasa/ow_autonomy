@@ -16,33 +16,26 @@ FaultHandlingPattern1:
 
   log_info ("Starting FaultHandlingPattern1 plan...");
 
-  // Temporarily commented out to make testing shorter
-  //LibraryCall InitializeAntennaAndArm ();
+  LibraryCall InitializeAntennaAndArm ();
 
   UncheckedSequence
   {
-    RepeatCondition true;
-    Wait .2;
-    log_info ("Currently in Top Level Unchecked Sequence");
+    Repeat true;
 
-    Pattern1Image:
+    Wait .2;
+
+    Pattern1PanAntenna:
     {
       Start !Lookup(AntennaPanFault);
-
-      // Exit Condition option (Correct behavior)
-      // ExitCondition Lookup(AntennaPanFault);
-
-      // Invariant Condition (Causes freezing)
-      InvariantCondition !Lookup(AntennaPanFault);
+      Exit Lookup(AntennaPanFault);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-      log_info ("Currently in Child Level Pattern1Image");
 
       if NewAngle > 180{
         NewAngle = NewAngle - 360;
       }
 
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      LibraryCall Pan (Degrees=NewAngle);
     }
   }
 }

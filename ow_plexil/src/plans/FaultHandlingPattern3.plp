@@ -5,11 +5,11 @@
 // If no faults are occurring, this plan will pan 180 degrees,
 // and then unstow and stow the arm.
 
-// If any fault is injected, the plan will pause and wait for resolution.
-// Resolution is defined as the removal of the fault.
+// Only the AntennaPan action will hault for resolution,
+// if an arm fault is triggered for Unstow, it will also prevent Stow from running. 
 
-// Upon resolution, the halted action will not complete,
-// but the plan will continue to the next node.
+// Upon resolution, the antenna will continue to pan, but halted arm actions
+// will not complete before moving to the next node.
 
 // If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
@@ -32,9 +32,10 @@ FaultHandlingPattern3:
 
   Image:
   {
-    Start !Lookup(AntennaFault);
+    Start !Lookup(AntennaPanFault);
+    Invariant !Lookup(AntennaPanFault);
 
-    LibraryCall PanTiltMoveJoints (PanDegrees=180, TiltDegrees=0);
+    LibraryCall Pan (Degrees=180);
   }
 
   Unstow:

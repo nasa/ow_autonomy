@@ -25,15 +25,26 @@ FaultHandlingPattern2:
   Run: Concurrence
   {
 
-    Pattern2Image:
+  UncheckedSequence
+  {
+    RepeatCondition true;
+
+    Wait .2;
+
+    Pattern2PanAntenna:
     {
-      Repeat true;
-      Start !Lookup(AntennaFault);
+      Start !Lookup(AntennaPanFault);
+      Exit Lookup(AntennaPanFault);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      if NewAngle > 180{
+        NewAngle = NewAngle - 360;
+      }
+
+      LibraryCall Pan (Degrees=NewAngle);
     }
+  }
 
     Pattern2UnstowStow:
     {
