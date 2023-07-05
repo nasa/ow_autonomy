@@ -10,10 +10,6 @@
 #include "common/common-interface.h"
 #include "lander-commands.h"
 
-// Reference frames
-#define BASE_LINK 0
-#define SCOOP_TIP 1
-
 // Joint names, defined by their indices in the /joint_states ROS message.
 
 #define ANTENNA_PAN    0

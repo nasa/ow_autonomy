@@ -3,6 +3,8 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
+Remove STATE_STUB
+
 Remove this file!
 
 
@@ -20,11 +22,11 @@ Replace single-use functions with lambdas.
 Code Cleanup
 ------------
 
-Put individual tilt back in.
-
 
 Extra (* = release 11.1)
 -----
+
+* Fix fault handling plans (Keegan).
 
 Switch to Plexil 6
   Use new headers

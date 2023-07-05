@@ -56,23 +56,8 @@ static bool lookup (const string& state_name,
   // Stubbed mission and system parameters.  Many of these will eventually be
   // obsolete.
 
-  STATE_STUB(TrenchLength, 10)
-  else STATE_STUB(TrenchGroundPosition, -0.155)
-  else STATE_STUB(TrenchWidth, 10)
-  else STATE_STUB(TrenchDepth, 2)
-  else STATE_STUB(TrenchPitch, 0)
-  else STATE_STUB(TrenchYaw, 0)
-  else STATE_STUB(TrenchStartX, 5)
-  else STATE_STUB(TrenchStartY, 10)
-  else STATE_STUB(TrenchStartZ, 0)
-  else STATE_STUB(TrenchDumpX, 0)
-  else STATE_STUB(TrenchDumpY, 0)
-  else STATE_STUB(TrenchDumpZ, 5)
-  else STATE_STUB(TrenchIdentified, true)
-  else STATE_STUB(TrenchTargetTimeout, 60)
+  STATE_STUB(TrenchIdentified, true)
   else STATE_STUB(ExcavationTimeout, 10)
-  else STATE_STUB(ExcavationTimeout, 60)
-  else STATE_STUB(SampleGood, true)
   else STATE_STUB(CollectAndTransferTimeout, 10)
 
   else if (state_name == "UsingOceanWATERS") {
