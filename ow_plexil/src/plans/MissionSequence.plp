@@ -38,7 +38,7 @@ MissionSequence:
 
     LibraryCall Pan (Degrees=180);
 
-    if 180 - (abs(Lookup(PanDegrees)) % 180) < PanToleranceDegrees
+    if 180 - (min(180, abs(Lookup(PanDegrees)) % 180)) < PanToleranceDegrees
     {
       pan_done = true;
     }

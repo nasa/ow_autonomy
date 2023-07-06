@@ -8,15 +8,11 @@
 
 #include "plan-interface.h"
 
-LibraryAction InitializeAntennaAndArm ();
-
 FaultHandlingPattern1:
 {
   Real NewAngle = 0;
 
   log_info ("Starting FaultHandlingPattern1 plan...");
-
-  LibraryCall InitializeAntennaAndArm ();
 
   UncheckedSequence
   {

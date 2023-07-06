@@ -12,15 +12,11 @@
 
 #include "plan-interface.h"
 
-LibraryAction InitializeAntennaAndArm ();
-
 FaultHandlingPattern2:
 {
   Real NewAngle = 0;
 
   log_info ("Starting FaultHandlingPattern2 plan...");
-
-  LibraryCall InitializeAntennaAndArm ();
 
   Run: Concurrence
   {
@@ -52,8 +48,7 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
+      LibraryCall StowSequence();
     }
   }
 }
