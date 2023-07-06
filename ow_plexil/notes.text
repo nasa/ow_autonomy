@@ -3,8 +3,6 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
-Remove STATE_STUB
-
 Remove this file!
 
 
@@ -26,7 +24,7 @@ Code Cleanup
 Extra (* = release 11.1)
 -----
 
-* Fix fault handling plans (Keegan).
+Use registerLookupHandler in OwAdapter.cpp.
 
 Switch to Plexil 6
   Use new headers
