@@ -141,7 +141,7 @@ EuropaMission: Concurrence
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
       LibraryCall ArmUnstow();
-      //      set_checkpoint("ArmUnstowed");
+      set_checkpoint("ArmUnstowed", true, "UnstowArm");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -220,7 +220,7 @@ EuropaMission: Concurrence
                                      Depth = 0.1105,
                                      Length = trench_length,
                                      Parallel = parallel);
-      //      set_checkpoint ("SampleCollected");
+      set_checkpoint ("SampleCollected", true, "SampleCollection");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -229,7 +229,7 @@ EuropaMission: Concurrence
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
       LibraryCall StartSampleAnalysis;
-      //      set_checkpoint("SampleAnalyzed");
+      set_checkpoint("SampleAnalyzed", true, "SampleAnalysis");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -238,7 +238,7 @@ EuropaMission: Concurrence
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
       LibraryCall StowSequence();
-      //      set_checkpoint("ArmStowed");
+      set_checkpoint("ArmStowed", true, "StowArm");
       SynchronousCommand flush_checkpoints();
     }
 
