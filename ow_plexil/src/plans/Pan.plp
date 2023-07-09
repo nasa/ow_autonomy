@@ -12,9 +12,9 @@ Pan:
 
   Boolean FaultDetected = false;
 
-  PostCondition !Lookup(AntennaFault);
+  PostCondition !Lookup(AntennaPanFault);
 
-  if Lookup(AntennaFault)
+  if Lookup(AntennaPanFault)
   {
     log_error ("Command pan not sent to lander due to active antenna fault(s).");
     FaultDetected = true;
@@ -22,7 +22,7 @@ Pan:
 
   SendPan:
   {
-    Start !Lookup(AntennaFault);
+    Start !Lookup(AntennaPanFault);
 
     if FaultDetected
     {

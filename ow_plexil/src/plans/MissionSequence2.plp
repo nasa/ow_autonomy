@@ -37,9 +37,9 @@ MissionSequence2:
     Start !Lookup(AntennaFault) && !Lookup(PowerFault);
     Skip pan_done;
 
-    LibraryCall PanTiltMoveJoints (PanDegrees=180, TiltDegrees=0);
+    LibraryCall Pan (Degrees=180);
 
-    if abs(180 - abs(Lookup(PanDegrees))) < PanToleranceDegrees
+    if 180 - (min(180, abs(Lookup(PanDegrees)) % 180)) < PanToleranceDegrees
     {
       pan_done = true;
     }
