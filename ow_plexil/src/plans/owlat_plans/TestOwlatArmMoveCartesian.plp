@@ -20,6 +20,6 @@ TestOwlatArmMoveCartesian:
                                        Orientation = #(0.0 0.0 0.0 1.0),
                                        ForceThreshold = 5.0,
                                        TorqueThreshold = 1.0);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished ArmMoveCartesian/Guarded test.");
 }

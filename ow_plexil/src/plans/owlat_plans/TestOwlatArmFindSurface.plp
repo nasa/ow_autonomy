@@ -23,6 +23,6 @@ TestOwlatArmFindSurface:
                               Overdrive = 0,
                               ForceThreshold = 5,
                               TorqueThreshold = 1);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished ArmFindSurface test.");
 }

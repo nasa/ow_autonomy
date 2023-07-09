@@ -2,11 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// A Stow should always be preceded by Unstow, thus this convenience procedure.
+// In a mission context, Stow should always be preceded by Unstow, for
+// safety.  This is a convenience procedure.
 
 #include "common-interface.h"
 
-StowSequence:
+SafeStow:
 {
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();

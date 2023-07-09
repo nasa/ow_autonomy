@@ -101,7 +101,7 @@ ReferenceMission1: Concurrence
                                  Depth = 0.1105,
                                  Length = trench_length,
                                  Parallel = parallel);
-      LibraryCall StowSequence();
+      LibraryCall SafeStow();
       LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
       Wait 2;  // Wait for (stubbed) sample analysis to finish.

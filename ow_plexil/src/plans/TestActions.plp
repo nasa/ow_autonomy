@@ -90,7 +90,7 @@ TestActions: UncheckedSequence
 
   LibraryCall TaskDeliverSample ();
   LibraryCall DockIngestSample ();
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   LibraryCall PanTiltMoveCartesian (Frame=BASE_FRAME, X=125800, Y=-81170, Z=-80533);
   LibraryCall Pan (Degrees = 90);
   LibraryCall Tilt (Degrees = 89);

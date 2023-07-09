@@ -44,6 +44,6 @@ TorqueTest:
       Wait 1;
     }
   }
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Over-torque test finished.");
 }

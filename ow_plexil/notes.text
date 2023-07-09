@@ -3,6 +3,8 @@ NOTE: temporary file to be removed before PR is opened.
 To Do
 -----
 
+common-commands.h: rename, improve comment.
+
 Remove this file!
 
 
@@ -25,7 +27,8 @@ Extra (* = release 11.1)
 -----
 
 Use registerLookupHandler in OwAdapter.cpp.
-
+  Plexil 6 would help by enabling lambdas.
+  
 Switch to Plexil 6
   Use new headers
   Update interface as needed

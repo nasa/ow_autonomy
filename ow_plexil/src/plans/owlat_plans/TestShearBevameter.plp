@@ -20,5 +20,5 @@ TestShearBevameter:
                                   Normal = #(0 0 -1),
                                   Preload = 5.0,
                                   MaxTorque = 0.1);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
 }

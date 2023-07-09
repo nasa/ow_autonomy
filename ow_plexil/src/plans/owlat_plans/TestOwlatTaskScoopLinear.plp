@@ -17,6 +17,6 @@ TestOwlatTaskScoopLinear:
                                     Normal = #(0 0 -1),
                                     Depth = 0.025,
                                     Length = 0.1);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished TaskScoopLinear test.");
 }

@@ -160,7 +160,7 @@ ReferenceMission2: Concurrence
       {
         Start BatteryOK && NoFaults;
         log_info ("Stowing Arm");
-        LibraryCall StowSequence();
+        LibraryCall SafeStow();
       }
       Analyze:
       {
@@ -175,7 +175,7 @@ ReferenceMission2: Concurrence
      {
        Start BatteryOK && NoFaults;
        log_info ("Stowing Arm");
-       LibraryCall StowSequence();
+       LibraryCall SafeStow();
      }
     }
     endif;

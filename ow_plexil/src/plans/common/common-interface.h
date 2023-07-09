@@ -75,7 +75,7 @@ LibraryAction TaskDiscardSample (In Integer Frame,
                                  In Real Height);
 
 // Convenience
-LibraryAction StowSequence();
+LibraryAction SafeStow();
 
 
 // Lander queries and telemetry
@@ -140,56 +140,67 @@ Integer Lookup find_last_of (...);
 
 // Overrides any existing checkpoint, returns the previous state of
 // the checkpoint (Unknown if checkpoint did not exist)
-Boolean set_checkpoint (String name, Boolean value=true, String info="");
+// Actual interface:
+// Boolean Command set_checkpoint (String name, Boolean value=true, String info="");
+// which is declared as:
+Boolean Command set_checkpoint (...);
 
 // Flushes all changes (including set_boot_ok) to disk.
-Boolean flush_checkpoints ();
+Boolean Command flush_checkpoints ();
 
-// Sets IsBootOK, returns previous value
-Integer set_boot_ok (Boolean state=True, Integer boot=0);
+// Sets IsBootOK, returns previous value. Actual:
+//Integer Command set_boot_ok (Boolean state=True, Integer boot=0);
+// Declared as:
+Integer Command set_boot_ok (...);
 
 // Returns the total number of boots ever logged.
-Integer NumberOfTotalBoots ();
+Integer Lookup NumberOfTotalBoots ();
 
 // Returns number of boot entries available to the plan.
-Integer NumberOfAccessibleBoots ();
+Integer Lookup NumberOfAccessibleBoots ();
 
 // Returns number of boot entries which are not marked as is_ok.
-Integer NumberOfUnhandledBoots ();
+Integer Lookup NumberOfUnhandledBoots ();
 
 // Returns true if IsOK(1)==false, false otherwise. A true value
 // indicates that the executive shut down without setting is_ok.
-Boolean DidCrash ();
+Boolean Lookup DidCrash ();
 
 // If a lookup attempts to query a boot that doesn't exist, Unknown is
 // returned.
 
 // Returns the is_ok flag in the selected boot, which starts off as
 // false when the boot begins and may be affected by the OKOnExit
-// configuration.
-Boolean IsBootOK (Integer boot=0);
+// configuration. Actual:
+//Boolean Lookup IsBootOK (Integer boot=0);
+Boolean Lookup IsBootOK (...);
 
 // Returns the time that CheckpointAdapter.start() is called by the
-// interface adapter, Unknown if time not available.
-Integer TimeOfBoot (Integer boot=0);
+// interface adapter, Unknown if time not available. Actual:
+//Integer Lookup TimeOfBoot (Integer boot=0);
+Integer Lookup TimeOfBoot (...);
 
-// Returns the time of the last save to disk.
-Integer TimeOfLastSave (Integer boot=0);
+// Returns the time of the last save to disk. Actual:
+//Integer Lookup TimeOfLastSave (Integer boot=0);
+Integer Lookup TimeOfLastSave (...);
 
 // If a lookup attempts to query a checkpoint that doesn't exist,
 // Unknown is returned.
 
-// If checkpoint not set, Unknown.
-Boolean CheckpointState (String name, Integer boot=0);
+// If checkpoint not set, Unknown.  Actual:
+//Boolean Lookup CheckpointState (String name, Integer boot=0);
+Boolean Lookup CheckpointState (...);
 
-// Returns last modified time.
-Real CheckpointTime (String name, Integer boot=0);
+// Returns last modified time.  Actual:
+//Real Lookup CheckpointTime (String name, Integer boot=0);
+Real Lookup CheckpointTime (...);
 
-// User defined string.
-String CheckpointInfo (String name, Integer boot=0);
+// User defined string. Actual:
+//String Lookup CheckpointInfo (String name, Integer boot=0);
+String Lookup CheckpointInfo (...);
 
 // Return the most recent boot number where the checkpoint has been
 // set, Unknown if none.
-Integer CheckpointWhen (String name);
+Integer Lookup CheckpointWhen (String name);
 
 #endif
