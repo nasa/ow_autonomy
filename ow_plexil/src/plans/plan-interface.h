@@ -24,6 +24,19 @@
 
 #define NUM_JOINTS 9
 
+// Action goal statuses
+
+#define ACTION_PENDING 0
+#define ACTION_ACTIVE 1
+#define ACTION_PREEMPTED 2
+#define ACTION_SUCCEEDED 3
+#define ACTION_ABORTED 4
+#define ACTION_REJECTED 5
+#define ACTION_PREEMPTING 6
+#define ACTION_RECALLING 7
+#define ACTION_RECALLED 8
+#define ACTION_LOST 9
+
 // PLEXIL library for lander operations.
 
 LibraryAction ArmMoveJoints (In Boolean Relative,
