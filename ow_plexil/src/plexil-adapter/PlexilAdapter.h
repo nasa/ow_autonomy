@@ -8,9 +8,10 @@
 // PLEXIL Interface adapter base class to be specialized for each testbed.
 
 // PLEXIL
-#include "InterfaceAdapter.hh"
-#include "Command.hh"
-#include "Value.hh"
+#include <InterfaceAdapter.hh>
+#include <Command.hh>
+#include <Value.hh>
+#include <LookupHandler.hh>
 
 // C++
 #include <set>
@@ -27,15 +28,15 @@ public:
 
   virtual bool initialize();
   virtual bool start();
-  virtual bool stop();
-  virtual bool reset();
-  virtual bool shutdown();
+  virtual void stop();
+  //  virtual bool reset();
+  //  virtual bool shutdown();
   virtual void invokeAbort(PLEXIL::Command *cmd);
   virtual void subscribe(const PLEXIL::State& state);
   virtual void unsubscribe(const PLEXIL::State& state);
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
   void propagateValueChange (const PLEXIL::State&,
-                             const std::vector<PLEXIL::Value>&) const;
+                             const std::vector<PLEXIL::Value>&);
 
 protected:
   PlexilAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);

@@ -25,7 +25,6 @@ using namespace PLEXIL;
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
-#include <StateCacheEntry.hh>
 
 using std::string;
 
@@ -199,22 +198,22 @@ static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
   task_scoop (false, cmd, intf);
 }
 
-static void using_owlat (const State&, StateCacheEntry& entry)
+static void using_owlat (const State&, LookupReceiver& entry)
 {
   entry.update(true);
 }
 
-static void using_oceanwaters (const State&, StateCacheEntry& entry)
+static void using_oceanwaters (const State&, LookupReceiver& entry)
 {
   entry.update(false);
 }
 
-static void arm_tool (const State&, StateCacheEntry &entry)
+static void arm_tool (const State&, LookupReceiver& entry)
 {
   entry.update(OwlatInterface::instance()->getArmTool());
 }
 
-static void default_lookup_handler (const State& state, StateCacheEntry &entry)
+static void default_lookup_handler (const State& state, LookupReceiver& entry)
 {
   ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
             state.name().c_str(), state.parameters().size());

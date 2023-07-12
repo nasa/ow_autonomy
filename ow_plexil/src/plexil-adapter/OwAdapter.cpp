@@ -21,7 +21,6 @@
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
-#include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
 // C++
@@ -386,7 +385,7 @@ bool OwAdapter::initialize()
   return true;
 }
 
-void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
+void OwAdapter::lookupNow (const State& state, LookupReceiver& entry)
 {
   // NOTE: this function should be replaced by the newer approach
   // using registerLookupHandler, as found in OwlatAdapter.cpp.

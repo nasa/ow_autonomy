@@ -19,8 +19,7 @@
 #include "InterfaceSchema.hh"
 #include "parsePlan.hh"
 #include "State.hh"
-using PLEXIL::Error;
-using PLEXIL::InterfaceSchema;
+using namespace PLEXIL;
 
 // C++
 #include <stdlib.h>
@@ -34,7 +33,7 @@ using std::ostringstream;
 static string PlexilDir = "";
 
 // The embedded PLEXIL application
-static PLEXIL::ExecApplication* PlexilApp = NULL;
+static ExecApplication* PlexilApp = NULL;
 
 OwExecutive* OwExecutive::instance ()
 {
@@ -59,9 +58,9 @@ bool OwExecutive::runPlan (const string& filename)
 
   pugi::xml_document* doc = NULL;
   try {
-    doc = PLEXIL::loadXmlFile (plan);
+    doc = loadXmlFile (plan);
   }
-  catch (PLEXIL::ParserException const &e) {
+  catch (ParserException const &e) {
     ROS_ERROR("Load of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
     return false;
   }
@@ -74,7 +73,7 @@ bool OwExecutive::runPlan (const string& filename)
   try {
     PlexilApp->addPlan (doc);
   }
-  catch (PLEXIL::ParserException const &e) {
+  catch (ParserException const &e) {
     ROS_ERROR("Add of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
     return false;
   }
@@ -82,7 +81,7 @@ bool OwExecutive::runPlan (const string& filename)
   try {
     // updates Exec so that multiple plans can be run even after first plan finishes
     PlexilApp->notifyExec();
-    PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
+    getInterface().handleValueChange(State::timeState(), 0);
     PlexilApp->run();
   }
   catch (const Error& e) {
@@ -145,7 +144,7 @@ static void get_plexil_debug_config()
   try {
     string debug_file = PlexilDir + "plexil-debug.cfg";
     std::ifstream dbgConfig(debug_file.c_str());
-    if (dbgConfig.good()) PLEXIL::readDebugConfigStream(dbgConfig);
+    if (dbgConfig.good()) readDebugConfigStream(dbgConfig);
     else ROS_ERROR("Unable to open PLEXIL debug config file %s",
                    debug_file.c_str());
   }
@@ -174,7 +173,7 @@ bool OwExecutive::initialize (const string& config_file)
   get_plexil_debug_config();
 
   try {
-    PlexilApp = new PLEXIL::ExecApplication();
+    PlexilApp = new ExecApplication();
     if (! plexilInitializeInterfaces (config_file)) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;

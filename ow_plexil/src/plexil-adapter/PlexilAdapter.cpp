@@ -20,7 +20,6 @@
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
-#include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
 void PlexilAdapter::propagateValueChange (const State& state,
@@ -31,8 +30,8 @@ void PlexilAdapter::propagateValueChange (const State& state,
     return;
   }
   debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
-  m_execInterface.handleValueChange (state, vals.front());
-  m_execInterface.notifyOfExternalEvent();
+  getInterface().handleValueChange (state, vals.front());
+  getInterface().notifyOfExternalEvent();
 }
 
 bool PlexilAdapter::isStateSubscribed(const State& state) const
@@ -72,12 +71,12 @@ bool PlexilAdapter::start()
   return true;
 }
 
-bool PlexilAdapter::stop()
+void PlexilAdapter::stop()
 {
   debugMsg("PlexilAdapter", " stopped.");
-  return true;
 }
 
+/*
 bool PlexilAdapter::reset()
 {
   debugMsg("PlexilAdapter", " reset.");
@@ -89,6 +88,7 @@ bool PlexilAdapter::shutdown()
   debugMsg("PlexilAdapter", " shut down.");
   return true;
 }
+*/
 
 void PlexilAdapter::invokeAbort(Command *cmd)
 {

@@ -32,7 +32,7 @@ class LanderAdapter : public PlexilAdapter
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
 
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
 
  protected:
   bool initialize (LanderInterface*);

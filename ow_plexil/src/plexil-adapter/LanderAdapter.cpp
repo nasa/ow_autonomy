@@ -23,7 +23,6 @@ using std::unique_ptr;
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
-#include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
 float LanderAdapter::PanMinDegrees  = -183.346; // -3.2 radians
@@ -207,7 +206,7 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void arm_joint_acceleration (const State& state, StateCacheEntry &entry)
+static void arm_joint_acceleration (const State& state, LookupReceiver &entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
@@ -215,7 +214,7 @@ static void arm_joint_acceleration (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
 }
 
-static void arm_joint_position (const State& state, StateCacheEntry &entry)
+static void arm_joint_position (const State& state, LookupReceiver &entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
@@ -223,7 +222,7 @@ static void arm_joint_position (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointPosition(joint));
 }
 
-static void arm_joint_torque (const State& state, StateCacheEntry &entry)
+static void arm_joint_torque (const State& state, LookupReceiver &entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
@@ -231,7 +230,7 @@ static void arm_joint_torque (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointTorque(joint));
 }
 
-static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
+static void arm_joint_velocity (const State& state, LookupReceiver &entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
@@ -239,7 +238,7 @@ static void arm_joint_velocity (const State& state, StateCacheEntry &entry)
   entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
 }
 
-static void arm_pose (const State&, StateCacheEntry &entry)
+static void arm_pose (const State&, LookupReceiver &entry)
 {
   vector<Value> v;
   v.resize(7);
@@ -251,7 +250,7 @@ static void arm_pose (const State&, StateCacheEntry &entry)
   entry.update(v);
 }
 
-static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
+static void arm_end_effector_ft (const State&, LookupReceiver &entry)
 {
   vector<Value> v;
   v.resize(6);
@@ -263,37 +262,37 @@ static void arm_end_effector_ft (const State&, StateCacheEntry &entry)
   entry.update(v);
 }
 
-static void pan_radians (const State& state, StateCacheEntry &entry)
+static void pan_radians (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getPanRadians());
 }
 
-static void pan_degrees (const State& state, StateCacheEntry &entry)
+static void pan_degrees (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getPanRadians() * R2D);
 }
 
-static void tilt_radians (const State& state, StateCacheEntry &entry)
+static void tilt_radians (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getTiltRadians());
 }
 
-static void tilt_degrees (const State& state, StateCacheEntry &entry)
+static void tilt_degrees (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getTiltRadians() * R2D);
 }
 
-static void battery_soc (const State& state, StateCacheEntry &entry)
+static void battery_soc (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getBatterySOC());
 }
 
-static void battery_temp (const State& state, StateCacheEntry &entry)
+static void battery_temp (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getBatteryTemperature());
 }
 
-static void battery_rul (const State& state, StateCacheEntry &entry)
+static void battery_rul (const State& state, LookupReceiver &entry)
 {
   entry.update(LanderAdapter::s_interface->getBatteryRUL());
 }
