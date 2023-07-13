@@ -82,7 +82,10 @@ bool OwExecutive::runPlan (const string& filename)
     // updates Exec so that multiple plans can be run even after first plan finishes
     PlexilApp->notifyExec();
     getInterface().handleValueChange(State::timeState(), 0);
-    PlexilApp->run();
+    if (! PlexilApp->run()) {
+      ROS_ERROR ("Running the PLEXIL application failed.");
+      return false;
+    }
   }
   catch (const Error& e) {
     ostringstream s;
@@ -173,13 +176,13 @@ bool OwExecutive::initialize (const string& config_file)
   get_plexil_debug_config();
 
   try {
-    PlexilApp = new ExecApplication();
+    PlexilApp = makeExecApplication();
     if (! plexilInitializeInterfaces (config_file)) {
       ROS_ERROR("plexilInitializeInterfaces failed");
       return false;
     }
     if (!PlexilApp->startInterfaces()) {
-      ROS_ERROR("Interface startup failed");
+      ROS_ERROR("PLEXIL interface startup failed");
       return false;
     }
     if (!PlexilApp->step()) {
