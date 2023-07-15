@@ -1,0 +1,62 @@
+<System>
+  <Subsystems>
+    <Subsystem Name="Power">
+
+      <FaultGroup Name="Power">
+        <Faults>
+          <Fault Name="Overdraw" Severity="2"/>
+          <Fault Name="NoCharge" Severity="3"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Arm"/>  
+          <Sys Name="Antenna"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="2" Medium="1" High="1"/>
+      </FaultGroup>
+
+      <FaultGroup Name="Power2">
+        <Faults>
+          <Fault Name="Overdraw2" Severity="2"/>
+          <Fault Name="NoCharge2" Severity="3"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Arm2"/>  
+          <Sys Name="Antenna2"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="3" Medium="2" High="2"/>
+      </FaultGroup>
+
+    </Subsystem>
+    <Subsystem Name="Power2">
+
+      <FaultGroup Name="Power3">
+        <Faults>
+          <Fault Name="Overdraw" Severity="2"/>
+          <Fault Name="NoCharge" Severity="3"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Arm"/>  
+          <Sys Name="Antenna"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="2" Medium="1" High="1"/>
+      </FaultGroup>
+
+      <FaultGroup Name="Power4">
+        <Faults>
+          <Fault Name="Overdraw2" Severity="2"/>
+          <Fault Name="NoCharge2" Severity="3"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Arm2"/>  
+          <Sys Name="Antenna2"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="3" Medium="2" High="2"/>
+      </FaultGroup>
+
+    </Subsystem>
+
+  </Subsystems>
+  <AdditionalFaultGroups>
+  </AdditionalFaultGroups>
+</System>
+

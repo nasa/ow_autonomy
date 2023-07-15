@@ -5,7 +5,8 @@
 #include <stack>
 #include <vector>
 #include <iostream>
-#include "/home/keegan/plexil/src/third-party/pugixml/src/pugixml.hpp"
+//#include "/home/keegan/plexil/src/third-party/pugixml/src/pugixml.hpp"
+#include "pugixml.hpp"
 
 
 FaultHierarchy::FaultHierarchy()
@@ -25,8 +26,45 @@ FaultHierarchy::FaultHierarchy()
   m_fault_model["fault2"].subfaults = sub2;
   m_fault_model["fault3"].subfaults = sub3;
   m_fault_model["fault4"].subfaults = sub4;
-  DebugPrint();
+  //DebugPrint();
+  //
+  const char* source = "xmltest.xml";
+  pugi::xml_document doc;
+  pugi::xml_parse_result result = doc.load_file(source);
+
+  if (result)
+  {
+      std::cout << "XML [" << source << "] parsed without errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n\n";
+  }
+  else
+  {
+      std::cout << "XML [" << source << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
+      std::cout << "Error description: " << result.description() << "\n";
+      std::cout << "Error offset: " << result.offset << " (error at [..." << (source + result.offset) << "]\n\n";
+  }
+
+
+  pugi::xml_node subsystems = doc.child("System").child("Subsystems");
+  for (pugi::xml_node subsystem = subsystems.child("Subsystem"); subsystem; subsystem = subsystem.next_sibling("Subsystem"))
+  {
+    std::cout << "Subsystem " << subsystem.attribute("Name").value() << "\n";
+    for (pugi::xml_node fault_group = subsystem.child("FaultGroup"); fault_group; fault_group = fault_group.next_sibling("FaultGroup")){
+      std::cout << "FaultGroup " << fault_group.attribute("Name").value() << "\n";
+      pugi::xml_node faults = fault_group.child("Faults");
+      pugi::xml_node affected_subsystems = fault_group.child("AffectedSubsystems");
+      for (pugi::xml_node fault = faults.child("Fault"); fault; fault = fault.next_sibling("Fault")){
+        std::cout << "Fault " << fault.attribute("Name").value() << "\n";
+      }
+      for (pugi::xml_node affected_subsystem = affected_subsystems.child("Sys"); affected_subsystem;
+           affected_subsystem = affected_subsystem.next_sibling("Sys")){
+        std::cout << "AffectedSubsystems " << affected_subsystem.attribute("Name").value() << "\n";
+      }
+ 
+    }
+  }
 }
+
+
 
 
 void FaultHierarchy::DebugPrint(){
