@@ -11,7 +11,8 @@
           <Sys Name="Arm"/>  
           <Sys Name="Antenna"/>  
         </AffectedSubsystems>
-        <SeverityThreshold Low="2" Medium="1" High="1"/>
+        <SeverityThreshold Low="2" Medium="1" High="1" Operation="AND"/>
+        <SeverityThreshold Low="2" Medium="1" High="1" Operation="OR"/>
       </FaultGroup>
 
       <FaultGroup Name="Power2">
