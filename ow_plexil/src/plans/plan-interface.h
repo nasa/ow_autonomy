@@ -24,7 +24,8 @@
 
 #define NUM_JOINTS 9
 
-// Action goal statuses
+// Action goal statuses.
+// NOTE: the last three are not yet supported in the simulator.
 
 #define ACTION_PENDING 0
 #define ACTION_ACTIVE 1

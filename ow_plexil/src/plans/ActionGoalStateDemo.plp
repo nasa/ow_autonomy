@@ -8,6 +8,12 @@
 // 'ACTIVE'.  To terminate this plan, inject a power fault or just
 // type Ctrl-C.
 
+// NOTE: As of 7/20/23 there is a problem with this plan in which,
+// occasionally, injecting an antenna pan fault will cause the antenna
+// to permanently freeze, i.e. not start moving again when the fault
+// is cleared. The use of, and/or current implementation (in PLEXIL)
+// of, SynchronousCommand is suspect, and is being investigated.
+
 #include "plan-interface.h"
 
 ActionGoalStateDemo:
@@ -22,8 +28,8 @@ ActionGoalStateDemo:
 
     Stowing: UncheckedSequence
     {
-      RepeatCondition true;
       StartCondition !Lookup(ArmFault);
+      RepeatCondition true;
       LibraryCall ArmUnstow();
       LibraryCall ArmStow();
     }
