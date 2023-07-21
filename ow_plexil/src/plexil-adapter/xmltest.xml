@@ -1,62 +1,71 @@
 <System>
   <Subsystems>
+
     <Subsystem Name="Power">
-
-      <FaultGroup Name="Power">
+      <FaultGroup Name="ArmPowerSystem" Severity="High">
         <Faults>
-          <Fault Name="Overdraw" Severity="2"/>
-          <Fault Name="NoCharge" Severity="3"/>
+          <Fault Name="Overdraw" Severity="Low"/>
+          <Fault Name="NoCharge" Severity="High"/>
         </Faults>
         <AffectedSubsystems>  
           <Sys Name="Arm"/>  
-          <Sys Name="Antenna"/>  
-        </AffectedSubsystems>
-        <SeverityThreshold Low="2" Medium="1" High="1" Operation="AND"/>
-        <SeverityThreshold Low="2" Medium="1" High="1" Operation="OR"/>
-      </FaultGroup>
-
-      <FaultGroup Name="Power2">
-        <Faults>
-          <Fault Name="Overdraw2" Severity="2"/>
-          <Fault Name="NoCharge2" Severity="3"/>
-        </Faults>
-        <AffectedSubsystems>  
-          <Sys Name="Arm2"/>  
-          <Sys Name="Antenna2"/>  
-        </AffectedSubsystems>
-        <SeverityThreshold Low="3" Medium="2" High="2"/>
-      </FaultGroup>
-
-    </Subsystem>
-    <Subsystem Name="Power2">
-
-      <FaultGroup Name="Power3">
-        <Faults>
-          <Fault Name="Overdraw" Severity="2"/>
-          <Fault Name="NoCharge" Severity="3"/>
-        </Faults>
-        <AffectedSubsystems>  
-          <Sys Name="Arm"/>  
-          <Sys Name="Antenna"/>  
         </AffectedSubsystems>
         <SeverityThreshold Low="2" Medium="1" High="1"/>
       </FaultGroup>
 
-      <FaultGroup Name="Power4">
+      <FaultGroup Name="AntennaPowerSystem" Severity="Medium">
         <Faults>
-          <Fault Name="Overdraw2" Severity="2"/>
-          <Fault Name="NoCharge2" Severity="3"/>
+          <Fault Name="Overdraw2" Severity="Low"/>
+          <Fault Name="NoCharge2" Severity="High"/>
         </Faults>
         <AffectedSubsystems>  
-          <Sys Name="Arm2"/>  
-          <Sys Name="Antenna2"/>  
+          <Sys Name="Antenna"/>  
         </AffectedSubsystems>
-        <SeverityThreshold Low="3" Medium="2" High="2"/>
+        <SeverityThreshold Low="3" Medium="2" High="1"/>
       </FaultGroup>
 
+      <SeverityThreshold Low="3" Medium="2" High="1"/>
+      <AffectedSubsystems>  
+        <Sys Name="Antenna"/>  
+        <Sys Name="Arm"/>  
+        <Sys Name="Camera"/>  
+        <Sys Name="Sensors"/>  
+      </AffectedSubsystems>
+ 
     </Subsystem>
 
-  </Subsystems>
+    <Subsystem Name="Power2">
+      <FaultGroup Name="ArmPowerSystem2" Severity="High">
+        <Faults>
+          <Fault Name="Overdraw" Severity="Low"/>
+          <Fault Name="NoCharge" Severity="High"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Arm"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="2" Medium="1" High="1"/>
+      </FaultGroup>
+
+      <FaultGroup Name="AntennaPowerSystem2" Severity="Medium">
+        <Faults>
+          <Fault Name="Overdraw2" Severity="Low"/>
+          <Fault Name="NoCharge2" Severity="High"/>
+        </Faults>
+        <AffectedSubsystems>  
+          <Sys Name="Antenna"/>  
+        </AffectedSubsystems>
+        <SeverityThreshold Low="3" Medium="2" High="1"/>
+      </FaultGroup>
+
+      <SeverityThreshold Low="3" Medium="2" High="1"/>
+      <AffectedSubsystems>  
+        <Sys Name="Antenna"/>  
+        <Sys Name="Arm"/>  
+        <Sys Name="Camera"/>  
+        <Sys Name="Sensors"/>  
+      </AffectedSubsystems>
+ 
+    </Subsystem>
   <AdditionalFaultGroups>
   </AdditionalFaultGroups>
 </System>

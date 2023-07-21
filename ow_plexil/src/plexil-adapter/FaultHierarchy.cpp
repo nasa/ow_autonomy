@@ -11,7 +11,7 @@
 
 FaultHierarchy::FaultHierarchy()
 {
-  std::vector<std::string> test_names = {"fault1", "fault2", "fault3", "fault4", "fault5"};
+/*  std::vector<std::string> test_names = {"fault1", "fault2", "fault3", "fault4", "fault5"};
 
   std::vector<std::string> sub1  = {"fault2", "fault3", "fault4"};
   std::vector<std::string> sub2  = {"fault1",  "fault4"};
@@ -28,47 +28,135 @@ FaultHierarchy::FaultHierarchy()
   m_fault_model["fault4"].subfaults = sub4;
   //DebugPrint();
   //
+  */
   const char* source = "xmltest.xml";
+  parseXML(source);
+
+}
+
+void FaultHierarchy::parseXML(const char* file_name){
   pugi::xml_document doc;
-  pugi::xml_parse_result result = doc.load_file(source);
+  pugi::xml_parse_result result = doc.load_file(file_name);
 
   if (result)
   {
-      std::cout << "XML [" << source << "] parsed without errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n\n";
+      std::cout << "XML [" << file_name << "] parsed without errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n\n";
   }
   else
   {
-      std::cout << "XML [" << source << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
+      std::cout << "XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
       std::cout << "Error description: " << result.description() << "\n";
-      std::cout << "Error offset: " << result.offset << " (error at [..." << (source + result.offset) << "]\n\n";
+      std::cout << "Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n";
   }
-
 
   pugi::xml_node subsystems = doc.child("System").child("Subsystems");
   for (pugi::xml_node subsystem = subsystems.child("Subsystem"); subsystem; subsystem = subsystem.next_sibling("Subsystem"))
   {
+    std::string subsystem_name = subsystem.attribute("Name").value();
+    std::string subsystem_severity_low = subsystem.child("SeverityThreshold").attribute("Low").value();
+    std::string subsystem_severity_med = subsystem.child("SeverityThreshold").attribute("Medium").value();
+    std::string subsystem_severity_high = subsystem.child("SeverityThreshold").attribute("High").value();
+
+    if (subsystem_name.empty() ||  subsystem_severity_low.empty() || subsystem_severity_med.empty()
+        || subsystem_severity_high.empty() ){
+      std::cout << "WARNING: FAILED TO READ A SUBSYSTEM " << subsystem_name << "\n";
+      continue;
+    }
+
+    if (m_subsystems.find(subsystem_name) == m_subsystems.end()){
+      m_subsystems[subsystem_name] = Subsystem();
+      m_subsystems[subsystem_name].name = subsystem_name;
+      m_subsystems[subsystem_name].severity_threshold["Low"] = std::stoi(subsystem_severity_low);
+      m_subsystems[subsystem_name].severity_threshold["Medium"] = std::stoi(subsystem_severity_med);
+      m_subsystems[subsystem_name].severity_threshold["High"] = std::stoi(subsystem_severity_high);
+    }
+    else{
+      continue;
+    }
+ 
     std::cout << "Subsystem " << subsystem.attribute("Name").value() << "\n";
-    for (pugi::xml_node fault_group = subsystem.child("FaultGroup"); fault_group; fault_group = fault_group.next_sibling("FaultGroup")){
+    pugi::xml_node sys_affected_subsystems = subsystem.child("AffectedSubsystems");
+
+    for (pugi::xml_node affected_subsystem = sys_affected_subsystems.child("Sys"); affected_subsystem;
+         affected_subsystem = affected_subsystem.next_sibling("Sys")){
+      if (affected_subsystem.empty()){
+        std::cout << "WARNING: FAILED TO READ AN AFFECTED SUBSYSTEM " << affected_subsystem << "\n";
+        continue;
+      }
+      std::string affected_subsystem_name = affected_subsystem.attribute("Name").value();
+      m_subsystems[subsystem_name].affected_subsystems.push_back(affected_subsystem_name);
+      std::cout << "SYS AffectedSubsystems " << affected_subsystem.attribute("Name").value() << "\n";
+    }
+    for (pugi::xml_node fault_group = subsystem.child("FaultGroup"); fault_group; 
+         fault_group = fault_group.next_sibling("FaultGroup")){
+      std::string fault_group_name = fault_group.attribute("Name").value();
+      std::string fault_group_severity = fault_group.attribute("Severity").value();
+      std::string fault_group_severity_low = fault_group.child("SeverityThreshold").attribute("Low").value();
+      std::string fault_group_severity_med = fault_group.child("SeverityThreshold").attribute("Medium").value();
+      std::string fault_group_severity_high = fault_group.child("SeverityThreshold").attribute("High").value();
+
+      if (fault_group_name.empty() || fault_group_severity.empty() || fault_group_severity_low.empty() 
+          ||fault_group_severity_med.empty() ||fault_group_severity_high.empty() ){
+        std::cout << "WARNING: FAILED TO READ A FAULTGROUP " << fault_group_name << "\n";
+        continue;
+      }
+
+      if (m_fault_groups.find(fault_group_name) == m_fault_groups.end()){
+        m_fault_groups[fault_group_name] = FaultGroup();
+        m_fault_groups[fault_group_name].name = fault_group_name;
+        m_fault_groups[fault_group_name].fault_group_severity = fault_group_severity;
+        m_fault_groups[fault_group_name].severity_threshold["Low"] = std::stoi(fault_group_severity_low);
+        m_fault_groups[fault_group_name].severity_threshold["Medium"] = std::stoi(fault_group_severity_med);
+        m_fault_groups[fault_group_name].severity_threshold["High"] = std::stoi(fault_group_severity_high);
+        m_subsystems[subsystem_name].fault_groups.push_back(fault_group_name);
+      }
+      else{
+        continue;
+      }
+ 
       std::cout << "FaultGroup " << fault_group.attribute("Name").value() << "\n";
+      std::cout << "FaultGroup Severity " << fault_group_severity << "\n";
+
       pugi::xml_node faults = fault_group.child("Faults");
       pugi::xml_node affected_subsystems = fault_group.child("AffectedSubsystems");
       for (pugi::xml_node fault = faults.child("Fault"); fault; fault = fault.next_sibling("Fault")){
-        std::cout << "Fault " << fault.attribute("Name").value() << "\n";
+        std::string fault_name = fault.attribute("Name").value();
+        std::string fault_severity = fault.attribute("Severity").value();
+        if (fault_name.empty() || fault_severity.empty()){
+          std::cout << "WARNING: FAILED TO READ A FAULT IN FAULt GROUP " << fault_group_name << "\n";
+          continue;
+        }
+
+        if (m_faults.find(fault_name) == m_faults.end()){
+          m_faults[fault_name] = Fault();
+          m_faults[fault_name].name = fault_name;
+        }
+        m_fault_groups[fault_group_name].faults.push_back(fault_name);
+        m_faults[fault_name].affected_fault_groups.push_back(std::make_pair(fault_group_name, fault_severity));
+        std::cout << "Fault " << fault_name << "\n";
+        std::cout << "Fault Severity" << fault_severity << "\n";
+
       }
       for (pugi::xml_node affected_subsystem = affected_subsystems.child("Sys"); affected_subsystem;
            affected_subsystem = affected_subsystem.next_sibling("Sys")){
+        if (affected_subsystem.empty()){
+          std::cout << "WARNING: FAILED TO READ AN AFFECTED SUBSYSTEM " << affected_subsystem << "\n";
+          continue;
+        }
+        std::string affected_subsystem_name = affected_subsystem.attribute("Name").value();
+        m_fault_groups[fault_group_name].affected_subsystems.push_back(affected_subsystem_name);
         std::cout << "AffectedSubsystems " << affected_subsystem.attribute("Name").value() << "\n";
       }
  
     }
   }
+
+
 }
 
 
-
-
 void FaultHierarchy::DebugPrint(){
-  std::vector<std::string> test_names = {"fault1", "fault2", "fault3", "fault4", "fault5"};
+/*  std::vector<std::string> test_names = {"fault1", "fault2", "fault3", "fault4", "fault5"};
   std::cout << "DEBUG PRINT" << std::endl;
   for (auto i: test_names){
     std::cout << m_fault_model[i].name << 
@@ -80,12 +168,12 @@ void FaultHierarchy::DebugPrint(){
       std::cout << j << " ";
     }
     std::cout << std::endl;
-  }
+  }*/
 }
 
 
 void FaultHierarchy::updateFaultModel(const std::string name, const bool status, const int severity){
-  std::unordered_set<std::string> visited;
+/*  std::unordered_set<std::string> visited;
   std::stack<std::string> nodes;
 
   if (m_fault_model.find(name) == m_fault_model.end()){
@@ -129,6 +217,7 @@ void FaultHierarchy::updateFaultModel(const std::string name, const bool status,
       }
       }
   }
+  */
 }
 
 
