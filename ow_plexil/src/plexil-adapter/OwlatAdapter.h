@@ -14,8 +14,8 @@ class OwlatInterface;
 class OwlatAdapter : public LanderAdapter
 {
 public:
-  // No default constructor, only this specialized one.
-  OwlatAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  OwlatAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
+  OwlatAdapter () = delete;
   ~OwlatAdapter () = default;
   OwlatAdapter (const OwlatAdapter&) = delete;
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;

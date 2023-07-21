@@ -7,6 +7,7 @@
 // ow_plexil
 #include "OwlatAdapter.h"
 #include "OwlatInterface.h"
+#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 using namespace PLEXIL;
@@ -198,31 +199,31 @@ static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
   task_scoop (false, cmd, intf);
 }
 
-static void using_owlat (const State&, LookupReceiver& entry)
+static void using_owlat (const State&, LookupReceiver* entry)
 {
-  entry.update(true);
+  entry->update(true);
 }
 
-static void using_oceanwaters (const State&, LookupReceiver& entry)
+static void using_oceanwaters (const State&, LookupReceiver* entry)
 {
-  entry.update(false);
+  entry->update(false);
 }
 
-static void arm_tool (const State&, LookupReceiver& entry)
+static void arm_tool (const State&, LookupReceiver* entry)
 {
-  entry.update(OwlatInterface::instance()->getArmTool());
+  entry->update(OwlatInterface::instance()->getArmTool());
 }
 
-static void default_lookup_handler (const State& state, LookupReceiver& entry)
+static void default_lookup_handler (const State& state, LookupReceiver* entry)
 {
   ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
             state.name().c_str(), state.parameters().size());
-  entry.update(Unknown);
+  entry->update(Unknown);
 }
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
-                            const pugi::xml_node& configXml)
-  : LanderAdapter (execInterface, configXml)
+                            PLEXIL::AdapterConf* conf)
+  : LanderAdapter (execInterface, conf)
 {
   debugMsg("OwlatAdapter", " created.");
 }
@@ -230,33 +231,37 @@ OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
 bool OwlatAdapter::initialize()
 {
   LanderAdapter::initialize (OwlatInterface::instance());
+  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
-
-  g_configuration->registerCommandHandler("arm_set_tool", arm_set_tool);
-  g_configuration->registerCommandHandler("arm_tare_ft_sensor", arm_tare_ft_sensor);
-  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
-  g_configuration->registerCommandHandler("arm_move_joints_guarded",
-                                          arm_move_joints_guarded);
-  g_configuration->registerCommandHandler("task_scoop_circular", task_scoop_circular);
-  g_configuration->registerCommandHandler("task_scoop_linear", task_scoop_linear);
-  g_configuration->registerCommandHandler("task_psp", task_psp);
-  g_configuration->registerCommandHandler("task_penetrometer", task_penetrometer);
-  g_configuration->registerCommandHandler("task_shear_bevameter",
-                                          task_shear_bevameter);
+  config->registerCommandHandlerFunction("arm_set_tool", arm_set_tool);
+  config->registerCommandHandlerFunction("arm_tare_ft_sensor",
+                                         arm_tare_ft_sensor);
+  config->registerCommandHandlerFunction("arm_move_joints", arm_move_joints);
+  config->registerCommandHandlerFunction("arm_move_joints_guarded",
+                                 arm_move_joints_guarded);
+  config->registerCommandHandlerFunction("task_scoop_circular",
+                                         task_scoop_circular);
+  config->registerCommandHandlerFunction("task_scoop_linear", task_scoop_linear);
+  config->registerCommandHandlerFunction("task_psp", task_psp);
+  config->registerCommandHandlerFunction("task_penetrometer", task_penetrometer);
+  config->registerCommandHandlerFunction("task_shear_bevameter",
+                                         task_shear_bevameter);
 
   // Telemetry
-  g_configuration->registerLookupHandler("UsingOWLAT", using_owlat);
-  g_configuration->registerLookupHandler("UsingOceanWATERS", using_oceanwaters);
-  g_configuration->registerLookupHandler("ArmTool", arm_tool);
-  g_configuration->setDefaultLookupHandler(default_lookup_handler);
+  config->registerLookupHandlerFunction("UsingOWLAT", using_owlat);
+  config->registerLookupHandlerFunction("UsingOceanWATERS", using_oceanwaters);
+  config->registerLookupHandlerFunction("ArmTool", arm_tool);
+  config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
   return true;
 }
 
+/*
 extern "C" {
   void initowlat_adapter() {
     REGISTER_ADAPTER(OwlatAdapter, "owlat_adapter");
   }
 }
+*/

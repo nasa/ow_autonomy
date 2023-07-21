@@ -7,6 +7,7 @@
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
+#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -18,6 +19,7 @@
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
 #include <AdapterExecInterface.hh>
+#include <LookupReceiver.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
@@ -50,7 +52,7 @@ static bool lookup (const string& state_name,
   }
 
   // Plan interface specific to OceanWATERS
-  
+
   else if (state_name == "UsingOceanWATERS") {
     value_out = true;
   }
@@ -352,8 +354,8 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 // Telemetry
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
-                     const pugi::xml_node& configXml)
-  : LanderAdapter(execInterface, configXml)
+                     PLEXIL::AdapterConf* conf)
+  : LanderAdapter(execInterface, conf)
 {
   debugMsg("OwAdapter", " created.");
 }
@@ -361,35 +363,37 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 bool OwAdapter::initialize()
 {
   LanderAdapter::initialize (OwInterface::instance());
+  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
-  g_configuration->registerCommandHandler("grind", grind);
-  g_configuration->registerCommandHandler("guarded_move", guarded_move);
-  g_configuration->registerCommandHandler("arm_move_joints", arm_move_joints);
-  g_configuration->registerCommandHandler("arm_move_joints_guarded",
-                                          arm_move_joints_guarded);
-  g_configuration->registerCommandHandler("dock_ingest_sample", dock_ingest_sample);
-  g_configuration->registerCommandHandler("pan", pan);
-  g_configuration->registerCommandHandler("tilt", tilt);
-  g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
-  g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
-  g_configuration->registerCommandHandler("pan_tilt_cartesian",
-                                          pan_tilt_cartesian);
-  g_configuration->registerCommandHandler("identify_sample_location",
-                                          identify_sample_location);
-  g_configuration->registerCommandHandler("camera_set_exposure",
-                                          camera_set_exposure);
-  g_configuration->registerCommandHandler("light_set_intensity",
-                                          light_set_intensity);
+  config->registerCommandHandlerFunction("grind", grind);
+  config->registerCommandHandlerFunction("guarded_move", guarded_move);
+  config->registerCommandHandlerFunction("arm_move_joints", arm_move_joints);
+  config->registerCommandHandlerFunction("arm_move_joints_guarded",
+                                 arm_move_joints_guarded);
+  config->registerCommandHandlerFunction("dock_ingest_sample",
+                                         dock_ingest_sample);
+  config->registerCommandHandlerFunction("pan", pan);
+  config->registerCommandHandlerFunction("tilt", tilt);
+  config->registerCommandHandlerFunction("scoop_circular", scoop_circular);
+  config->registerCommandHandlerFunction("scoop_linear", scoop_linear);
+  config->registerCommandHandlerFunction("pan_tilt_cartesian",
+                                         pan_tilt_cartesian);
+  config->registerCommandHandlerFunction("identify_sample_location",
+                                 identify_sample_location);
+  config->registerCommandHandlerFunction("camera_set_exposure",
+                                         camera_set_exposure);
+  config->registerCommandHandlerFunction("light_set_intensity",
+                                         light_set_intensity);
   debugMsg("OwAdapter", " initialized.");
   return true;
 }
 
-void OwAdapter::lookupNow (const State& state, LookupReceiver& entry)
+void OwAdapter::lookupNow (const State& state, LookupReceiver* entry)
 {
   // NOTE: this function should be replaced by the newer approach
-  // using registerLookupHandler, as found in OwlatAdapter.cpp.
-  
+  // using registerLookupHandlerFunction, as found in OwlatAdapter.cpp.
+
   debugMsg("OwAdapter:lookupNow", " called on " << state.name() << " with "
            << state.parameters().size() << " arguments");
 
@@ -398,7 +402,7 @@ void OwAdapter::lookupNow (const State& state, LookupReceiver& entry)
   if (! lookup(state.name(), state.parameters(), retval)) {
     ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
   }
-  entry.update(retval);
+  entry->update(retval);
 }
 
 extern "C" {

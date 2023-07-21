@@ -9,6 +9,9 @@
 
 // PLEXIL
 #include <InterfaceAdapter.hh>
+#include <AdapterExecInterface.hh>
+#include <Configuration.hh>
+
 #include <Command.hh>
 #include <Value.hh>
 #include <LookupHandler.hh>
@@ -21,7 +24,7 @@
 class PlexilAdapter : public PLEXIL::InterfaceAdapter
 {
 public:
-  PlexilAdapter() = default;
+  PlexilAdapter() = delete;
   virtual ~PlexilAdapter() = default;
   PlexilAdapter (const PlexilAdapter&) = delete;
   PlexilAdapter& operator= (const PlexilAdapter&) = delete;
@@ -39,7 +42,7 @@ public:
                              const std::vector<PLEXIL::Value>&);
 
 protected:
-  PlexilAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  PlexilAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
   bool isStateSubscribed (const PLEXIL::State& state) const;
   std::set<PLEXIL::State> m_subscribedStates;
 };

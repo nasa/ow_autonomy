@@ -6,6 +6,7 @@
 
 // ow_plexil
 #include "PlexilAdapter.h"
+#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -16,22 +17,23 @@
 // PLEXIL API
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
-#include <AdapterExecInterface.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
 using namespace PLEXIL;
 
 void PlexilAdapter::propagateValueChange (const State& state,
-                                          const std::vector<Value>& vals) const
+                                          const std::vector<Value>& vals)
 {
   if (! isStateSubscribed (state)) {
     debugMsg("PlexilAdapter:propagateValueChange", " ignoring " << state);
     return;
   }
   debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
-  getInterface().handleValueChange (state, vals.front());
-  getInterface().notifyOfExternalEvent();
+  OwExecutive::instance()->plexilInterfaceMgr()
+    -> handleValueChange (state, vals.front());
+  OwExecutive::instance()->plexilInterfaceMgr()
+    -> notifyOfExternalEvent();
 }
 
 bool PlexilAdapter::isStateSubscribed(const State& state) const
@@ -40,19 +42,21 @@ bool PlexilAdapter::isStateSubscribed(const State& state) const
 }
 
 PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
-                     const pugi::xml_node& configXml)
-  : InterfaceAdapter(execInterface, configXml)
+                             PLEXIL::AdapterConf* conf)
+  : InterfaceAdapter(execInterface, conf)
 {
   debugMsg("PlexilAdapter", " created.");
 }
 
 bool PlexilAdapter::initialize()
 {
-  g_configuration->defaultRegisterAdapter(this);
-  g_configuration->registerCommandHandler("log_info", log_info);
-  g_configuration->registerCommandHandler("log_warning", log_warning);
-  g_configuration->registerCommandHandler("log_error", log_error);
-  g_configuration->registerCommandHandler("log_debug", log_debug);
+  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
+
+  //  config->defaultRegisterAdapter(this);
+  config->registerCommandHandlerFunction("log_info", log_info);
+  config->registerCommandHandlerFunction("log_warning", log_warning);
+  config->registerCommandHandlerFunction("log_error", log_error);
+  config->registerCommandHandlerFunction("log_debug", log_debug);
   setSubscriber (receiveBool);
   setSubscriber (receiveInt);
   setSubscriber (receiveString);

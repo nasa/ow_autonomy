@@ -26,8 +26,8 @@ class LanderAdapter : public PlexilAdapter
   static float TiltMaxDegrees;
   static float PanTiltInputTolerance;
 
-  // No default constructor, only this specialized one.
-  LanderAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  LanderAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
+  LanderAdapter () = delete;
   virtual ~LanderAdapter () = default;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;

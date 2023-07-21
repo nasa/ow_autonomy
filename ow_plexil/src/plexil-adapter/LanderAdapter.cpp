@@ -5,6 +5,7 @@
 // ow_plexil
 #include "LanderAdapter.h"
 #include "LanderInterface.h"
+#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -21,6 +22,7 @@ using std::unique_ptr;
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
 #include <ArrayImpl.hh>
+#include <LookupReceiver.hh>
 #include <Debug.hh>
 #include <Expression.hh>
 using namespace PLEXIL;
@@ -206,39 +208,39 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void arm_joint_acceleration (const State& state, LookupReceiver &entry)
+static void arm_joint_acceleration (const State& state, LookupReceiver* entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry.update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
+  entry->update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
 }
 
-static void arm_joint_position (const State& state, LookupReceiver &entry)
+static void arm_joint_position (const State& state, LookupReceiver* entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry.update(LanderAdapter::s_interface->getArmJointPosition(joint));
+  entry->update(LanderAdapter::s_interface->getArmJointPosition(joint));
 }
 
-static void arm_joint_torque (const State& state, LookupReceiver &entry)
+static void arm_joint_torque (const State& state, LookupReceiver* entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry.update(LanderAdapter::s_interface->getArmJointTorque(joint));
+  entry->update(LanderAdapter::s_interface->getArmJointTorque(joint));
 }
 
-static void arm_joint_velocity (const State& state, LookupReceiver &entry)
+static void arm_joint_velocity (const State& state, LookupReceiver* entry)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry.update(LanderAdapter::s_interface->getArmJointVelocity(joint));
+  entry->update(LanderAdapter::s_interface->getArmJointVelocity(joint));
 }
 
-static void arm_pose (const State&, LookupReceiver &entry)
+static void arm_pose (const State&, LookupReceiver* entry)
 {
   vector<Value> v;
   v.resize(7);
@@ -247,10 +249,10 @@ static void arm_pose (const State&, LookupReceiver &entry)
     // Conversion from double to PLEXIL::Real (float)
     v[i] = Value(static_cast<Real>(pose[i]));
   }
-  entry.update(v);
+  entry->update(v);
 }
 
-static void arm_end_effector_ft (const State&, LookupReceiver &entry)
+static void arm_end_effector_ft (const State&, LookupReceiver* entry)
 {
   vector<Value> v;
   v.resize(6);
@@ -259,49 +261,49 @@ static void arm_end_effector_ft (const State&, LookupReceiver &entry)
     // Conversion from double to PLEXIL::Real (float)
     v[i] = Value(static_cast<Real>(ft[i]));
   }
-  entry.update(v);
+  entry->update(v);
 }
 
-static void pan_radians (const State& state, LookupReceiver &entry)
+static void pan_radians (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getPanRadians());
+  entry->update(LanderAdapter::s_interface->getPanRadians());
 }
 
-static void pan_degrees (const State& state, LookupReceiver &entry)
+static void pan_degrees (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getPanRadians() * R2D);
+  entry->update(LanderAdapter::s_interface->getPanRadians() * R2D);
 }
 
-static void tilt_radians (const State& state, LookupReceiver &entry)
+static void tilt_radians (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getTiltRadians());
+  entry->update(LanderAdapter::s_interface->getTiltRadians());
 }
 
-static void tilt_degrees (const State& state, LookupReceiver &entry)
+static void tilt_degrees (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getTiltRadians() * R2D);
+  entry->update(LanderAdapter::s_interface->getTiltRadians() * R2D);
 }
 
-static void battery_soc (const State& state, LookupReceiver &entry)
+static void battery_soc (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getBatterySOC());
+  entry->update(LanderAdapter::s_interface->getBatterySOC());
 }
 
-static void battery_temp (const State& state, LookupReceiver &entry)
+static void battery_temp (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getBatteryTemperature());
+  entry->update(LanderAdapter::s_interface->getBatteryTemperature());
 }
 
-static void battery_rul (const State& state, LookupReceiver &entry)
+static void battery_rul (const State& state, LookupReceiver* entry)
 {
-  entry.update(LanderAdapter::s_interface->getBatteryRUL());
+  entry->update(LanderAdapter::s_interface->getBatteryRUL());
 }
 
 LanderInterface* LanderAdapter::s_interface = NULL;
 
 LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
-                              const pugi::xml_node& configXml)
-  : PlexilAdapter (execInterface, configXml)
+                              PLEXIL::AdapterConf* conf)
+  : PlexilAdapter (execInterface, conf)
 {
   debugMsg("LanderAdapter", " created.");
 }
@@ -311,52 +313,47 @@ bool LanderAdapter::initialize (LanderInterface* li)
   PlexilAdapter::initialize();
   s_interface = li;
   s_interface->setCommandStatusCallback (command_status_callback);
+  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
-
-  g_configuration->registerCommandHandler("arm_find_surface", arm_find_surface);
-  g_configuration->registerCommandHandler("arm_move_cartesian",
-                                          arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_q",
-                                          arm_move_cartesian);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded",
-                                          arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("arm_move_cartesian_guarded_q",
-                                          arm_move_cartesian_guarded);
-  g_configuration->registerCommandHandler("arm_move_joint", arm_move_joint);
-  g_configuration->registerCommandHandler("arm_stop", arm_stop);
-  g_configuration->registerCommandHandler("arm_stow", arm_stow);
-  g_configuration->registerCommandHandler("arm_unstow", arm_unstow);
-  g_configuration->registerCommandHandler("camera_capture", camera_capture);
-  g_configuration->registerCommandHandler("pan_tilt_move_joints",
-                                          pan_tilt_move_joints);
-  g_configuration->registerCommandHandler("task_deliver_sample",
-                                          task_deliver_sample);
-  g_configuration->registerCommandHandler("task_discard_sample",
-                                          task_discard_sample);
+  config->registerCommandHandlerFunction("arm_find_surface", arm_find_surface);
+  config->registerCommandHandlerFunction("arm_move_cartesian",
+                                         arm_move_cartesian);
+  config->registerCommandHandlerFunction("arm_move_cartesian_q",
+                                         arm_move_cartesian);
+  config->registerCommandHandlerFunction("arm_move_cartesian_guarded",
+                                 arm_move_cartesian_guarded);
+  config->registerCommandHandlerFunction("arm_move_cartesian_guarded_q",
+                                 arm_move_cartesian_guarded);
+  config->registerCommandHandlerFunction("arm_move_joint", arm_move_joint);
+  config->registerCommandHandlerFunction("arm_stop", arm_stop);
+  config->registerCommandHandlerFunction("arm_stow", arm_stow);
+  config->registerCommandHandlerFunction("arm_unstow", arm_unstow);
+  config->registerCommandHandlerFunction("camera_capture", camera_capture);
+  config->registerCommandHandlerFunction("pan_tilt_move_joints",
+                                         pan_tilt_move_joints);
+  config->registerCommandHandlerFunction("task_deliver_sample",
+                                         task_deliver_sample);
+  config->registerCommandHandlerFunction("task_discard_sample",
+                                         task_discard_sample);
 
   // Lookups
-  g_configuration->registerLookupHandler("ArmJointAcceleration",
-                                         arm_joint_acceleration);
-  g_configuration->registerLookupHandler("ArmJointPosition",
-                                         arm_joint_position);
-  g_configuration->registerLookupHandler("ArmJointTorque",
-                                         arm_joint_torque);
-  g_configuration->registerLookupHandler("ArmJointVelocity",
-                                         arm_joint_velocity);
-  g_configuration->registerLookupHandler("ArmPose", arm_pose);
-  g_configuration->registerLookupHandler("ArmEndEffectorForceTorque",
-                                         arm_end_effector_ft);
-  g_configuration->registerLookupHandler("PanRadians", pan_radians);
-  g_configuration->registerLookupHandler("PanDegrees", pan_degrees);
-  g_configuration->registerLookupHandler("TiltRadians", tilt_radians);
-  g_configuration->registerLookupHandler("TiltDegrees", tilt_degrees);
-  g_configuration->registerLookupHandler("BatteryStateOfCharge",
-                                         battery_soc);
-  g_configuration->registerLookupHandler("BatteryRemainingUsefulLife",
-                                         battery_rul);
-  g_configuration->registerLookupHandler("BatteryTemperature",
-                                         battery_temp);
+  config->registerLookupHandlerFunction("ArmJointAcceleration",
+                                        arm_joint_acceleration);
+  config->registerLookupHandlerFunction("ArmJointPosition", arm_joint_position);
+  config->registerLookupHandlerFunction("ArmJointTorque", arm_joint_torque);
+  config->registerLookupHandlerFunction("ArmJointVelocity", arm_joint_velocity);
+  config->registerLookupHandlerFunction("ArmPose", arm_pose);
+  config->registerLookupHandlerFunction("ArmEndEffectorForceTorque",
+                                        arm_end_effector_ft);
+  config->registerLookupHandlerFunction("PanRadians", pan_radians);
+  config->registerLookupHandlerFunction("PanDegrees", pan_degrees);
+  config->registerLookupHandlerFunction("TiltRadians", tilt_radians);
+  config->registerLookupHandlerFunction("TiltDegrees", tilt_degrees);
+  config->registerLookupHandlerFunction("BatteryStateOfCharge", battery_soc);
+  config->registerLookupHandlerFunction("BatteryRemainingUsefulLife",
+                                        battery_rul);
+  config->registerLookupHandlerFunction("BatteryTemperature", battery_temp);
 
   debugMsg("LanderAdapter", " initialized.");
   return true;
@@ -376,8 +373,10 @@ bool LanderAdapter::checkAngle (const char* name, double val,
   return true;
 }
 
+/*
 extern "C" {
   void initlander_adapter() {
     REGISTER_ADAPTER(LanderAdapter, "lander_adapter");
   }
 }
+*/

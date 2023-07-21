@@ -12,14 +12,14 @@
 class OwAdapter : public LanderAdapter
 {
 public:
-  // No default constructor, only this specialized one.
-  OwAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  OwAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
+  OwAdapter () = delete;
   ~OwAdapter () = default;
   OwAdapter (const OwAdapter&) = delete;
   OwAdapter& operator= (const OwAdapter&) = delete;
 
   virtual bool initialize();
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&);
+  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver*);
 };
 
 extern "C" {
