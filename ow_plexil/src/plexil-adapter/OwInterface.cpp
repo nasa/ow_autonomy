@@ -32,11 +32,9 @@ using std::string;
 using std::shared_ptr;
 using std::make_unique;
 
+const size_t NumJoints = 9; // arm + antenna
 
 //////////////////// Lander Operation Support ////////////////////////
-
-// Index into /joint_states message and JointTelemetries vector.
-const size_t ArmJointStartIndex = 2;
 
 const double PointCloudTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
 const double SampleTimeout = 50.0; // 5 second timeout assuming a rate of 10hz
@@ -84,6 +82,16 @@ static vector<string> LanderOpNames = {
 static set<string> JointsAtHardTorqueLimit { };
 static set<string> JointsAtSoftTorqueLimit { };
 
+struct JointProperties
+{
+  // A structure to store useful static properties about joints.
+
+  // Use compiler's default methods.
+  std::string plexilName; // human-readable, no spaces
+  double softTorqueLimit;
+  double hardTorqueLimit;
+};
+
 static vector<JointProperties> JointProps {
   // NOTE: Torque limits are made up, as no reference specs are yet
   // known, and only magnitude is provided for now.
@@ -99,9 +107,7 @@ static vector<JointProperties> JointProps {
   { "ShoulderYaw", 60, 80 }
 };
 
-static vector<JointTelemetry> JointTelemetries (NumJoints, { 0, 0, 0, 0 });
-
-static void handle_overtorque (int joint, double effort)
+static void check_joint_torque (int joint, double effort)
 {
   // For now, torque is just effort (Newton-meter), and overtorque is specific
   // to the joint.
@@ -120,15 +126,9 @@ static void handle_overtorque (int joint, double effort)
   }
 }
 
-static void handle_joint_fault (int joint_index,
-                                const sensor_msgs::JointState::ConstPtr& msg)
-{
-  // NOTE: For now, the only fault is overtorque.
-  handle_overtorque (joint_index, msg->effort[joint_index]);
-}
-
 
 ///////////////////////// Subscriber Callbacks ///////////////////////////////
+
 
 void OwInterface::ftCallback
 (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr& msg)
@@ -156,8 +156,8 @@ static double normalize_degrees (double angle)
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
-  // Publish all joint information for visibility to PLEXIL and handle any
-  // joint-related faults.
+  // Checks joint properties for anomalies, which for now is just
+  // overtorque.
 
   size_t msg_size = msg->name.size();
 
@@ -172,11 +172,7 @@ void OwInterface::jointStatesCallback
   }
 
   for (int i = 0; i < msg_size; i++) {
-    double position = msg->position[i];
-    double velocity = msg->velocity[i];
-    double effort = msg->effort[i];
-    JointTelemetries[i] = JointTelemetry {position, velocity, effort};
-    handle_joint_fault (i, msg);
+    check_joint_torque (i, msg->effort[i]);
   }
 }
 
@@ -305,11 +301,6 @@ void OwInterface::initialize()
 
   // Initialize subscribers
 
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->subscribe("/joint_states", QueueSize,
-                                      &OwInterface::jointStatesCallback,
-                                      this)));
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
@@ -890,16 +881,6 @@ void OwInterface::taskDiscardSampleAction (int frame, bool relative,
      default_action_active_cb (Name_TaskDiscardSample),
      default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_TaskDiscardSample),
      default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_TaskDiscardSample));
-}
-
-double OwInterface::getPanVelocity () const
-{
-  return JointTelemetries[ANTENNA_PAN].velocity;
-}
-
-double OwInterface::getTiltVelocity () const
-{
-  return JointTelemetries[ANTENNA_TILT].velocity;
 }
 
 bool OwInterface::hardTorqueLimitReached (const string& joint_name) const

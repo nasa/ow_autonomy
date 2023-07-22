@@ -17,6 +17,6 @@ TestTaskPSP:
                        Normal = #(0 0 -1 ),
                        MaxDepth = 0.3,
                        MaxForce = 10);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished TaskPSP test.");
 }

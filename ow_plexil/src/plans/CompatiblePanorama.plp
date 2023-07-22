@@ -10,8 +10,6 @@
 // the default PLEXIL time adapter. It is assumed this is configured to be the
 // mission time.
 
-#include "plexil_defs.h"
-
 LibraryAction Stub(In String desc);
 
 CompatiblePanorama:{

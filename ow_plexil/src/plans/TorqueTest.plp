@@ -5,7 +5,6 @@
 // A test plan that detects when arm joints exceed their soft or hard torque
 // limits.
 
-#include "plexil_defs.h"
 #include "plan-interface.h"
 
 TorqueTest:
@@ -45,5 +44,6 @@ TorqueTest:
       Wait 1;
     }
   }
+  LibraryCall SafeStow();
   log_info ("Over-torque test finished.");
 }

@@ -3,7 +3,6 @@ set(LIB_NAME ow_adapter)
 # Headers and source files used by both OceanWATERS and OWLAT
 
 set (HEADERS
-  joint_support.h
   subscriber.h
   action_support.h
   adapter_support.h

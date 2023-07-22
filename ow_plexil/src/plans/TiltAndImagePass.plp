@@ -5,10 +5,6 @@
 // Auxiliary plan for TakePanorama.  Tilts to specified angle and then performs
 // a single image pass.
 
-#include "plexil_defs.h"
-
-String Lookup ToString(...);
-
 LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
                          In Real PanIncrement,
