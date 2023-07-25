@@ -258,10 +258,8 @@ bool OwlatAdapter::initialize()
   return true;
 }
 
-/*
 extern "C" {
   void initowlat_adapter() {
     REGISTER_ADAPTER(OwlatAdapter, "owlat_adapter");
   }
 }
-*/

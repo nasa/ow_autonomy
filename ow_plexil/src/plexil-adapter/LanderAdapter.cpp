@@ -373,10 +373,8 @@ bool LanderAdapter::checkAngle (const char* name, double val,
   return true;
 }
 
-/*
 extern "C" {
   void initlander_adapter() {
     REGISTER_ADAPTER(LanderAdapter, "lander_adapter");
   }
 }
-*/
