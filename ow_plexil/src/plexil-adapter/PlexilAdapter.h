@@ -18,7 +18,6 @@
 
 // C++
 #include <set>
-#include <map>
 #include <vector>
 
 class PlexilAdapter : public PLEXIL::InterfaceAdapter
@@ -32,8 +31,6 @@ public:
   virtual bool initialize();
   virtual bool start();
   virtual void stop();
-  //  virtual bool reset();
-  //  virtual bool shutdown();
   virtual void invokeAbort(PLEXIL::Command *cmd);
   virtual void subscribe(const PLEXIL::State& state);
   virtual void unsubscribe(const PLEXIL::State& state);

@@ -179,20 +179,23 @@ bool OwExecutive::initialize (const string& config_file)
 
   get_plexil_debug_config();
 
+
   try {
-    m_plexil_app = makeExecApplication();
     if (! initializePlexilInterfaces (config_file)) {
       ROS_ERROR("Failed to initialize PLEXIL interfaces.");
       return false;
     }
+
     if (!m_plexil_app->startInterfaces()) {
       ROS_ERROR("PLEXIL interface startup failed");
       return false;
     }
+    /* This fails using Plexil 6.
     if (!m_plexil_app->step()) {
       ROS_ERROR("Stepping exec failed");
       return false;
     }
+    */
     m_plexil_app->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {

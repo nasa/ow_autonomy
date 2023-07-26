@@ -45,6 +45,6 @@ void publish (const std::string& state_name, double val);
 void publish (const std::string& state_name, const std::string& val);
 void publish (const std::string& state_name, const std::vector<double>& vals);
 void publish (const std::string& state_name, bool val, const std::string& arg);
-void publish (const std::string & state_name, double val, int arg);
+void publish (const std::string& state_name, double val, int arg);
 
 #endif

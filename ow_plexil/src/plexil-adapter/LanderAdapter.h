@@ -31,11 +31,11 @@ class LanderAdapter : public PlexilAdapter
   virtual ~LanderAdapter () = default;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
-
+  virtual bool initialize();
   virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
 
  protected:
-  bool initialize (LanderInterface*);
+  void initLanderAdapter (LanderInterface*);
 };
 
 extern "C" {

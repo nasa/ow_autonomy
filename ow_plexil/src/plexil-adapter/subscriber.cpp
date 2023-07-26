@@ -2,6 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+#include <ros/ros.h> // for debuggin only
+
 #include "subscriber.h"
 
 using std::string;
@@ -31,8 +33,10 @@ void setSubscriber (SubscribeBoolFromString s) { SubscriberBoolFromString = s; }
 void setSubscriber (SubscribeDoubleVector s) { SubscriberDoubleVector = s; }
 void setSubscriber (SubscribeDoubleFromInt s) { SubscriberDoubleFromInt = s; }
 
-// The overloaded publish function, one for each value/parameter combination
-// found in this application.
+// The overloaded publish function, one for each value/parameter
+// combination found in this application.  NOTE: these assume the
+// PLEXIL interface adapter has been initialized, otherwise the called
+// subscriber functions will be null.
 
 void publish (const string& state_name, bool val)
 {
@@ -54,12 +58,12 @@ void publish (const string& state_name, const string& val)
   SubscriberString (state_name, val);
 }
 
-void publish (const std::string& state_name, const vector<double>& vals)
+void publish (const string& state_name, const vector<double>& vals)
 {
   SubscriberDoubleVector (state_name, vals);
 }
 
-void publish (const std::string& state_name, bool val, const std::string& arg)
+void publish (const string& state_name, bool val, const string& arg)
 {
   SubscriberBoolFromString (state_name, val, arg);
 }

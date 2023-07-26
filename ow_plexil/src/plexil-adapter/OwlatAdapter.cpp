@@ -230,7 +230,7 @@ OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
 
 bool OwlatAdapter::initialize()
 {
-  LanderAdapter::initialize (OwlatInterface::instance());
+  initLanderAdapter (OwlatInterface::instance());
   AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
@@ -255,7 +255,7 @@ bool OwlatAdapter::initialize()
   config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
-  return true;
+  return LanderAdapter::initialize();
 }
 
 extern "C" {

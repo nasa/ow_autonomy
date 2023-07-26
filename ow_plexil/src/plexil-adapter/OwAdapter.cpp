@@ -362,7 +362,8 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
 
 bool OwAdapter::initialize()
 {
-  LanderAdapter::initialize (OwInterface::instance());
+  ROS_INFO("---- enter OwAdapter::initialize");
+  initLanderAdapter (OwInterface::instance());
   AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
@@ -386,7 +387,7 @@ bool OwAdapter::initialize()
   config->registerCommandHandlerFunction("light_set_intensity",
                                          light_set_intensity);
   debugMsg("OwAdapter", " initialized.");
-  return true;
+  return LanderAdapter::initialize();
 }
 
 void OwAdapter::lookupNow (const State& state, LookupReceiver* entry)
