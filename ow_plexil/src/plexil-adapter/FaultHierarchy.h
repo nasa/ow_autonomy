@@ -18,6 +18,7 @@ struct FaultGroup {
   int hierarchy_faulted = 0;
   int locally_faulted = 0;
   int status = 0;
+  std::string parent_subsystem = NULL;
   std::string fault_group_severity;
   std::vector<std::string> faults;
   std::unordered_map<std::string, int> severity_threshold = 
@@ -67,6 +68,9 @@ public:
   FaultHierarchy (const FaultHierarchy&) = delete;
   FaultHierarchy& operator= (const FaultHierarchy&) = delete;
   void updateFaultModel(const std::string name, const bool status, const int severity);
+  void updateFaultStatus(std::string name, int status);
+  void updateFaultGroupStatus(std::string name,  int status, std::string severity);
+  void cascadeSubsystemFaults(std::string name, int status);
   void DebugPrint();
 
 

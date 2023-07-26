@@ -5,6 +5,7 @@
 #include <stack>
 #include <vector>
 #include <iostream>
+#include <memory>
 //#include "/home/keegan/plexil/src/third-party/pugixml/src/pugixml.hpp"
 #include "pugixml.hpp"
 
@@ -31,6 +32,7 @@ FaultHierarchy::FaultHierarchy()
   */
   const char* source = "xmltest.xml";
   parseXML(source);
+  DebugPrint();
 
 }
 
@@ -156,21 +158,141 @@ void FaultHierarchy::parseXML(const char* file_name){
 
 
 void FaultHierarchy::DebugPrint(){
-/*  std::vector<std::string> test_names = {"fault1", "fault2", "fault3", "fault4", "fault5"};
-  std::cout << "DEBUG PRINT" << std::endl;
-  for (auto i: test_names){
-    std::cout << m_fault_model[i].name << 
-      " local_fault: " << m_fault_model[i].local_fault <<
-      " hierarchical_fault: " << m_fault_model[i].hierarchical_faults <<
-      " status: " << m_fault_model[i].status << 
-      " severity: " << m_fault_model[i].severity_threshold << " subfaults: ";
-    for (auto j: m_fault_model[i].subfaults){
-      std::cout << j << " ";
+  std::cout << "FAULTS: " << std::endl;
+  for (auto fault: m_faults){
+    std::cout << "Name:" << fault.second.name << " Status:" << fault.second.status << " FaultGroups: ";
+    for (auto i: m_faults[fault.second.name].affected_fault_groups){
+      std::cout << " (" << i.first << ", " << i.second << ")     ";
     }
     std::cout << std::endl;
-  }*/
+    std::cout << std::endl;
+  }
+  std::cout << "FAULT GROUPS: " << std::endl;
+  for (auto fault_group: m_fault_groups){
+    std::cout << "Name:" << fault_group.second.name << " Status:" << fault_group.second.status << 
+      " HierarchyFault:" << fault_group.second.hierarchy_faulted << " LocalFault:" << fault_group.second.locally_faulted << 
+      " FaultGroupSeverity:" << fault_group.second.fault_group_severity << " FaultGroups: ";
+    std::cout << std::endl;
+    std::cout << "CURRENT FAULTGROUP SEVERITY: " << " LOW:" << fault_group.second.current_severity["Low"]
+              << " MED:" << fault_group.second.current_severity["Medium"] 
+              << " HIGH:" << fault_group.second.current_severity["High"] << std::endl; 
+    std::cout << "FAULTGROUP SEVERITY THRESHOLD: " << " LOW:" << fault_group.second.severity_threshold["Low"]
+              << " MED:" << fault_group.second.severity_threshold["Medium"] 
+              << " HIGH:" << fault_group.second.severity_threshold["High"] << std::endl; 
+
+    std::cout << "AffectedSubsystems: ";
+    for (auto i: m_fault_groups[fault_group.second.name].affected_subsystems){
+      std::cout << " " << i << " " << "     ";
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+ 
+  }
+
+  std::cout << "SUBSYSTEMS: " << std::endl;
+  for (auto subsystem: m_subsystems){
+    std::cout << "Name:" << subsystem.second.name << " Status:" << subsystem.second.status << 
+      " HierarchyFault:" << subsystem.second.hierarchy_faulted << " LocalFault:" << subsystem.second.locally_faulted << " FaultGroups: ";
+    std::cout << std::endl;
+    std::cout << "CURRENT SUBSYSTEM SEVERITY: " << " LOW:" << subsystem.second.current_severity["Low"]
+              << " MED:" << subsystem.second.current_severity["Medium"] 
+              << " HIGH:" << subsystem.second.current_severity["High"] << std::endl; 
+    std::cout << "SUBSYSTEM SEVERITY THRESHOLD: " << " LOW:" << subsystem.second.severity_threshold["Low"]
+              << " MED:" << subsystem.second.severity_threshold["Medium"] 
+              << " HIGH:" << subsystem.second.severity_threshold["High"] << std::endl; 
+
+    std::cout << "AffectedSubsystems: ";
+    for (auto i: m_subsystems[subsystem.second.name].affected_subsystems){
+      std::cout << " " << i << " " << "     ";
+    }
+    std::cout << std::endl;
+    std::cout << std::endl;
+ 
+  }
+
+
 }
 
+void FaultHierarchy::updateFaultStatus(std::string name, int status){
+  if (m_faults.find(name) == m_faults.end()){
+    std::cout << "WARNING: FAULT NAME: " << name << " DOES NOT EXIST" << std::endl;
+  }
+  if (m_faults[name].status == status){
+    return;
+  }
+  m_faults[name].status = status;
+
+  for (auto related_fg: m_faults[name].affected_fault_groups){
+    updateFaultGroupStatus(related_fg.first, status, related_fg.second);
+  }
+
+
+}
+
+void FaultHierarchy::updateFaultGroupStatus(std::string name, int status, std::string severity){
+  int prev_fg_status = m_fault_groups[name].status;
+  if (status == 1){
+    m_fault_groups[name].current_severity[severity] += 1;
+    if (m_fault_groups[name].current_severity[severity] >= 
+        m_fault_groups[name].severity_threshold[severity]){
+      m_fault_groups[name].locally_faulted = 1;
+      m_fault_groups[name].status = 1;
+    }
+  }
+  else{
+    m_fault_groups[name].current_severity[severity] -= 1;
+    if (m_fault_groups[name].current_severity["Low"] < m_fault_groups[name].severity_threshold["Low"]
+        && m_fault_groups[name].current_severity["Medium"] < m_fault_groups[name].severity_threshold["Medium"]
+        && m_fault_groups[name].current_severity["High"] < m_fault_groups[name].severity_threshold["High"]){
+      m_fault_groups[name].locally_faulted = 0;
+      if (m_fault_groups[name].hierarchy_faulted == 0){
+        m_fault_groups[name].status = 0;
+      }
+    }
+  }
+  if (prev_fg_status != m_fault_groups[name].status){
+    for (auto subsystem_name: m_fault_groups[name].affected_subsystems){
+      cascadeSubsystemFaults(subsystem_name, status);
+      return true;
+    }
+  }
+  return false;
+}
+
+
+void FaultHierarchy::cascadeSubsystemFaults(std::string subsystem_name, int status){
+  std::unordered_set<std::string> visited;
+  std::stack<std::string> nodes;
+
+  visited.insert(subsystem_name);
+  nodes.push(subsystem_name);
+  
+    // BFS search through all fault dependencies
+    while(!nodes.empty()){
+      std::string current_node = nodes.top();
+      nodes.pop();
+
+      for (auto i: m_subsystems[current_node].affected_subsystems){
+        if (visited.insert(i).second){
+          // All subfaults need to increment or decrement their hierarchical_fault flag
+          if (status){
+            m_subsystems[i].hierarchy_faulted += 1;
+          }
+          else{
+            m_subsystems[i].hierarchy_faulted -= 1;
+          }
+          // Update subfault status flag based on updated hierarchical_fault flag
+          if (m_subsystems[i].hierarchy_faulted > 0 || m_subsystems[i].hierarchy_faulted == 1){
+            m_subsystems[i].status = 1;
+          }
+          else{
+            m_subsystems[i].status = 0;
+          }
+          nodes.push(i);
+        }
+      }
+    }
+}
 
 void FaultHierarchy::updateFaultModel(const std::string name, const bool status, const int severity){
 /*  std::unordered_set<std::string> visited;
