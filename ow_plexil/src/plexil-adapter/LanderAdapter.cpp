@@ -308,17 +308,9 @@ LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
   debugMsg("LanderAdapter", " created.");
 }
 
-bool LanderAdapter::initialize ()
+bool LanderAdapter::initialize (AdapterConfiguration* config)
 {
-  ROS_INFO("---- enter LanderAdapter::initialize");
-  return PlexilAdapter::initialize();
-}
-
-void LanderAdapter::initLanderAdapter (LanderInterface* li)
-{
-  s_interface = li;
   s_interface->setCommandStatusCallback (command_status_callback);
-  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
 
   // Commands
   config->registerCommandHandlerFunction("arm_find_surface", arm_find_surface);
@@ -361,6 +353,7 @@ void LanderAdapter::initLanderAdapter (LanderInterface* li)
   config->registerLookupHandlerFunction("BatteryTemperature", battery_temp);
 
   debugMsg("LanderAdapter", " initialized.");
+  return PlexilAdapter::initialize (config);
 }
 
 bool LanderAdapter::checkAngle (const char* name, double val,
@@ -375,10 +368,4 @@ bool LanderAdapter::checkAngle (const char* name, double val,
     return false;
   }
   return true;
-}
-
-extern "C" {
-  void initlander_adapter() {
-    REGISTER_ADAPTER(LanderAdapter, "lander_adapter");
-  }
 }

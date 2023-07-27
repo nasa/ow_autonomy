@@ -7,7 +7,6 @@
 // ow_plexil
 #include "OwlatAdapter.h"
 #include "OwlatInterface.h"
-#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 using namespace PLEXIL;
@@ -26,6 +25,7 @@ using namespace PLEXIL;
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
+#include <LookupReceiver.hh>
 
 using std::string;
 
@@ -228,10 +228,9 @@ OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
   debugMsg("OwlatAdapter", " created.");
 }
 
-bool OwlatAdapter::initialize()
+bool OwlatAdapter::initialize (AdapterConfiguration* config)
 {
-  initLanderAdapter (OwlatInterface::instance());
-  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
+  LanderAdapter::s_interface = OwlatInterface::instance();
 
   // Commands
   config->registerCommandHandlerFunction("arm_set_tool", arm_set_tool);
@@ -255,7 +254,7 @@ bool OwlatAdapter::initialize()
   config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
-  return LanderAdapter::initialize();
+  return LanderAdapter::initialize (config);
 }
 
 extern "C" {

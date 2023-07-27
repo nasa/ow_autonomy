@@ -19,7 +19,10 @@ class LanderAdapter : public PlexilAdapter
  public:
   static bool checkAngle (const char* name, double val, double min, double max,
                           double tolerance);
+  
+  // Pointer to concrete instance (OwAdapter or OwlatAdapter)
   static LanderInterface* s_interface;
+  
   static float PanMinDegrees;
   static float PanMaxDegrees;
   static float TiltMinDegrees;
@@ -31,15 +34,9 @@ class LanderAdapter : public PlexilAdapter
   virtual ~LanderAdapter () = default;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
-  virtual bool initialize();
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
-
- protected:
-  void initLanderAdapter (LanderInterface*);
+  virtual bool initialize (PLEXIL::AdapterConfiguration*) override;
+  virtual void lookupNow (const PLEXIL::State&,
+                          PLEXIL::LookupReceiver&) override { }
 };
-
-extern "C" {
-  void initLanderAdapter();
-}
 
 #endif

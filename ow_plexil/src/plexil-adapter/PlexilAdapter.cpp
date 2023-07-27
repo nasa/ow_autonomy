@@ -48,16 +48,13 @@ PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
   debugMsg("PlexilAdapter", " created.");
 }
 
-bool PlexilAdapter::initialize()
+bool PlexilAdapter::initialize(AdapterConfiguration* config)
 {
-  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
-
   // Plexil 4.6:
   // config->defaultRegisterAdapter(this);
   // Tried this in Plexil 6:
   //  config->setDefaultCommandHandler(this);
 
-  ROS_INFO("---- enter PlexilAdapter::initialize");
   config->registerCommandHandlerFunction("log_info", log_info);
   config->registerCommandHandlerFunction("log_warning", log_warning);
   config->registerCommandHandlerFunction("log_error", log_error);
@@ -83,12 +80,6 @@ bool PlexilAdapter::start()
 void PlexilAdapter::stop()
 {
   debugMsg("PlexilAdapter", " stopped.");
-}
-
-void PlexilAdapter::invokeAbort(Command *cmd)
-{
-  ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
-            cmd->getName().c_str());
 }
 
 void PlexilAdapter::subscribe(const State& state)

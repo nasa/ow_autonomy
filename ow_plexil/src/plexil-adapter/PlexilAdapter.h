@@ -28,12 +28,11 @@ public:
   PlexilAdapter (const PlexilAdapter&) = delete;
   PlexilAdapter& operator= (const PlexilAdapter&) = delete;
 
-  virtual bool initialize();
-  virtual bool start();
-  virtual void stop();
-  virtual void invokeAbort(PLEXIL::Command *cmd);
-  virtual void subscribe(const PLEXIL::State& state);
-  virtual void unsubscribe(const PLEXIL::State& state);
+  virtual bool initialize(PLEXIL::AdapterConfiguration*) override;
+  virtual bool start() override;
+  virtual void stop() override;
+  virtual void subscribe(const PLEXIL::State& state); // obsolete?
+  virtual void unsubscribe(const PLEXIL::State& state);  // obsolete?
   virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
   void propagateValueChange (const PLEXIL::State&,
                              const std::vector<PLEXIL::Value>&);

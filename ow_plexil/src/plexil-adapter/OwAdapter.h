@@ -18,7 +18,7 @@ public:
   OwAdapter (const OwAdapter&) = delete;
   OwAdapter& operator= (const OwAdapter&) = delete;
 
-  virtual bool initialize();
+  virtual bool initialize (PLEXIL::AdapterConfiguration*) final;
   virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver*);
 };
 

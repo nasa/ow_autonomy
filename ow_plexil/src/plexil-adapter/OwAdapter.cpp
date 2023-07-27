@@ -7,7 +7,6 @@
 // OW
 #include "OwAdapter.h"
 #include "OwInterface.h"
-#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -360,11 +359,9 @@ OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
   debugMsg("OwAdapter", " created.");
 }
 
-bool OwAdapter::initialize()
+bool OwAdapter::initialize (AdapterConfiguration* config)
 {
-  ROS_INFO("---- enter OwAdapter::initialize");
-  initLanderAdapter (OwInterface::instance());
-  AdapterConfiguration* config = OwExecutive::instance()->plexilAdapterConfig();
+  LanderAdapter::s_interface = OwInterface::instance();
 
   // Commands
   config->registerCommandHandlerFunction("grind", grind);
@@ -387,7 +384,7 @@ bool OwAdapter::initialize()
   config->registerCommandHandlerFunction("light_set_intensity",
                                          light_set_intensity);
   debugMsg("OwAdapter", " initialized.");
-  return LanderAdapter::initialize();
+  return LanderAdapter::initialize (config);
 }
 
 void OwAdapter::lookupNow (const State& state, LookupReceiver* entry)
