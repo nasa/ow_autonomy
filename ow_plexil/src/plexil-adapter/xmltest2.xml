@@ -7,29 +7,48 @@
         <Fault Name="NoCharge" Severity="High"/>
       </Faults>
       <AffectedSubsystems>  
-        <Sys Name="Arm" Cascade="True"/>  
-        <Sys Name="Antenna" Cascade="True"/>  
+        <Sys Name="Arm" Cascade="False"/>  
+        <Sys Name="Antenna" Cascade="False"/>  
         <Sys Name="Camera" Cascade="True"/>  
         <Sys Name="Sensors" Cascade="True"/>  
       </AffectedSubsystems>
-      <SeverityThreshold Low="2" Medium="1" High="1"/>
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
     </Subsystem>
 
-    <Subsystem Name="Power2">
+    <Subsystem Name="Arm">
       <Faults>
-        <Fault Name="Overdraw2" Severity="Low"/>
-        <Fault Name="NoCharge2" Severity="High"/>
+        <Fault Name="dist_pitch_joint_locked_failure" Severity="High"/>
+        <Fault Name="hand_yaw_joint_locked_failure" Severity="High"/>
+        <Fault Name="prox_pitch_joint_locked_failure" Severity="High"/>
+        <Fault Name="scoop_yaw_joint_locked_failure" Severity="High"/>
+        <Fault Name="shou_pitch_joint_locked_failure" Severity="High"/>
+        <Fault Name="shou_yaw_joint_locked_failure" Severity="High"/>
       </Faults>
       <AffectedSubsystems>  
-        <Sys Name="Arm2" Cascade="True"/>  
-        <Sys Name="Antenna2" Cascade="True"/>  
-        <Sys Name="Camera2" Cascade="True"/>  
-        <Sys Name="Sensors2" Cascade="True"/>  
-      </AffectedSubsystems>
-      <SeverityThreshold Low="2" Medium="1" High="1"/>
+        <Sys Name="Antenna" Cascade="True"/>  
+      </AffectedSubsystems>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
     </Subsystem>
 
-  <AdditionalFaultGroups>
-  </AdditionalFaultGroups>
+    <Subsystem Name="Antenna">
+      <Faults>
+        <Fault Name="ant_pan_joint_locked_failure" Severity="High"/>
+        <Fault Name="ant_tilt_joint_locked_failure" Severity="High"/>
+      </Faults>
+      <AffectedSubsystems/>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+    <Subsystem Name="Antenna">
+      <Faults>
+        <Fault Name="ant_pan_joint_locked_failure" Severity="High"/>
+        <Fault Name="ant_tilt_joint_locked_failure" Severity="High"/>
+      </Faults>
+      <AffectedSubsystems/>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+
+  </Subsystems>
 </System>
 
