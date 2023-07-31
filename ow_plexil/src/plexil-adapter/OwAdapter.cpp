@@ -378,7 +378,7 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
   config->registerCommandHandlerFunction("pan_tilt_cartesian",
                                          pan_tilt_cartesian);
   config->registerCommandHandlerFunction("identify_sample_location",
-                                 identify_sample_location);
+                                         identify_sample_location);
   config->registerCommandHandlerFunction("camera_set_exposure",
                                          camera_set_exposure);
   config->registerCommandHandlerFunction("light_set_intensity",

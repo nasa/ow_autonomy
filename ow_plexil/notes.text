@@ -5,6 +5,8 @@ To Do
 
 Make PlexilAdapter and LanderAdapter abstract base classes.
 
+Remove or solve failing step() call.
+
 Rename:
 
 plans/

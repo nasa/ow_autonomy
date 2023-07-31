@@ -20,7 +20,7 @@ public:
   OwlatAdapter (const OwlatAdapter&) = delete;
   OwlatAdapter& operator= (const OwlatAdapter&) = delete;
 
-  virtual bool initialize (PLEXIL::AdapterConfiguration*) final;
+  virtual bool initialize (PLEXIL::AdapterConfiguration*) override;
 };
 
 extern "C" {

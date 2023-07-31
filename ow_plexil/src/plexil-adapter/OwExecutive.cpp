@@ -86,10 +86,6 @@ bool OwExecutive::runPlan (const string& filename)
     OwExecutive::instance()
       -> plexilInterfaceMgr()
       -> handleValueChange(State::timeState(), 0);
-    if (! m_plexil_app->run()) {
-      ROS_ERROR ("Running the PLEXIL application failed.");
-      return false;
-    }
   }
   catch (const Error& e) {
     ostringstream s;
@@ -179,6 +175,14 @@ bool OwExecutive::initialize (const string& config_file)
 
   get_plexil_debug_config();
 
+  /* This fails using Plexil 6. It was done somewhere in the sequence
+     below, which itself has changed since 4.6.
+
+     if (!m_plexil_app->step()) {
+     ROS_ERROR("Stepping exec failed");
+     return false;
+     }
+  */
 
   try {
     if (! initializePlexilInterfaces (config_file)) {
@@ -186,17 +190,17 @@ bool OwExecutive::initialize (const string& config_file)
       return false;
     }
 
+    m_plexil_app->addLibraryPath (PlexilDir);
+
     if (!m_plexil_app->startInterfaces()) {
       ROS_ERROR("PLEXIL interface startup failed");
       return false;
     }
-    /* This fails using Plexil 6.
-    if (!m_plexil_app->step()) {
-      ROS_ERROR("Stepping exec failed");
+
+    if (! m_plexil_app->run()) {
+      ROS_ERROR ("Running the PLEXIL application failed.");
       return false;
     }
-    */
-    m_plexil_app->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {
     ostringstream s;
