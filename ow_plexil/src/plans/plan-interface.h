@@ -86,6 +86,10 @@ Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
 // Faults
+// Returns current status, local fault status, and hierarchical fault status
+Boolean [3] Lookup SubsystemFault(String subsystem_name);
+// Returns first 10 faults in a given subsystem, specifying "System" will give you all faults
+String [10] Lookup ActiveFaults(String subsystem_name);
 Boolean Lookup SystemFault;
 Boolean Lookup AntennaFault;
 Boolean Lookup AntennaPanFault;

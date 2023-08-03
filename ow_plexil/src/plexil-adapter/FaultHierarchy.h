@@ -5,7 +5,7 @@
 #include <utility>
 #include <vector>
 
-// PLEXIL Fault Hierarchy Class for use in the Interface class with fault lookups.
+// Fault Hierarchy for use in the Interface class with fault lookups.
 
 struct Fault {
   std::string name;
@@ -34,25 +34,32 @@ struct Subsystem {
   std::vector<std::pair<std::string, bool>> affected_subsystems;
 };
 
-class FaultHierarchy;
-
 class FaultHierarchy
 {
 public:
-  // No default constructor, only this specialized one.
-  FaultHierarchy ();
+
+  FaultHierarchy (std::string file_name, bool verbose_flag);
   ~FaultHierarchy() = default;
   FaultHierarchy (const FaultHierarchy&) = delete;
   FaultHierarchy& operator= (const FaultHierarchy&) = delete;
-  void updateFaultModel(std::string name, int status);
+
+  // get and update functions
+  std::vector<bool> getSubsystemStatus(std::string name);
+  std::vector<std::string> getActiveFaults(std::string name);
+  void updateFaultHierarchy(std::string name, int status);
+
+private:
+
+  // internal functions
   void updateSubsystemStatus(std::string name,  int status, std::string severity);
   void cascadeSubsystemFaults(std::string name, int status);
   void DebugPrint();
-
-
-private:
   void parseXML(const char* file_name);
 
+  // verbose debug print flag
+  bool m_verbose_flag = true;
+
+  // primary fault hierarchy data structures
   std::unordered_map<std::string, Fault> m_faults;
   std::unordered_map<std::string, Subsystem> m_subsystems;
 

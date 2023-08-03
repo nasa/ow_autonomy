@@ -133,6 +133,8 @@ class OwInterface : public LanderInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   bool   systemFault () const override;
+  std::vector<std::string>   getActiveFaults (std::string subsystem_name) const;
+  std::vector<bool> getSubsystemFault (std::string subsystem_name) const;
   std::vector<double> getArmEndEffectorFT () const override;
 
  private:
@@ -176,7 +178,6 @@ class OwInterface : public LanderInterface
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
   // System-level faults
-
   FaultMap m_systemErrors = {
     {"SYSTEM", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},

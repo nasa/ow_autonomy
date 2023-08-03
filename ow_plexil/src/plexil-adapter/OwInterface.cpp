@@ -267,6 +267,19 @@ void OwInterface::initialize()
 {
   LanderInterface::initialize();
 
+  std::string fault_hierarchy_path;
+  bool verbose_flag = false;
+  if(m_genericNodeHandle->getParam("/verbose_fault_hierarchy_flag", verbose_flag)){
+    verbose_flag = verbose_flag;
+  }
+  if(m_genericNodeHandle->getParam("/fault_hierarchy_file", fault_hierarchy_path)){
+    m_fault_hierarchy = std::make_unique<FaultHierarchy>(fault_hierarchy_path, verbose_flag);
+  }
+  else{
+    ROS_ERROR("COULD NOT FIND THE FAULT HIERARCHY FILE");
+    m_fault_hierarchy = std::make_unique<FaultHierarchy>("", verbose_flag);
+  }
+
   for (const string& name : LanderOpNames) {
     registerLanderOperation (name);
   }
@@ -917,6 +930,16 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
 vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_end_effector_ft;
+}
+
+std::vector<bool> OwInterface::getSubsystemFault(string subsystem_name) const
+{
+  return m_fault_hierarchy->getSubsystemStatus(subsystem_name);
+}
+
+std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_name) const
+{
+  return m_fault_hierarchy->getActiveFaults(subsystem_name);
 }
 
 bool OwInterface::systemFault () const

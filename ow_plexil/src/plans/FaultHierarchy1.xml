@@ -1,0 +1,59 @@
+<System>
+  <Subsystems>
+
+    <Subsystem Name="Power">
+      <Faults>
+        <Fault Name="LOW_STATE_OF_CHARGE" Severity="High"/>
+        <Fault Name="INSTANTANEOUS_CAPACITY_LOSS" Severity="High"/>
+        <Fault Name="THERMAL_FAULT" Severity="High"/>
+      </Faults>
+      <AffectedSubsystems>  
+        <Sys Name="Arm" Cascade="False"/>  
+        <Sys Name="Antenna" Cascade="False"/>  
+        <Sys Name="Camera" Cascade="True"/>  
+        <Sys Name="Sensors" Cascade="True"/>  
+      </AffectedSubsystems>
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+    <Subsystem Name="Arm">
+      <Faults>
+        <Fault Name="HARDWARE" Severity="High"/>
+        <Fault Name="TRAJECTORY_GENERATION" Severity="High"/>
+        <Fault Name="COLLISION" Severity="High"/>
+        <Fault Name="E_STOP" Severity="High"/>
+        <Fault Name="POSITION_LIMIT" Severity="High"/>
+        <Fault Name="JOINT_TORQUE_LIMIT" Severity="High"/>
+        <Fault Name="VELOCITY_LIMIT" Severity="High"/>
+        <Fault Name="NO_FORCE_DATA" Severity="High"/>
+        <Fault Name="FORCE_TORQUE_LIMIT" Severity="High"/>
+        <Fault Name="ARM_EXECUTION_ERROR" Severity="High"/>
+      </Faults>
+      <AffectedSubsystems>  
+      </AffectedSubsystems>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+    <Subsystem Name="Antenna">
+      <Faults>
+        <Fault Name="PAN_JOINT_LOCKED" Severity="High"/>
+        <Fault Name="TILT_JOINT_LOCKED" Severity="High"/>
+        <Fault Name="PAN_TILT_EXECUTION_ERROR" Severity="Medium"/>
+      </Faults>
+      <AffectedSubsystems/>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+    <Subsystem Name="Camera">
+      <Faults>
+        <Fault Name="NO_IMAGE" Severity="High"/>
+        <Fault Name="CAMERA_EXECUTION_ERROR" Severity="High"/>
+      </Faults>
+      <AffectedSubsystems/>  
+      <SeverityThreshold Low="1" Medium="1" High="1"/>
+    </Subsystem>
+
+
+  </Subsystems>
+</System>
+

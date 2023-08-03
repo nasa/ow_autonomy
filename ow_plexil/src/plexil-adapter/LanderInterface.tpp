@@ -24,11 +24,17 @@ void LanderInterface::updateFaultStatus (T1 msg_val, T2& fmap,
       ROS_WARN ("Fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = true;
       publish (state_name, true);
+      if (m_fault_hierarchy){
+        m_fault_hierarchy->updateFaultHierarchy(key.c_str(), 1); 
+      }
     }
     else if (fault_active && !faulty) {
       ROS_WARN ("Resolved fault in %s: %s", component.c_str(), key.c_str());
       fmap[key].second = false;
       publish (state_name, false);
+      if (m_fault_hierarchy){
+        m_fault_hierarchy->updateFaultHierarchy(key.c_str(), 0); 
+      }
     }
   }
 }
