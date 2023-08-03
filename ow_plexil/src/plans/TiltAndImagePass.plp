@@ -5,6 +5,8 @@
 // Auxiliary plan for TakePanorama.  Tilts to specified angle and then performs
 // a single image pass.
 
+#include "plan-interface.h"
+
 LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
                          In Real PanIncrement,
