@@ -199,26 +199,9 @@ static void task_scoop_circular (Command* cmd, AdapterExecInterface* intf)
   task_scoop (false, cmd, intf);
 }
 
-static void using_owlat (const State&, LookupReceiver* entry)
-{
-  entry->update(true);
-}
-
-static void using_oceanwaters (const State&, LookupReceiver* entry)
-{
-  entry->update(false);
-}
-
 static void arm_tool (const State&, LookupReceiver* entry)
 {
   entry->update(OwlatInterface::instance()->getArmTool());
-}
-
-static void default_lookup_handler (const State& state, LookupReceiver* entry)
-{
-  ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
-            state.name().c_str(), state.parameters().size());
-  entry->update(Unknown);
 }
 
 OwlatAdapter::OwlatAdapter (AdapterExecInterface& execInterface,
@@ -247,11 +230,12 @@ bool OwlatAdapter::initialize (AdapterConfiguration* config)
   config->registerCommandHandlerFunction("task_shear_bevameter",
                                          task_shear_bevameter);
 
-  // Telemetry
-  config->registerLookupHandlerFunction("UsingOWLAT", using_owlat);
-  config->registerLookupHandlerFunction("UsingOceanWATERS", using_oceanwaters);
+  // Lookups
+  config->registerLookupHandlerFunction("UsingOWLAT",
+					lookupHandler<bool>(true));
+  config->registerLookupHandlerFunction("UsingOceanWATERS",
+					lookupHandler<bool>(false));
   config->registerLookupHandlerFunction("ArmTool", arm_tool);
-  config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("OwlatAdapter", " initialized.");
   return LanderAdapter::initialize (config);

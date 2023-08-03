@@ -33,7 +33,6 @@ public:
   virtual void stop() override;
   virtual void subscribe(const PLEXIL::State& state); // obsolete?
   virtual void unsubscribe(const PLEXIL::State& state);  // obsolete?
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::LookupReceiver&) { }
   void propagateValueChange (const PLEXIL::State&,
                              const std::vector<PLEXIL::Value>&);
 

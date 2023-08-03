@@ -127,7 +127,6 @@ class OwInterface : public LanderInterface
   std::vector<double> getEndEffectorFT () const;
   bool   groundFound () const;
   double groundPosition () const;
-  bool   anglesEquivalent (double deg1, double deg2, double tolerance);
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   bool   systemFault () const override;

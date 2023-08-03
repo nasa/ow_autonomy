@@ -18,6 +18,8 @@ constexpr double R2D = 180.0 / M_PI ;
 class PlexilInterface
 {
  public:
+  static bool anglesEquivalent (double deg1, double deg2, double tolerance);
+  
   PlexilInterface ();
   virtual ~PlexilInterface ();
   PlexilInterface (const PlexilInterface&) = delete;

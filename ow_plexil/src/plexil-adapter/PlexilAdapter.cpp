@@ -6,6 +6,7 @@
 
 // ow_plexil
 #include "PlexilAdapter.h"
+#include "PlexilInterface.h"
 #include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
@@ -17,10 +18,21 @@
 // PLEXIL API
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
+#include <LookupReceiver.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
 #include <Expression.hh>
 using namespace PLEXIL;
+
+static void angles_equivalent (const State& s, LookupReceiver* r)
+{
+  double deg1, deg2, tolerance;
+  s.parameters()[0].getValue(deg1);
+  s.parameters()[1].getValue(deg2);
+  s.parameters()[2].getValue(tolerance);
+  r->update(PlexilInterface::anglesEquivalent(deg1, deg2, tolerance));
+}
+
 
 void PlexilAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals)
@@ -59,6 +71,7 @@ bool PlexilAdapter::initialize(AdapterConfiguration* config)
   config->registerCommandHandlerFunction("log_warning", log_warning);
   config->registerCommandHandlerFunction("log_error", log_error);
   config->registerCommandHandlerFunction("log_debug", log_debug);
+  config->registerLookupHandlerFunction("AnglesEquivalent", angles_equivalent);
   setSubscriber (receiveBool);
   setSubscriber (receiveInt);
   setSubscriber (receiveString);

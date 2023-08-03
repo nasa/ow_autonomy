@@ -32,94 +32,26 @@ using std::unique_ptr;
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
-static bool lookup (const string& state_name,
-                    const vector<PLEXIL::Value>& args,
-                    PLEXIL::Value& value_out)
+
+static void hard_torque_limit_reached (const State& s, LookupReceiver* r)
 {
-  bool retval = true;
+  string joint;
+  s.parameters()[0].getValue(joint);
+  r->update(OwInterface::instance()->hardTorqueLimitReached(joint));
+}
 
-  // First, some, stubbed lookups specific to EuropaMission.plp.
+static void soft_torque_limit_reached (const State& s, LookupReceiver* r)
+{
+  string joint;
+  s.parameters()[0].getValue(joint);
+  r->update(OwInterface::instance()->softTorqueLimitReached(joint));
+}
 
-  if (state_name == "TrenchIdentified") {
-    value_out = true;
-  }
-  else if (state_name == "ExcavationTimeout") {
-    value_out = 10;
-  }
-  else if (state_name == "CollectAndTransferTimeout") {
-    value_out = 10;
-  }
-
-  // Plan interface specific to OceanWATERS
-
-  else if (state_name == "UsingOceanWATERS") {
-    value_out = true;
-  }
-  else if (state_name == "UsingOWLAT") {
-    value_out = false;
-  }
-  else if (state_name == "HardTorqueLimitReached") {
-    string s;
-    args[0].getValue(s);
-    value_out = OwInterface::instance()->hardTorqueLimitReached(s);
-  }
-  else if (state_name == "SoftTorqueLimitReached") {
-    string s;
-    args[0].getValue(s);
-    value_out = OwInterface::instance()->softTorqueLimitReached(s);
-  }
-  else if (state_name == "Running") {
-    string operation;
-    args[0].getValue(operation);
-    value_out = OwInterface::instance()->running (operation);
-  }
-  else if (state_name == "GroundFound") {
-    value_out = OwInterface::instance()->groundFound();
-  }
-  else if (state_name == "GroundPosition") {
-    value_out = OwInterface::instance()->groundPosition();
-  }
-  // Faults
-  else if (state_name == "SystemFault") {
-    value_out = OwInterface::instance()->systemFault();
-  }
-  else if (state_name == "AntennaFault") {
-    value_out = OwInterface::instance()->antennaFault();
-  }
-  else if (state_name == "AntennaPanFault") {
-    value_out = OwInterface::instance()->antennaPanFault();
-  }
-  else if (state_name == "AntennaTiltFault") {
-    value_out = OwInterface::instance()->antennaTiltFault();
-  }
-  else if (state_name == "ArmFault") {
-    value_out = OwInterface::instance()->armFault();
-  }
-  else if (state_name == "PowerFault") {
-    value_out = OwInterface::instance()->powerFault();
-  }
-  else if (state_name == "CameraFault") {
-    value_out = OwInterface::instance()->cameraFault();
-  }
-  else if (state_name == "ArmEndEffectorForceTorque") {
-    vector<double> ft = OwInterface::instance()->getEndEffectorFT();
-    value_out = (Value) ft;
-  }
-  else if (state_name == "ActionGoalStatus") {
-    string s;
-    args[0].getValue(s);
-    value_out = OwInterface::instance()->actionGoalStatus(s);
-  }
-  else if (state_name == "AnglesEquivalent") {
-    double deg1, deg2, tolerance;
-    args[0].getValue(deg1);
-    args[1].getValue(deg2);
-    args[2].getValue(tolerance);
-    value_out = OwInterface::instance()->anglesEquivalent (deg1, deg2, tolerance);
-  }
-  else retval = false;
-
-  return retval;
+static void running (const State& s, LookupReceiver* r)
+{
+  string action;
+  s.parameters()[0].getValue(action);
+  r->update(OwInterface::instance()->running(action));
 }
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
@@ -383,24 +315,59 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                          camera_set_exposure);
   config->registerCommandHandlerFunction("light_set_intensity",
                                          light_set_intensity);
+
+  // Lookups
+
+  // Stubs specific to EuropaMission.plp
+  config->registerLookupHandlerFunction("TrenchIdentified",
+					lookupHandler<bool>(true));
+  config->registerLookupHandlerFunction("ExcavationTimeout",
+					lookupHandler<int>(10));
+  config->registerLookupHandlerFunction("CollectAndTransferTimeout",
+					lookupHandler<int>(10));
+
+  // Plan interface specific to OceanWATERS
+  config->registerLookupHandlerFunction("UsingOWLAT",
+					lookupHandler<bool>(false));
+  config->registerLookupHandlerFunction("UsingOceanWATERS",
+					lookupHandler<bool>(true));
+  config->registerLookupHandlerFunction("HardTorqueLimitReached",
+					hard_torque_limit_reached);
+  config->registerLookupHandlerFunction("SoftTorqueLimitReached",
+					soft_torque_limit_reached);
+  config->registerLookupHandlerFunction("GroundFound",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->groundFound()));
+  config->registerLookupHandlerFunction("GroundPosition",
+					lookupHandler<double>
+                                        (OwInterface::instance()->groundPosition()));
+  config->registerLookupHandlerFunction("Running", running);
+
+  // Faults specific to OceanWATERS
+  config->registerLookupHandlerFunction("SystemFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->systemFault()));
+  config->registerLookupHandlerFunction("AntennaFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->antennaFault()));
+  config->registerLookupHandlerFunction("AntennaPanFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->antennaPanFault()));
+  config->registerLookupHandlerFunction("AntennaTiltFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->antennaTiltFault()));
+  config->registerLookupHandlerFunction("ArmFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->armFault()));
+  config->registerLookupHandlerFunction("PowerFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->powerFault()));
+  config->registerLookupHandlerFunction("CameraFault",
+					lookupHandler<bool>
+                                        (OwInterface::instance()->cameraFault()));
+
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
-}
-
-void OwAdapter::lookupNow (const State& state, LookupReceiver* entry)
-{
-  // NOTE: this function should be replaced by the newer approach
-  // using registerLookupHandlerFunction, as found in OwlatAdapter.cpp.
-
-  debugMsg("OwAdapter:lookupNow", " called on " << state.name() << " with "
-           << state.parameters().size() << " arguments");
-
-  Value retval = Unknown;  // the value of the queried state
-
-  if (! lookup(state.name(), state.parameters(), retval)) {
-    ROS_ERROR("PLEXIL Adapter: Invalid lookup name: %s", state.name().c_str());
-  }
-  entry->update(retval);
 }
 
 extern "C" {

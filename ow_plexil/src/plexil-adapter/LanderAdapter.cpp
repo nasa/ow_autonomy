@@ -22,7 +22,6 @@ using std::unique_ptr;
 #include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
 #include <ArrayImpl.hh>
-#include <LookupReceiver.hh>
 #include <Debug.hh>
 #include <Expression.hh>
 using namespace PLEXIL;
@@ -208,39 +207,39 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void arm_joint_acceleration (const State& state, LookupReceiver* entry)
+static void arm_joint_acceleration (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry->update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
+  r->update(LanderAdapter::s_interface->getArmJointAcceleration(joint));
 }
 
-static void arm_joint_position (const State& state, LookupReceiver* entry)
+static void arm_joint_position (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry->update(LanderAdapter::s_interface->getArmJointPosition(joint));
+  r->update(LanderAdapter::s_interface->getArmJointPosition(joint));
 }
 
-static void arm_joint_torque (const State& state, LookupReceiver* entry)
+static void arm_joint_torque (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry->update(LanderAdapter::s_interface->getArmJointTorque(joint));
+  r->update(LanderAdapter::s_interface->getArmJointTorque(joint));
 }
 
-static void arm_joint_velocity (const State& state, LookupReceiver* entry)
+static void arm_joint_velocity (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
   int joint;
   args[0].getValue(joint);
-  entry->update(LanderAdapter::s_interface->getArmJointVelocity(joint));
+  r->update(LanderAdapter::s_interface->getArmJointVelocity(joint));
 }
 
-static void arm_pose (const State&, LookupReceiver* entry)
+static void arm_pose (const State&, LookupReceiver* r)
 {
   vector<Value> v;
   v.resize(7);
@@ -249,10 +248,10 @@ static void arm_pose (const State&, LookupReceiver* entry)
     // Conversion from double to PLEXIL::Real (float)
     v[i] = Value(static_cast<Real>(pose[i]));
   }
-  entry->update(v);
+  r->update(v);
 }
 
-static void arm_end_effector_ft (const State&, LookupReceiver* entry)
+static void arm_end_effector_ft (const State&, LookupReceiver* r)
 {
   vector<Value> v;
   v.resize(6);
@@ -261,42 +260,56 @@ static void arm_end_effector_ft (const State&, LookupReceiver* entry)
     // Conversion from double to PLEXIL::Real (float)
     v[i] = Value(static_cast<Real>(ft[i]));
   }
-  entry->update(v);
+  r->update(v);
 }
 
-static void pan_radians (const State& state, LookupReceiver* entry)
+static void action_goal_status (const State& s, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getPanRadians());
+  string action;
+  s.parameters()[0].getValue(action);
+  r->update(LanderAdapter::s_interface->actionGoalStatus(action));
 }
 
-static void pan_degrees (const State& state, LookupReceiver* entry)
+static void default_lookup_handler (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getPanRadians() * R2D);
+  ROS_WARN ("Unsupported Plexil Lookup %s, called with %zu arguments",
+            state.name().c_str(), state.parameters().size());
+  r->update(Unknown);
 }
 
-static void tilt_radians (const State& state, LookupReceiver* entry)
+static void pan_radians (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getTiltRadians());
+  r->update(LanderAdapter::s_interface->getPanRadians());
 }
 
-static void tilt_degrees (const State& state, LookupReceiver* entry)
+static void pan_degrees (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getTiltRadians() * R2D);
+  r->update(LanderAdapter::s_interface->getPanRadians() * R2D);
 }
 
-static void battery_soc (const State& state, LookupReceiver* entry)
+static void tilt_radians (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getBatterySOC());
+  r->update(LanderAdapter::s_interface->getTiltRadians());
 }
 
-static void battery_temp (const State& state, LookupReceiver* entry)
+static void tilt_degrees (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getBatteryTemperature());
+  r->update(LanderAdapter::s_interface->getTiltRadians() * R2D);
 }
 
-static void battery_rul (const State& state, LookupReceiver* entry)
+static void battery_soc (const State& state, LookupReceiver* r)
 {
-  entry->update(LanderAdapter::s_interface->getBatteryRUL());
+  r->update(LanderAdapter::s_interface->getBatterySOC());
+}
+
+static void battery_temp (const State& state, LookupReceiver* r)
+{
+  r->update(LanderAdapter::s_interface->getBatteryTemperature());
+}
+
+static void battery_rul (const State& state, LookupReceiver* r)
+{
+  r->update(LanderAdapter::s_interface->getBatteryRUL());
 }
 
 LanderInterface* LanderAdapter::s_interface = NULL;
@@ -351,6 +364,8 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
   config->registerLookupHandlerFunction("BatteryRemainingUsefulLife",
                                         battery_rul);
   config->registerLookupHandlerFunction("BatteryTemperature", battery_temp);
+  config->registerLookupHandlerFunction("ActionGoalStatus", action_goal_status);
+  config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("LanderAdapter", " initialized.");
   return PlexilAdapter::initialize (config);
