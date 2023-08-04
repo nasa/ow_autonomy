@@ -14,12 +14,16 @@ TestTelemetry:
   log_info ("Starting telemetry tests...");
 
   // Testbed
-  if (Lookup(UsingOceanWATERS)) log_info ("OceanWATERS is in use.");
-  else log_info ("OceanWATERS is NOT in use.");
+
+  log_info ("UsingOWLAT: ", Lookup(UsingOWLAT));
+  log_info ("UsingOceanWATERS: ", Lookup(UsingOceanWATERS));
+
+  if (Lookup(UsingOWLAT) == true) log_info ("OWLAT is in use.");
+  else log_info ("OWLAT is NOT in use.");
   endif;
 
-  if (Lookup(UsingOWLAT)) log_info ("OWLAT is in use.");
-  else log_info ("OWLAT is NOT in use.");
+  if (Lookup(UsingOceanWATERS) == true) log_info ("OceanWATERS is in use.");
+  else log_info ("OceanWATERS is NOT in use.");
   endif;
 
   // Battery
@@ -27,7 +31,7 @@ TestTelemetry:
   log_info ("Battery remaining useful life: ",
             Lookup(BatteryRemainingUsefulLife));
   log_info ("Battery temperature: ", Lookup(BatteryTemperature));
-            
+
   // Pan/Tilt telemetry.
 
   // Note that the current version of OWLAT Sim has neither a pan/tilt
@@ -57,7 +61,7 @@ TestTelemetry:
     log_info ("  ", FT[i]);
   }
   log_info ("}");
-  
+
   ArmPose = Lookup(ArmPose);
   log_info ("Arm pose: {");
   for (Integer i = 0; i < 7; i + 1) {

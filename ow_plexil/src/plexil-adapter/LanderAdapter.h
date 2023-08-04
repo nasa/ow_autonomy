@@ -41,7 +41,7 @@ class LanderAdapter : public PlexilAdapter
 
  protected:
   template<typename T>
-  auto lookupHandler (T val)
+  auto lookupHandler (const T& val)
   {
     return [&] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
              r->update(PLEXIL::Value(val));
