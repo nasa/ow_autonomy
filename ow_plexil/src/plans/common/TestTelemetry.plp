@@ -15,15 +15,12 @@ TestTelemetry:
 
   // Testbed
 
-  log_info ("UsingOWLAT: ", Lookup(UsingOWLAT));
-  log_info ("UsingOceanWATERS: ", Lookup(UsingOceanWATERS));
-
-  if (Lookup(UsingOWLAT) == true) log_info ("OWLAT is in use.");
-  else log_info ("OWLAT is NOT in use.");
-  endif;
-
-  if (Lookup(UsingOceanWATERS) == true) log_info ("OceanWATERS is in use.");
+  if (Lookup(UsingOceanWATERS)) log_info ("OceanWATERS is in use.");
   else log_info ("OceanWATERS is NOT in use.");
+  endif;
+  
+  if (Lookup(UsingOWLAT)) log_info ("OWLAT is in use.");
+  else log_info ("OWLAT is NOT in use.");
   endif;
 
   // Battery
