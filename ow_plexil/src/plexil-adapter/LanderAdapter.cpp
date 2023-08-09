@@ -5,7 +5,7 @@
 // ow_plexil
 #include "LanderAdapter.h"
 #include "LanderInterface.h"
-#include "OwExecutive.h"
+//#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -19,11 +19,8 @@ using std::string;
 using std::unique_ptr;
 
 // PLEXIL API
-#include <AdapterConfiguration.hh>
-#include <AdapterFactory.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
-#include <Expression.hh>
 using namespace PLEXIL;
 
 float LanderAdapter::PanMinDegrees  = -183.346; // -3.2 radians

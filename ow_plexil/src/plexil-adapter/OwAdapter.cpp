@@ -15,13 +15,10 @@
 #include <geometry_msgs/Point.h>
 
 // PLEXIL API
-#include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
-#include <AdapterExecInterface.hh>
 #include <LookupReceiver.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
-#include <Expression.hh>
 using namespace PLEXIL;
 
 // C++

@@ -9,7 +9,6 @@
 #include "OwlatInterface.h"
 #include "adapter_support.h"
 #include "subscriber.h"
-using namespace PLEXIL;
 
 // ROS
 #include <ros/ros.h>
@@ -19,13 +18,10 @@ using namespace PLEXIL;
 #include <map>
 
 // PLEXIL API
-#include <AdapterConfiguration.hh>
 #include <AdapterFactory.hh>
-#include <AdapterExecInterface.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
-#include <Expression.hh>
-#include <LookupReceiver.hh>
+using namespace PLEXIL;
 
 using std::string;
 

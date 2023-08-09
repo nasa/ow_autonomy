@@ -10,11 +10,8 @@
 // PLEXIL
 #include <InterfaceAdapter.hh>
 #include <AdapterExecInterface.hh>
-#include <Configuration.hh>
-
-#include <Command.hh>
+#include <AdapterConfiguration.hh>
 #include <Value.hh>
-#include <LookupHandler.hh>
 
 // C++
 #include <set>

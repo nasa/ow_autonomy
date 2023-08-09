@@ -12,7 +12,6 @@
 #include "PlexilAdapter.h"
 
 // PLEXIL
-#include <AdapterExecInterface.hh>
 #include <LookupReceiver.hh>
 
 class LanderInterface;
