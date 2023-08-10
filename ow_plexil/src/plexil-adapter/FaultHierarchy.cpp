@@ -64,7 +64,12 @@ std::vector<bool> FaultHierarchy::getSubsystemStatus(std::string name){
   // 3 integers to represent status -> [STATUS, LOCALLY FAULTED, HIERARCHICALLY FAULTED]
   status[0] = m_subsystems[name].status;
   status[1] = m_subsystems[name].locally_faulted;
-  status[2] = m_subsystems[name].hierarchy_faulted;
+  if (m_subsystems[name].hierarchy_faulted >= 1){
+    status[2] = true;
+  }
+  else{
+    status[2] = false;
+  }
   return status;
 }
 
