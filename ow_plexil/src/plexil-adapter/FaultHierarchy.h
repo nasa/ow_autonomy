@@ -9,29 +9,24 @@
 
 struct Fault {
   std::string name;
-  int status = 0;
-  std::vector<std::pair<std::string, std::string>> affected_subsystems;
+  std::string parent_subsystem;
+  int faulty = 0;
+  std::vector<std::pair<std::string, std::string>> dependencies;
+};
+
+struct Procedure {
+  std::string name;
+  int inoperable = 0;
 };
 
 struct Subsystem {
   std::string name;
-  int hierarchy_faulted = 0;
-  int locally_faulted = 0;
-  int status = 0;
+  int local_fault = 0;
+  int non_local_fault = 0;
+  int faulty = 0;
+  int inoperable = 0;
   std::vector<std::string> faults;
-  std::unordered_map<std::string, int> severity_threshold = 
-    {
-      {"Low", 0},
-      {"Medium", 0},
-      {"High", 0}
-    };
-  std::unordered_map<std::string, int> current_severity =
-    {
-      {"Low", 0},
-      {"Medium", 0},
-      {"High", 0}
-    };
-  std::vector<std::pair<std::string, bool>> affected_subsystems;
+  std::vector<std::pair<std::string, std::string>> dependencies;
 };
 
 class FaultHierarchy
@@ -44,16 +39,17 @@ public:
   FaultHierarchy& operator= (const FaultHierarchy&) = delete;
 
   // get and update functions
-  std::vector<bool> getSubsystemStatus(std::string name);
+  void updateFault(std::string name, int status);
   std::vector<std::string> getActiveFaults(std::string name);
-  void updateFaultHierarchy(std::string name, int status);
+  bool checkIsOperable(std::string);
+  bool checkIsFaulty(std::string);
+  void DebugPrint();
 
 private:
 
   // internal functions
-  void updateSubsystemStatus(std::string name,  int status, std::string severity);
-  void cascadeSubsystemFaults(std::string name, int status);
-  void DebugPrint();
+  void updateSubsystem(std::string name, int status);
+  void cascadeFault(std::string name, int status);
   void parseXML(const char* file_name);
 
   // verbose debug print flag
@@ -61,6 +57,7 @@ private:
 
   // primary fault hierarchy data structures
   std::unordered_map<std::string, Fault> m_faults;
+  std::unordered_map<std::string, Procedure> m_procedures;
   std::unordered_map<std::string, Subsystem> m_subsystems;
 
 };

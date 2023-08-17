@@ -1,0 +1,69 @@
+<System>
+  <Subsystems>
+
+    <Subsystem Name="Power">
+      <Faults>
+        <Fault Name="LOW_STATE_OF_CHARGE">
+          <Disables Name="Power" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="INSTANTANEOUS_CAPACITY_LOSS">
+          <Disables Name="Power" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="THERMAL_FAULT">
+          <Disables Name="Power" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="POWER_EXECUTION_ERROR">
+          <Disables Name="Power" Type="Subsystem"/>
+        </Fault>
+      </Faults>
+
+      <Disables Name="Arm" Type="Subsystem"/>  
+      <Disables Name="Antenna" Type="Subsystem"/>  
+      <Disables Name="Camera" Type="Subsystem"/>  
+    </Subsystem>
+
+    <Subsystem Name="Arm">
+      <Faults>
+        <Fault Name="HARDWARE"/>
+        <Fault Name="TRAJECTORY_GENERATION"/>
+        <Fault Name="COLLISION"/>
+        <Fault Name="E_STOP"/>
+        <Fault Name="POSITION_LIMIT"/>
+        <Fault Name="JOINT_TORQUE_LIMIT"/>
+        <Fault Name="VELOCITY_LIMIT"/>
+        <Fault Name="NO_FORCE_DATA"/>
+        <Fault Name="FORCE_TORQUE_LIMIT"/>
+        <Fault Name="ARM_EXECUTION_ERROR"/>
+      </Faults>
+      <Disables Name="Grind" Type="Procedure"/>  
+    </Subsystem>
+
+    <Subsystem Name="Antenna">
+      <Faults>
+        <Fault Name="PAN_JOINT_LOCKED">
+          <Disables Name="Pan" Type="Procedure"/>
+          <Disables Name="PanAndShoot" Type="Procedure"/>
+          <Disables Name="ImagePass" Type="Procedure"/>
+          <Disables Name="TakePanorama" Type="Procedure"/>
+          <Disables Name="PanTiltMoveJoints" Type="Procedure"/>
+        </Fault>
+        <Fault Name="TILT_JOINT_LOCKED">
+          <Disables Name="Tilt" Type="Procedure"/>
+          <Disables Name="TiltAndImagePass" Type="Procedure"/>
+          <Disables Name="ImagePass" Type="Procedure"/>
+          <Disables Name="TakePanorama" Type="Procedure"/>
+          <Disables Name="PanTiltMoveJoints" Type="Procedure"/>
+        </Fault>
+        <Fault Name="PAN_TILT_EXECUTION_ERROR"/>
+      </Faults>
+    </Subsystem>
+
+    <Subsystem Name="Camera">
+      <Faults>
+        <Fault Name="NO_IMAGE"/>
+        <Fault Name="CAMERA_EXECUTION_ERROR"/>
+      </Faults>
+    </Subsystem>
+  </Subsystems>
+</System>
+
