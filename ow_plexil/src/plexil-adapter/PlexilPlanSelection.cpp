@@ -21,7 +21,7 @@ void PlexilPlanSelection::initialize(std::string initial_plan)
 
   while (ros::Time::now() - begin == ros::Duration(0.0))
   {
-    //    ros::spinOnce();
+    ros::spinOnce();
     warmup_rate.sleep();
   }
 

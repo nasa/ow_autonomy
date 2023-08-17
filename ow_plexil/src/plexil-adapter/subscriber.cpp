@@ -2,8 +2,6 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include <ros/ros.h> // for debuggin only
-
 #include "subscriber.h"
 
 using std::string;

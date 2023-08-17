@@ -5,7 +5,6 @@
 // ow_plexil
 #include "LanderAdapter.h"
 #include "LanderInterface.h"
-//#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 

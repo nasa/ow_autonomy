@@ -175,15 +175,6 @@ bool OwExecutive::initialize (const string& config_file)
 
   get_plexil_debug_config();
 
-  /* This fails using Plexil 6. It was done somewhere in the sequence
-     below, which itself has changed since 4.6.
-
-     if (!m_plexil_app->step()) {
-     ROS_ERROR("Stepping exec failed");
-     return false;
-     }
-  */
-
   try {
     if (! initializePlexilInterfaces (config_file)) {
       ROS_ERROR("Failed to initialize PLEXIL interfaces.");

@@ -41,7 +41,7 @@ class LanderAdapter : public PlexilAdapter
  protected:
   template<typename T>
   // Passing 'val' by copy to avoid the possibility of reference to temporary.
-  auto lookupHandler (T val)
+  auto lookupHandler (const T& val)
   {
     return [=] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
              r->update(PLEXIL::Value(val));
