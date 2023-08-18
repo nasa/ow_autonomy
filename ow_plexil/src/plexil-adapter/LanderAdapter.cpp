@@ -317,6 +317,8 @@ LanderAdapter::LanderAdapter (AdapterExecInterface& execInterface,
   debugMsg("LanderAdapter", " created.");
 }
 
+LanderAdapter::~LanderAdapter() = default;
+
 bool LanderAdapter::initialize (AdapterConfiguration* config)
 {
   s_interface->setCommandStatusCallback (command_status_callback);

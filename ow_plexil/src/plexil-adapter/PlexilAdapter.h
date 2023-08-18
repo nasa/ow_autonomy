@@ -21,7 +21,7 @@ class PlexilAdapter : public PLEXIL::InterfaceAdapter
 {
 public:
   PlexilAdapter() = delete;
-  virtual ~PlexilAdapter() = default;
+  virtual ~PlexilAdapter() = 0;
   PlexilAdapter (const PlexilAdapter&) = delete;
   PlexilAdapter& operator= (const PlexilAdapter&) = delete;
 

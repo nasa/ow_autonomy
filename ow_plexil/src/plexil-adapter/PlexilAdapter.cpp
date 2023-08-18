@@ -29,6 +29,7 @@ static void angles_equivalent (const State& s, LookupReceiver* r)
   r->update(PlexilInterface::anglesEquivalent(deg1, deg2, tolerance));
 }
 
+PlexilAdapter::~PlexilAdapter() = default;
 
 void PlexilAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals)

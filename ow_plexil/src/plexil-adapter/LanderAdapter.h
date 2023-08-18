@@ -33,14 +33,13 @@ class LanderAdapter : public PlexilAdapter
 
   LanderAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
   LanderAdapter () = delete;
-  virtual ~LanderAdapter () = default;
+  virtual ~LanderAdapter () = 0;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
   virtual bool initialize (PLEXIL::AdapterConfiguration*) override;
 
  protected:
   template<typename T>
-  // Passing 'val' by copy to avoid the possibility of reference to temporary.
   auto lookupHandler (const T& val)
   {
     return [=] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
