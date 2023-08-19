@@ -1,0 +1,95 @@
+<System>
+  <Subsystems>
+
+    <Subsystem Name="Power">
+      <Faults>
+        <Fault Name="LOW_STATE_OF_CHARGE">
+          <Impacts Name="Power" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="INSTANTANEOUS_CAPACITY_LOSS">
+        </Fault>
+        <Fault Name="THERMAL_FAULT">
+          <Impacts Name="Power" Type="Subsystem"/>
+        </Fault>
+      </Faults>
+
+      <Impacts Name="Arm" Type="Subsystem"/>  
+      <Impacts Name="Antenna" Type="Subsystem"/>  
+      <Impacts Name="Camera" Type="Subsystem"/>  
+    </Subsystem>
+
+    <Subsystem Name="Arm">
+      <Faults>
+        <Fault Name="HARDWARE">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="TRAJECTORY_GENERATION">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="COLLISION">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="E_STOP">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="NO_FORCE_DATA">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+        <Fault Name="FORCE_TORQUE_LIMIT">
+          <Impacts Name="Arm" Type="Subsystem"/>
+        </Fault>
+      </Faults>
+      <Impacts Name="Grind" Type="Procedure"/>  
+      <Impacts Name="ArmFindSurface" Type="Procedure"/>  
+      <Impacts Name="ArmMoveCartesianGuarded" Type="Procedure"/>  
+      <Impacts Name="ArmMoveCartesian" Type="Procedure"/>  
+      <Impacts Name="ArmMoveJoint" Type="Procedure"/>  
+      <Impacts Name="ArmMoveJointsGuarded" Type="Procedure"/>  
+      <Impacts Name="ArmMoveJoints" Type="Procedure"/>  
+      <Impacts Name="ArmStow" Type="Procedure"/>  
+      <Impacts Name="ArmUnstow" Type="Procedure"/>  
+      <Impacts Name="DigTrench" Type="Procedure"/>  
+      <Impacts Name="DockInjestSample" Type="Procedure"/>  
+      <Impacts Name="DumpSamples" Type="Procedure"/>  
+      <Impacts Name="Excavation" Type="Procedure"/>  
+      <Impacts Name="InitializeAntennaAndArm" Type="Procedure"/>  
+      <Impacts Name="TaskDeliverSample" Type="Procedure"/>  
+      <Impacts Name="TaskDiscardSample" Type="Procedure"/>  
+      <Impacts Name="SafeStow" Type="Procedure"/>  
+    </Subsystem>
+
+    <Subsystem Name="Antenna">
+      <Faults>
+        <Fault Name="PAN_JOINT_LOCKED">
+          <Impacts Name="Pan" Type="Procedure"/>
+          <Impacts Name="PanAndShoot" Type="Procedure"/>
+          <Impacts Name="ImagePass" Type="Procedure"/>
+          <Impacts Name="TakePanorama" Type="Procedure"/>
+          <Impacts Name="PanTiltMoveJoints" Type="Procedure"/>
+        </Fault>
+        <Fault Name="TILT_JOINT_LOCKED">
+          <Impacts Name="Tilt" Type="Procedure"/>
+          <Impacts Name="TiltAndImagePass" Type="Procedure"/>
+          <Impacts Name="ImagePass" Type="Procedure"/>
+          <Impacts Name="TakePanorama" Type="Procedure"/>
+          <Impacts Name="PanTiltMoveJoints" Type="Procedure"/>
+        </Fault>
+      </Faults>
+    </Subsystem>
+
+    <Subsystem Name="Camera">
+      <Faults>
+        <Fault Name="NO_IMAGE">
+          <Impacts Name="TakePanorama" Type="Procedure"/>
+          <Impacts Name="CameraCapture" Type="Procedure"/>  
+          <Impacts Name="ImagePass" Type="Procedure"/>
+          <Impacts Name="TiltAndImagePass" Type="Procedure"/>
+          <Impacts Name="PanAndShoot" Type="Procedure"/>
+          <Impacts Name="ImageLandingSite" Type="Procedure"/>
+          <Impacts Name="IdentifySampleLocation" Type="Procedure"/>
+        </Fault>
+      </Faults>
+    </Subsystem>
+  </Subsystems>
+</System>
+

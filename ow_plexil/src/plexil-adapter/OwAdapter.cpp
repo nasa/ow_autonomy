@@ -102,10 +102,15 @@ static bool lookup (const string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
-  else if (state_name == "SubsystemFault") {
+  else if (state_name == "IsOperable") {
     string operation;
     args[0].getValue(operation);
-    value_out = OwInterface::instance()->getSubsystemFault (operation);
+    value_out = OwInterface::instance()->getIsOperable (operation);
+  }
+  else if (state_name == "IsFaulty") {
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->getIsFaulty (operation);
   }
   else if (state_name == "ActiveFaults") {
     string operation;

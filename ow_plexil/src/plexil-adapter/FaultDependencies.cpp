@@ -1,4 +1,4 @@
-#include "FaultHierarchy.h"
+#include "FaultDependencies.h"
 
 // ROS
 #include <ros/ros.h>
@@ -16,24 +16,25 @@
 #include "pugixml.hpp"
 
 
-FaultHierarchy::FaultHierarchy(std::string file_name, bool verbose_flag)
+FaultDependencies::FaultDependencies(std::string file_name, bool verbose_flag)
 {
   // If verbose we debug print after every update
   m_verbose_flag = verbose_flag;
   const char* source = file_name.c_str();
-  // Parse the hierarchy xml file in plans dir
+  // Parse the dependency xml file in plans dir
   parseXML(source);
   // Initial print to show setup
   DebugPrint();
 }
 
 
-bool FaultHierarchy::checkIsOperable(std::string name){
+bool FaultDependencies::checkIsOperable(std::string name){
+  // return true if subsystem/procedure is operable, false if inoperable
   if (m_subsystems.find(name) != m_subsystems.end()){
-    return !m_subsystems[name].inoperable;
+    return (m_subsystems[name].inoperable == 0);
   }
   else if (m_procedures.find(name) != m_procedures.end()){
-    return !m_procedures[name].inoperable;
+    return (m_procedures[name].inoperable == 0);
   }
   else{
     ROS_WARN("IsOperable LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
@@ -41,7 +42,8 @@ bool FaultHierarchy::checkIsOperable(std::string name){
   }
 }
 
-bool FaultHierarchy::checkIsFaulty(std::string name){
+bool FaultDependencies::checkIsFaulty(std::string name){
+  // checks if subsystem is faulty
   if (m_subsystems.find(name) != m_subsystems.end()){
     return m_subsystems[name].faulty;
   }
@@ -52,7 +54,7 @@ bool FaultHierarchy::checkIsFaulty(std::string name){
 }
 
 
-std::vector<std::string> FaultHierarchy::getActiveFaults(std::string name){
+std::vector<std::string> FaultDependencies::getActiveFaults(std::string name){
   //LIMITING TO MAX OF 10 FAULTS RETURNED DUE TO PLEXIL RESTRICTIONS
   std::vector<std::string> active_faults;
 
@@ -79,10 +81,9 @@ std::vector<std::string> FaultHierarchy::getActiveFaults(std::string name){
   return active_faults;
 }
 
-void FaultHierarchy::updateFault(std::string name, int status){
+void FaultDependencies::updateFault(std::string name, int status){
   // If a fault doesnt exist
   if (m_faults.find(name) == m_faults.end()){
-    ROS_WARN("FAULT NAME: %s DOES NOT EXIST.", name.c_str());
     return;
   }
   // If a fault exists but does not need to be updated
@@ -91,68 +92,89 @@ void FaultHierarchy::updateFault(std::string name, int status){
   }
 
   m_faults[name].faulty = status;
+  std::string parent_subsystem  = m_faults[name].parent_subsystem;
 
-  for (auto dep: m_faults[name].dependencies){
-    // If a dependency to update is a subsystem
+
+  // increment local fault flag for parent subsystem and change faulty flag as needed
+  if (status == 1){
+    m_subsystems[parent_subsystem].local_fault += 1;
+  }
+  else{
+    m_subsystems[parent_subsystem].local_fault -= 1; 
+  }
+
+  if (m_subsystems[parent_subsystem].local_fault > 0){
+    m_subsystems[parent_subsystem].faulty = 1; 
+  }
+  else{
+    m_subsystems[parent_subsystem].faulty = 0; 
+  }
+
+  for (auto dep: m_faults[name].impacts){
+    // If an impact to update is a subsystem
     if (dep.second == "Subsystem"){
       if (m_subsystems.find(dep.first) != m_subsystems.end()){
-        updateSubsystem(dep.first, status);
+        updateSubsystem(dep.first, status, parent_subsystem);
       }
     }
     // Otherwise we treat it as a procedure to update
     else{
       if (m_procedures.find(dep.first) != m_procedures.end()){
-        m_procedures[name].inoperable = status;
+        if (status == 1){
+            m_procedures[dep.first].inoperable += 1;
+        }
+        else{
+            m_procedures[dep.first].inoperable -= 1;
+        }
       }
     }
  
   }
-  // If verbose output flag is true we print the current fault hierarchy info
+  // If verbose output flag is true we print the current fault dependency info
   if (m_verbose_flag){
     DebugPrint();
   }
 }
 
-void FaultHierarchy::updateSubsystem(std::string name, int status){
-  int prev_faulty_state = m_subsystems[name].faulty;
+void FaultDependencies::updateSubsystem(std::string name, int status, std::string parent){
+  int prev_inoperable_state = m_subsystems[name].inoperable;
+  // increment non_local fault and inoperable flags if status is 1
   if (status == 1){
-    // If the current severity is over the threshold we locally fault and change the status
-      m_subsystems[name].local_fault += 1;
-      m_subsystems[name].faulty = 1;
-      m_subsystems[name].inoperable = 1;
-      ROS_INFO("SUBSYSTEM: %s FAULTY, LOCAL FAULT.", name.c_str());
+      if (parent != name){
+        m_subsystems[name].non_local_fault += 1;
+      }
+      m_subsystems[name].inoperable += 1;
+      ROS_INFO("SUBSYSTEM: %s INOPERABLE.", name.c_str());
   }
+  // otherwise decrement
   else{
-    m_subsystems[name].local_fault -= 1;
-
-    if (m_subsystems[name].local_fault == 0){
-      m_subsystems[name].faulty = 0;
-    }
-
-    if (m_subsystems[name].non_local_fault == 0 && m_subsystems[name].faulty == 0){
-      m_subsystems[name].inoperable = 0;
-      ROS_INFO("SUBSYSTEM: %s FAULT CLEARED.", name.c_str());
-    }
+      if (parent != name){
+        m_subsystems[name].non_local_fault -= 1;
+      }
+      m_subsystems[name].inoperable -= 1;
+      if (m_subsystems[name].inoperable == 0){
+        ROS_INFO("SUBSYSTEM: %s NOW OPERABLE.", name.c_str());
+      }
   }
-  // If we locally faulted, we need to cascade a hierarchy fault to depended/affected subsystems
-  if (prev_faulty_state != m_subsystems[name].faulty){
+  // If subsystem inoperable flag changes, we need to cascade inoperable fault to impacted subsystems
+  if (prev_inoperable_state != m_subsystems[name].inoperable){
     cascadeFault(name, status);
   }
 }
 
-void FaultHierarchy::cascadeFault(std::string subsystem_name, int status){
+void FaultDependencies::cascadeFault(std::string subsystem_name, int status){
   std::unordered_set<std::string> visited;
   std::stack<std::string> nodes;
 
   visited.insert(subsystem_name);
   nodes.push(subsystem_name);
   
-    // BFS through all subsystem dependencies
+    // BFS through all subsystem impacts
     while(!nodes.empty()){
       std::string current_node = nodes.top();
       nodes.pop();
 
-      for (auto i: m_subsystems[current_node].dependencies){
+      for (auto i: m_subsystems[current_node].impacts){
         // If it is a procedure we do not need to add it to BFS stack, and can just update the inoperable flag
         if (i.second == "Procedure"){
           m_procedures[i.first].inoperable = status;
@@ -163,17 +185,11 @@ void FaultHierarchy::cascadeFault(std::string subsystem_name, int status){
             // increment or decrement non_local_fault flag
             if (status){
               m_subsystems[i.first].non_local_fault += 1;
+              m_subsystems[i.first].inoperable += 1;
             }
             else{
               m_subsystems[i.first].non_local_fault -= 1;
-            }
-            // Update subsystem flags based on current local and non_local fault flags
-            if (m_subsystems[i.first].non_local_fault > 0 || m_subsystems[i.first].local_fault > 0){
-              m_subsystems[i.first].inoperable = 1;
-            }
-            else{
-              m_subsystems[i.first].inoperable = 0;
-              ROS_INFO("SUBSYSTEM: %s OPERABLE, ALL NON-LOCAL FAULTS CLEARED.", i.first.c_str());
+              m_subsystems[i.first].inoperable -= 1;
             }
             nodes.push(i.first);
           }
@@ -183,23 +199,18 @@ void FaultHierarchy::cascadeFault(std::string subsystem_name, int status){
 
 }
 
-void FaultHierarchy::DebugPrint(){
-  // Prints out current hierarchical fault info for all faults and subsystems
+void FaultDependencies::DebugPrint(){
+  // Prints out current fault info for all faults and subsystems
   std::cout << "FAULTS: " << std::endl;
   std::cout << "------------------------------------------------------------------------"
             << "------------------------------------------------------------------------" 
             << std::endl;
-  std::cout << std::setw(40) << std::left << "NAME" << std::setw(20) << "FAULTY" << std::setw(27) << "DEPENDENCIES" 
-  <<  std::endl;
+  std::cout << std::setw(40) << std::left << "NAME" << std::setw(20) << "FAULTY" <<  std::endl;
   std::cout << "------------------------------------------------------------------------"
             << "------------------------------------------------------------------------" 
             << std::endl;
   for (auto fault: m_faults){
-    std::cout << std::left << std::setw(40) << fault.second.name << std::setw(20) << fault.second.faulty;
-    for (auto i: m_faults[fault.second.name].dependencies){
-      std::cout << std::setw(1) << "(" << i.first << ", " << i.second << ") ";
-    }
-    std::cout << std::endl;
+    std::cout << std::left << std::setw(40) << fault.second.name << std::setw(20) << fault.second.faulty << std::endl;
   }
 
   std::cout << "\n" << std::endl;
@@ -208,30 +219,24 @@ void FaultHierarchy::DebugPrint(){
             << "------------------------------------------------------------------------" 
             << std::endl;
 
-  std::cout << std::setw(20) << std::left << "NAME" << std::setw(20) << "TYPE" << std::setw(27) << "NON-LOCAL FAULT" 
-  << std::setw(20) << "LOCAL FAULT" << std::setw(20) << "FAULTY" << std::setw(20) << "INOPERABLE"<<
-  std::setw(10) << "DEPENDENCIES" << std::endl; 
+  std::cout << std::setw(25) << std::left << "NAME" << std::setw(25) << "TYPE" << std::setw(25) << "NON-LOCAL FAULT" 
+  << std::setw(25) << "LOCAL FAULT" << std::setw(25) << "FAULTY" << std::setw(25) << "INOPERABLE" << std::endl;
   std::cout << "------------------------------------------------------------------------"
             << "------------------------------------------------------------------------" 
             << std::endl;
   for (auto subsystem: m_subsystems){
-    std::cout << std::left << std::setw(20) << subsystem.second.name << std::setw(20) << "Subsystem" << std::setw(27) << 
-    subsystem.second.non_local_fault << std::setw(20) << subsystem.second.local_fault <<
-    subsystem.second.faulty << std::setw(20) << subsystem.second.inoperable;
-    for (auto i: m_subsystems[subsystem.second.name].dependencies){
-      std::cout << i.first << " ";
-    }
-    std::cout << std::endl;
+    std::cout << std::left << std::setw(25) << subsystem.second.name << std::setw(25) << "Subsystem" << std::setw(25) << 
+    subsystem.second.non_local_fault << std::setw(25) << subsystem.second.local_fault << std::setw(25) <<
+    subsystem.second.faulty << std::setw(25) << subsystem.second.inoperable << std::endl;
   }
   for (auto proc: m_procedures){
-    std::cout << std::left << std::setw(20) << proc.second.name << std::setw(20) << "Procedure" << std::setw(27) << 
-    "-" << std::setw(20) << "-" << "-" << std::setw(20) << proc.second.inoperable;
-    std::cout << std::endl;
+    std::cout << std::left << std::setw(25) << proc.second.name << std::setw(25) << "Procedure" << std::setw(25) << 
+    "-" << std::setw(25) << "-" << std::setw(25) <<"-" << std::setw(25) << proc.second.inoperable << std::endl;
   }
   std::cout << std::endl;
 }
 
-void FaultHierarchy::parseXML(const char* file_name){
+void FaultDependencies::parseXML(const char* file_name){
   pugi::xml_document doc;
   pugi::xml_parse_result result = doc.load_file(file_name);
 
@@ -266,8 +271,8 @@ void FaultHierarchy::parseXML(const char* file_name){
     pugi::xml_node faults = subsystem.child("Faults");
 
     // get all affected subsystems and add them to their respective parent subsystem
-    for (pugi::xml_node target = subsystem.child("Disables"); target;
-         target = target.next_sibling("Disables")){
+    for (pugi::xml_node target = subsystem.child("Impacts"); target;
+         target = target.next_sibling("Impacts")){
       if (target.empty()){
         std::cout << "WARNING: FAILED TO READ A DISABLE TARGET " << target << "\n";
         continue;
@@ -275,7 +280,7 @@ void FaultHierarchy::parseXML(const char* file_name){
       std::string target_name = target.attribute("Name").value();
       std::string target_type = target.attribute("Type").value();
 
-      m_subsystems[subsystem_name].dependencies.push_back(std::make_pair(target_name, target_type));
+      m_subsystems[subsystem_name].impacts.push_back(std::make_pair(target_name, target_type));
 
       if (target_type == "Procedure" && m_procedures.find(target_name) == m_procedures.end()){
         m_procedures[target_name] = Procedure();
@@ -294,15 +299,16 @@ void FaultHierarchy::parseXML(const char* file_name){
       if (m_faults.find(fault_name) == m_faults.end()){
         m_faults[fault_name] = Fault();
         m_faults[fault_name].name = fault_name;
+        m_faults[fault_name].parent_subsystem = subsystem_name;
       }
       m_subsystems[subsystem_name].faults.push_back(fault_name);
-      for (pugi::xml_node dep = fault.child("Disables"); dep; dep = dep.next_sibling("Disables")){
-        std::string dependency_name = dep.attribute("Name").value();
-        std::string dependency_type = dep.attribute("Type").value();
-        m_faults[fault_name].dependencies.push_back(std::make_pair(dependency_name, dependency_type));
-        if (dependency_type == "Procedure" && m_procedures.find(dependency_name) == m_procedures.end()){
-          m_procedures[dependency_name] = Procedure();
-          m_procedures[dependency_name].name = dependency_name;
+      for (pugi::xml_node impact = fault.child("Impacts"); impact; impact = impact.next_sibling("Impacts")){
+        std::string impact_name = impact.attribute("Name").value();
+        std::string impact_type = impact.attribute("Type").value();
+        m_faults[fault_name].impacts.push_back(std::make_pair(impact_name, impact_type));
+        if (impact_type == "Procedure" && m_procedures.find(impact_name) == m_procedures.end()){
+          m_procedures[impact_name] = Procedure();
+          m_procedures[impact_name].name = impact_name;
         }
       }
     }

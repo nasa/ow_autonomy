@@ -1,0 +1,102 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+ 
+// Unstow and stow the arm repeatedly. Pan the antenna
+// in 15 degree increments when 'Unstow' action goal status
+// is 'ACTIVE' and pan the antenna in 15 degree decrements 
+// when 'Stow' action goal status is 'ACTIVE'. 
+// This plan will be terminated if any fault occurs.
+
+#include "plan-interface.h"
+
+FaultDependenciesDemo:
+{
+
+  Real NewPanAngle = 0;
+  Real NewTiltAngle = 20;
+  Real Count = 0;
+  Boolean BackupAction = false;
+  Boolean CameraFault = false;
+  RepeatCondition true;
+
+  log_info ("Starting FaultDependenciesDemo plan...");
+
+  Run: Concurrence
+  {
+    RepeatCondition true;
+    Wait 1;
+
+    PanTiltPattern: Sequence
+    {
+      StartCondition Lookup(IsOperable("Antenna")) && !BackupAction;
+      RepeatCondition true;
+      Wait 2;
+
+      NewPanAngle = (Lookup(PanDegrees) + 15) mod 360;
+      if NewPanAngle > 180 {
+        NewPanAngle = NewPanAngle - 360;
+      }
+      if Count % 2 == 0{
+        NewTiltAngle = 10;
+      }
+      else{
+        NewTiltAngle = -10;
+      }
+      Count = Count + 1;
+
+      if Lookup(IsOperable("Pan")) && Lookup(IsOperable("Tilt")) {
+        log_info("Panning and Tilting...");
+        LibraryCall PanTiltMoveJoints (PanDegrees=NewPanAngle, TiltDegrees=NewTiltAngle);
+      }
+      elseif Lookup(IsOperable("Tilt")){
+        log_info("Pan Inoperable, executing Tilt only...");
+        LibraryCall Tilt (Degrees=NewTiltAngle);
+      }
+      elseif Lookup(IsOperable("Pan")){
+        log_info("Tilt Inoperable, executing Pan only...");
+        LibraryCall Pan (Degrees=NewPanAngle);
+      }
+      else{
+        log_info("Tilt and Pan Inoperable, beginning backup pattern...");
+        BackupAction = true;
+      }
+
+      if Lookup(IsOperable("CameraCapture")){
+        log_info("Taking Picture...");
+        LibraryCall CameraCapture();
+      }
+
+      if CameraFault{
+        LibraryCall CameraCapture();
+        if Lookup(IsOperable("CameraCapture")){
+          log_info("Camera now Operable, picture taken");
+          CameraFault = false;
+        }
+        else{
+          CameraFault = true;
+          log_info("WARNING: Camera Is Inoperable, no picture taken.");
+        }
+      }
+    }
+
+    StowingPattern: Sequence
+    {
+      StartCondition BackupAction && Lookup(IsOperable("Arm"));
+      RepeatCondition true;
+      Wait 1;
+
+      if Lookup(IsOperable("ArmUnstow")){
+        LibraryCall ArmUnstow();
+      }
+      if Lookup(IsOperable("ArmUnstow")){
+        LibraryCall ArmStow();
+      }
+
+      if Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt")){
+        log_info("Stopping backup action, resuming main pattern");
+        BackupAction = false;
+      }
+    }
+  }
+}

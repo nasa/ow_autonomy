@@ -2,10 +2,11 @@
 
 <launch>
   <arg name="plan" default="None"/>
-  <arg name="fault_hierarchy" default="FaultHierarchy1.xml"/>
-  <arg name="verbose_fault_hierarchy" default="False"/>
-  <param name="fault_hierarchy_file" type="string" value="$(find ow_plexil)/src/plans/$(arg fault_hierarchy)"/>
-  <param name="verbose_fault_hierarchy_flag" type="boolean" value="$(arg verbose_fault_hierarchy)"/>
+  <arg name="fault_dependencies" default="False"/>
+
+  <param name="fault_dependencies_on" type="boolean" value="$(arg fault_dependencies)"/>
+  <rosparam file="$(find ow_plexil)/config/fault_dependencies.yaml" />
+  <param name="fault_dependencies_path" type="string" value="$(find ow_plexil)/src/plans/"/>
 
  <!-- Lets GUI know what plans to display -->
   <param name="owlat_flag" type="boolean" value="False"/>

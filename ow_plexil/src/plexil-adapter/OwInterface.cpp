@@ -267,17 +267,23 @@ void OwInterface::initialize()
 {
   LanderInterface::initialize();
 
-  std::string fault_hierarchy_path;
+  std::string fault_dependencies_path;
+  std::string fault_dependencies_file;
+  m_fault_dependencies_on = false;
   bool verbose_flag = false;
-  if(m_genericNodeHandle->getParam("/verbose_fault_hierarchy_flag", verbose_flag)){
-    verbose_flag = verbose_flag;
-  }
-  if(m_genericNodeHandle->getParam("/fault_hierarchy_file", fault_hierarchy_path)){
-    m_fault_hierarchy = std::make_unique<FaultHierarchy>(fault_hierarchy_path, verbose_flag);
-  }
-  else{
-    ROS_ERROR("COULD NOT FIND THE FAULT HIERARCHY FILE");
-    m_fault_hierarchy = std::make_unique<FaultHierarchy>("", verbose_flag);
+  if(m_genericNodeHandle->getParam("/fault_dependencies_on", m_fault_dependencies_on)){
+    if (m_fault_dependencies_on){ 
+      m_genericNodeHandle->getParam("/fault_dependencies_verbose", verbose_flag);
+      if(m_genericNodeHandle->getParam("/fault_dependencies_path", fault_dependencies_path)){
+        if(m_genericNodeHandle->getParam("/fault_dependencies_file", fault_dependencies_file)){
+          m_fault_dependencies = std::make_unique<FaultDependencies>(fault_dependencies_path + fault_dependencies_file, verbose_flag);
+        }
+      }
+      else{
+        ROS_ERROR("COULD NOT FIND THE FAULT HIERARCHY FILE");
+        m_fault_dependencies = std::make_unique<FaultDependencies>("", verbose_flag);
+      }
+    }
   }
 
   for (const string& name : LanderOpNames) {
@@ -932,14 +938,38 @@ vector<double> OwInterface::getEndEffectorFT () const
   return m_end_effector_ft;
 }
 
-std::vector<bool> OwInterface::getSubsystemFault(string subsystem_name) const
-{
-  return m_fault_hierarchy->getSubsystemStatus(subsystem_name);
-}
-
 std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_name) const
 {
-  return m_fault_hierarchy->getActiveFaults(subsystem_name);
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->getActiveFaults(subsystem_name);
+  }
+  else{
+    ROS_WARN("COULD NOT USE ActiveFaults LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    std::vector<std::string> empty_vec;
+    return empty_vec;
+  }
+}
+
+bool OwInterface::getIsOperable (std::string subsystem_name) const
+{
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->checkIsOperable(subsystem_name);
+  }
+  else{
+    ROS_WARN("COULD NOT USE IsOperable LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    return true;
+  }
+}
+
+bool OwInterface::getIsFaulty (std::string subsystem_name) const
+{
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->checkIsFaulty(subsystem_name);
+  }
+  else{
+    ROS_WARN("COULD NOT USE IsFaulty LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    return false;
+  }
 }
 
 bool OwInterface::systemFault () const

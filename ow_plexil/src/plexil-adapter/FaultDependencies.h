@@ -1,17 +1,17 @@
-#ifndef Fault_Hierarchy
-#define Fault_Hierarchy
+#ifndef Fault_Dependencies
+#define Fault_Dependencies
 
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-// Fault Hierarchy for use in the Interface class with fault lookups.
+// Fault Dependencies Class for use in the Interface class with fault lookups.
 
 struct Fault {
   std::string name;
   std::string parent_subsystem;
   int faulty = 0;
-  std::vector<std::pair<std::string, std::string>> dependencies;
+  std::vector<std::pair<std::string, std::string>> impacts;
 };
 
 struct Procedure {
@@ -26,17 +26,17 @@ struct Subsystem {
   int faulty = 0;
   int inoperable = 0;
   std::vector<std::string> faults;
-  std::vector<std::pair<std::string, std::string>> dependencies;
+  std::vector<std::pair<std::string, std::string>> impacts;
 };
 
-class FaultHierarchy
+class FaultDependencies
 {
 public:
 
-  FaultHierarchy (std::string file_name, bool verbose_flag);
-  ~FaultHierarchy() = default;
-  FaultHierarchy (const FaultHierarchy&) = delete;
-  FaultHierarchy& operator= (const FaultHierarchy&) = delete;
+  FaultDependencies (std::string file_name, bool verbose_flag);
+  ~FaultDependencies() = default;
+  FaultDependencies (const FaultDependencies&) = delete;
+  FaultDependencies& operator= (const FaultDependencies&) = delete;
 
   // get and update functions
   void updateFault(std::string name, int status);
@@ -48,7 +48,7 @@ public:
 private:
 
   // internal functions
-  void updateSubsystem(std::string name, int status);
+  void updateSubsystem(std::string name, int status, std::string parent);
   void cascadeFault(std::string name, int status);
   void parseXML(const char* file_name);
 
