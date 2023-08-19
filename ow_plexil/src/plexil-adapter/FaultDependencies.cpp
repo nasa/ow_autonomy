@@ -28,7 +28,7 @@ FaultDependencies::FaultDependencies(std::string file_name, bool verbose_flag)
 }
 
 
-bool FaultDependencies::checkIsOperable(std::string name){
+bool FaultDependencies::checkIsOperable(const std::string &name){
   // return true if subsystem/procedure is operable, false if inoperable
   if (m_subsystems.find(name) != m_subsystems.end()){
     return (m_subsystems[name].inoperable == 0);
@@ -42,7 +42,7 @@ bool FaultDependencies::checkIsOperable(std::string name){
   }
 }
 
-bool FaultDependencies::checkIsFaulty(std::string name){
+bool FaultDependencies::checkIsFaulty(const std::string &name){
   // checks if subsystem is faulty
   if (m_subsystems.find(name) != m_subsystems.end()){
     return m_subsystems[name].faulty;
@@ -54,7 +54,7 @@ bool FaultDependencies::checkIsFaulty(std::string name){
 }
 
 
-std::vector<std::string> FaultDependencies::getActiveFaults(std::string name){
+std::vector<std::string> FaultDependencies::getActiveFaults(const std::string &name){
   //LIMITING TO MAX OF 10 FAULTS RETURNED DUE TO PLEXIL RESTRICTIONS
   std::vector<std::string> active_faults;
 
@@ -81,7 +81,7 @@ std::vector<std::string> FaultDependencies::getActiveFaults(std::string name){
   return active_faults;
 }
 
-void FaultDependencies::updateFault(std::string name, int status){
+void FaultDependencies::updateFault(const std::string &name, int status){
   // If a fault doesnt exist
   if (m_faults.find(name) == m_faults.end()){
     return;
@@ -136,7 +136,7 @@ void FaultDependencies::updateFault(std::string name, int status){
   }
 }
 
-void FaultDependencies::updateSubsystem(std::string name, int status, std::string parent){
+void FaultDependencies::updateSubsystem(const std::string &name, int status, const std::string &parent){
   int prev_inoperable_state = m_subsystems[name].inoperable;
   // increment non_local fault and inoperable flags if status is 1
   if (status == 1){
@@ -162,7 +162,7 @@ void FaultDependencies::updateSubsystem(std::string name, int status, std::strin
   }
 }
 
-void FaultDependencies::cascadeFault(std::string subsystem_name, int status){
+void FaultDependencies::cascadeFault(const std::string &subsystem_name, int status){
   std::unordered_set<std::string> visited;
   std::stack<std::string> nodes;
 
@@ -250,6 +250,7 @@ void FaultDependencies::parseXML(const char* file_name){
       std::cout << "XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
       std::cout << "Error description: " << result.description() << "\n";
       std::cout << "Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n";
+      return;
   }
 
   pugi::xml_node subsystems = doc.child("System").child("Subsystems");
@@ -300,8 +301,8 @@ void FaultDependencies::parseXML(const char* file_name){
         m_faults[fault_name] = Fault();
         m_faults[fault_name].name = fault_name;
         m_faults[fault_name].parent_subsystem = subsystem_name;
+        m_subsystems[subsystem_name].faults.push_back(fault_name);
       }
-      m_subsystems[subsystem_name].faults.push_back(fault_name);
       for (pugi::xml_node impact = fault.child("Impacts"); impact; impact = impact.next_sibling("Impacts")){
         std::string impact_name = impact.attribute("Name").value();
         std::string impact_type = impact.attribute("Type").value();

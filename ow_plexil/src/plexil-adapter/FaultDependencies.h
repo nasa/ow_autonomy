@@ -39,17 +39,17 @@ public:
   FaultDependencies& operator= (const FaultDependencies&) = delete;
 
   // get and update functions
-  void updateFault(std::string name, int status);
-  std::vector<std::string> getActiveFaults(std::string name);
-  bool checkIsOperable(std::string);
-  bool checkIsFaulty(std::string);
+  void updateFault(const std::string &name, int status);
+  std::vector<std::string> getActiveFaults(const std::string &name);
+  bool checkIsOperable(const std::string &name);
+  bool checkIsFaulty(const std::string &name);
   void DebugPrint();
 
 private:
 
   // internal functions
-  void updateSubsystem(std::string name, int status, std::string parent);
-  void cascadeFault(std::string name, int status);
+  void updateSubsystem(const std::string &name, int status, const std::string &parent);
+  void cascadeFault(const std::string &name, int status);
   void parseXML(const char* file_name);
 
   // verbose debug print flag

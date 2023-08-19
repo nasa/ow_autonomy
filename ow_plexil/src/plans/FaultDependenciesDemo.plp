@@ -1,14 +1,20 @@
 // The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
- 
-// Unstow and stow the arm repeatedly. Pan the antenna
-// in 15 degree increments when 'Unstow' action goal status
-// is 'ACTIVE' and pan the antenna in 15 degree decrements 
-// when 'Stow' action goal status is 'ACTIVE'. 
-// This plan will be terminated if any fault occurs.
 
-#include "plan-interface.h"
+// The Antenna will Pan, Tilt and then take a picture. If the Pan Fault is active
+// it will only Tilt and Take a Picture. If the Tilt Fault is active it will only 
+// Pan and take a picture. If both Pan and Tilt are inoperable, the backup action
+// will begin and unstow/stow the arm repeatably. Camera faults will prevent a picture
+// from being taken until they are cleared. 
+
+// NOTE: As of 10/18/2023 The backup action should be robust to faults, but due to the
+// SynchronousCommand bug it will freeze the whole plexil plan if an arm fault is 
+// activated during execution. This is being investigated.
+
+
+
+ #include "plan-interface.h"
 
 FaultDependenciesDemo:
 {
