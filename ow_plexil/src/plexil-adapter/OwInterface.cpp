@@ -271,19 +271,24 @@ void OwInterface::initialize()
   std::string fault_dependencies_file;
   m_fault_dependencies_on = false;
   bool verbose_flag = false;
-  if(m_genericNodeHandle->getParam("/fault_dependencies_on", m_fault_dependencies_on)){
-    if (m_fault_dependencies_on){ 
-      m_genericNodeHandle->getParam("/fault_dependencies_verbose", verbose_flag);
-      if(m_genericNodeHandle->getParam("/fault_dependencies_path", fault_dependencies_path)){
-        if(m_genericNodeHandle->getParam("/fault_dependencies_file", fault_dependencies_file)){
-          m_fault_dependencies = std::make_unique<FaultDependencies>(fault_dependencies_path + fault_dependencies_file, verbose_flag);
-        }
-      }
-      else{
-        ROS_ERROR("COULD NOT FIND THE FAULT HIERARCHY FILE");
-        m_fault_dependencies = std::make_unique<FaultDependencies>("", verbose_flag);
-      }
+  if(m_genericNodeHandle->getParam("/fault_dependencies_verbose", verbose_flag)){
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_verbose parameter");
+  }
+  if(m_genericNodeHandle->getParam("/fault_dependencies_path", fault_dependencies_path)){
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_path parameter");
+  }
+  if(m_genericNodeHandle->getParam("/fault_dependencies_file", fault_dependencies_file)){
+    if (fault_dependencies_file != ""){
+      m_fault_dependencies_on = true;
+      m_fault_dependencies = std::make_unique<FaultDependencies>(fault_dependencies_path + fault_dependencies_file, verbose_flag);
     }
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_file parameter");
   }
 
   for (const string& name : LanderOpNames) {
