@@ -933,7 +933,7 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-vector<double> OwInterface::getEndEffectorFT () const
+std::vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
@@ -945,7 +945,7 @@ std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_nam
   }
   else{
     ROS_WARN("COULD NOT USE ActiveFaults LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
-    std::vector<std::string> empty_vec;
+    std::vector<string> empty_vec;
     return empty_vec;
   }
 }

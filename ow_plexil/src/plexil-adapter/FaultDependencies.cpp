@@ -198,8 +198,7 @@ void FaultDependencies::cascadeFault(const std::string &subsystem_name, int stat
     }
 
 }
-
-void FaultDependencies::DebugPrint(){
+/*void FaultDependencies::DebugPrint(){
   // Prints out current fault info for all faults and subsystems
   std::cout << "FAULTS: " << std::endl;
   std::cout << "------------------------------------------------------------------------"
@@ -235,6 +234,43 @@ void FaultDependencies::DebugPrint(){
   }
   std::cout << std::endl;
 }
+*/
+
+void FaultDependencies::DebugPrint(){
+  // Prints out current fault info for all faults and subsystems
+  ROS_INFO_STREAM("FAULTS: " );
+  ROS_INFO_STREAM("------------------------------------------------------------------------"
+            << "-----------------------------" 
+            );
+  ROS_INFO_STREAM(std::setw(40) << std::left << "NAME" << std::setw(20) << "FAULTY");
+  ROS_INFO_STREAM("------------------------------------------------------------------------"
+            << "-----------------------------" 
+            );
+  for (auto fault: m_faults){
+    ROS_INFO_STREAM(std::left << std::setw(40) << fault.second.name << std::setw(20) << fault.second.faulty );
+  }
+
+  ROS_INFO_STREAM("\n" );
+  ROS_INFO_STREAM("SUBSYSTEMS/PROCEDURES STATUS" );
+  ROS_INFO_STREAM("------------------------------------------------------------------------"
+            << "-----------------------------" 
+            );
+
+  ROS_INFO_STREAM(std::setw(25) << std::left << "NAME" << std::setw(17) << "TYPE" << std::setw(17) << "NON-LOCAL FAULT" 
+  << std::setw(17) << "LOCAL FAULT" << std::setw(17) << "FAULTY" << "INOPERABLE" );
+  ROS_INFO_STREAM("------------------------------------------------------------------------"
+            << "-----------------------------" 
+            );
+  for (auto subsystem: m_subsystems){
+    ROS_INFO_STREAM(std::left << std::setw(25) << subsystem.second.name << std::setw(17) << "Subsystem" << std::setw(17) << 
+    subsystem.second.non_local_fault << std::setw(17) << subsystem.second.local_fault << std::setw(17) <<
+    subsystem.second.faulty << subsystem.second.inoperable );
+  }
+  for (auto proc: m_procedures){
+    ROS_INFO_STREAM(std::left << std::setw(25) << proc.second.name << std::setw(17) << "Procedure" << std::setw(17) << 
+    "-" << std::setw(17) << "-" << std::setw(17) <<"-" << proc.second.inoperable );
+  }
+}
 
 void FaultDependencies::parseXML(const char* file_name){
   pugi::xml_document doc;
@@ -243,13 +279,13 @@ void FaultDependencies::parseXML(const char* file_name){
   // Make sure we can read the xml file, if not print an error message
   if (result)
   {
-      std::cout << "XML [" << file_name << "] parsed without error. \n\n";
+      ROS_INFO_STREAM("XML [" << file_name << "] parsed without error. \n\n");
   }
   else
   {
-      std::cout << "XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n";
-      std::cout << "Error description: " << result.description() << "\n";
-      std::cout << "Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n";
+      ROS_INFO_STREAM("XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n");
+      ROS_INFO_STREAM("Error description: " << result.description() << "\n");
+      ROS_INFO_STREAM("Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n");
       return;
   }
 
@@ -258,7 +294,7 @@ void FaultDependencies::parseXML(const char* file_name){
   for (pugi::xml_node subsystem = subsystems.child("Subsystem"); subsystem; subsystem = subsystem.next_sibling("Subsystem"))
   {
     // get name and severity thresholds
-    std::string subsystem_name = subsystem.attribute("Name").value();
+    std::string subsystem_name = subsystem.attribute("Name").as_string();
 
     // Create and add new subsystem to m_subsystems
     if (m_subsystems.find(subsystem_name) == m_subsystems.end()){
@@ -275,11 +311,11 @@ void FaultDependencies::parseXML(const char* file_name){
     for (pugi::xml_node target = subsystem.child("Impacts"); target;
          target = target.next_sibling("Impacts")){
       if (target.empty()){
-        std::cout << "WARNING: FAILED TO READ A DISABLE TARGET " << target << "\n";
+        ROS_INFO_STREAM("WARNING: FAILED TO READ AN IMPACTS TARGET " << target << "\n");
         continue;
       }
-      std::string target_name = target.attribute("Name").value();
-      std::string target_type = target.attribute("Type").value();
+      std::string target_name = target.attribute("Name").as_string();
+      std::string target_type = target.attribute("Type").as_string();
 
       m_subsystems[subsystem_name].impacts.push_back(std::make_pair(target_name, target_type));
 
@@ -291,9 +327,9 @@ void FaultDependencies::parseXML(const char* file_name){
 
     // Read all faults and add them to m_faults as well as their respective subsystems
     for (pugi::xml_node fault = faults.child("Fault"); fault; fault = fault.next_sibling("Fault")){
-      std::string fault_name = fault.attribute("Name").value();
+      std::string fault_name = fault.attribute("Name").as_string();
       if (fault_name.empty()){
-        std::cout << "WARNING: FAILED TO READ A FAULT IN SUBSYSTEM " << subsystem_name << "\n";
+        ROS_INFO_STREAM("WARNING: FAILED TO READ A FAULT IN SUBSYSTEM " << subsystem_name << "\n");
         continue;
       }
 
@@ -304,8 +340,8 @@ void FaultDependencies::parseXML(const char* file_name){
         m_subsystems[subsystem_name].faults.push_back(fault_name);
       }
       for (pugi::xml_node impact = fault.child("Impacts"); impact; impact = impact.next_sibling("Impacts")){
-        std::string impact_name = impact.attribute("Name").value();
-        std::string impact_type = impact.attribute("Type").value();
+        std::string impact_name = impact.attribute("Name").as_string();
+        std::string impact_type = impact.attribute("Type").as_string();
         m_faults[fault_name].impacts.push_back(std::make_pair(impact_name, impact_type));
         if (impact_type == "Procedure" && m_procedures.find(impact_name) == m_procedures.end()){
           m_procedures[impact_name] = Procedure();
