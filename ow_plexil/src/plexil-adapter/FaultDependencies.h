@@ -33,24 +33,25 @@ class FaultDependencies
 {
 public:
 
-  FaultDependencies (std::string file_name, bool verbose_flag);
+  FaultDependencies (const std::string &file_name, bool verbose_flag);
+  FaultDependencies () = delete;
   ~FaultDependencies() = default;
   FaultDependencies (const FaultDependencies&) = delete;
   FaultDependencies& operator= (const FaultDependencies&) = delete;
 
   // get and update functions
   void updateFault(const std::string &name, int status);
-  std::vector<std::string> getActiveFaults(const std::string &name);
-  bool checkIsOperable(const std::string &name);
-  bool checkIsFaulty(const std::string &name);
-  void DebugPrint();
+  std::vector<std::string> getActiveFaults(const std::string &name) const;
+  bool checkIsOperable(const std::string &name) const;
+  bool checkIsFaulty(const std::string &name) const;
+  void DebugPrint() const;
 
 private:
 
   // internal functions
   void updateSubsystem(const std::string &name, int status, const std::string &parent);
   void cascadeFault(const std::string &name, int status);
-  void parseXML(const char* file_name);
+  void parseXML(const std::string &file);
 
   // verbose debug print flag
   bool m_verbose_flag = true;

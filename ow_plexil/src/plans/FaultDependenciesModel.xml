@@ -19,6 +19,7 @@
     </Subsystem>
 
     <Subsystem Name="Arm">
+      <!-- Currently COLLISION, E_STOP, NO_FORCE_DATA and FORCE_TORQUE_LIMIT are not supported in the simulator. -->
       <Faults>
         <Fault Name="HARDWARE">
           <Impacts Name="Arm" Type="Subsystem"/>
@@ -49,7 +50,6 @@
       <Impacts Name="ArmStow" Type="Procedure"/>  
       <Impacts Name="ArmUnstow" Type="Procedure"/>  
       <Impacts Name="DigTrench" Type="Procedure"/>  
-      <Impacts Name="DockInjestSample" Type="Procedure"/>  
       <Impacts Name="DumpSamples" Type="Procedure"/>  
       <Impacts Name="Excavation" Type="Procedure"/>  
       <Impacts Name="InitializeAntennaAndArm" Type="Procedure"/>  
@@ -80,6 +80,9 @@
     <Subsystem Name="Camera">
       <Faults>
         <Fault Name="NO_IMAGE">
+          <Impacts Name="Camera" Type="Subsystem"/>
+       </Fault>
+      </Faults>
           <Impacts Name="TakePanorama" Type="Procedure"/>
           <Impacts Name="CameraCapture" Type="Procedure"/>  
           <Impacts Name="ImagePass" Type="Procedure"/>
@@ -87,8 +90,6 @@
           <Impacts Name="PanAndShoot" Type="Procedure"/>
           <Impacts Name="ImageLandingSite" Type="Procedure"/>
           <Impacts Name="IdentifySampleLocation" Type="Procedure"/>
-        </Fault>
-      </Faults>
     </Subsystem>
   </Subsystems>
 </System>

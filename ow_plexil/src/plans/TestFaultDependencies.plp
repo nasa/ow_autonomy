@@ -10,6 +10,7 @@
 
 TestFaultDependencies:
 {
+  log_info("TestFaultDependencies Started.");
 
   PrintNode:
   {

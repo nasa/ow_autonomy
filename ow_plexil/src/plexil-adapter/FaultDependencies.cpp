@@ -16,7 +16,7 @@
 #include "pugixml.hpp"
 
 
-FaultDependencies::FaultDependencies(std::string file_name, bool verbose_flag)
+FaultDependencies::FaultDependencies(const std::string &file_name, bool verbose_flag)
 {
   // If verbose we debug print after every update
   m_verbose_flag = verbose_flag;
@@ -28,13 +28,13 @@ FaultDependencies::FaultDependencies(std::string file_name, bool verbose_flag)
 }
 
 
-bool FaultDependencies::checkIsOperable(const std::string &name){
+bool FaultDependencies::checkIsOperable(const std::string &name) const{
   // return true if subsystem/procedure is operable, false if inoperable
   if (m_subsystems.find(name) != m_subsystems.end()){
-    return (m_subsystems[name].inoperable == 0);
+    return (m_subsystems.at(name).inoperable == 0);
   }
   else if (m_procedures.find(name) != m_procedures.end()){
-    return (m_procedures[name].inoperable == 0);
+    return (m_procedures.at(name).inoperable == 0);
   }
   else{
     ROS_WARN("IsOperable LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
@@ -42,10 +42,10 @@ bool FaultDependencies::checkIsOperable(const std::string &name){
   }
 }
 
-bool FaultDependencies::checkIsFaulty(const std::string &name){
+bool FaultDependencies::checkIsFaulty(const std::string &name) const{
   // checks if subsystem is faulty
   if (m_subsystems.find(name) != m_subsystems.end()){
-    return m_subsystems[name].faulty;
+    return m_subsystems.at(name).faulty;
   }
   else{
     ROS_WARN("IsFaulty LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
@@ -54,8 +54,9 @@ bool FaultDependencies::checkIsFaulty(const std::string &name){
 }
 
 
-std::vector<std::string> FaultDependencies::getActiveFaults(const std::string &name){
-  //LIMITING TO MAX OF 10 FAULTS RETURNED DUE TO PLEXIL RESTRICTIONS
+std::vector<std::string> FaultDependencies::getActiveFaults(const std::string &name) const{
+  // Limiting it to up to 10 faults returned, this is an arbitrary number to keep 
+  // it a fixed size array for PLEXIL.
   std::vector<std::string> active_faults;
 
   // If System is specified we return all active faults across every subsystem
@@ -72,8 +73,8 @@ std::vector<std::string> FaultDependencies::getActiveFaults(const std::string &n
   }
   // Get all active faults in specified subsystem
   else{
-    for (auto i: m_subsystems[name].faults){
-      if (m_faults[i].faulty == 1 && active_faults.size() <= 10){
+    for (auto i: m_subsystems.at(name).faults){
+      if (m_faults.at(i).faulty == 1 && active_faults.size() <= 10){
         active_faults.push_back(i);
       }
     }
@@ -196,47 +197,9 @@ void FaultDependencies::cascadeFault(const std::string &subsystem_name, int stat
         }
       }
     }
-
 }
-/*void FaultDependencies::DebugPrint(){
-  // Prints out current fault info for all faults and subsystems
-  std::cout << "FAULTS: " << std::endl;
-  std::cout << "------------------------------------------------------------------------"
-            << "------------------------------------------------------------------------" 
-            << std::endl;
-  std::cout << std::setw(40) << std::left << "NAME" << std::setw(20) << "FAULTY" <<  std::endl;
-  std::cout << "------------------------------------------------------------------------"
-            << "------------------------------------------------------------------------" 
-            << std::endl;
-  for (auto fault: m_faults){
-    std::cout << std::left << std::setw(40) << fault.second.name << std::setw(20) << fault.second.faulty << std::endl;
-  }
 
-  std::cout << "\n" << std::endl;
-  std::cout << "SUBSYSTEMS/PROCEDURES STATUS" << std::endl;
-  std::cout << "------------------------------------------------------------------------"
-            << "------------------------------------------------------------------------" 
-            << std::endl;
-
-  std::cout << std::setw(25) << std::left << "NAME" << std::setw(25) << "TYPE" << std::setw(25) << "NON-LOCAL FAULT" 
-  << std::setw(25) << "LOCAL FAULT" << std::setw(25) << "FAULTY" << std::setw(25) << "INOPERABLE" << std::endl;
-  std::cout << "------------------------------------------------------------------------"
-            << "------------------------------------------------------------------------" 
-            << std::endl;
-  for (auto subsystem: m_subsystems){
-    std::cout << std::left << std::setw(25) << subsystem.second.name << std::setw(25) << "Subsystem" << std::setw(25) << 
-    subsystem.second.non_local_fault << std::setw(25) << subsystem.second.local_fault << std::setw(25) <<
-    subsystem.second.faulty << std::setw(25) << subsystem.second.inoperable << std::endl;
-  }
-  for (auto proc: m_procedures){
-    std::cout << std::left << std::setw(25) << proc.second.name << std::setw(25) << "Procedure" << std::setw(25) << 
-    "-" << std::setw(25) << "-" << std::setw(25) <<"-" << std::setw(25) << proc.second.inoperable << std::endl;
-  }
-  std::cout << std::endl;
-}
-*/
-
-void FaultDependencies::DebugPrint(){
+void FaultDependencies::DebugPrint() const{
   // Prints out current fault info for all faults and subsystems
   ROS_INFO_STREAM("FAULTS: " );
   ROS_INFO_STREAM("------------------------------------------------------------------------"
@@ -272,7 +235,8 @@ void FaultDependencies::DebugPrint(){
   }
 }
 
-void FaultDependencies::parseXML(const char* file_name){
+void FaultDependencies::parseXML(const std::string &file){
+  const char* file_name = file.c_str();
   pugi::xml_document doc;
   pugi::xml_parse_result result = doc.load_file(file_name);
 
