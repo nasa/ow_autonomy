@@ -31,10 +31,10 @@ FaultDependencies::FaultDependencies(const std::string &file_name, bool verbose_
 bool FaultDependencies::checkIsOperable(const std::string &name) const{
   // return true if subsystem/procedure is operable, false if inoperable
   if (m_subsystems.find(name) != m_subsystems.end()){
-    return (m_subsystems.at(name).inoperable == 0);
+    return (m_subsystems.at(name).num_inoperable == 0);
   }
   else if (m_procedures.find(name) != m_procedures.end()){
-    return (m_procedures.at(name).inoperable == 0);
+    return (m_procedures.at(name).num_inoperable == 0);
   }
   else{
     ROS_WARN("IsOperable LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
@@ -98,17 +98,17 @@ void FaultDependencies::updateFault(const std::string &name, int status){
 
   // increment local fault flag for parent subsystem and change faulty flag as needed
   if (status == 1){
-    m_subsystems[parent_subsystem].local_fault += 1;
+    m_subsystems[parent_subsystem].num_local_faults += 1;
   }
   else{
-    m_subsystems[parent_subsystem].local_fault -= 1; 
+    m_subsystems[parent_subsystem].num_local_faults -= 1; 
   }
 
-  if (m_subsystems[parent_subsystem].local_fault > 0){
-    m_subsystems[parent_subsystem].faulty = 1; 
+  if (m_subsystems[parent_subsystem].num_local_faults > 0){
+    m_subsystems[parent_subsystem].faulty = true; 
   }
   else{
-    m_subsystems[parent_subsystem].faulty = 0; 
+    m_subsystems[parent_subsystem].faulty = false; 
   }
 
   for (auto dep: m_faults[name].impacts){
@@ -122,10 +122,10 @@ void FaultDependencies::updateFault(const std::string &name, int status){
     else{
       if (m_procedures.find(dep.first) != m_procedures.end()){
         if (status == 1){
-            m_procedures[dep.first].inoperable += 1;
+            m_procedures[dep.first].num_inoperable += 1;
         }
         else{
-            m_procedures[dep.first].inoperable -= 1;
+            m_procedures[dep.first].num_inoperable -= 1;
         }
       }
     }
@@ -138,27 +138,27 @@ void FaultDependencies::updateFault(const std::string &name, int status){
 }
 
 void FaultDependencies::updateSubsystem(const std::string &name, int status, const std::string &parent){
-  int prev_inoperable_state = m_subsystems[name].inoperable;
+  int prev_inoperable_state = m_subsystems[name].num_inoperable;
   // increment non_local fault and inoperable flags if status is 1
   if (status == 1){
       if (parent != name){
-        m_subsystems[name].non_local_fault += 1;
+        m_subsystems[name].num_non_local_faults += 1;
       }
-      m_subsystems[name].inoperable += 1;
+      m_subsystems[name].num_inoperable += 1;
       ROS_INFO("SUBSYSTEM: %s INOPERABLE.", name.c_str());
   }
   // otherwise decrement
   else{
       if (parent != name){
-        m_subsystems[name].non_local_fault -= 1;
+        m_subsystems[name].num_non_local_faults -= 1;
       }
-      m_subsystems[name].inoperable -= 1;
-      if (m_subsystems[name].inoperable == 0){
+      m_subsystems[name].num_inoperable -= 1;
+      if (m_subsystems[name].num_inoperable == 0){
         ROS_INFO("SUBSYSTEM: %s NOW OPERABLE.", name.c_str());
       }
   }
   // If subsystem inoperable flag changes, we need to cascade inoperable fault to impacted subsystems
-  if (prev_inoperable_state != m_subsystems[name].inoperable){
+  if (prev_inoperable_state != m_subsystems[name].num_inoperable){
     cascadeFault(name, status);
   }
 }
@@ -178,19 +178,19 @@ void FaultDependencies::cascadeFault(const std::string &subsystem_name, int stat
       for (auto i: m_subsystems[current_node].impacts){
         // If it is a procedure we do not need to add it to BFS stack, and can just update the inoperable flag
         if (i.second == "Procedure"){
-          m_procedures[i.first].inoperable = status;
+          m_procedures[i.first].num_inoperable = status;
         }
         // Otherwise we update subsystem and add it to stack
         else{
           if (visited.insert(i.first).second && m_subsystems.find(i.first) != m_subsystems.end()){
-            // increment or decrement non_local_fault flag
+            // increment or decrement num_non_local_faults flag
             if (status){
-              m_subsystems[i.first].non_local_fault += 1;
-              m_subsystems[i.first].inoperable += 1;
+              m_subsystems[i.first].num_non_local_faults += 1;
+              m_subsystems[i.first].num_inoperable += 1;
             }
             else{
-              m_subsystems[i.first].non_local_fault -= 1;
-              m_subsystems[i.first].inoperable -= 1;
+              m_subsystems[i.first].num_non_local_faults -= 1;
+              m_subsystems[i.first].num_inoperable -= 1;
             }
             nodes.push(i.first);
           }
@@ -226,12 +226,12 @@ void FaultDependencies::DebugPrint() const{
             );
   for (auto subsystem: m_subsystems){
     ROS_INFO_STREAM(std::left << std::setw(25) << subsystem.second.name << std::setw(17) << "Subsystem" << std::setw(17) << 
-    subsystem.second.non_local_fault << std::setw(17) << subsystem.second.local_fault << std::setw(17) <<
-    subsystem.second.faulty << subsystem.second.inoperable );
+    subsystem.second.num_non_local_faults << std::setw(17) << subsystem.second.num_local_faults << std::setw(17) <<
+    subsystem.second.faulty << subsystem.second.num_inoperable );
   }
   for (auto proc: m_procedures){
     ROS_INFO_STREAM(std::left << std::setw(25) << proc.second.name << std::setw(17) << "Procedure" << std::setw(17) << 
-    "-" << std::setw(17) << "-" << std::setw(17) <<"-" << proc.second.inoperable );
+    "-" << std::setw(17) << "-" << std::setw(17) <<"-" << proc.second.num_inoperable );
   }
 }
 

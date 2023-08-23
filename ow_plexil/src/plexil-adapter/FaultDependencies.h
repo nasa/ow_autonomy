@@ -16,15 +16,15 @@ struct Fault {
 
 struct Procedure {
   std::string name;
-  int inoperable = 0;
+  int num_inoperable = 0;
 };
 
 struct Subsystem {
   std::string name;
-  int local_fault = 0;
-  int non_local_fault = 0;
-  int faulty = 0;
-  int inoperable = 0;
+  int num_local_faults = 0; // Number of active faults in local subsystem
+  int num_non_local_faults = 0; // Number of active faults that impact this subsystem which are non-local
+  int num_inoperable = 0; // Number of active faults that impact this subsystem (Local or Non-local).
+  bool faulty = false; // Flag for if the subsystem has any local faults
   std::vector<std::string> faults;
   std::vector<std::pair<std::string, std::string>> impacts;
 };
