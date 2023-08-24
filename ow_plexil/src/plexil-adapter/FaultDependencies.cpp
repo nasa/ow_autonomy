@@ -37,7 +37,7 @@ bool FaultDependencies::checkIsOperable(const std::string &name) const{
     return (m_procedures.at(name).num_inoperable == 0);
   }
   else{
-    ROS_WARN("IsOperable LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
+    ROS_WARN("IsOperable lookup failed, %s does not exist.", name.c_str());
     return true;
   }
 }
@@ -48,7 +48,7 @@ bool FaultDependencies::checkIsFaulty(const std::string &name) const{
     return m_subsystems.at(name).faulty;
   }
   else{
-    ROS_WARN("IsFaulty LOOKUP FAILED, %s DOES NOT EXIST.", name.c_str());
+    ROS_WARN("IsFaulty lookup failed, %s does not exist.", name.c_str());
     return false;
   }
 }
@@ -69,7 +69,7 @@ std::vector<std::string> FaultDependencies::getActiveFaults(const std::string &n
   }
   // If no subsystem by name exists
   else if(m_subsystems.find(name) == m_subsystems.end()){
-    ROS_WARN("SUBSYSTEM: %s DOES NOT EXIST.", name.c_str());
+    ROS_WARN("Subsystem: %s does not exist.", name.c_str());
   }
   // Get all active faults in specified subsystem
   else{
@@ -145,7 +145,7 @@ void FaultDependencies::updateSubsystem(const std::string &name, int status, con
         m_subsystems[name].num_non_local_faults += 1;
       }
       m_subsystems[name].num_inoperable += 1;
-      ROS_INFO("SUBSYSTEM: %s INOPERABLE.", name.c_str());
+      ROS_INFO("Subsystem: %s inoperable.", name.c_str());
   }
   // otherwise decrement
   else{
@@ -154,7 +154,7 @@ void FaultDependencies::updateSubsystem(const std::string &name, int status, con
       }
       m_subsystems[name].num_inoperable -= 1;
       if (m_subsystems[name].num_inoperable == 0){
-        ROS_INFO("SUBSYSTEM: %s NOW OPERABLE.", name.c_str());
+        ROS_INFO("Subsystem: %s now operable.", name.c_str());
       }
   }
   // If subsystem inoperable flag changes, we need to cascade inoperable fault to impacted subsystems
@@ -275,7 +275,7 @@ void FaultDependencies::parseXML(const std::string &file){
     for (pugi::xml_node target = subsystem.child("Impacts"); target;
          target = target.next_sibling("Impacts")){
       if (target.empty()){
-        ROS_INFO_STREAM("WARNING: FAILED TO READ AN IMPACTS TARGET " << target << "\n");
+        ROS_INFO_STREAM("Warning: failed to read an impacts target " << target << "\n");
         continue;
       }
       std::string target_name = target.attribute("Name").as_string();
@@ -293,7 +293,7 @@ void FaultDependencies::parseXML(const std::string &file){
     for (pugi::xml_node fault = faults.child("Fault"); fault; fault = fault.next_sibling("Fault")){
       std::string fault_name = fault.attribute("Name").as_string();
       if (fault_name.empty()){
-        ROS_INFO_STREAM("WARNING: FAILED TO READ A FAULT IN SUBSYSTEM " << subsystem_name << "\n");
+        ROS_INFO_STREAM("Warning: failed to read a fault in subsystem " << subsystem_name << "\n");
         continue;
       }
 
