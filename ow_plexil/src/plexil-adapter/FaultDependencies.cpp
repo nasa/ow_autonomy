@@ -22,7 +22,10 @@ FaultDependencies::FaultDependencies(const std::string &file_name, bool verbose_
   m_verbose_flag = verbose_flag;
   const char* source = file_name.c_str();
   // Parse the dependency xml file in plans dir
-  parseXML(source);
+  if (!parseXML(source)){
+    // If we are unable to parse or the file doesnt exist, abort and shutdown node.
+    ros::shutdown();
+  }
   // Initial print to show setup
   DebugPrint();
 }
@@ -235,7 +238,7 @@ void FaultDependencies::DebugPrint() const{
   }
 }
 
-void FaultDependencies::parseXML(const std::string &file){
+bool FaultDependencies::parseXML(const std::string &file){
   const char* file_name = file.c_str();
   pugi::xml_document doc;
   pugi::xml_parse_result result = doc.load_file(file_name);
@@ -247,12 +250,10 @@ void FaultDependencies::parseXML(const std::string &file){
   }
   else
   {
-      ROS_WARN_STREAM("XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n");
-      ROS_WARN_STREAM("Error description: " << result.description() << "\n");
-      ROS_WARN_STREAM("Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n");
-      // If we are unable to parse or the file doesnt exist, abort and cause a crash.
-      // This was requested so that the user must restart with a valid XML file and cannot ignore.
-      std::abort();
+      ROS_ERROR_STREAM("XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n");
+      ROS_ERROR_STREAM("Error description: " << result.description() << "\n");
+      ROS_ERROR_STREAM("Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n");
+      return false;
   }
 
   pugi::xml_node subsystems = doc.child("System").child("Subsystems");
@@ -277,10 +278,8 @@ void FaultDependencies::parseXML(const std::string &file){
     for (pugi::xml_node target = subsystem.child("Impacts"); target;
          target = target.next_sibling("Impacts")){
       if (target.empty()){
-        ROS_WARN_STREAM("Warning: failed to read an impacts target " << target << "\n");
-        // If not included cause a crash.
-        // This was requested so that the user must restart with a valid XML file and cannot ignore.
-        std::abort();
+        ROS_ERROR_STREAM("Warning: failed to read an impacts target " << target << "\n");
+        return false;
       }
       std::string target_name = target.attribute("Name").as_string();
       std::string target_type = target.attribute("Type").as_string();
@@ -297,10 +296,8 @@ void FaultDependencies::parseXML(const std::string &file){
     for (pugi::xml_node fault = faults.child("Fault"); fault; fault = fault.next_sibling("Fault")){
       std::string fault_name = fault.attribute("Name").as_string();
       if (fault_name.empty()){
-        ROS_WARN_STREAM("Warning: failed to read a fault in subsystem " << subsystem_name << "\n");
-        // If not included cause a crash.
-        // This was requested so that the user must restart with a valid XML file and cannot ignore.
-        std::abort();
+        ROS_ERROR_STREAM("Warning: failed to read a fault in subsystem " << subsystem_name << "\n");
+        return false;
       }
 
       if (m_faults.find(fault_name) == m_faults.end()){
@@ -320,6 +317,7 @@ void FaultDependencies::parseXML(const std::string &file){
       }
     }
   }
+  return true;
 }
 
 

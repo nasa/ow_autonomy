@@ -51,7 +51,7 @@ private:
   // internal functions
   void updateSubsystem(const std::string &name, int status, const std::string &parent);
   void cascadeFault(const std::string &name, int status);
-  void parseXML(const std::string &file);
+  bool parseXML(const std::string &file);
 
   // verbose debug print flag
   bool m_verbose_flag = true;
