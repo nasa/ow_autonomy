@@ -23,6 +23,8 @@ HealthMonitorDemo: Concurrence
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
+  
+  log_info("Starting HealthMonitorDemo...");
 
   Monitor:
   {

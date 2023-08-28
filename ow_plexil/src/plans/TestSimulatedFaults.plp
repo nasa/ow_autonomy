@@ -3,7 +3,7 @@
 // this repository.
 
 // Tests the simulated fault command. Test 1 injects and clears antenna pan fault
-// with 100% probability. Test 2 injects an antenna pan fault, and repeatadly tries to 
+// with 100% probability. Test 2 injects an antenna pan fault, and repeatedly tries to 
 // clear it with 25% probability until the fault is cleared. Test 3 is the same as test 2
 // but the injection command is repeated until successful instead of the clear command. 
 
@@ -13,6 +13,8 @@ TestSimulatedFaults:
 {
   Boolean test;
   
+  log_info("Starting TestSimulatedFaults...");
+
   log_info("TEST 1: ");
   log_info("Injecting ant_pan_joint_locked_failure with probability 100%.");
   test = inject_simulated_fault("ant_pan_joint_locked_failure", 1);
