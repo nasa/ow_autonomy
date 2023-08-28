@@ -1,0 +1,2 @@
+# If True the fault dependencies class will print out its information every time a fault is triggered or resolved.
+fault_dependencies_verbose: false

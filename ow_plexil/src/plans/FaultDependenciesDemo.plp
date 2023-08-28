@@ -14,7 +14,7 @@
 
 
 
- #include "plan-interface.h"
+#include "plan-interface.h"
 
 FaultDependenciesDemo:
 {
@@ -24,14 +24,11 @@ FaultDependenciesDemo:
   Real Count = 0;
   Boolean BackupAction = false;
   Boolean CameraFault = false;
-  RepeatCondition true;
 
   log_info ("Starting FaultDependenciesDemo plan...");
 
   Run: Concurrence
   {
-    RepeatCondition true;
-    Wait 1;
 
     PanTiltPattern: Sequence
     {
@@ -68,9 +65,13 @@ FaultDependenciesDemo:
         BackupAction = true;
       }
 
+
       if Lookup(IsOperable("CameraCapture")){
         log_info("Taking Picture...");
         LibraryCall CameraCapture();
+      }
+      else{
+        CameraFault=true;
       }
 
       if CameraFault{
@@ -95,8 +96,14 @@ FaultDependenciesDemo:
       if Lookup(IsOperable("ArmUnstow")){
         LibraryCall ArmUnstow();
       }
+      else{
+        log_info("WARNING: ArmUnstow Is Inoperable, action skipped.");
+      }
       if Lookup(IsOperable("ArmUnstow")){
         LibraryCall ArmStow();
+      }
+      else{
+        log_info("WARNING: ArmStow Is Inoperable, action skipped.");
       }
 
       if Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt")){

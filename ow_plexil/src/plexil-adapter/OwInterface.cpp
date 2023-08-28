@@ -985,7 +985,7 @@ std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_nam
     return m_fault_dependencies->getActiveFaults(subsystem_name);
   }
   else{
-    ROS_WARN("COULD NOT USE ActiveFaults LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    ROS_WARN_THROTTLE(10, "Could not use ActiveFaults lookup, fault dependencies are turned off");
     std::vector<string> empty_vec;
     return empty_vec;
   }
@@ -997,7 +997,7 @@ bool OwInterface::getIsOperable (std::string subsystem_name) const
     return m_fault_dependencies->checkIsOperable(subsystem_name);
   }
   else{
-    ROS_WARN("COULD NOT USE IsOperable LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    ROS_WARN_THROTTLE(10, "Could not use IsOperable lookup, fault dependencies are turned off");
     return true;
   }
 }
@@ -1008,7 +1008,7 @@ bool OwInterface::getIsFaulty (std::string subsystem_name) const
     return m_fault_dependencies->checkIsFaulty(subsystem_name);
   }
   else{
-    ROS_WARN("COULD NOT USE IsFaulty LOOKUP, FAULT DEPENDENCIES ARE TURNED OFF");
+    ROS_WARN_THROTTLE(10, "Could not use IsFaulty lookup, fault dependencies are turned off");
     return false;
   }
 }
