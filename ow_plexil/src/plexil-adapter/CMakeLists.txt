@@ -13,6 +13,7 @@ set (HEADERS
   LanderAdapter.h
   PlexilPlanSelection.h
   TerminalPlanSelection.h
+  FaultDependencies.h
 )
 
 set (SOURCES
@@ -26,6 +27,7 @@ set (SOURCES
   LanderAdapter.cpp
   PlexilPlanSelection.cpp
   TerminalPlanSelection.cpp
+  FaultDependencies.cpp
 )
 
 # Executive-specific code

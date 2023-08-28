@@ -263,6 +263,31 @@ void OwInterface::initialize()
 {
   LanderInterface::initialize();
 
+  std::string fault_dependencies_path;
+  std::string fault_dependencies_file;
+  m_fault_dependencies_on = false;
+  bool verbose_flag = false;
+  if(m_genericNodeHandle->getParam("/fault_dependencies_verbose", verbose_flag)){
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_verbose parameter");
+  }
+  if(m_genericNodeHandle->getParam("/fault_dependencies_path", fault_dependencies_path)){
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_path parameter");
+  }
+  if(m_genericNodeHandle->getParam("/fault_dependencies_file", fault_dependencies_file)){
+    if (fault_dependencies_file != ""){
+      m_fault_dependencies_on = true;
+      m_fault_dependencies = std::make_unique<FaultDependencies>
+        (fault_dependencies_path + fault_dependencies_file, verbose_flag);
+    }
+  }
+  else{
+    ROS_WARN("COULD NOT GET fault_dependencies_file parameter");
+  }
+
   for (const string& name : LanderOpNames) {
     registerLanderOperation (name);
   }
@@ -895,9 +920,43 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-vector<double> OwInterface::getEndEffectorFT () const
+std::vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_end_effector_ft;
+}
+
+std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_name) const
+{
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->getActiveFaults(subsystem_name);
+  }
+  else{
+    ROS_WARN_THROTTLE(10, "Could not use ActiveFaults lookup, fault dependencies are turned off");
+    std::vector<string> empty_vec;
+    return empty_vec;
+  }
+}
+
+bool OwInterface::getIsOperable (std::string subsystem_name) const
+{
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->checkIsOperable(subsystem_name);
+  }
+  else{
+    ROS_WARN_THROTTLE(10, "Could not use IsOperable lookup, fault dependencies are turned off");
+    return true;
+  }
+}
+
+bool OwInterface::getIsFaulty (std::string subsystem_name) const
+{
+  if (m_fault_dependencies_on){
+    return m_fault_dependencies->checkIsFaulty(subsystem_name);
+  }
+  else{
+    ROS_WARN_THROTTLE(10, "Could not use IsFaulty lookup, fault dependencies are turned off");
+    return false;
+  }
 }
 
 bool OwInterface::systemFault () const

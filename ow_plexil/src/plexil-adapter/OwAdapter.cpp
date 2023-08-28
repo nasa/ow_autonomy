@@ -73,6 +73,21 @@ static bool lookup (const string& state_name,
     args[0].getValue(operation);
     value_out = OwInterface::instance()->running (operation);
   }
+  else if (state_name == "IsOperable") {
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->getIsOperable (operation);
+  }
+  else if (state_name == "IsFaulty") {
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->getIsFaulty (operation);
+  }
+  else if (state_name == "ActiveFaults") {
+    string operation;
+    args[0].getValue(operation);
+    value_out = OwInterface::instance()->getActiveFaults (operation);
+  }
   else if (state_name == "GroundFound") {
     value_out = OwInterface::instance()->groundFound();
   }
@@ -324,7 +339,7 @@ static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
     acknowledge_command_denied (cmd, intf);
   }
 }
-
+ 
 static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 {
   int num_pictures;
