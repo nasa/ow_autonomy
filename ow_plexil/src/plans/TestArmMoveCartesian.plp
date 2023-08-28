@@ -19,13 +19,13 @@ TestArmMoveCartesian:
   LibraryCall ArmUnstow();
 
   // Puts scoop upside-down facing away from the lander.
-  LibraryCall ArmMoveCartesian (Frame = BASE_LINK,
+  LibraryCall ArmMoveCartesian (Frame = BASE_FRAME,
                                 Relative = false,
                                 Position = #(1.7 -0.2 0.6),
                                 Orientation = #(0 0 0));
 
   // Puts scoop right side up facing away from the lander.
-  LibraryCall ArmMoveCartesian_Q (Frame = BASE_LINK,
+  LibraryCall ArmMoveCartesian_Q (Frame = BASE_FRAME,
                                   Relative = false,
                                   Position = #(1.7 -0.2 0.6),
                                   Orientation = #(0 0 0 1));

@@ -8,8 +8,12 @@
 // support for crash recovery and plan persistence using PLEXIL's checkpointing
 // facility.
 
-#include "plexil_defs.h"
 #include "plan-interface.h"
+#include "europa_defs.h"
+
+// Maximum number of crashes before assuming something has gone very wrong and
+// attempting to offload all data
+#define MAX_CRASHES 10
 
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,
@@ -137,7 +141,7 @@ EuropaMission: Concurrence
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmUnstowed")))));
       LibraryCall ArmUnstow();
-      set_checkpoint("ArmUnstowed");
+      set_checkpoint("ArmUnstowed", true, "UnstowArm");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -168,8 +172,7 @@ EuropaMission: Concurrence
       if (! Lookup(GroundFound)) {
         // Note that the default value of GroundFound is false, so
         log_error ("Failed to find ground. Stowing arm and stopping.");
-        LibraryCall ArmUnstow(); // For safety in stowing
-        LibraryCall ArmStow();
+        LibraryCall SafeStow();
         MissionInProgress = false;
       }
 
@@ -178,9 +181,13 @@ EuropaMission: Concurrence
         Dig:
         {
           InvariantCondition DiggingSafe;
-          LibraryCall DigTrench (X = trench_x, Y = trench_y, GroundPos = ground_pos,
-                                 Length = trench_length, BiteDepth = 0.05,
-                                 NumPasses = 2, Parallel = parallel);
+          LibraryCall DigTrench (X = trench_x,
+                                 Y = trench_y,
+                                 GroundPos = ground_pos,
+                                 Length = trench_length,
+                                 BiteDepth = 0.05,
+                                 NumPasses = 2,
+                                 Parallel = parallel);
         }
         ImageDig:
         {
@@ -193,23 +200,27 @@ EuropaMission: Concurrence
         {
           Repeat Dig.state == EXECUTING;
           LibraryCall Stub (desc="Sensing dig");
-          DiggingSafe = STUB_TRUE;
+          DiggingSafe = true; // stub
           Wait SENSE_DIG_INTERVAL;
         }
       }
 
-      LibraryCall RemoveTailings (X = trench_x, Y = trench_y,
-                                  GroundPos = ground_pos, Parallel = parallel);
+      LibraryCall RemoveTailings (X = trench_x,
+                                  Y = trench_y,
+                                  GroundPos = ground_pos,
+                                  Parallel = parallel);
       LibraryCall Image(desc="trench");
       LibraryCall Downlink;
 
       LibraryCall CollectAndTransfer(IgnoreCrash = false,
                                      InstanceName="MissionSol1",
-                                     X = trench_x, Y = trench_y,
+                                     X = trench_x,
+                                     Y = trench_y,
                                      GroundPos = ground_pos,
-                                     Depth = 0.11, Length = trench_length,
+                                     Depth = 0.1105,
+                                     Length = trench_length,
                                      Parallel = parallel);
-      set_checkpoint ("SampleCollected");
+      set_checkpoint ("SampleCollected", true, "SampleCollection");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -218,7 +229,7 @@ EuropaMission: Concurrence
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
       LibraryCall StartSampleAnalysis;
-      set_checkpoint("SampleAnalyzed");
+      set_checkpoint("SampleAnalyzed", true, "SampleAnalysis");
       SynchronousCommand flush_checkpoints();
     }
 
@@ -226,9 +237,8 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("ArmStowed")))));
-      LibraryCall ArmUnstow(); // For safety in stowing
-      LibraryCall ArmStow();
-      set_checkpoint("ArmStowed");
+      LibraryCall SafeStow();
+      set_checkpoint("ArmStowed", true, "StowArm");
       SynchronousCommand flush_checkpoints();
     }
 

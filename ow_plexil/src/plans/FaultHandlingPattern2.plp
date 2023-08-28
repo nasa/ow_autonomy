@@ -48,7 +48,7 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      LibraryCall StowSequence();
+      LibraryCall SafeStow();
     }
   }
 }

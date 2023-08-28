@@ -28,6 +28,8 @@ using std::string;
 using std::vector;
 using std::make_unique;
 
+const size_t NumArmJoints = 7;
+
 const string Name_ArmMoveCartesian        = "ArmMoveCartesian";
 const string Name_ArmMoveCartesianGuarded = "ArmMoveCartesianGuarded";
 const string Name_ArmMoveJoint            = "ArmMoveJoint";

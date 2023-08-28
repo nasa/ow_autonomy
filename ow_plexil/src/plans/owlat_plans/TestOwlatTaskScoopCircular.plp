@@ -17,6 +17,6 @@ TestOwlatTaskScoopCircular:
                                       Normal = #(0 0 -1),
                                       Depth = 0.01, // 0.025 caused goal error
                                       ScoopAngle = 1.57);
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished TaskScoopCircular test.");
 }

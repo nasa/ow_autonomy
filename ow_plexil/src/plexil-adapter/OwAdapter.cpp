@@ -32,60 +32,31 @@ using std::unique_ptr;
 
 //////////////////////// PLEXIL Lookup Support //////////////////////////////
 
-static void stubbed_lookup (const string& name, const string& value)
-{
-  // This warning is annoying.  Could parameterize it.
-  //  ROS_WARN("PLEXIL Adapter: Stubbed lookup of %s returning %s",
-  //           name.c_str(), value.c_str());
-}
-
-
-// NOTE: This macro, and the stub it implements, are temporary.
-#define STATE_STUB(name,val)                    \
-  if (state_name == #name) {                    \
-    stubbed_lookup (#name, #val);               \
-    value_out = val;                            \
-  }
-
 static bool lookup (const string& state_name,
                     const vector<PLEXIL::Value>& args,
                     PLEXIL::Value& value_out)
 {
   bool retval = true;
 
-  // Stubbed mission and system parameters.  Many of these will eventually be
-  // obsolete.
+  // First, some, stubbed lookups specific to EuropaMission.plp.
 
-  STATE_STUB(TrenchLength, 10)
-  else STATE_STUB(TrenchGroundPosition, -0.155)
-  else STATE_STUB(TrenchWidth, 10)
-  else STATE_STUB(TrenchDepth, 2)
-  else STATE_STUB(TrenchPitch, 0)
-  else STATE_STUB(TrenchYaw, 0)
-  else STATE_STUB(TrenchStartX, 5)
-  else STATE_STUB(TrenchStartY, 10)
-  else STATE_STUB(TrenchStartZ, 0)
-  else STATE_STUB(TrenchDumpX, 0)
-  else STATE_STUB(TrenchDumpY, 0)
-  else STATE_STUB(TrenchDumpZ, 5)
-  else STATE_STUB(TrenchIdentified, true)
-  else STATE_STUB(TrenchTargetTimeout, 60)
-  else STATE_STUB(ExcavationTimeout, 10)
-  else STATE_STUB(ExcavationTimeout, 60)
-  else STATE_STUB(SampleGood, true)
-  else STATE_STUB(CollectAndTransferTimeout, 10)
+  if (state_name == "TrenchIdentified") {
+    value_out = true;
+  }
+  else if (state_name == "ExcavationTimeout") {
+    value_out = 10;
+  }
+  else if (state_name == "CollectAndTransferTimeout") {
+    value_out = 10;
+  }
 
+  // Plan interface specific to OceanWATERS
+  
   else if (state_name == "UsingOceanWATERS") {
     value_out = true;
   }
   else if (state_name == "UsingOWLAT") {
     value_out = false;
-  }
-  else if (state_name == "PanVelocity") {
-    value_out = OwInterface::instance()->getPanVelocity();
-  }
-  else if (state_name == "TiltVelocity") {
-    value_out = OwInterface::instance()->getTiltVelocity();
   }
   else if (state_name == "HardTorqueLimitReached") {
     string s;
@@ -467,6 +438,9 @@ bool OwAdapter::initialize()
 
 void OwAdapter::lookupNow (const State& state, StateCacheEntry& entry)
 {
+  // NOTE: this function should be replaced by the newer approach
+  // using registerLookupHandler, as found in OwlatAdapter.cpp.
+  
   debugMsg("OwAdapter:lookupNow", " called on " << state.name() << " with "
            << state.parameters().size() << " arguments");
 

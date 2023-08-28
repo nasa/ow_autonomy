@@ -10,10 +10,6 @@
 #include "common/common-interface.h"
 #include "lander-commands.h"
 
-// Reference frames
-#define BASE_LINK 0
-#define SCOOP_TIP 1
-
 // Joint names, defined by their indices in the /joint_states ROS message.
 
 #define ANTENNA_PAN    0
@@ -26,6 +22,21 @@
 #define SHOULDER_PITCH 7
 #define SHOULDER_YAW   8
 
+#define NUM_JOINTS 9
+
+// Action goal statuses.
+// NOTE: the last three are not yet supported in the simulator.
+
+#define ACTION_PENDING 0
+#define ACTION_ACTIVE 1
+#define ACTION_PREEMPTED 2
+#define ACTION_SUCCEEDED 3
+#define ACTION_ABORTED 4
+#define ACTION_REJECTED 5
+#define ACTION_PREEMPTING 6
+#define ACTION_RECALLING 7
+#define ACTION_RECALLED 8
+#define ACTION_LOST 9
 
 // PLEXIL library for lander operations.
 

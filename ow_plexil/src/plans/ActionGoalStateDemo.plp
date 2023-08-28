@@ -1,47 +1,58 @@
 // The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
- 
-// Unstow and stow the arm repeatedly. Pan the antenna
-// in 15 degree increments when 'Unstow' action goal status
-// is 'ACTIVE' and pan the antenna in 15 degree decrements 
-// when 'Stow' action goal status is 'ACTIVE'. 
-// This plan will be terminated if any fault occurs.
+
+// Unstow and stow the arm repeatedly. Pan the antenna in 15 degree
+// increments when the 'Unstow' action goal status is 'ACTIVE' and in
+// 15 degree decrements when the 'Stow' action goal status is
+// 'ACTIVE'.  To terminate this plan, inject a power fault or just
+// type Ctrl-C.
+
+// NOTE: As of 7/20/23 there is a problem with this plan in which,
+// occasionally, injecting an antenna pan fault will cause the antenna
+// to permanently freeze, i.e. not start moving again when the fault
+// is cleared. The use of, and/or current implementation (in PLEXIL)
+// of, SynchronousCommand is suspect, and is being investigated.
 
 #include "plan-interface.h"
 
 ActionGoalStateDemo:
 {
-  Real NewAngle = 0;
-
   log_info ("Starting ActionGoalStateDemo plan...");
+  LibraryCall Tilt (Degrees=0);
 
   Run: Concurrence
   {
-    ExitCondition Lookup(SystemFault);
+    Real NewAngle = 0;
+    ExitCondition Lookup(PowerFault);
 
-    Pattern2Image:
+    Stowing: UncheckedSequence
     {
-      RepeatCondition true;
-      StartCondition !Lookup(AntennaFault);
-
-      if (Lookup(ActionGoalStatus("ArmStow")) == 1)
-      {
-        NewAngle = (Lookup(PanDegrees) - 15) mod 360;
-      }
-      else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-  
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
-    }
-
-    Pattern2UnstowStow:
-    {
-      RepeatCondition true;
       StartCondition !Lookup(ArmFault);
-      InvariantCondition !Lookup(ArmFault);
-
+      RepeatCondition true;
       LibraryCall ArmUnstow();
       LibraryCall ArmStow();
     }
+    Panning: UncheckedSequence
+    {
+      StartCondition !Lookup(AntennaPanFault);
+      RepeatCondition true;
+
+      if (Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_ACTIVE) {
+        NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+      }
+      else if (Lookup(ActionGoalStatus("ArmStow")) == ACTION_ACTIVE) {
+        NewAngle = (Lookup(PanDegrees) - 15) mod 360;
+      }
+      endif;
+
+      if (NewAngle > 180) {
+        NewAngle = NewAngle - 360;
+      }
+      endif;
+
+      LibraryCall Pan (Degrees=NewAngle);
+    }
   }
+  log_info ("ActionGoalStateDemo plan finished.");
 }

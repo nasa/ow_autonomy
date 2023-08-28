@@ -126,8 +126,6 @@ class OwInterface : public LanderInterface
   bool clearSimulatedFault (const std::string &fault_name, double probability) const;
 
   // State/Lookup interface
-  double getPanVelocity () const;
-  double getTiltVelocity () const;
   std::vector<double> getEndEffectorFT () const;
   bool   groundFound () const;
   double groundPosition () const;

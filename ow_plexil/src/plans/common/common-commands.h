@@ -5,13 +5,14 @@
 #ifndef common_commands_H
 #define common_commands_H
 
-// All PLEXIL commands available to the lander in both OceanWATERS and
-// OWLAT.  This is the shared lander's command interface.
+// PLEXIL command declarations for all lander ROS actions common to
+// OceanWATERS and OWLAT.
 
-// Note that in PLEXIL, commands are asynchronous by design.
-// Typically, plans should not call these commands directly, but
-// instead use the library interface (defined in common-interface.h)
-// that calls these commands synchonously.
+// Note that in PLEXIL, commands are inherently asynchronous.  Most
+// plans should use the convenient library actions (defined in
+// common-interface.h) that wrap these commands in SynchronousCommand.
+// However, custom behavior can be obtained by calling these commands
+// directly.
 
 Command arm_find_surface (Integer frame,
                           Boolean relative,

@@ -2,7 +2,9 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Reset pan and tilt angles to 0 and stow the arm (if not already there)
+// Initialization for FaultHandlingPattern* plans.  Resets pan and
+// tilt angles to 0 and stows the arm.  Waits for any system faults to
+// be cleared before starting.
 
 #include "plan-interface.h"
 
@@ -23,7 +25,6 @@ InitializeAntennaAndArm:
   {
     Start !Lookup(ArmFault);
     log_info ("Stowing the arm...");
-    LibraryCall ArmUnstow();
     LibraryCall ArmStow();
   }
 

@@ -8,7 +8,6 @@
 #include "OwlatAdapter.h"
 #include "OwlatInterface.h"
 #include "adapter_support.h"
-#include "joint_support.h"
 #include "subscriber.h"
 using namespace PLEXIL;
 

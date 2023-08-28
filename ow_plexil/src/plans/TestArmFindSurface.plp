@@ -24,7 +24,7 @@ TestArmFindSurface:
   LibraryCall ArmUnstow();
 
   // Fail to find the reddish mound from above.
-  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+  LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
                               Position = #(1.45 -0.4 0.25),
                               Normal = #(0 0 -1),
@@ -34,7 +34,7 @@ TestArmFindSurface:
                               TorqueThreshold = TorqueThreshold);
 
   // Find the mound from above
-  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+  LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
                               Position = #(1.45 -0.4 0),
                               Normal = #(0 0 -1),

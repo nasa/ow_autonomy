@@ -14,6 +14,6 @@ TestOwlatMiscActions:
   LibraryCall ArmUnstow();
   LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
   LibraryCall TaskDeliverSample();
-  LibraryCall StowSequence();
+  LibraryCall SafeStow();
   log_info ("Finished Owlat Misc Actions test.");
 }
