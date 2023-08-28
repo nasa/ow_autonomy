@@ -324,6 +324,39 @@ static void pan_tilt_cartesian (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void inject_simulated_fault (Command* cmd, AdapterExecInterface* intf)
+{
+  // Any supported non-goal fault 
+  double probability;
+  string fault_name;
+  const vector<Value>& args = cmd->getArgValues();
+
+  args[0].getValue (fault_name);
+  args[1].getValue (probability);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+
+  bool success = OwInterface::instance()->injectSimulatedFault (fault_name, probability);
+  Value value_success = Value(success);
+  intf->handleCommandReturn(cmd, value_success);
+  acknowledge_command_sent(*cr);
+}
+
+static void clear_simulated_fault (Command* cmd, AdapterExecInterface* intf)
+{
+  // Any supported non-goal fault 
+  double probability;
+  string fault_name;
+  const vector<Value>& args = cmd->getArgValues();
+
+  args[0].getValue (fault_name);
+  args[1].getValue (probability);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+
+  Value value_success = Value(OwInterface::instance()->clearSimulatedFault (fault_name, probability));
+  intf->handleCommandReturn(cmd, value_success);
+  acknowledge_command_sent(*cr);
+}
+
 static void camera_set_exposure (Command* cmd, AdapterExecInterface* intf)
 {
   double exposure_secs;
@@ -418,6 +451,8 @@ bool OwAdapter::initialize()
   g_configuration->registerCommandHandler("tilt", tilt);
   g_configuration->registerCommandHandler("scoop_circular", scoop_circular);
   g_configuration->registerCommandHandler("scoop_linear", scoop_linear);
+  g_configuration->registerCommandHandler("inject_simulated_fault", inject_simulated_fault);
+  g_configuration->registerCommandHandler("clear_simulated_fault", clear_simulated_fault);
   g_configuration->registerCommandHandler("pan_tilt_cartesian",
                                           pan_tilt_cartesian);
   g_configuration->registerCommandHandler("identify_sample_location",

@@ -1,0 +1,73 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+HealthMonitor: Concurrence
+{
+  InOut Boolean AllOperable = true;
+  InOut Boolean ArmOperable = true;
+  InOut Boolean AntennaOperable = true;
+  InOut Boolean CameraOperable = true;
+  InOut Boolean PowerOperable = true;
+
+  LookupLoop:
+  {
+    Repeat true;
+    Wait 1;
+
+    ArmOperable = Lookup(IsOperable("Arm"));
+    AntennaOperable = Lookup(IsOperable("Antenna"));
+    CameraOperable = Lookup(IsOperable("Camera"));
+    PowerOperable = Lookup(IsOperable("Power"));
+
+    AllOperable = ArmOperable && 
+                  AntennaOperable &&
+                  CameraOperable &&
+                  PowerOperable;
+  }
+
+  PrintLoop:
+  {
+    Repeat true;
+    Wait 5;
+
+    if !ArmOperable{
+      if Lookup(IsFaulty("Arm")){
+        log_info("Arm is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Arm")));
+      }
+      else{
+        log_info("Arm is Inoperable due to non-local fault(s).");
+      }
+    }
+
+    if !AntennaOperable{
+      if Lookup(IsFaulty("Antenna")){
+        log_info("Antenna is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Antenna")));
+      }
+      else{
+        log_info("Antenna is Inoperable due to non-local fault(s).");
+      }
+    }
+
+    if !CameraOperable{
+      if Lookup(IsFaulty("Camera")){
+        log_info("Camera is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Camera")));
+      }
+      else{
+        log_info("Camera is Inoperable due to non-local fault(s).");
+      }
+    }
+
+    if !PowerOperable{
+      if Lookup(IsFaulty("Power")){
+        log_info("Power is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Power")));
+      }
+      else{
+        log_info("Power is Inoperable due to non-local fault(s).");
+      }
+    }
+
+  }
+}
