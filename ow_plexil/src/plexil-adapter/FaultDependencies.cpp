@@ -222,19 +222,19 @@ void FaultDependencies::DebugPrint() const{
             << "-----------------------------" 
             );
 
-  ROS_INFO_STREAM(std::setw(25) << std::left << "NAME" << std::setw(17) << "TYPE" << std::setw(17) << "NON-LOCAL FAULT" 
-  << std::setw(17) << "LOCAL FAULT" << std::setw(17) << "FAULTY" << "INOPERABLE" );
+  ROS_INFO_STREAM(std::setw(25) << std::left << "NAME" << std::setw(17) << "TYPE" << std::setw(17)
+  << "NON-LOCAL FAULT" << std::setw(17) << "LOCAL FAULT" << std::setw(17) << "FAULTY" << "INOPERABLE" );
   ROS_INFO_STREAM("------------------------------------------------------------------------"
             << "-----------------------------" 
             );
   for (auto subsystem: m_subsystems){
-    ROS_INFO_STREAM(std::left << std::setw(25) << subsystem.second.name << std::setw(17) << "Subsystem" << std::setw(17) << 
-    subsystem.second.num_non_local_faults << std::setw(17) << subsystem.second.num_local_faults << std::setw(17) <<
-    subsystem.second.faulty << subsystem.second.num_inoperable );
+    ROS_INFO_STREAM(std::left << std::setw(25) << subsystem.second.name << std::setw(17) << "Subsystem"
+    << std::setw(17) << subsystem.second.num_non_local_faults << std::setw(17) << subsystem.second.num_local_faults
+    << std::setw(17) << subsystem.second.faulty << subsystem.second.num_inoperable );
   }
   for (auto proc: m_procedures){
-    ROS_INFO_STREAM(std::left << std::setw(25) << proc.second.name << std::setw(17) << "Procedure" << std::setw(17) << 
-    "-" << std::setw(17) << "-" << std::setw(17) <<"-" << proc.second.num_inoperable );
+    ROS_INFO_STREAM(std::left << std::setw(25) << proc.second.name << std::setw(17) << "Procedure" << std::setw(17)
+    << "-" << std::setw(17) << "-" << std::setw(17) <<"-" << proc.second.num_inoperable );
   }
 }
 
@@ -250,15 +250,18 @@ bool FaultDependencies::parseXML(const std::string &file){
   }
   else
   {
-      ROS_ERROR_STREAM("XML [" << file_name << "] parsed with errors, attr value: [" << doc.child("node").attribute("attr").value() << "]\n");
+      ROS_ERROR_STREAM("XML [" << file_name << "] parsed with errors, attr value: [" 
+          << doc.child("node").attribute("attr").value() << "]\n");
       ROS_ERROR_STREAM("Error description: " << result.description() << "\n");
-      ROS_ERROR_STREAM("Error offset: " << result.offset << " (error at [..." << (file_name + result.offset) << "]\n\n");
+      ROS_ERROR_STREAM("Error offset: " << result.offset << " (error at [..." 
+          << (file_name + result.offset) << "]\n\n");
       return false;
   }
 
   pugi::xml_node subsystems = doc.child("System").child("Subsystems");
   // Read all subsystemes and add them to the m_subsystems map
-  for (pugi::xml_node subsystem = subsystems.child("Subsystem"); subsystem; subsystem = subsystem.next_sibling("Subsystem"))
+  for (pugi::xml_node subsystem = subsystems.child("Subsystem"); subsystem;
+       subsystem = subsystem.next_sibling("Subsystem"))
   {
     // get name and severity thresholds
     std::string subsystem_name = subsystem.attribute("Name").as_string();

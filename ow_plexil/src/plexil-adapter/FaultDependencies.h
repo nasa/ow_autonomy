@@ -10,7 +10,7 @@
 struct Fault {
   std::string name;
   std::string parent_subsystem;
-  bool faulty = 0;
+  bool faulty = false;
   std::vector<std::pair<std::string, std::string>> impacts;
 };
 
