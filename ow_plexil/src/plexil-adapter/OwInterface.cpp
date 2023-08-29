@@ -913,15 +913,15 @@ bool OwInterface::injectSimulatedFault (const std::string &fault_name, double pr
   srand(time(0));
   double roll = (double) rand()/RAND_MAX;
   string combined_fault_name = "faults/" + fault_name;
-  if (roll <= probability){
-    if(m_genericNodeHandle->hasParam(combined_fault_name)){
+  if(m_genericNodeHandle->hasParam(combined_fault_name)){
+    if (roll <= probability){
       m_genericNodeHandle->setParam(combined_fault_name, true);
       return true;
     }
-    else{
-      ROS_WARN("Failed to InjectSimulatedFault, fault name does not exist");
-      return false;
-    }
+  }
+  else{
+    ROS_WARN("Failed to InjectSimulatedFault, fault name does not exist");
+    return false;
   }
   return false;
 }
@@ -931,15 +931,15 @@ bool OwInterface::clearSimulatedFault (const std::string &fault_name, double pro
   srand(time(0));
   double roll = (double) rand()/RAND_MAX;
   string combined_fault_name = "faults/" + fault_name;
-  if (roll <= probability){
-    if(m_genericNodeHandle->hasParam(combined_fault_name)){
+  if(m_genericNodeHandle->hasParam(combined_fault_name)){
+    if (roll <= probability){
       m_genericNodeHandle->setParam(combined_fault_name, false);
       return true;
     }
-    else{
-      ROS_WARN("Failed to InjectSimulatedFault, fault name does not exist");
-      return false;
-    }
+  }
+  else{
+    ROS_WARN("Failed to InjectSimulatedFault, fault name does not exist");
+    return false;
   }
   return false;
 }
