@@ -253,7 +253,7 @@ static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
     acknowledge_command_denied (cmd, intf);
   }
 }
-
+ 
 static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 {
   int num_pictures;
