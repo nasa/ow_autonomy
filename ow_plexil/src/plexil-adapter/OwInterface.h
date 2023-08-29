@@ -122,6 +122,8 @@ class OwInterface : public LanderInterface
   void armStow (int id);
   void armUnstow (int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
+  bool injectSimulatedFault (const std::string &fault_name, double probability) const;
+  bool clearSimulatedFault (const std::string &fault_name, double probability) const;
 
   // State/Lookup interface
   std::vector<double> getEndEffectorFT () const;
