@@ -91,6 +91,12 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
+LibraryAction HealthMonitor (InOut Boolean AllOperable,
+                             InOut Boolean ArmOperable,
+                             InOut Boolean AntennaOperable,
+                             InOut Boolean CameraOperable,
+                             InOut Boolean PowerOperable);
+
 // Lander queries
 
 Boolean Lookup HardTorqueLimitReached (String joint_name);
