@@ -81,7 +81,7 @@ TestActions: UncheckedSequence
                                  Point = #(1.5 0.8 0.65), Height = 0.1);
 
   LibraryCall TaskGrind (X = 1.6, Y = 0.02, Depth = 0.05,
-                         Length = 0.6, Parallel = true,
+                         Length = 0.8, Parallel = true,
                          GroundPos = GP);
 
   LibraryCall TaskScoopLinear (Frame = BASE_FRAME, Relative = false,
