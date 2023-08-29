@@ -51,6 +51,28 @@ static void running (const State& s, LookupReceiver* r)
   r->update(OwInterface::instance()->running(action));
 }
 
+static void is_operable (const State& s, LookupReceiver* r)
+{
+  string op;
+  s.parameters()[0].getValue(op);
+  r->update(OwInterface::instance()->getIsOperable(op));
+}
+
+static void is_faulty (const State& s, LookupReceiver* r)
+{
+  string op;
+  s.parameters()[0].getValue(op);
+  r->update(OwInterface::instance()->getIsFaulty(op));
+}
+
+static void active_faults (const State& s, LookupReceiver* r)
+{
+  string op;
+  s.parameters()[0].getValue(op);
+  r->update(OwInterface::instance()->getActiveFaults(op));
+}
+
+
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
   double x, y, z, dir_x, dir_y, dir_z, search_distance;
@@ -378,6 +400,9 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
 					lookupHandler<double>
                                         (OwInterface::instance()->groundPosition()));
   config->registerLookupHandlerFunction("Running", running);
+  config->registerLookupHandlerFunction("IsOperable", is_operable);
+  config->registerLookupHandlerFunction("IsFaulty", is_faulty);
+  config->registerLookupHandlerFunction("ActiveFaults", active_faults);
 
   // Faults specific to OceanWATERS
   config->registerLookupHandlerFunction("SystemFault",
