@@ -1,0 +1,65 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Tests the simulated fault command. Test 1 injects and clears antenna pan fault
+// with 100% probability. Test 2 injects an antenna pan fault, and repeatedly tries to 
+// clear it with 25% probability until the fault is cleared. Test 3 is the same as test 2
+// but the injection command is repeated until successful instead of the clear command. 
+
+#include "plan-interface.h"
+
+TestSimulatedFaults:
+{
+  Boolean test;
+  
+  log_info("Starting TestSimulatedFaults...");
+
+  log_info("TEST 1: ");
+  log_info("Injecting ant_pan_joint_locked_failure with probability 100%.");
+  test = inject_simulated_fault("ant_pan_joint_locked_failure", 1);
+  Wait 1;
+  log_info("Clearing ant_pan_joint_locked_failure with probability 100%");
+  test = clear_simulated_fault("ant_pan_joint_locked_failure", 1);
+  Wait 1;
+
+
+  log_info("TEST 2: ");
+  log_info("Injecting ant_pan_joint_locked_failure with probability 100%.");
+  test = inject_simulated_fault("ant_pan_joint_locked_failure", 1);
+  Wait 1;
+  do{
+    log_info("Attempting to clear ant_pan_joint_locked_failure with probability 25%");
+    test = clear_simulated_fault("ant_pan_joint_locked_failure", .25);
+    Wait 1;
+    if test{
+      log_info("Fault was succesfully cleared.");
+    }
+    else{
+      log_info("Fault was not cleared, attempting clear again.");
+    }
+  }
+  while (!test);
+
+
+  log_info("TEST 3: ");
+  Wait 1;
+  do{
+    log_info("Injecting ant_pan_joint_locked_failure with probability 25%.");
+    test = inject_simulated_fault("ant_pan_joint_locked_failure", .25);
+    Wait 1;
+    if test{
+      log_info("Fault was succesfully injected.");
+    }
+    else{
+      log_info("Fault was not injected, attempting to inject again.");
+    }
+  }
+  while (!test);
+
+  log_info("Clearing ant_pan_joint_locked_failure with probability 100%");
+  test = clear_simulated_fault("ant_pan_joint_locked_failure", 1);
+  Wait 1;
+
+}
+ 
