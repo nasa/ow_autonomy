@@ -14,13 +14,14 @@
 
 // C++
 #include <map>
-using std::string;
-using std::unique_ptr;
 
 // PLEXIL API
 #include <ArrayImpl.hh>
 #include <Debug.hh>
+
 using namespace PLEXIL;
+using std::string;
+using std::unique_ptr;
 
 float LanderAdapter::PanMinDegrees  = -183.346; // -3.2 radians
 float LanderAdapter::PanMaxDegrees  =  183.346; //  3.2 radians

@@ -19,10 +19,11 @@
 #include <LookupReceiver.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
-using namespace PLEXIL;
 
 // C++
 #include <string>
+
+using namespace PLEXIL;
 using std::string;
 using std::vector;
 using std::unique_ptr;

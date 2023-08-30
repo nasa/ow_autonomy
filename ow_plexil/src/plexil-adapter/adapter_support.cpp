@@ -10,11 +10,12 @@
 
 // PLEXIL
 #include <Debug.hh>
-using namespace PLEXIL;
 
 // C++
 #include <map>
 #include <mutex>
+
+using namespace PLEXIL;
 using std::string;
 using std::vector;
 using std::unique_ptr;

@@ -7,8 +7,6 @@
 #include <fstream>
 #include <string>
 #include <iostream>
-using std::string;
-using std::ostringstream;
 
 // ROS
 #include <ros/ros.h>
@@ -23,7 +21,10 @@ using std::ostringstream;
 #include <InterfaceSchema.hh>
 #include <parsePlan.hh>
 #include <State.hh>
+
 using namespace PLEXIL;
+using std::string;
+using std::ostringstream;
 
 // OW
 #include "OwExecutive.h"

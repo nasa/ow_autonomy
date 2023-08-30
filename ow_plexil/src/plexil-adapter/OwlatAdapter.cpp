@@ -21,8 +21,8 @@
 #include <AdapterFactory.hh>
 #include <ArrayImpl.hh>
 #include <Debug.hh>
-using namespace PLEXIL;
 
+using namespace PLEXIL;
 using std::string;
 
 static void arm_move_joints (Command* cmd, AdapterExecInterface* intf)
