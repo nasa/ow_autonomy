@@ -91,16 +91,3 @@ void PlexilAdapter::stop()
 {
   debugMsg("PlexilAdapter", " stopped.");
 }
-
-void PlexilAdapter::subscribe(const State& state)
-{
-  debugMsg("PlexilAdapter:subscribe", " to state " << state.name());
-  m_subscribedStates.insert(state);
-}
-
-
-void PlexilAdapter::unsubscribe (const State& state)
-{
-  debugMsg("PlexilAdapter:unsubscribe", " from state " << state.name());
-  m_subscribedStates.erase(state);
-}

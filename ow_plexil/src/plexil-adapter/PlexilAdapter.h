@@ -28,8 +28,6 @@ public:
   virtual bool initialize(PLEXIL::AdapterConfiguration*) override;
   virtual bool start() override;
   virtual void stop() override;
-  virtual void subscribe(const PLEXIL::State& state); // obsolete?
-  virtual void unsubscribe(const PLEXIL::State& state);  // obsolete?
   void propagateValueChange (const PLEXIL::State&,
                              const std::vector<PLEXIL::Value>&);
 
