@@ -2,39 +2,40 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// ROS
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <std_msgs/Float64.h>
-
-// OW
-#include "OwExecutive.h"
-
-// PLEXIL
-#include "AdapterFactory.hh"
-#include "AdapterExecInterface.hh"
-#include "Debug.hh"
-#include "Error.hh"
-#include "ExecApplication.hh"
-#include "InterfaceSchema.hh"
-#include "parsePlan.hh"
-#include "State.hh"
-using PLEXIL::Error;
-using PLEXIL::InterfaceSchema;
-
 // C++
 #include <stdlib.h>
 #include <fstream>
 #include <string>
 #include <iostream>
+
+// ROS
+#include <ros/ros.h>
+#include <ros/package.h>
+#include <std_msgs/Float64.h>
+
+// PLEXIL
+#include <AdapterFactory.hh>
+#include <AdapterExecInterface.hh>
+#include <Debug.hh>
+#include <Error.hh>
+#include <InterfaceSchema.hh>
+#include <parsePlan.hh>
+#include <State.hh>
+
+using namespace PLEXIL;
 using std::string;
 using std::ostringstream;
+
+// OW
+#include "OwExecutive.h"
 
 // Installed location of compiled PLEXIL files, initialized in initialize().
 static string PlexilDir = "";
 
-// The embedded PLEXIL application
-static PLEXIL::ExecApplication* PlexilApp = NULL;
+OwExecutive::OwExecutive()
+  : m_plexil_app (makeExecApplication())
+{
+}
 
 OwExecutive* OwExecutive::instance ()
 {
@@ -50,7 +51,7 @@ bool OwExecutive::allPlansFinished()
   // currently running.  This is NOT accurate enough for the callers
   // of this method.  The PLEXIL team has been consulted for a better
   // approach on 12/16/22.
-  return PlexilApp->allPlansFinished();
+  return m_plexil_app->allPlansFinished();
 }
 
 bool OwExecutive::runPlan (const string& filename)
@@ -59,9 +60,9 @@ bool OwExecutive::runPlan (const string& filename)
 
   pugi::xml_document* doc = NULL;
   try {
-    doc = PLEXIL::loadXmlFile (plan);
+    doc = loadXmlFile (plan);
   }
-  catch (PLEXIL::ParserException const &e) {
+  catch (ParserException const &e) {
     ROS_ERROR("Load of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
     return false;
   }
@@ -72,18 +73,20 @@ bool OwExecutive::runPlan (const string& filename)
   }
 
   try {
-    PlexilApp->addPlan (doc);
+    m_plexil_app->addPlan (doc);
   }
-  catch (PLEXIL::ParserException const &e) {
+  catch (ParserException const &e) {
     ROS_ERROR("Add of PLEXIL plan %s failed: %s", plan.c_str(), e.what());
     return false;
   }
 
   try {
-    // updates Exec so that multiple plans can be run even after first plan finishes
-    PlexilApp->notifyExec();
-    PLEXIL::g_execInterface->handleValueChange(PLEXIL::State::timeState(), 0);
-    PlexilApp->run();
+    // Updates Exec so that multiple plans can be run even after first
+    // plan finishes.
+    m_plexil_app->notifyExec();
+    OwExecutive::instance()
+      -> plexilInterfaceMgr()
+      -> handleValueChange(State::timeState(), 0);
   }
   catch (const Error& e) {
     ostringstream s;
@@ -99,7 +102,7 @@ bool OwExecutive::runPlan (const string& filename)
 
 // PLEXIL application setup functions start here.
 
-static bool plexilInitializeInterfaces (const string& config_file)
+bool OwExecutive::initializePlexilInterfaces (const string& config_file)
 {
   string config_path = (PlexilDir + config_file);
   pugi::xml_document config_doc;
@@ -112,7 +115,7 @@ static bool plexilInitializeInterfaces (const string& config_file)
     return false;
   }
   else {
-    config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG());
+    config_elt = config_doc.child(InterfaceSchema::INTERFACES_TAG);
     if (!config_doc.empty() && config_elt.empty()) {
       ROS_ERROR("config file %s has no Interfaces element", config_path.c_str());
       return false;
@@ -123,10 +126,10 @@ static bool plexilInitializeInterfaces (const string& config_file)
     if (config_elt.empty()) {
       // Build default interface configuration if we couldn't load one
       ROS_INFO("Using default interface configuration");
-      config_elt = config_doc.append_child(InterfaceSchema::INTERFACES_TAG());
+      config_elt = config_doc.append_child(InterfaceSchema::INTERFACES_TAG);
     }
 
-    if (!PlexilApp->initialize(config_elt)) {
+    if (!m_plexil_app->initialize(config_elt)) {
       ROS_ERROR("Interface initialization failed");
       return false;
     }
@@ -145,7 +148,7 @@ static void get_plexil_debug_config()
   try {
     string debug_file = PlexilDir + "plexil-debug.cfg";
     std::ifstream dbgConfig(debug_file.c_str());
-    if (dbgConfig.good()) PLEXIL::readDebugConfigStream(dbgConfig);
+    if (dbgConfig.good()) readDebugConfigStream(dbgConfig);
     else ROS_ERROR("Unable to open PLEXIL debug config file %s",
                    debug_file.c_str());
   }
@@ -174,20 +177,22 @@ bool OwExecutive::initialize (const string& config_file)
   get_plexil_debug_config();
 
   try {
-    PlexilApp = new PLEXIL::ExecApplication();
-    if (! plexilInitializeInterfaces (config_file)) {
-      ROS_ERROR("plexilInitializeInterfaces failed");
+    if (! initializePlexilInterfaces (config_file)) {
+      ROS_ERROR("Failed to initialize PLEXIL interfaces.");
       return false;
     }
-    if (!PlexilApp->startInterfaces()) {
-      ROS_ERROR("Interface startup failed");
+
+    m_plexil_app->addLibraryPath (PlexilDir);
+
+    if (!m_plexil_app->startInterfaces()) {
+      ROS_ERROR("PLEXIL interface startup failed");
       return false;
     }
-    if (!PlexilApp->step()) {
-      ROS_ERROR("Stepping exec failed");
+
+    if (! m_plexil_app->run()) {
+      ROS_ERROR ("Running the PLEXIL application failed.");
       return false;
     }
-    PlexilApp->addLibraryPath (PlexilDir);
   }
   catch (const Error& e) {
     ostringstream s;
@@ -196,4 +201,14 @@ bool OwExecutive::initialize (const string& config_file)
     return false;
   }
   return true;
+}
+
+InterfaceManager* OwExecutive::plexilInterfaceMgr()
+{
+  return m_plexil_app->manager();
+}
+
+AdapterConfiguration* OwExecutive::plexilAdapterConfig()
+{
+  return m_plexil_app->configuration();
 }

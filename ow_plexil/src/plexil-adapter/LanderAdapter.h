@@ -5,12 +5,14 @@
 #ifndef Lander_Adapter
 #define Lander_Adapter
 
-// PLEXIL adapter base class for OceanWATERS and JPL's OWLAT.
+// PLEXIL adapter base class for OceanWATERS and JPL's OWLAT.  In
+// principle, other simulators' PlexilAdapter classes could be derived
+// from this one.
 
 #include "PlexilAdapter.h"
 
 // PLEXIL
-#include <AdapterExecInterface.hh>
+#include <LookupReceiver.hh>
 
 class LanderInterface;
 
@@ -19,27 +21,31 @@ class LanderAdapter : public PlexilAdapter
  public:
   static bool checkAngle (const char* name, double val, double min, double max,
                           double tolerance);
+
+  // Pointer to concrete instance (OwAdapter or OwlatAdapter)
   static LanderInterface* s_interface;
+
   static float PanMinDegrees;
   static float PanMaxDegrees;
   static float TiltMinDegrees;
   static float TiltMaxDegrees;
   static float PanTiltInputTolerance;
 
-  // No default constructor, only this specialized one.
-  LanderAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
-  virtual ~LanderAdapter () = default;
+  LanderAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
+  LanderAdapter () = delete;
+  virtual ~LanderAdapter () = 0;
   LanderAdapter (const LanderAdapter&) = delete;
   LanderAdapter& operator= (const LanderAdapter&) = delete;
-
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
+  virtual bool initialize (PLEXIL::AdapterConfiguration*) override;
 
  protected:
-  bool initialize (LanderInterface*);
+  template<typename T>
+  auto lookupHandler (const T& val)
+  {
+    return [=] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
+             r->update(PLEXIL::Value(val));
+           };
+  }
 };
-
-extern "C" {
-  void initLanderAdapter();
-}
 
 #endif

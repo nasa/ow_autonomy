@@ -10,10 +10,22 @@ using std::string;
 using std::map;
 using std::make_unique;
 
-// Dummy operation ID that signifies idle lander operation.
-#define IDLE_ID (-1)
+///////////////////////// Utilities /////////////////////////
+
+static double normalize_degrees (double angle)
+{
+  static double pi = R2D * M_PI;
+  static double tau = pi * 2.0;
+  double x = fmod(angle + pi, tau);
+  if (x < 0) x += tau;
+  return x - pi;
+}
+
 
 ///////////////////////// Action Goal Status Support /////////////////////////
+
+// Dummy operation ID that signifies idle lander operation.
+#define IDLE_ID (-1)
 
 // Duplication of actionlib_msgs/GoalStatus.h with the addition of a
 // NOGOAL status for when the action is not running.
@@ -34,7 +46,13 @@ enum ActionGoalStatus {
 
 static map<string, int> ActionGoalStatusMap { };
 
+
 ///////////////////////////////// Class Interface ///////////////////////////////
+
+bool PlexilInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
+{
+  return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
+}
 
 PlexilInterface::PlexilInterface ()
   : m_commandStatusCallback (nullptr),

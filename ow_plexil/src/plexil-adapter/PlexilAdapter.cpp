@@ -6,6 +6,8 @@
 
 // ow_plexil
 #include "PlexilAdapter.h"
+#include "PlexilInterface.h"
+#include "OwExecutive.h"
 #include "adapter_support.h"
 #include "subscriber.h"
 
@@ -14,25 +16,33 @@
 #include <geometry_msgs/Point.h>
 
 // PLEXIL API
-#include <AdapterConfiguration.hh>
-#include <AdapterFactory.hh>
-#include <AdapterExecInterface.hh>
-#include <ArrayImpl.hh>
+#include <LookupReceiver.hh>
 #include <Debug.hh>
-#include <Expression.hh>
-#include <StateCacheEntry.hh>
 using namespace PLEXIL;
 
+static void angles_equivalent (const State& s, LookupReceiver* r)
+{
+  double deg1, deg2, tolerance;
+  s.parameters()[0].getValue(deg1);
+  s.parameters()[1].getValue(deg2);
+  s.parameters()[2].getValue(tolerance);
+  r->update(PlexilInterface::anglesEquivalent(deg1, deg2, tolerance));
+}
+
+PlexilAdapter::~PlexilAdapter() = default;
+
 void PlexilAdapter::propagateValueChange (const State& state,
-                                          const std::vector<Value>& vals) const
+                                          const std::vector<Value>& vals)
 {
   if (! isStateSubscribed (state)) {
     debugMsg("PlexilAdapter:propagateValueChange", " ignoring " << state);
     return;
   }
   debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
-  m_execInterface.handleValueChange (state, vals.front());
-  m_execInterface.notifyOfExternalEvent();
+  OwExecutive::instance()->plexilInterfaceMgr()
+    -> handleValueChange (state, vals.front());
+  OwExecutive::instance()->plexilInterfaceMgr()
+    -> notifyOfExternalEvent();
 }
 
 bool PlexilAdapter::isStateSubscribed(const State& state) const
@@ -41,19 +51,24 @@ bool PlexilAdapter::isStateSubscribed(const State& state) const
 }
 
 PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
-                     const pugi::xml_node& configXml)
-  : InterfaceAdapter(execInterface, configXml)
+                             PLEXIL::AdapterConf* conf)
+  : InterfaceAdapter(execInterface, conf)
 {
   debugMsg("PlexilAdapter", " created.");
 }
 
-bool PlexilAdapter::initialize()
+bool PlexilAdapter::initialize(AdapterConfiguration* config)
 {
-  g_configuration->defaultRegisterAdapter(this);
-  g_configuration->registerCommandHandler("log_info", log_info);
-  g_configuration->registerCommandHandler("log_warning", log_warning);
-  g_configuration->registerCommandHandler("log_error", log_error);
-  g_configuration->registerCommandHandler("log_debug", log_debug);
+  // Plexil 4.6:
+  // config->defaultRegisterAdapter(this);
+  // Tried this in Plexil 6:
+  //  config->setDefaultCommandHandler(this);
+
+  config->registerCommandHandlerFunction("log_info", log_info);
+  config->registerCommandHandlerFunction("log_warning", log_warning);
+  config->registerCommandHandlerFunction("log_error", log_error);
+  config->registerCommandHandlerFunction("log_debug", log_debug);
+  config->registerLookupHandlerFunction("AnglesEquivalent", angles_equivalent);
   setSubscriber (receiveBool);
   setSubscriber (receiveInt);
   setSubscriber (receiveString);
@@ -72,39 +87,7 @@ bool PlexilAdapter::start()
   return true;
 }
 
-bool PlexilAdapter::stop()
+void PlexilAdapter::stop()
 {
   debugMsg("PlexilAdapter", " stopped.");
-  return true;
-}
-
-bool PlexilAdapter::reset()
-{
-  debugMsg("PlexilAdapter", " reset.");
-  return true;
-}
-
-bool PlexilAdapter::shutdown()
-{
-  debugMsg("PlexilAdapter", " shut down.");
-  return true;
-}
-
-void PlexilAdapter::invokeAbort(Command *cmd)
-{
-  ROS_ERROR("Cannot abort command %s, not implemented, ignoring.",
-            cmd->getName().c_str());
-}
-
-void PlexilAdapter::subscribe(const State& state)
-{
-  debugMsg("PlexilAdapter:subscribe", " to state " << state.name());
-  m_subscribedStates.insert(state);
-}
-
-
-void PlexilAdapter::unsubscribe (const State& state)
-{
-  debugMsg("PlexilAdapter:unsubscribe", " from state " << state.name());
-  m_subscribedStates.erase(state);
 }

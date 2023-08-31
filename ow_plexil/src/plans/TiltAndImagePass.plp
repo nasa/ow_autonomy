@@ -5,6 +5,8 @@
 // Auxiliary plan for TakePanorama.  Tilts to specified angle and then performs
 // a single image pass.
 
+#include "plan-interface.h"
+
 LibraryAction ImagePass (In Real PanLo,
                          In Real PanHi,
                          In Real PanIncrement,
@@ -20,11 +22,7 @@ TiltAndImagePass:
   InOut Real PanAngle;
   InOut Boolean ReversePan;
 
-  // Tilt used to be done just once:
-  //   LibraryCall Tilt (Degrees = TiltAngle);
-  // Leaving this here for now in case there are problems with the
-  // repeated tilts effected in the called plan.
-  
+  LibraryCall Tilt (Degrees = TiltAngle);
   LibraryCall ImagePass (PanIncrement = PanIncrement,
                          PanLo = PanLo, PanHi = PanHi,
                          PanAngle = PanAngle,

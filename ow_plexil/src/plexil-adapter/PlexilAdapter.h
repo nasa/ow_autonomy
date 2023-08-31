@@ -8,37 +8,31 @@
 // PLEXIL Interface adapter base class to be specialized for each testbed.
 
 // PLEXIL
-#include "InterfaceAdapter.hh"
-#include "Command.hh"
-#include "Value.hh"
+#include <InterfaceAdapter.hh>
+#include <AdapterExecInterface.hh>
+#include <AdapterConfiguration.hh>
+#include <Value.hh>
 
 // C++
 #include <set>
-#include <map>
 #include <vector>
 
 class PlexilAdapter : public PLEXIL::InterfaceAdapter
 {
 public:
-  PlexilAdapter() = default;
-  virtual ~PlexilAdapter() = default;
+  PlexilAdapter() = delete;
+  virtual ~PlexilAdapter() = 0;
   PlexilAdapter (const PlexilAdapter&) = delete;
   PlexilAdapter& operator= (const PlexilAdapter&) = delete;
 
-  virtual bool initialize();
-  virtual bool start();
-  virtual bool stop();
-  virtual bool reset();
-  virtual bool shutdown();
-  virtual void invokeAbort(PLEXIL::Command *cmd);
-  virtual void subscribe(const PLEXIL::State& state);
-  virtual void unsubscribe(const PLEXIL::State& state);
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&) { }
+  virtual bool initialize(PLEXIL::AdapterConfiguration*) override;
+  virtual bool start() override;
+  virtual void stop() override;
   void propagateValueChange (const PLEXIL::State&,
-                             const std::vector<PLEXIL::Value>&) const;
+                             const std::vector<PLEXIL::Value>&);
 
 protected:
-  PlexilAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  PlexilAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
   bool isStateSubscribed (const PLEXIL::State& state) const;
   std::set<PLEXIL::State> m_subscribedStates;
 };

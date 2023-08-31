@@ -144,15 +144,6 @@ void OwInterface::ftCallback
   publish("ArmEndEffectorForceTorque", m_end_effector_ft);
 }
 
-static double normalize_degrees (double angle)
-{
-  static double pi = R2D * M_PI;
-  static double tau = pi * 2.0;
-  double x = fmod(angle + pi, tau);
-  if (x < 0) x += tau;
-  return x - pi;
-}
-
 void OwInterface::jointStatesCallback
 (const sensor_msgs::JointState::ConstPtr& msg)
 {
@@ -176,13 +167,6 @@ void OwInterface::jointStatesCallback
   }
 }
 
-
-///////////////////////// Antenna/Camera Support ///////////////////////////////
-
-bool OwInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
-{
-  return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
-}
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
