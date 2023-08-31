@@ -122,8 +122,10 @@ class OwInterface : public LanderInterface
   void armStow (int id);
   void armUnstow (int id);
   void lightSetIntensity (const std::string& side, double intensity, int id);
-  bool injectSimulatedFault (const std::string &fault_name, double probability) const;
-  bool clearSimulatedFault (const std::string &fault_name, double probability) const;
+  bool injectSimulatedFault (const std::string &fault_name,
+                             double probability) const;
+  bool clearSimulatedFault (const std::string &fault_name,
+                            double probability) const;
 
   // State/Lookup interface
   std::vector<double> getEndEffectorFT () const;
@@ -133,8 +135,8 @@ class OwInterface : public LanderInterface
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   bool   systemFault () const override;
   std::vector<std::string>   getActiveFaults (std::string subsystem_name) const;
-  bool   getIsOperable (std::string subsystem_name) const;
-  bool   getIsFaulty (std::string subsystem_name) const;
+  bool   isOperable (std::string subsystem_name) const;
+  bool   isFaulty (std::string subsystem_name) const;
   std::vector<double> getArmEndEffectorFT () const override;
 
  private:

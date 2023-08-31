@@ -21,10 +21,19 @@ struct Procedure {
 
 struct Subsystem {
   std::string name;
-  int num_local_faults = 0; // Number of active faults in local subsystem
-  int num_non_local_faults = 0; // Number of active faults that impact this subsystem which are non-local
-  int num_inoperable = 0; // Number of active faults that impact this subsystem (Local or Non-local).
-  bool faulty = false; // Flag for if the subsystem has any local faults
+
+  // Number of active faults in local subsystem
+  int num_local_faults = 0;
+
+  // Number of active faults that impact this subsystem which are non-local.
+  int num_non_local_faults = 0;
+
+  // Number of active faults that impact this subsystem (Local or Non-local).
+  int num_inoperable = 0;
+
+  // Flag for if the subsystem has any local faults.
+  bool faulty = false;
+  
   std::vector<std::string> faults;
   std::vector<std::pair<std::string, std::string>> impacts;
 };
@@ -49,7 +58,8 @@ public:
 private:
 
   // internal functions
-  void updateSubsystem(const std::string &name, int status, const std::string &parent);
+  void updateSubsystem(const std::string &name, int status,
+                       const std::string &parent);
   void cascadeFault(const std::string &name, int status);
   bool parseXML(const std::string &file);
 

@@ -56,14 +56,14 @@ static void is_operable (const State& s, LookupReceiver* r)
 {
   string op;
   s.parameters()[0].getValue(op);
-  r->update(OwInterface::instance()->getIsOperable(op));
+  r->update(OwInterface::instance()->isOperable(op));
 }
 
 static void is_faulty (const State& s, LookupReceiver* r)
 {
   string op;
   s.parameters()[0].getValue(op);
-  r->update(OwInterface::instance()->getIsFaulty(op));
+  r->update(OwInterface::instance()->isFaulty(op));
 }
 
 static void active_faults (const State& s, LookupReceiver* r)
@@ -242,7 +242,8 @@ static void inject_simulated_fault (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue (probability);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
 
-  bool success = OwInterface::instance()->injectSimulatedFault (fault_name, probability);
+  bool success = OwInterface::instance()->injectSimulatedFault (fault_name,
+                                                                probability);
   Value value_success = Value(success);
   intf->handleCommandReturn(cmd, value_success);
   acknowledge_command_sent(*cr);
@@ -259,7 +260,8 @@ static void clear_simulated_fault (Command* cmd, AdapterExecInterface* intf)
   args[1].getValue (probability);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
 
-  Value value_success = Value(OwInterface::instance()->clearSimulatedFault (fault_name, probability));
+  Value value_success =
+    Value(OwInterface::instance()->clearSimulatedFault (fault_name, probability));
   intf->handleCommandReturn(cmd, value_success);
   acknowledge_command_sent(*cr);
 }
@@ -395,40 +397,50 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
 					soft_torque_limit_reached);
   config->registerLookupHandlerFunction("GroundFound",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->groundFound()));
+                                        (OwInterface::instance()->
+                                         groundFound()));
   config->registerLookupHandlerFunction("GroundPosition",
 					lookupHandler<double>
-                                        (OwInterface::instance()->groundPosition()));
+                                        (OwInterface::instance()->
+                                         groundPosition()));
   config->registerLookupHandlerFunction("Running", running);
   config->registerLookupHandlerFunction("IsOperable", is_operable);
   config->registerLookupHandlerFunction("IsFaulty", is_faulty);
   config->registerLookupHandlerFunction("ActiveFaults", active_faults);
   config->registerLookupHandlerFunction("ArmEndEffectorForceTorque",
 					lookupHandler<vector<double> >
-                                        (OwInterface::instance()->getArmEndEffectorFT()));
+                                        (OwInterface::instance()->
+                                         getArmEndEffectorFT()));
 
   // Faults specific to OceanWATERS
   config->registerLookupHandlerFunction("SystemFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->systemFault()));
+                                        (OwInterface::instance()->
+                                         systemFault()));
   config->registerLookupHandlerFunction("AntennaFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->antennaFault()));
+                                        (OwInterface::instance()->
+                                         antennaFault()));
   config->registerLookupHandlerFunction("AntennaPanFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->antennaPanFault()));
+                                        (OwInterface::instance()->
+                                         antennaPanFault()));
   config->registerLookupHandlerFunction("AntennaTiltFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->antennaTiltFault()));
+                                        (OwInterface::instance()->
+                                         antennaTiltFault()));
   config->registerLookupHandlerFunction("ArmFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->armFault()));
+                                        (OwInterface::instance()->
+                                         armFault()));
   config->registerLookupHandlerFunction("PowerFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->powerFault()));
+                                        (OwInterface::instance()->
+                                         powerFault()));
   config->registerLookupHandlerFunction("CameraFault",
 					lookupHandler<bool>
-                                        (OwInterface::instance()->cameraFault()));
+                                        (OwInterface::instance()->
+                                         cameraFault()));
 
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);

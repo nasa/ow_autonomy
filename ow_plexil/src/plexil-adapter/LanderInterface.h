@@ -163,7 +163,8 @@ class LanderInterface : public PlexilInterface
     bool faultActive (const T& fault_map) const;
 
 
-  //Fault Hierarchy for OW, needs to be in LanderInterface for use with LanderInterface.tpp
+  // Fault Hierarchy for OW, needs to be in LanderInterface for use
+  // with LanderInterface.tpp.
   std::unique_ptr<FaultDependencies> m_fault_dependencies;
   // Queue size for subscribers is a guess at adequacy.
   const int QueueSize = 3;

@@ -100,7 +100,8 @@ void LanderInterface::initialize()
 
   connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
                        "/ArmMoveCartesian/status");
-  connectActionServer (m_armMoveCartesianGuardedClient, Name_ArmMoveCartesianGuarded,
+  connectActionServer (m_armMoveCartesianGuardedClient,
+                       Name_ArmMoveCartesianGuarded,
                        "/ArmMoveCartesianGuarded/status");
   connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
                        "/ArmMoveJoint/status");

@@ -29,6 +29,7 @@ using std::vector;
 using std::thread;
 using std::ref;
 using std::string;
+using std::stringstream;
 using std::shared_ptr;
 using std::make_unique;
 
@@ -87,7 +88,7 @@ struct JointProperties
   // A structure to store useful static properties about joints.
 
   // Use compiler's default methods.
-  std::string plexilName; // human-readable, no spaces
+  string plexilName; // human-readable, no spaces
   double softTorqueLimit;
   double hardTorqueLimit;
 };
@@ -247,8 +248,8 @@ void OwInterface::initialize()
 {
   LanderInterface::initialize();
 
-  std::string fault_dependencies_path;
-  std::string fault_dependencies_file;
+  string fault_dependencies_path;
+  string fault_dependencies_file;
   m_fault_dependencies_on = false;
   bool verbose_flag = false;
   if(m_genericNodeHandle->getParam("/fault_dependencies_verbose", verbose_flag)){
@@ -256,15 +257,17 @@ void OwInterface::initialize()
   else{
     ROS_WARN("COULD NOT GET fault_dependencies_verbose parameter");
   }
-  if(m_genericNodeHandle->getParam("/fault_dependencies_path", fault_dependencies_path)){
+  if(m_genericNodeHandle->getParam("/fault_dependencies_path",
+                                   fault_dependencies_path)){
   }
   else{
     ROS_WARN("COULD NOT GET fault_dependencies_path parameter");
   }
-  if(m_genericNodeHandle->getParam("/fault_dependencies_file", fault_dependencies_file)){
+  if(m_genericNodeHandle->getParam("/fault_dependencies_file",
+                                   fault_dependencies_file)){
     if (fault_dependencies_file != ""){
       m_fault_dependencies_on = true;
-      m_fault_dependencies = std::make_unique<FaultDependencies>
+      m_fault_dependencies = make_unique<FaultDependencies>
         (fault_dependencies_path + fault_dependencies_file, verbose_flag);
     }
   }
@@ -343,7 +346,8 @@ void OwInterface::initialize()
   connectActionServer (m_panClient, Name_Pan);
   connectActionServer (m_tiltClient, Name_Tilt);
   connectActionServer (m_panTiltCartesianClient, Name_PanTiltCartesian);
-  connectActionServer (m_identifySampleLocationClient, Name_IdentifySampleLocation);
+  connectActionServer (m_identifySampleLocationClient,
+                       Name_IdentifySampleLocation);
   connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
                        "/TaskDiscardSample/status");
 }
@@ -371,7 +375,7 @@ void OwInterface::panAction (double degrees, int id)
 {
   PanGoal goal;
   goal.pan = degrees * D2R;
-  std::stringstream args;
+  stringstream args;
   args << goal.pan;
   runAction<actionlib::SimpleActionClient<PanAction>,
             PanGoal,
@@ -394,7 +398,7 @@ void OwInterface::tiltAction (double degrees, int id)
 {
   TiltGoal goal;
   goal.tilt = degrees * D2R;
-  std::stringstream args;
+  stringstream args;
   args << goal.tilt;
   runAction<actionlib::SimpleActionClient<TiltAction>,
             TiltGoal,
@@ -424,7 +428,7 @@ void OwInterface::panTiltCartesianAction (int frame,
   PanTiltMoveCartesianGoal goal;
   goal.frame = frame;
   goal.point = p;
-  std::stringstream args;
+  stringstream args;
   args << goal.frame << ", " << goal.point;
   runAction<actionlib::SimpleActionClient<PanTiltMoveCartesianAction>,
             PanTiltMoveCartesianGoal,
@@ -441,7 +445,8 @@ void OwInterface::panTiltCartesianAction (int frame,
 void OwInterface::cameraSetExposure (double exposure_secs, int id)
 {
   if (! markOperationRunning (Name_CameraSetExposure, id)) return;
-  thread action_thread (&OwInterface::cameraSetExposureAction, this, exposure_secs, id);
+  thread action_thread (&OwInterface::cameraSetExposureAction, this,
+                        exposure_secs, id);
   action_thread.detach();
 }
 
@@ -459,8 +464,10 @@ void OwInterface::cameraSetExposureAction (double exposure_secs, int id)
             CameraSetExposureFeedbackConstPtr>
     (Name_CameraSetExposure, m_cameraSetExposureClient, goal, id,
      default_action_active_cb (Name_CameraSetExposure),
-     default_action_feedback_cb<CameraSetExposureFeedbackConstPtr> (Name_CameraSetExposure),
-     default_action_done_cb<CameraSetExposureResultConstPtr> (Name_CameraSetExposure));
+     default_action_feedback_cb<CameraSetExposureFeedbackConstPtr>
+     (Name_CameraSetExposure),
+     default_action_done_cb<CameraSetExposureResultConstPtr>
+     (Name_CameraSetExposure));
 }
 
 void OwInterface::dockIngestSample (int id)
@@ -511,7 +518,8 @@ void OwInterface::scoopLinearAction (int frame, bool relative,
   goal.depth = depth;
   goal.length = length;
 
-  ROS_INFO ("Starting TaskScoopLinear(x=%.2f, y=%.2f, z=%.2f, depth=%.2f, length=%.2f)",
+  ROS_INFO ("Starting TaskScoopLinear(x=%.2f, y=%.2f, z=%.2f, "
+            "depth=%.2f, length=%.2f)",
             x, y, z, depth, length);
 
   runAction<actionlib::SimpleActionClient<TaskScoopLinearAction>,
@@ -520,8 +528,10 @@ void OwInterface::scoopLinearAction (int frame, bool relative,
             TaskScoopLinearFeedbackConstPtr>
     (Name_TaskScoopLinear, m_scoopLinearClient, goal, id,
      default_action_active_cb (Name_TaskScoopLinear),
-     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr> (Name_TaskScoopLinear),
-     default_action_done_cb<TaskScoopLinearResultConstPtr> (Name_TaskScoopLinear));
+     default_action_feedback_cb<TaskScoopLinearFeedbackConstPtr>
+     (Name_TaskScoopLinear),
+     default_action_done_cb<TaskScoopLinearResultConstPtr>
+     (Name_TaskScoopLinear));
 }
 
 void OwInterface::scoopCircular (int frame, bool relative,
@@ -557,8 +567,10 @@ void OwInterface::scoopCircularAction (int frame, bool relative,
             TaskScoopCircularFeedbackConstPtr>
     (Name_TaskScoopCircular, m_scoopCircularClient, goal, id,
      default_action_active_cb (Name_TaskScoopCircular),
-     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr> (Name_TaskScoopCircular),
-     default_action_done_cb<TaskScoopCircularResultConstPtr> (Name_TaskScoopCircular));
+     default_action_feedback_cb<TaskScoopCircularFeedbackConstPtr>
+     (Name_TaskScoopCircular),
+     default_action_done_cb<TaskScoopCircularResultConstPtr>
+     (Name_TaskScoopCircular));
 }
 
 
@@ -599,8 +611,8 @@ void OwInterface::grindAction (double x, double y, double depth, double length,
 
 void OwInterface::armFindSurface (int frame,
                                   bool relative,
-                                  const std::vector<double>& position,
-                                  const std::vector<double>& normal,
+                                  const vector<double>& position,
+                                  const vector<double>& normal,
                                   double distance,
                                   double overdrive,
                                   double force_threshold,
@@ -630,7 +642,8 @@ void OwInterface::armFindSurfaceAction (int frame, bool relative,
                                         const geometry_msgs::Point& pos,
                                         const geometry_msgs::Vector3& normal,
                                         double distance, double overdrive,
-                                        double force_threshold, double torque_threshold,
+                                        double force_threshold,
+                                        double torque_threshold,
                                         int id)
 {
   ArmFindSurfaceGoal goal;
@@ -858,7 +871,7 @@ void OwInterface::lightSetIntensityAction (const string& side, double intensity,
 }
 
 void OwInterface::taskDiscardSample (int frame, bool relative,
-                                     const std::vector<double>& point,
+                                     const vector<double>& point,
                                      double height, int id)
 {
   if (! markOperationRunning (Name_TaskDiscardSample, id)) return;
@@ -868,7 +881,7 @@ void OwInterface::taskDiscardSample (int frame, bool relative,
 }
 
 void OwInterface::taskDiscardSampleAction (int frame, bool relative,
-                                           const std::vector<double>& point,
+                                           const vector<double>& point,
                                            double height, int id)
 {
   geometry_msgs::Point p;
@@ -888,11 +901,14 @@ void OwInterface::taskDiscardSampleAction (int frame, bool relative,
             TaskDiscardSampleFeedbackConstPtr>
     (Name_TaskDiscardSample, m_taskDiscardSampleClient, goal, id,
      default_action_active_cb (Name_TaskDiscardSample),
-     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr> (Name_TaskDiscardSample),
-     default_action_done_cb<TaskDiscardSampleResultConstPtr> (Name_TaskDiscardSample));
+     default_action_feedback_cb<TaskDiscardSampleFeedbackConstPtr>
+     (Name_TaskDiscardSample),
+     default_action_done_cb<TaskDiscardSampleResultConstPtr>
+     (Name_TaskDiscardSample));
 }
 
-bool OwInterface::injectSimulatedFault (const std::string &fault_name, double probability) const
+bool OwInterface::injectSimulatedFault (const string &fault_name,
+                                        double probability) const
 {
   srand(time(0));
   double roll = (double) rand()/RAND_MAX;
@@ -910,7 +926,8 @@ bool OwInterface::injectSimulatedFault (const std::string &fault_name, double pr
   return false;
 }
 
-bool OwInterface::clearSimulatedFault (const std::string &fault_name, double probability) const
+bool OwInterface::clearSimulatedFault (const string &fault_name,
+                                       double probability) const
 {
   srand(time(0));
   double roll = (double) rand()/RAND_MAX;
@@ -939,41 +956,47 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-std::vector<double> OwInterface::getEndEffectorFT () const
+vector<double> OwInterface::getEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
 
-std::vector<std::string> OwInterface::getActiveFaults (std::string subsystem_name) const
+vector<string> OwInterface::getActiveFaults (string subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->getActiveFaults(subsystem_name);
   }
   else{
-    ROS_WARN_THROTTLE(10, "Could not use ActiveFaults lookup, fault dependencies are turned off");
-    std::vector<string> empty_vec;
+    ROS_WARN_THROTTLE(10,
+                      "Could not use ActiveFaults lookup, "
+                      "fault dependencies are turned off.");
+    vector<string> empty_vec;
     return empty_vec;
   }
 }
 
-bool OwInterface::getIsOperable (std::string subsystem_name) const
+bool OwInterface::isOperable (string subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->checkIsOperable(subsystem_name);
   }
   else{
-    ROS_WARN_THROTTLE(10, "Could not use IsOperable lookup, fault dependencies are turned off");
+    ROS_WARN_THROTTLE(10,
+                      "Could not use IsOperable lookup, "
+                      "fault dependencies are turned off.");
     return true;
   }
 }
 
-bool OwInterface::getIsFaulty (std::string subsystem_name) const
+bool OwInterface::isFaulty (string subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->checkIsFaulty(subsystem_name);
   }
   else{
-    ROS_WARN_THROTTLE(10, "Could not use IsFaulty lookup, fault dependencies are turned off");
+    ROS_WARN_THROTTLE(10,
+                      "Could not use IsFaulty lookup, "
+                      "fault dependencies are turned off.");
     return false;
   }
 }

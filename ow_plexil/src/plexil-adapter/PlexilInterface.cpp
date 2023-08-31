@@ -49,7 +49,8 @@ static map<string, int> ActionGoalStatusMap { };
 
 ///////////////////////////////// Class Interface ///////////////////////////////
 
-bool PlexilInterface::anglesEquivalent (double deg1, double deg2, double tolerance)
+bool PlexilInterface::anglesEquivalent (double deg1, double deg2,
+                                        double tolerance)
 {
   return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
 }
