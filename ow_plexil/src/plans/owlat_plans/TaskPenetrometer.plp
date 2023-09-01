@@ -1,0 +1,22 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Operate the Cone Penetrometer.  Requires that this tool is first
+// installed, using ArmSetTool.
+
+Command task_penetrometer (Integer frame, Boolean relative, Real point[3],
+                           Real normal[3], Real max_depth, Real max_force);
+
+TaskPenetrometer:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Point[3];
+  In Real Normal[3];
+  In Real MaxDepth;
+  In Real MaxForce;
+
+  SynchronousCommand task_penetrometer (Frame, Relative, Point, Normal,
+                                        MaxDepth, MaxForce);
+}

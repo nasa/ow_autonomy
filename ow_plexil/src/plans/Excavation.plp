@@ -5,32 +5,15 @@
 // Excavation procedure based on JPL's Europa Lander reference mission.
 // NOTE: this procedure is highly stubbed at the moment.
 
-#include "plexil_defs.h"
+#include "plan-interface.h"
+#include "europa_defs.h"
 
-Real Lookup time;
-Real Lookup TrenchLength;
-Real Lookup TrenchGroundPosition;
-Real Lookup TrenchWidth;
-Real Lookup TrenchDepth;
-Real Lookup TrenchYaw;
-Real Lookup TrenchPitch;
-Real Lookup TrenchStartX;
-Real Lookup TrenchStartY;
-Real Lookup TrenchStartZ;
-Real Lookup TrenchDumpX;
-Real Lookup TrenchDumpY;
-Real Lookup TrenchDumpZ;
+#define DIG_TRENCH_TIMEOUT 10
+
 Real Lookup ExcavationTimeout;
 
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
-
-Command log_info (...);
-
-Boolean Command dig_linear (Real startX, Real startY,
-                            Real depth, Real length, Real groundPosition,
-                            Real width, Real pitch, Real yaw,
-                            Real dumpX, Real dumpY, Real dumpZ);
 
 Excavation:
 {
@@ -58,37 +41,27 @@ Excavation:
         EndCondition (Dig.command_handle == COMMAND_SUCCESS ||
                       Time >= (DigTheTrench.EXECUTING.START
                                + DIG_TRENCH_TIMEOUT));
-        Dig: dig_linear (Lookup(TrenchStartX),
-                         Lookup(TrenchStartY),
-                         Lookup(TrenchDepth),
-                         Lookup(TrenchLength),
-                         Lookup(TrenchGroundPosition),
-                         Lookup(TrenchWidth),
-                         Lookup(TrenchPitch),
-                         Lookup(TrenchYaw),
-                         Lookup(TrenchDumpX),
-                         Lookup(TrenchDumpY),
-                         Lookup(TrenchDumpZ));
+        Dig: scoop_linear (BASE_FRAME, false, 1.5, 0.02, -0.155, 0.05, 0.1);
       }
-      
+
       FilmDig:
       {
         Repeat DigTheTrench.state == EXECUTING;
         LibraryCall Image(desc="trench");
         Wait FILM_INTERVAL;
       }
-      
+
       SenseDig:
       {
         Repeat DigTheTrench.state == EXECUTING;
         log_info ("Sensing dig...");
-        DiggingSafe = STUB_TRUE;
+        DiggingSafe = true; // stub
         Wait SENSE_DIG_INTERVAL;
       }
     }
 
     RemoveTailings: LibraryCall Stub(desc="Removing tailings");
     ImageDig: LibraryCall Image(desc="dig");
-    AssessDepth: DeepEnough = STUB_TRUE;
+    AssessDepth: DeepEnough = true; // stub
   }
 }

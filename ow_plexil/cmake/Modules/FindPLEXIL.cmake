@@ -5,17 +5,15 @@
 ######################################################################
 # Find script for PLEXIL.
 #
-# The PLEXIL directory structure is pretty wacky, so we
-# don't try to define _INCLUDE_DIR or some of the other
-# standard variables.
+# The PLEXIL directory structure is pretty wacky, so we don't try to
+# define _INCLUDE_DIR or some of the other standard variables.
 #
 # Output Variables:
 # -----------------
 # PLEXIL_FOUND               : TRUE if search succeded
 # PLEXIL_COMPILER            : full path to plexilc
-
-
 ######################################################################
+
 message(STATUS "Looking for PLEXIL...")
 
 include(GetLibraryList)
@@ -41,10 +39,7 @@ if( PLEXIL_INCLUDE_DIR )
 
   set( PLEXIL_LIBS
         GanttListener
-#        IpcAdapter
-#        IpcUtils
         Launcher
-#        LuvListener
         PlanDebugListener
         PlexilAppFramework
         PlexilExec
@@ -55,10 +50,6 @@ if( PLEXIL_INCLUDE_DIR )
         PlexilValue
         PlexilXmlParser
         pugixml
-#        SampleAdapter
-#        standalonesimulator
-#        UdpAdapter
-#        UdpUtils )
        )
 
   get_library_list(PLEXIL ${PLEXIL_LIBRARY_DIR} "d" "${PLEXIL_LIBS}")

@@ -2,43 +2,26 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Pattern summary: Execute a sequence of actions. If a fault is injected
-// during a related action, the action will stop and end in the ABORTED state.
-// As long as the action is stopped, a backup action will repeat but only if
-// the battery level is sufficient. If/when the fault is cleared, the original
-// action will automatically be attempted again.
+// WARNING: This plan cannot work as intended until greater fault/action support
+// is added to the simulator. This serves mostly as a syntactic example.
 
-// More specifically: If no faults are occurring, this plan will pan 180
-// degrees, and then unstow and stow the arm.
+// DESIRED BEHAVIOR: If no faults are present, this plan will pan 180 degrees,
+// unstow and then stow the arm. If a fault is injectected during stow or unstow,
+// a backup panning action will run until the fault is cleared, if the battery level
+// is sufficient. It will then attempt the interrupted action again.
 
-// If a power fault is injected, any action occurring will stop and
-// end in the ABORTED state. If the power fault is resolved, they will
-// automatically restart.
+// LIMITATIONS: the Stow action will not be attempted again
+// after a fault, this is due to limitations in goal fault support that will be 
+// added in a later release. The Unstow Action will also sometimes not repeat depending
+// on when the fault is triggered. When injecting a fault during an arm operation,
+// you should wait until you see the action aborted message before clearing the fault.
 
-// If a relevant fault is injected, the plan will stop the current action.
-
-// If there is sufficient battery power, the plan will start repeating a
-// panning action as backup to the original action.
-
-// If a fault is injected during an operation, that operation will only
+// NOTE: If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during
 // unstowing or stowing.
 
-// NOTE that as of September 8th, 2021, only the ant_pan_effort_failure
-// will halt the panning action in this plan.
-
-// IMPORTANT NOTE: When injecting a fault during an arm operation,
-// you should wait until you see the action aborted,
-// e.g. "Stow finished in state ABORTED" before clearing the fault.
-// Otherwise the action will show as completed, even though it halted
-// before completing the task. This is due to some bugs in the simulator,
-// and the fact that ROS action states are not exposed to PLEXIL.
-
-
 #include "plan-interface.h"
-
-LibraryAction InitializeAntennaAndArm ();
 
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,
@@ -67,8 +50,6 @@ FaultHandlingPattern6:
 
   log_info ("Starting FaultHandlingPattern6 plan...");
 
-  LibraryCall InitializeAntennaAndArm ();
-
   RunMission: Concurrence
   {
     End !MissionInProgress;
@@ -77,7 +58,7 @@ FaultHandlingPattern6:
     LogPanError:
     {
       Start (!PanDone && (Lookup(AntennaFault) || Lookup(PowerFault) ||
-                          (Lookup(StateOfCharge) < CriticallyLowCharge)));
+                          (Lookup(BatteryStateOfCharge) < CriticallyLowCharge)));
 
       if Lookup(AntennaFault)
       {
@@ -88,7 +69,7 @@ FaultHandlingPattern6:
       {
         log_error ("Panning halted due to a power fault.");
       }
-      else if (Lookup(StateOfCharge) < CriticallyLowCharge)
+      else if (Lookup(BatteryStateOfCharge) < CriticallyLowCharge)
       {
         log_error ("Panning halted due to the battery level being critically low.");
       }
@@ -150,13 +131,17 @@ FaultHandlingPattern6:
 
       Repeat MissionInProgress;
       Start MissionInProgress && Lookup(ArmFault) && PanDone
-            && (Lookup(StateOfCharge) > CriticallyLowCharge)
+            && (Lookup(BatteryStateOfCharge) > CriticallyLowCharge)
             && !Lookup(PowerFault);
       Skip !MissionInProgress;
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      if NewAngle > 180{
+        NewAngle = NewAngle - 360;
+      }
+
+      LibraryCall Pan (Degrees=NewAngle);
     }
 
     LibraryCall MissionSequence2 (mission_in_progress=MissionInProgress,

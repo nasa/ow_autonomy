@@ -102,20 +102,14 @@ ReferenceMission2: Concurrence
     Image:
     {
       Start BatteryOK && NoFaults;
-      log_info ("** Imaging Landing Site **");
+      log_info ("Imaging Landing Site");
       LibraryCall ImageLandingSite(InstanceName = "ReferenceMission2",
                                    IgnoreCrash = true);
-    }
-    Unstow:
-    {
-      Start BatteryOK && NoFaults;
-      log_info ("** Unstowing Arm **");
-      LibraryCall ArmUnstow;
     }
     Search:
     {
       Start BatteryOK && NoFaults;
-      log_info ("** Identifying Sample Target **");
+      log_info ("Identifying Sample Target");
       LibraryCall IdentifySampleTarget (X = trench_x,
                                         Y = trench_y,
                                         GroundPos = ground_pos,
@@ -123,10 +117,17 @@ ReferenceMission2: Concurrence
                                         FilterType = "Dark");
     }
     if (Lookup(GroundFound)) {
+      Unstow:
+      {
+        Start BatteryOK && NoFaults;
+        log_info ("Unstowing Arm");
+        LibraryCall ArmUnstow;
+      }
+
       Dig:
       {
         Start BatteryOK && NoFaults;
-        log_info ("** Digging Trench **");
+        log_info ("Digging Trench");
         LibraryCall DigTrench (X = trench_x,
                                Y = trench_y,
                                GroundPos = ground_pos,
@@ -138,7 +139,7 @@ ReferenceMission2: Concurrence
       Clear:
       {
         Start BatteryOK && NoFaults;
-        log_info ("** Removing Tailings **");
+        log_info ("Removing Tailings");
         LibraryCall RemoveTailings (X = trench_x,
                                     Y = trench_y,
                                     GroundPos = ground_pos,
@@ -147,25 +148,24 @@ ReferenceMission2: Concurrence
       Collect:
       {
         Start BatteryOK && NoFaults;
-        log_info ("** Collecting Sample **");
+        log_info ("Collecting Sample");
         LibraryCall CollectSample (X = trench_x,
                                    Y = trench_y,
                                    GroundPos = ground_pos,
-                                   Depth = 0.11,
+                                   Depth = 0.1105,
                                    Length = trench_length,
                                    Parallel = parallel);
       }
       Stow:
       {
         Start BatteryOK && NoFaults;
-        log_info ("** Stowing Arm **");
-        LibraryCall ArmUnstow(); // For safety in stowing
-        LibraryCall ArmStow();
+        log_info ("Stowing Arm");
+        LibraryCall SafeStow();
       }
       Analyze:
       {
         Start BatteryOK && NoFaults;
-        log_info ("** Analyzing Sample **");
+        log_info ("Analyzing Sample");
         LibraryCall StartSampleAnalysis;
       }
     }
@@ -174,9 +174,8 @@ ReferenceMission2: Concurrence
      FailStow:
      {
        Start BatteryOK && NoFaults;
-       log_info ("** Stowing Arm **");
-       LibraryCall ArmUnstow(); // For safety in stowing
-       LibraryCall ArmStow();
+       log_info ("Stowing Arm");
+       LibraryCall SafeStow();
      }
     }
     endif;

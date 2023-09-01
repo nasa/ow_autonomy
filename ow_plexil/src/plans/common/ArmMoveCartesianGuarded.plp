@@ -1,0 +1,27 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+Command arm_move_cartesian_guarded (Integer frame,
+                                    Boolean relative,
+                                    Real position[3],
+                                    Real orientation[3],
+                                    Real ForceThreshold,
+                                    Real TorqueThreshold);
+
+ArmMoveCartesianGuarded:
+{
+  In Integer Frame;
+  In Boolean Relative;
+  In Real Position[3];
+  In Real Orientation[3];
+  In Real ForceThreshold;
+  In Real TorqueThreshold;
+
+  SynchronousCommand arm_move_cartesian_guarded(Frame,
+                                                Relative,
+                                                Position,
+                                                Orientation,
+                                                ForceThreshold,
+                                                TorqueThreshold);
+}

@@ -5,12 +5,12 @@
 #ifndef adapter_support
 #define adapter_support
 
-// Support utilities for CommonAdapter and its testbed specializations.
+// Support utilities for PlexilAdapter and its testbed specializations.
 
-// NOTE: In principle, this code could be folded into the CommonAdapter class,
+// NOTE: In principle, this code could be folded into the PlexilAdapter class,
 // but the effort and result could be complicated in several ways.
 
-#include "CommonAdapter.h"
+#include "PlexilAdapter.h"
 
 // PLEXIL
 #include <Value.hh>
@@ -31,13 +31,13 @@ const PLEXIL::Value Unknown;
 // A pointer to the interface adapter, so that it can be accessed from static
 // functions.  WARNING: this allows only one adapter instance to be usable at a
 // time; multiple testbeds cannot operate concurrently.
-extern CommonAdapter* g_adapter;
+extern PlexilAdapter* g_adapter;
 
 
 //////////////////////////// Command Handling //////////////////////////////
 
 // Unique ID for every instance of a command from a Plexil plan.
-extern int CommandId;
+extern int g_cmd_id;
 
 // Record that combines a Plexil command instance with its executive interface
 // and a flag indicating whether the command has been acknowledged.
@@ -61,13 +61,15 @@ void command_status_callback (int id, bool success);
 
 // "Receivers" for the pub/sub mechanism in subscriber.h
 void receiveBool (const std::string& state_name, bool val);
+void receiveInt (const std::string& state_name, int val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
 void receiveBoolFromString (const std::string& state_name,
                             bool val,
                             const std::string& arg);
 void receiveDoubleFromInt (const std::string& state_name, double val, int arg);
-void receiveDoubleVector (const std::string& state_name, vector<double> vals);
+void receiveDoubleVector (const std::string& state_name,
+                          const vector<double>& vals);
 
 
 /////////////////////////////// ROS Logging ///////////////////////////////////

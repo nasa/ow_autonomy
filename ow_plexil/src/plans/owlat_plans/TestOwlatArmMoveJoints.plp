@@ -1,0 +1,20 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "owlat-interface.h"
+
+TestOwlatArmMoveJoints:
+{
+  log_info ("Starting ArmMoveJoints/Guarded test...");
+  LibraryCall ArmUnstow();
+  LibraryCall OwlatArmMoveJoints (Relative = false,
+                                  Angles = #(0.0 -0.5 0.0 2.0 0.0 0.0 0.0));
+  LibraryCall OwlatArmMoveJointsGuarded (Relative = true,
+                                         Angles = #(0.0 0.6 0.0 0.0 0.0 0.0 0.0),
+                                         Retracting = false,
+                                         ForceThreshold = 5.0,
+                                         TorqueThreshold = 1.0);
+  LibraryCall SafeStow();
+  log_info ("Finished ArmMoveJoints/Guarded test.");
+}

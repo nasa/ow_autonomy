@@ -11,20 +11,29 @@
 // one PLEXIL executive can run in one process, this class is a singleton.
 
 #include <string>
+#include <ExecApplication.hh>
+#include <InterfaceManager.hh>
+#include <AdapterConfiguration.hh>
 
 class OwExecutive
 {
  public:
-  OwExecutive() = default;
+  static OwExecutive* instance();
+
+  OwExecutive();
   OwExecutive (const OwExecutive&) = delete;
   OwExecutive& operator= (const OwExecutive&) = delete;
   ~OwExecutive() = default;
 
-  static OwExecutive* instance();
-
   bool initialize (const std::string& config_file);
   bool allPlansFinished(); // See warning in implementation.
   bool runPlan (const std::string& filename);
+  PLEXIL::InterfaceManager* plexilInterfaceMgr();
+  PLEXIL::AdapterConfiguration* plexilAdapterConfig();
+
+ private:
+  bool initializePlexilInterfaces (const std::string& config_file);
+  PLEXIL::ExecApplication* m_plexil_app ;
 };
 
 #endif

@@ -1,7 +1,7 @@
 <Interfaces>
   <!-- PLEXIL interfaces for OWLAT simulator -->
   <Adapter AdapterType="Utility"/>
-  <Adapter AdapterType="OSNativeTime"/>
+  <Adapter AdapterType="Time"/>
   <Adapter AdapterType="Launcher"/>
   <Adapter AdapterType="CheckpointAdapter">
     <SaveConfiguration Directory="./"

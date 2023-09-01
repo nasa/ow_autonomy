@@ -8,7 +8,8 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 
-class TerminalPlanSelection{
+class TerminalPlanSelection
+{
   public:
     TerminalPlanSelection() = default;
     ~TerminalPlanSelection() = default;
@@ -27,4 +28,3 @@ class TerminalPlanSelection{
 };
 
 #endif
-

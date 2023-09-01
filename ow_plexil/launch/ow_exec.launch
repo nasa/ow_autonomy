@@ -2,6 +2,11 @@
 
 <launch>
   <arg name="plan" default="None"/>
+  <arg name="fault_dependencies_file" default=""/>
+
+  <param name="fault_dependencies_file" type="string" value="$(arg fault_dependencies_file)"/>
+  <param name="fault_dependencies_path" type="string" value="$(find ow_plexil)/src/plans/"/>
+  <rosparam file="$(find ow_plexil)/config/ow_plexil.yaml" />
 
  <!-- Lets GUI know what plans to display -->
   <param name="owlat_flag" type="boolean" value="False"/>

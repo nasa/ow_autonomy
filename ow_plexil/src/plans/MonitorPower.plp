@@ -26,14 +26,15 @@ MonitorPower:
 
     Iteration = Iteration + 1;
 
-    battery_charge_ok = Lookup(StateOfCharge) >= LowCharge;
+    battery_charge_ok = Lookup(BatteryStateOfCharge) >= LowCharge;
     battery_temp_ok   = Lookup(BatteryTemperature) < HighTemp;
 
     // Report levels every 3 iterations, or if there's a problem, to reduce
     // output clutter.
     if (Iteration % 3 == 0 || !battery_charge_ok || !battery_temp_ok) {
-      log_info ("Battery: state of charge: ", Lookup(StateOfCharge));
-      log_info ("Battery: remaining useful life: ", Lookup(RemainingUsefulLife));
+      log_info ("Battery: state of charge: ", Lookup(BatteryStateOfCharge));
+      log_info ("Battery: remaining useful life: ",
+                Lookup(BatteryRemainingUsefulLife));
       log_info ("Battery: temperature: ", Lookup(BatteryTemperature));
       if (!battery_charge_ok) log_warning ("Battery charge is low!");
       if (!battery_temp_ok) log_warning ("Battery too hot!");

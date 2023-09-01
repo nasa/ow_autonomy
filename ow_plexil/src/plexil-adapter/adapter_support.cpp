@@ -10,11 +10,12 @@
 
 // PLEXIL
 #include <Debug.hh>
-using namespace PLEXIL;
 
 // C++
 #include <map>
 #include <mutex>
+
+using namespace PLEXIL;
 using std::string;
 using std::vector;
 using std::unique_ptr;
@@ -24,11 +25,11 @@ using std::mutex;
 // An empty argument vector, for convenience.
 const vector<Value> EmptyArgs;
 
-CommonAdapter* g_adapter;
+PlexilAdapter* g_adapter;
 
 static mutex g_shared_mutex;
 
-int CommandId = 0;
+int g_cmd_id = 0;
 
 std::map<int, unique_ptr<CommandRecord>> CommandRegistry;
 
@@ -36,8 +37,8 @@ unique_ptr<CommandRecord>&
 new_command_record(Command* cmd, AdapterExecInterface* intf)
 {
   auto cr = std::make_tuple(cmd, intf, false);
-  CommandRegistry[++CommandId] = std::make_unique<CommandRecord>(cr);
-  return CommandRegistry[CommandId];
+  CommandRegistry[++g_cmd_id] = std::make_unique<CommandRecord>(cr);
+  return CommandRegistry[g_cmd_id];
 }
 
 static void ack_command (Command* cmd,
@@ -120,49 +121,61 @@ static void propagate (const State& state, const vector<Value>& value)
   g_adapter->propagateValueChange (state, value);
 }
 
-// To do: templatize the following few
+template<class V>
+void receive_value (const std::string& state_name, const V& val)
+{
+  propagate (create_state(state_name, EmptyArgs),
+             std::vector<Value> (1, val));
+}
+
+template<class V, class A>
+void receive_value_from_arg (const std::string& state_name,
+                             const V& val,
+                             const A& arg)
+{
+  propagate (create_state(state_name, std::vector<Value> (1, arg)),
+             std::vector<Value> (1, val));
+}
 
 void receiveBool (const string& state_name, bool val)
 {
-  debugMsg("OwAdapter:receiveBool", " propagating " << state_name
-           << " with value " << (val ? "true" : "false"));
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<bool> (state_name, val);
+}
+
+void receiveInt (const string& state_name, int val)
+{
+  receive_value<int> (state_name, val);
 }
 
 void receiveDouble (const string& state_name, double val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<double> (state_name, val);
 }
 
 void receiveString (const string& state_name, const string& val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             vector<Value> (1, val));
+  receive_value<string> (state_name, val);
 }
 
 void receiveBoolFromString (const string& state_name, bool val, const string& arg)
 {
-  propagate (create_state(state_name, vector<Value> (1, arg)),
-             vector<Value> (1, val));
+  receive_value_from_arg<bool, string> (state_name, val, arg);
 }
 
 void receiveDoubleFromInt (const string& state_name, double val, int arg)
 {
-  propagate (create_state(state_name, vector<Value> (1, arg)),
-             vector<Value> (1, val));
+  receive_value_from_arg<double, int> (state_name, val, arg);
 }
 
-void receiveDoubleVector (const string& state_name, vector<double> vals)
+void receiveDoubleVector (const string& state_name,
+                          const vector<double>& vals)
 {
   vector<Value> vector_values;
   for(int i = 0; i < vals.size(); i++){
     Value temp = Value(vals[i]);
     vector_values.push_back(temp);
   }
-  propagate (create_state(state_name, EmptyArgs),
-             vector_values);
+  propagate (create_state(state_name, EmptyArgs), vector_values);
 }
 
 static string log_string (const vector<Value>& args)

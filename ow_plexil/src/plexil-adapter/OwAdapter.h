@@ -5,21 +5,20 @@
 #ifndef Ow_Adapter
 #define Ow_Adapter
 
-// PLEXIL Interface adapter for OceanWATERS.
+// PLEXIL interface adapter for OceanWATERS.
 
-#include "CommonAdapter.h"
+#include "LanderAdapter.h"
 
-class OwAdapter : public CommonAdapter
+class OwAdapter : public LanderAdapter
 {
 public:
-  // No default constructor, only this specialized one.
-  OwAdapter (PLEXIL::AdapterExecInterface&, const pugi::xml_node&);
+  OwAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
+  OwAdapter () = delete;
   ~OwAdapter () = default;
   OwAdapter (const OwAdapter&) = delete;
   OwAdapter& operator= (const OwAdapter&) = delete;
 
-  virtual bool initialize();
-  virtual void lookupNow (const PLEXIL::State&, PLEXIL::StateCacheEntry&);
+  virtual bool initialize (PLEXIL::AdapterConfiguration*) override;
 };
 
 extern "C" {

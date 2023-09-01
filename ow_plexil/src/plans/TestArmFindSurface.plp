@@ -14,46 +14,34 @@ TestArmFindSurface:
   // ow_lander/scripts/arm_find_surface.py.  These are not all the
   // defaults, just those useful in this plan.
 
-  Real DefaultPosXYZ = 0;
-  Real DefaultNormalX = 0;
-  Real DefaultNormalY = 0;
-  Real DefaultNormalZ = -1;
-  Real DefaultDistance = 0.2;
-  Real DefaultOverdrive = 0.05;
-  Real DefaultForceThreshold = 200;
-  Real DefaultTorqueThreshold = 100;
+  Real Distance = 0.2;
+  Real Overdrive = 0.05;
+  Real ForceThreshold = 200;
+  Real TorqueThreshold = 100;
 
   log_info ("Beginning TestArmFindSurface...");
 
   LibraryCall ArmUnstow();
 
   // Fail to find the reddish mound from above.
-  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+  LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
-                              PosX = 1.45,
-                              PosY = -0.4,
-                              PosZ = 0.25,
-                              NormX = DefaultNormalX,
-                              NormY = DefaultNormalY,
-                              NormZ = DefaultNormalZ,
-                              Distance = DefaultDistance,
-                              Overdrive = DefaultOverdrive,
-                              ForceThreshold = DefaultForceThreshold,
-                              TorqueThreshold = DefaultTorqueThreshold);
+                              Position = #(1.45 -0.4 0.25),
+                              Normal = #(0 0 -1),
+                              Distance = Distance,
+                              Overdrive = Overdrive,
+                              ForceThreshold = ForceThreshold,
+                              TorqueThreshold = TorqueThreshold);
 
   // Find the mound from above
-  LibraryCall ArmFindSurface (Frame = BASE_LINK, // default
+  LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
-                              PosX = 1.45,
-                              PosY = -0.4,
-                              PosZ = DefaultPosXYZ,
-                              NormX = DefaultNormalX,
-                              NormY = DefaultNormalY,
-                              NormZ = DefaultNormalZ,
-                              Distance = DefaultDistance,
-                              Overdrive = DefaultOverdrive,
-                              ForceThreshold = DefaultForceThreshold,
-                              TorqueThreshold = DefaultTorqueThreshold);
+                              Position = #(1.45 -0.4 0),
+                              Normal = #(0 0 -1),
+                              Distance = Distance,
+                              Overdrive = Overdrive,
+                              ForceThreshold = ForceThreshold,
+                              TorqueThreshold = TorqueThreshold);
   LibraryCall ArmUnstow();
   LibraryCall ArmStow();
 

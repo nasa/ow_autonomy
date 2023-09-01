@@ -1,0 +1,44 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+#include "plan-interface.h"
+
+// Tests the FaultDependencies class. Depending on the XML file used, 
+// the fault info of a subsystem will be printed out.
+
+
+TestFaultDependencies:
+{
+  log_info("TestFaultDependencies Started.");
+
+  PrintNode:
+  {
+    Repeat true;
+    Wait 3;
+
+    if !Lookup(IsOperable("Power")){
+      log_info("Power Subsystem Inoperable.");
+      log_info("Power Subsystem Faulty: ", Lookup(IsFaulty("Power")));
+      log_info("Active Faults In Subsystem: ", Lookup(ActiveFaults("Power")), "\n");
+    }
+
+    if !Lookup(IsOperable("Antenna")){
+      log_info("Antenna Subsystem Inoperable.");
+      log_info("Antenna Subsystem Faulty: ", Lookup(IsFaulty("Antenna")));
+      log_info("Active Faults In Subsystem: ", Lookup(ActiveFaults("Antenna")), "\n");
+    }
+
+    if !Lookup(IsOperable("Arm")){
+      log_info("Arm Subsystem Inoperable.");
+      log_info("Arm Subsystem Faulty: ", Lookup(IsFaulty("Arm")));
+      log_info("Active Faults In Subsystem: ", Lookup(ActiveFaults("Arm")), "\n");
+    }
+    if !Lookup(IsOperable("Camera")){
+      log_info("Camera Subsystem Inoperable.");
+      log_info("Camera Subsystem Faulty: ", Lookup(IsFaulty("Camera")));
+      log_info("Active Faults In Subsystem: ", Lookup(ActiveFaults("Camera")), "\n");
+    }
+  };
+}
+

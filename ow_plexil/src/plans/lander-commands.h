@@ -5,65 +5,11 @@
 #ifndef Ow_commands_H
 #define Ow_commands_H
 
-// All available PLEXIL commands to the lander.  This is essentially the
-// lander's command interface.
+// Lander commands available in OceanWATERS.
 
-// Note that in PLEXIL, commands are asynchronous by design.
-// Typically, OceanWATERS plans should not call the following commands
-// directly, but instead use the Library interface (defined in
-// plan-interface.h) that wraps these commands in a way that they
-// called synchronously.
+#include "common/common-commands.h"
 
-Command camera_set_exposure (Real seconds);
-Command camera_capture ();
-
-Command pan (Real degrees);
-Command tilt (Real degrees);
-Command pan_tilt (Real pan_degrees, Real tilt_degrees);
-Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
-
-Command arm_find_surface (Integer frame,
-                          Boolean relative,
-                          Real pos_x, Real pos_y, Real pos_z,
-                          Real norm_x, Real norm_y, Real norm_z,
-                          Real distance,
-                          Real overdrive,
-                          Real force_threshold,
-                          Real torque_threshold);
-
-Command arm_move_cartesian (Integer frame,
-			    Boolean relative,
-			    Real x, Real y, Real z,
-			    // Orientation in Euler angle
-			    Real orient_x, Real orient_y, Real orient_z);
-
-// Quaternion version of previous
-Command arm_move_cartesian_q (Integer frame,
-			      Boolean relative,
-			      Real x, Real y, Real z,
-			      Real orient_x, Real orient_y, Real orient_z,
-			      Real orient_w);
-
-Command arm_move_cartesian_guarded (Integer frame,
-                                    Boolean relative,
-                                    Real x, Real y, Real z,
-                                    // Orientation in Euler angle
-                                    Real orient_x, Real orient_y, Real orient_z,
-                                    Real force_threshold,
-                                    Real torque_threshold);
-
-// Quaternion version of previous
-Command arm_move_cartesian_guarded_q (Integer frame,
-                                      Boolean relative,
-                                      Real x, Real y, Real z,
-                                      Real orient_x, Real orient_y, Real orient_z,
-                                      Real orient_w,
-                                      Real force_threshold,
-                                      Real torque_threshold);
-
-Command arm_move_joint (Boolean relative,
-                        Integer joint,
-                        Real angle);
+// Arm commands
 
 Command arm_move_joints (Boolean relative,
                          Real angles[6]);
@@ -72,10 +18,6 @@ Command arm_move_joints_guarded (Boolean relative,
                                  Real angles[6],
                                  Real force_threshold,
                                  Real torque_threshold);
-
-Command arm_stop ();
-
-Command dock_ingest_sample();
 
 Command scoop_circular (Integer frame,
                         Boolean relative,
@@ -93,15 +35,6 @@ Command scoop_linear (Integer frame,
                       Real depth,
                       Real length);
 
-Command deliver_sample ();
-
-Command discard_sample (Integer frame,
-                        Boolean relative,
-                        Real x,
-                        Real y,
-                        Real z,
-                        Real height);
-
 Command grind (Real x,
                Real y,
                Real depth,
@@ -117,19 +50,26 @@ Command guarded_move (Real x,
                       Real dir_z,
                       Real search_distance);
 
-// Move from stowed position to a "ready" position
-Command arm_unstow();
+// Antenna commands
 
-// Move from "ready" position to stowed position; requires unstow() first
-Command arm_stow();
+Command pan (Real degrees);
+Command tilt (Real degrees);
+Command pan_tilt_cartesian (Integer frame, Real x, Real y, Real z);
+
+// Misc commands
+
+Command camera_set_exposure (Real seconds);
+Command dock_ingest_sample();
+Command light_set_intensity (String side,     // "left" or "right"
+			     Real intensity); // 0.0 to 1.0.  0 is off.
+
+// Simulate fault commands
+Boolean Command inject_simulated_fault (String fault_name, Real probability);
+Boolean Command clear_simulated_fault (String fault_name, Real probability);
 
 // Processes number of images already taken with the stereo camera to
 // find the 3d point to sample.  filter_type can either be "Dark" or
 // "Brown".  (Dark chooses dark spots, brown chooses brown spots).
 Real [3] Command identify_sample_location(Integer num_images, String filter_type);
-
-// Set spotlight intensity
-Command light_set_intensity (String side,     // "left" or "right"
-			     Real intensity); // 0.0 to 1.0.  0 is off.
 
 #endif
