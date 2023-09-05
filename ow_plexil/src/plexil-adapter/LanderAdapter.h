@@ -13,6 +13,7 @@
 
 // PLEXIL
 #include <LookupReceiver.hh>
+#include <State.hh>
 
 class LanderInterface;
 
@@ -40,12 +41,44 @@ class LanderAdapter : public PlexilAdapter
 
  protected:
   template<typename T>
-  auto lookupHandler (const T& val)
+  auto lookupHandler_constant (const T& val)
   {
     return [=] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
              r->update(PLEXIL::Value(val));
            };
   }
+
+  template<typename T, typename Class, typename Base>
+  auto lookupHandler_function0 (const Class& instance,
+                                T(Base::*method)() const)
+  {
+    return [&instance, method] (const PLEXIL::State&,
+                                PLEXIL::LookupReceiver* r) {
+             r->update(PLEXIL::Value((instance.*method)()));
+           };
+  }
+
+  template<typename T, typename Class, typename Base>
+  auto lookupHandler_function1 (const Class& instance,
+                                T(Base::*method)(const std::string&) const)
+  {
+    return [&instance, method] (const PLEXIL::State& s,
+                                PLEXIL::LookupReceiver* r) {
+             std::string arg;
+             s.parameters()[0].getValue(arg);
+             r->update(PLEXIL::Value((instance.*method)(arg)));
+           };
+  }
+
+  /* For future reference: an attempt using std::bind() that doesn't build:
+  template <typename T, typename Callable>
+  auto lookupHandler_callable (Callable c)
+  {
+    return [&] (const PLEXIL::State&, PLEXIL::LookupReceiver* r) {
+             r->update(PLEXIL::Value(c()));
+           };
+  }
+  */
 };
 
 #endif

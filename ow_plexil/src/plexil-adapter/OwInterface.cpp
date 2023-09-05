@@ -961,7 +961,7 @@ vector<double> OwInterface::getEndEffectorFT () const
   return m_end_effector_ft;
 }
 
-vector<string> OwInterface::getActiveFaults (string subsystem_name) const
+vector<string> OwInterface::getActiveFaults (const string& subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->getActiveFaults(subsystem_name);
@@ -975,7 +975,7 @@ vector<string> OwInterface::getActiveFaults (string subsystem_name) const
   }
 }
 
-bool OwInterface::isOperable (string subsystem_name) const
+bool OwInterface::isOperable (const string& subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->checkIsOperable(subsystem_name);
@@ -988,7 +988,7 @@ bool OwInterface::isOperable (string subsystem_name) const
   }
 }
 
-bool OwInterface::isFaulty (string subsystem_name) const
+bool OwInterface::isFaulty (const string& subsystem_name) const
 {
   if (m_fault_dependencies_on){
     return m_fault_dependencies->checkIsFaulty(subsystem_name);
