@@ -23,7 +23,7 @@ class LanderAdapter : public PlexilAdapter
   static bool checkAngle (const char* name, double val, double min, double max,
                           double tolerance);
 
-  // Pointer to concrete instance (OwAdapter or OwlatAdapter)
+  // Pointer to concrete instance (OwInterface or OwlatInterface)
   static LanderInterface* s_interface;
 
   static float PanMinDegrees;
