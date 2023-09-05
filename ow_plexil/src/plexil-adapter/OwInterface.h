@@ -134,9 +134,9 @@ class OwInterface : public LanderInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   bool   systemFault () const override;
-  std::vector<std::string>   getActiveFaults (std::string subsystem_name) const;
-  bool   isOperable (std::string subsystem_name) const;
-  bool   isFaulty (std::string subsystem_name) const;
+  std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
+  bool   isOperable (const std::string& subsystem_name) const;
+  bool   isFaulty (const std::string& subsystem_name) const;
   std::vector<double> getArmEndEffectorFT () const override;
 
  private:

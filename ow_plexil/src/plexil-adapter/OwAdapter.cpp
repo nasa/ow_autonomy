@@ -28,50 +28,8 @@ using std::string;
 using std::vector;
 using std::unique_ptr;
 
-//////////////////////// PLEXIL Lookup Support //////////////////////////////
 
-
-static void hard_torque_limit_reached (const State& s, LookupReceiver* r)
-{
-  string joint;
-  s.parameters()[0].getValue(joint);
-  r->update(OwInterface::instance()->hardTorqueLimitReached(joint));
-}
-
-static void soft_torque_limit_reached (const State& s, LookupReceiver* r)
-{
-  string joint;
-  s.parameters()[0].getValue(joint);
-  r->update(OwInterface::instance()->softTorqueLimitReached(joint));
-}
-
-static void running (const State& s, LookupReceiver* r)
-{
-  string action;
-  s.parameters()[0].getValue(action);
-  r->update(OwInterface::instance()->running(action));
-}
-
-static void is_operable (const State& s, LookupReceiver* r)
-{
-  string op;
-  s.parameters()[0].getValue(op);
-  r->update(OwInterface::instance()->isOperable(op));
-}
-
-static void is_faulty (const State& s, LookupReceiver* r)
-{
-  string op;
-  s.parameters()[0].getValue(op);
-  r->update(OwInterface::instance()->isFaulty(op));
-}
-
-static void active_faults (const State& s, LookupReceiver* r)
-{
-  string op;
-  s.parameters()[0].getValue(op);
-  r->update((Value) OwInterface::instance()->getActiveFaults(op));
-}
+//////////////////////// Command Support //////////////////////////////
 
 static void guarded_move (Command* cmd, AdapterExecInterface* intf)
 {
@@ -336,7 +294,7 @@ static void identify_sample_location (Command* cmd, AdapterExecInterface* intf)
 }
 
 
-// Telemetry
+//////////////////////// Class Members //////////////////////////////
 
 OwAdapter::OwAdapter(AdapterExecInterface& execInterface,
                      PLEXIL::AdapterConf* conf)
@@ -380,68 +338,91 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
 
   // Stubs specific to EuropaMission.plp
   config->registerLookupHandlerFunction("TrenchIdentified",
-					lookupHandler<bool>(true));
+					lookupHandler_constant<bool>(true));
   config->registerLookupHandlerFunction("ExcavationTimeout",
-					lookupHandler<int>(10));
+					lookupHandler_constant<int>(10));
   config->registerLookupHandlerFunction("CollectAndTransferTimeout",
-					lookupHandler<int>(10));
+					lookupHandler_constant<int>(10));
 
   // Plan interface specific to OceanWATERS
   config->registerLookupHandlerFunction("UsingOWLAT",
-					lookupHandler<bool>(false));
+					lookupHandler_constant<bool>(false));
   config->registerLookupHandlerFunction("UsingOceanWATERS",
-					lookupHandler<bool>(true));
+					lookupHandler_constant<bool>(true));
   config->registerLookupHandlerFunction("HardTorqueLimitReached",
-					hard_torque_limit_reached);
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::hardTorqueLimitReached));
   config->registerLookupHandlerFunction("SoftTorqueLimitReached",
-					soft_torque_limit_reached);
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::softTorqueLimitReached));
+
+  /* For future reference: an attempt using std::bind() that doesn't build:
   config->registerLookupHandlerFunction("GroundFound",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         groundFound()));
+					lookupHandler_callable<bool>
+                                        (std::bind(&OwInterface::groundFound,
+                                        *OwInterface::instance())));
+  */
+
+  config->registerLookupHandlerFunction("GroundFound",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::groundFound));
   config->registerLookupHandlerFunction("GroundPosition",
-					lookupHandler<double>
-                                        (OwInterface::instance()->
-                                         groundPosition()));
-  config->registerLookupHandlerFunction("Running", running);
-  config->registerLookupHandlerFunction("IsOperable", is_operable);
-  config->registerLookupHandlerFunction("IsFaulty", is_faulty);
-  config->registerLookupHandlerFunction("ActiveFaults", active_faults);
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::groundPosition));
+  config->registerLookupHandlerFunction("Running",
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::running));
+  config->registerLookupHandlerFunction("IsOperable",
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::isOperable));
+  config->registerLookupHandlerFunction("IsFaulty",
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::isFaulty));
+  config->registerLookupHandlerFunction("ActiveFaults",
+					lookupHandler_function1<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::getActiveFaults));
   config->registerLookupHandlerFunction("ArmEndEffectorForceTorque",
-					lookupHandler<vector<double> >
-                                        (OwInterface::instance()->
-                                         getArmEndEffectorFT()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::getArmEndEffectorFT));
 
   // Faults specific to OceanWATERS
   config->registerLookupHandlerFunction("SystemFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         systemFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::systemFault));
   config->registerLookupHandlerFunction("AntennaFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         antennaFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::antennaFault));
   config->registerLookupHandlerFunction("AntennaPanFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         antennaPanFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::antennaPanFault));
   config->registerLookupHandlerFunction("AntennaTiltFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         antennaTiltFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::antennaTiltFault));
   config->registerLookupHandlerFunction("ArmFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         armFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::armFault));
   config->registerLookupHandlerFunction("PowerFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         powerFault()));
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::powerFault));
   config->registerLookupHandlerFunction("CameraFault",
-					lookupHandler<bool>
-                                        (OwInterface::instance()->
-                                         cameraFault()));
-
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &LanderInterface::cameraFault));
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }
