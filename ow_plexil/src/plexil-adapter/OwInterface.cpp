@@ -325,6 +325,12 @@ void OwInterface::initialize()
       subscribe("/arm_end_effector_force_torque", QueueSize,
                 &OwInterface::ftCallback, this)));
 
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/joint_states", QueueSize,
+                &OwInterface::jointStatesCallback, this)));
+
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
                        "/ArmFindSurface/status");
   connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
