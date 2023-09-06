@@ -52,7 +52,7 @@ TestActions: UncheckedSequence
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_FRAME,
                                   Relative = true,
-                                  Position = #(0 0 -0.2),
+                                  Position = #(0 0 0.2),
                                   Orientation = #(0 0 0 1));
 
   LibraryCall CameraSetExposure (Seconds = 1);
@@ -64,7 +64,7 @@ TestActions: UncheckedSequence
 
   LibraryCall ArmMoveCartesian_Q (Frame = BASE_FRAME,
                                   Relative = true,
-                                  Position = #(0 0 -0.2),
+                                  Position = #(0 0 0.2),
                                   Orientation = #(0 0 0 1));
 
   LibraryCall LightSetIntensity (Side = "right", Intensity = 1.0);
@@ -75,18 +75,18 @@ TestActions: UncheckedSequence
 
   LibraryCall TaskScoopCircular (Frame = BASE_FRAME, Relative = false,
                                  X = 1.75, Y = 0.1, Z = GP,
-                                 Depth = 0.045, Parallel = false);
+                                 Depth = 0.07, Parallel = false);
 
   LibraryCall TaskDiscardSample (Frame = BASE_FRAME, Relative = false,
                                  Point = #(1.5 0.8 0.65), Height = 0.1);
 
-  LibraryCall TaskGrind (X = 1.6, Y = 0.02, Depth = 0.05,
+  LibraryCall TaskGrind (X = 1.8, Y = 0.02, Depth = 0.05,
                          Length = 0.6, Parallel = true,
                          GroundPos = GP);
 
-  LibraryCall TaskScoopLinear (Frame = BASE_FRAME, Relative = false,
-                               X = 1.5, Y = 0.02, Z = GP,
-                               Depth = 0.05, Length = 0.1);
+  LibraryCall TaskScoopLinear (Frame = 0, Relative = false,
+                               X = 1.8, Y = 0.02, Z = GP,
+                               Depth = 0.05, Length = 0.4);
 
   LibraryCall TaskDeliverSample ();
   LibraryCall DockIngestSample ();

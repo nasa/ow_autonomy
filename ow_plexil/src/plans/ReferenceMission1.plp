@@ -88,7 +88,7 @@ ReferenceMission1: Concurrence
                              Y = trench_y,
                              GroundPos = ground_pos,
                              Length = trench_length,
-                             BiteDepth = 0.05,
+                             BiteDepth = 0.03,
                              NumPasses = 2,
                              Parallel = parallel);
       LibraryCall RemoveTailings (X = trench_x,
