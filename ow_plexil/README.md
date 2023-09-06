@@ -21,6 +21,8 @@ Contents
 `src/plexil-adapter` contains the supporting code needed to run the PLEXIL plans,
 and also the ROS node implementations.
 
+`scripts` contains supporting Python scripts.
+
 See the `README.md` files in each subdirectory for more information.
 
 
