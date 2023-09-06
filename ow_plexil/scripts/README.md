@@ -1,4 +1,4 @@
-This directory contains Python scripts that support the `ow_plexil`
+This directory contains scripts that support the `ow_plexil`
 package.
 
 `ow-compile-plan` compiles a single PLEXIL plan.
