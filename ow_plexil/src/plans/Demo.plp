@@ -4,7 +4,7 @@
 
 // Simple demonstration plan that performs a panoramic image, a grind, and a dig.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction TestAntennaCamera();
 

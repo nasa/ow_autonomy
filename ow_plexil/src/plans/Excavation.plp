@@ -5,7 +5,7 @@
 // Excavation procedure based on JPL's Europa Lander reference mission.
 // NOTE: this procedure is highly stubbed at the moment.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 #include "europa_defs.h"
 
 #define DIG_TRENCH_TIMEOUT 10

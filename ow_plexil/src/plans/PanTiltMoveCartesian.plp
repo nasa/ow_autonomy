@@ -4,7 +4,7 @@
 
 // Point the antenna at the specified coordinate using the specified frame.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 PanTiltMoveCartesian:
 {

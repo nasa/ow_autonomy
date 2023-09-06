@@ -11,7 +11,7 @@
 // levels: child (library) node execution, and lander commands.  This would
 // require a fair amount of coding and refactoring of the plans.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,

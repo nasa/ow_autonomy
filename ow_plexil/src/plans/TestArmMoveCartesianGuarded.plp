@@ -6,7 +6,7 @@
 // first few tests in https://github.com/nasa/ow_simulator/pull/306.
 // This plan may be run with any simulator world.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestArmMoveCartesianGuarded:
 {

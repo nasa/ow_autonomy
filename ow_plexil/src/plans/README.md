@@ -87,11 +87,12 @@ See the comments inside all the plans for more information.
     - Tilt.plp
     - Unstow.plp
 
-* Plan interface.  The entire lander interface available to PLEXIL,
-  which includes the operations listed in the previous section,
-  telemetry lookups, and other useful features such as logging
-  functions, are encoded in `plan-interface.h`, which may be included
-  (using a C `#include` statement) in any plan for convenience.
+* Simulation interface.  The entire simulation interface available to
+  PLEXIL, which includes the operations listed in the previous
+  section, telemetry lookups, and other useful features such as
+  logging functions, are encoded in `ow-interface.h`, which may be
+  included (using a C `#include` statement) in any plan for
+  convenience.
 
 * Misc files.  `plexil-defs.h` contains constants used in various
   plans.  `ow-config.xml` is the PLEXIL configuration file for this

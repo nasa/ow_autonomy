@@ -4,7 +4,7 @@
 
 // Tilt the antenna to the specified degrees.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 Tilt:
 {

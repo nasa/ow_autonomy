@@ -7,7 +7,7 @@
 // trenching parameters; a trench is dug; tailings are removed; the sample is
 // deposited into the receptacle; a (abstracted) sample analysis is performed.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction MonitorPower (In Boolean continue,
                             InOut Boolean battery_temp_ok,

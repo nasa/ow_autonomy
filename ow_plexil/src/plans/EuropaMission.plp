@@ -8,7 +8,7 @@
 // support for crash recovery and plan persistence using PLEXIL's checkpointing
 // facility.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 #include "europa_defs.h"
 
 // Maximum number of crashes before assuming something has gone very wrong and

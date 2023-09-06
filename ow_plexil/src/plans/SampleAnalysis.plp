@@ -4,7 +4,7 @@
 
 // Stub for sample analysis, which is out of the scope of OceanWATERS.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction Downlink();
 

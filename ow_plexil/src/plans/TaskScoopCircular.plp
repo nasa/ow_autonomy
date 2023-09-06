@@ -4,7 +4,7 @@
 
 // Perform one pass of a circular scooping action.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TaskScoopCircular:
 {

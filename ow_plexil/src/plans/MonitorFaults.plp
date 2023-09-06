@@ -10,7 +10,7 @@
 // the exact faults (outlined in ../plexil-adapter/OwInterface.h) are not yet
 // detectable in PLEXIL.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 MonitorFaults:
 {
