@@ -7,7 +7,7 @@ PLEXIL plans
 
 This directory contains PLEXIL plans that implement onboard autonomy for Ocean
 World landers, as supported by the OceanWATERS software testbed. All PLEXIL
-plans for the OWLAT testbed are kept in the owlat_plans subdirectory.
+plans for the OWLAT testbed are kept in the `owlat` subdirectory.
 
 See ow_plexil/README.md for instructions for selecting and executing plans.
 
