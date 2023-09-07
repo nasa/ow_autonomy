@@ -8,7 +8,7 @@
 // that are updated every second. This is intended to make monitoring faults easiera and
 // less verbose in new plans. 
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 HealthMonitor:
 {

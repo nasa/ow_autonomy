@@ -7,7 +7,7 @@
 // it takes photos. If both the Camera and Arm are inoperable, it prints out an
 // error message and waits for them to be operable. 
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 HealthMonitorDemo: Concurrence
 {

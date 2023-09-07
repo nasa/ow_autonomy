@@ -21,7 +21,7 @@
 // i.e. an antenna fault during panning or an arm fault during
 // unstowing or stowing.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction MissionSequence (InOut Boolean mission_in_progress,
                                InOut Boolean pan_done,

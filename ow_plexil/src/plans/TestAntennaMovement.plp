@@ -4,7 +4,7 @@
 
 // Test a sequence of Pan/Tilt combinations.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction TestPanTilt (In Real Pan, In Real Tilt,
                            InOut Integer Count, InOut Integer Wins);

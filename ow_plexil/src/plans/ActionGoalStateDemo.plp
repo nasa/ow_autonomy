@@ -11,10 +11,10 @@
 // NOTE: As of 7/20/23 there is a problem with this plan in which,
 // occasionally, injecting an antenna pan fault will cause the antenna
 // to permanently freeze, i.e. not start moving again when the fault
-// is cleared. The use of, and/or current implementation (in PLEXIL)
-// of, SynchronousCommand is suspect, and is being investigated.
+// is cleared. The use of PLEXIL's SynchronousCommand is suspect, and
+// is being investigated.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 ActionGoalStateDemo:
 {

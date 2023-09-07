@@ -5,7 +5,7 @@
 // Perform two guarded moves in sequence at different locations, and report the
 // ground position.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestGuardedMoves:
 {

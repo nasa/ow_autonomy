@@ -228,9 +228,9 @@ bool OwlatAdapter::initialize (AdapterConfiguration* config)
 
   // Lookups
   config->registerLookupHandlerFunction("UsingOWLAT",
-					lookupHandler<bool>(true));
+					lookupHandler_constant<bool>(true));
   config->registerLookupHandlerFunction("UsingOceanWATERS",
-					lookupHandler<bool>(false));
+					lookupHandler_constant<bool>(false));
   config->registerLookupHandlerFunction("ArmTool", arm_tool);
 
   debugMsg("OwlatAdapter", " initialized.");

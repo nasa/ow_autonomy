@@ -6,7 +6,7 @@
 //   The default is 0.05 seconds.
 //   Values <= 0 mean to use the last exposure setting.
 
-#include "lander-commands.h"
+#include "ow-commands.h"
 
 CameraSetExposure:
 {

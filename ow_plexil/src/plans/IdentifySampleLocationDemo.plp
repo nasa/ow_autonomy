@@ -9,7 +9,7 @@
 // ground position of that spot.  Meant as a demo to show both filter types
 // working.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,

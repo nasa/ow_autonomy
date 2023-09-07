@@ -8,7 +8,7 @@
 // chooses the best sample point and then uses guarded move to find the exact
 // ground position of that spot.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction PanAndShoot (In Real PanAngle);
 

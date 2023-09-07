@@ -6,7 +6,7 @@
 // tests are the first few from
 // https://github.com/nasa/ow_simulator/pull/311.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestArmMoveJoints:
 {

@@ -8,7 +8,7 @@
 // OceanWATERS-specific PLEXIL interface (commands, lookups) and definitions.
 
 #include "common/common-interface.h"
-#include "lander-commands.h"
+#include "ow-commands.h"
 
 // Joint names, defined by their indices in the /joint_states ROS message.
 

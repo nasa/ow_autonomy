@@ -10,7 +10,7 @@
 // If both antenna and arm faults occurring, the plan waits for resolution.
 // This plan must be terminated with an interrupt, e.g. Control-C.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 FaultHandlingPattern2:
 {

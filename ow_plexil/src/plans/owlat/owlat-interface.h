@@ -8,7 +8,7 @@
 #define Owlat_Plan_Interface_H
 
 #include "../common/common-interface.h"
-#include "owlat-lander-commands.h"
+#include "owlat-commands.h"
 
 #define TOOL_NONE 0
 #define TOOL_PSP  1

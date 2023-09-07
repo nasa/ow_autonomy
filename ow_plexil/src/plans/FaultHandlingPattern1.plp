@@ -6,7 +6,7 @@
 // antenna pan fault occurs, pause until the fault is removed.  This plan must be
 // terminated with an interrupt (e.g. Control-C).
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 FaultHandlingPattern1:
 {
