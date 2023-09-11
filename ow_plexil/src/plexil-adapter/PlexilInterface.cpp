@@ -29,6 +29,7 @@ static double normalize_degrees (double angle)
 
 // Duplication of actionlib_msgs/GoalStatus.h with the addition of a
 // NOGOAL status for when the action is not running.
+// NOTE: the last three are not yet supported in the simulator.
 //
 enum ActionGoalStatus {
   NOGOAL = -1,
@@ -45,6 +46,11 @@ enum ActionGoalStatus {
 };
 
 static map<string, int> ActionGoalStatusMap { };
+
+static string status_topic (const string& action)
+{
+  return string("/") + action + "/status";
+}
 
 
 ///////////////////////////////// Class Interface ///////////////////////////////
@@ -82,15 +88,14 @@ void PlexilInterface::actionGoalStatusCallback
   }
 }
 
-void PlexilInterface::subscribeToActionStatus (const string& topic,
-					       const string& operation)
+void PlexilInterface::subscribeToActionStatus (const string& action)
 {
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-      (topic, 3,
+      (status_topic(action), 3,
        boost::bind(&PlexilInterface::actionGoalStatusCallback,
-                   this, _1, operation))));
+                   this, _1, action))));
 }
 
 int PlexilInterface::actionGoalStatus (const string& action_name) const

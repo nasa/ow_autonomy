@@ -331,31 +331,21 @@ void OwInterface::initialize()
       subscribe("/joint_states", QueueSize,
                 &OwInterface::jointStatesCallback, this)));
 
-  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
-                       "/ArmFindSurface/status");
-  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
-                       "/ArmMoveJoints/status");
-  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
-                       "/ArmMoveJointsGuarded/status");
-  connectActionServer (m_scoopCircularClient, Name_TaskScoopCircular,
-                       "/TaskScoopCircular/status");
-  connectActionServer (m_scoopLinearClient, Name_TaskScoopLinear,
-                       "/TaskScoopLinear/status");
-  connectActionServer (m_cameraSetExposureClient, Name_CameraSetExposure,
-                       "/CameraSetExposure/status");
-  connectActionServer (m_dockIngestSampleClient, Name_Ingest,
-                       "/DockIngestSample/status");
-  connectActionServer (m_lightSetIntensityClient, Name_LightSetIntensity,
-                       "/LightSetIntensity/status");
-  connectActionServer (m_guardedMoveClient, Name_GuardedMove,
-                       "/GuardedMove/status");
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface);
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints);
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded);
+  connectActionServer (m_scoopCircularClient, Name_TaskScoopCircular);
+  connectActionServer (m_scoopLinearClient, Name_TaskScoopLinear);
+  connectActionServer (m_cameraSetExposureClient, Name_CameraSetExposure);
+  connectActionServer (m_dockIngestSampleClient, Name_Ingest);
+  connectActionServer (m_lightSetIntensityClient, Name_LightSetIntensity);
+  connectActionServer (m_guardedMoveClient, Name_GuardedMove);
   connectActionServer (m_panClient, Name_Pan);
   connectActionServer (m_tiltClient, Name_Tilt);
   connectActionServer (m_panTiltCartesianClient, Name_PanTiltCartesian);
   connectActionServer (m_identifySampleLocationClient,
                        Name_IdentifySampleLocation);
-  connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample,
-                       "/TaskDiscardSample/status");
+  connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample);
 }
 
 
