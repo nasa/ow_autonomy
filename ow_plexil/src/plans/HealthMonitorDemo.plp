@@ -5,11 +5,11 @@
 // Demo unstows and stows the arm if the Camera is set as operable
 // from the HealthMonitor. If it is inoperable, and the camera is operable
 // it takes photos. If both the Camera and Arm are inoperable, it prints out an
-// error message and waits for them to be operable. 
+// error message and waits for them to be operable.
 
 #include "ow-interface.h"
 
-HealthMonitorDemo: Concurrence
+HealthMonitorDemo: UncheckedSequence
 {
 
   Boolean AllGood;
@@ -17,39 +17,47 @@ HealthMonitorDemo: Concurrence
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
-  
+
   log_info("Starting HealthMonitorDemo...");
 
-  Monitor:
+  Loop: Concurrence
   {
-    LibraryCall HealthMonitor (AllOperable = AllGood,
-                               ArmOperable = ArmGood,
-                               AntennaOperable = AntennaGood,
-                               CameraOperable = CameraGood,
-                               PowerOperable = PowerGood);
+    ExitCondition Lookup(PowerFault);
+
+    Monitor:
+    {
+      LibraryCall HealthMonitor (AllOperable = AllGood,
+                                 ArmOperable = ArmGood,
+                                 AntennaOperable = AntennaGood,
+                                 CameraOperable = CameraGood,
+                                 PowerOperable = PowerGood);
+    }
+
+    DemoPattern:
+    {
+      Repeat true;
+
+
+      Wait 3;
+
+      if ArmGood{
+        Invariant ArmGood;
+        log_info("Unstowing and stowing arm...");
+        LibraryCall ArmUnstow();
+        LibraryCall ArmStow();
+      }
+      else if CameraGood{
+        log_info("Arm not operable, attempting CameraCapture to diagnose...");
+        LibraryCall CameraCapture();
+      }
+      else{
+        // Trying CameraCapture because the Camera fault state can only
+        // be detected when the camera attempts to take a photo.
+        LibraryCall CameraCapture();
+        log_info("Waiting for Camera or Arm to become operable....");
+      }
+    }
   }
-
-  DemoPattern:
-  {
-    Repeat true;
-    Wait 3;
-
-    if ArmGood{
-      Invariant ArmGood;
-      log_info("Unstowing and stowing arm...");
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
-    }
-    else if CameraGood{
-      log_info("Arm not operable, attempting CameraCapture to diagnose...");
-      LibraryCall CameraCapture();
-    }
-    else{
-      // Trying CameraCapture because the Camera fault state can only be detected when 
-      // the camera attempts to take a photo.
-      LibraryCall CameraCapture();
-      log_info("Waiting for Camera or Arm to become operable....");
-    }
-  }
-
+    
+  log_info("Finished HealthMonitorDemo.");
 }
