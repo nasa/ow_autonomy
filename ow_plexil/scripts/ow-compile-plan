@@ -20,7 +20,6 @@ then
 fi
 
 input_file="$1"
-output_directory="$PLEXIL_PLAN_DIR/../../.private/ow_plexil/etc/plexil/"
 
 if [ ! -f "${input_file}" ]; then
     echo "Input file '${input_file}' not found."
@@ -28,6 +27,13 @@ if [ ! -f "${input_file}" ]; then
 fi
 
 base_filename=$(basename "$input_file" .plp)
+output_filename="${base_filename}.plx"
+output_directory="$PLEXIL_PLAN_DIR/../../.private/ow_plexil/etc/plexil/"
+output_file="${output_directory}${output_filename}"
 
 # The '-p' option formats the output XML.
-plexilc -p -o "${output_directory}${base_filename}.plx" "${input_file}"
+plexilc -p -o "${output_file}" "${input_file}"
+
+# Create a symlink required by catkin
+ln -sf "${output_file}" "$PLEXIL_PLAN_DIR/$output_filename"
+
