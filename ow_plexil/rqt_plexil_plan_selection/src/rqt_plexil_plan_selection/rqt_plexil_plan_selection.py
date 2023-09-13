@@ -58,7 +58,7 @@ class PlexilPlanSelectionGUI(Plugin):
     common_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'),
                                    'src', 'plans', 'common')
     if rospy.get_param('owlat_flag', False):
-      owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat_plans')
+      owlat_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans', 'owlat')
       self.populate_plan_list([owlat_plan_dir, common_plan_dir])
     else:
       ow_plan_dir = os.path.join(rospkg.RosPack().get_path('ow_plexil'), 'src', 'plans')
