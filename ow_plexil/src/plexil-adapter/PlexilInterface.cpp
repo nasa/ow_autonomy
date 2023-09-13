@@ -73,7 +73,7 @@ PlexilInterface::~PlexilInterface ()
 }
 
 void PlexilInterface::actionGoalStatusCallback
-(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
+(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string& action_name)
 
 // Update ActionGoalStatusMap of action action_name with the status
 // from first goal in GoalStatusArray msg. This is based on the
@@ -82,9 +82,13 @@ void PlexilInterface::actionGoalStatusCallback
 {
   if (msg->status_list.size() == 0) {
     ActionGoalStatusMap[action_name] = NOGOAL;
+    publish ("ActionGoalStatus", static_cast<int>(NOGOAL), action_name);
   }
   else { // if (msg->status_list.size() >= 1) {
-    ActionGoalStatusMap[action_name] = msg->status_list[0].status;
+    ActionGoalStatus status =
+      static_cast<ActionGoalStatus>(msg->status_list[0].status);
+    ActionGoalStatusMap[action_name] = status;
+    publish ("ActionGoalStatus", static_cast<int>(status), action_name);
   }
 }
 

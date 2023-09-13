@@ -111,7 +111,7 @@ class PlexilInterface
   // Callback function in PLEXIL adapter for success/failure of given command.
   std::function<void(int, bool)> m_commandStatusCallback;
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
-                                 const std::string);
+                                 const std::string& action_name);
 
 };
 

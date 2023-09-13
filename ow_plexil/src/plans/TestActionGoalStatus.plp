@@ -1,0 +1,46 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for
+// Exploration Research and Simulation can be found in README.md in
+// the root directory of this repository.
+
+// This plan tests the ActionGoalStatus lookup on every action.
+
+#include "ow-interface.h"
+
+TestActionGoalStatus:
+{
+  log_info ("Beginning action goal status test...");
+  log_info ("Status of ArmUnstow: ", Lookup(ActionGoalStatus("ArmUnstow")));
+
+  Test1: Concurrence
+  {
+    arm_unstow(); // asynchronous
+
+    Check1:
+    {
+      Start Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_ACTIVE;
+      log_info ("Arm unstow is active...");
+    }
+
+    Check2:
+    {
+      Start Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_SUCCEEDED;
+      log_info ("Arm unstow has succeeded");
+    }
+  }
+  /*
+  arm_stow(); // asynchronous
+
+  Check3:
+  {
+    Start Lookup(ActionGoalStatus("ArmStow")) == ACTION_ACTIVE;
+    log_info ("Arm stow is active...");
+  }
+
+  Check4:
+  {
+    Start Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED;
+    log_info ("Arm stow has succeeded");
+  }
+  */
+  log_info ("Finished action goal state lookup test.");
+}

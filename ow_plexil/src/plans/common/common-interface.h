@@ -13,6 +13,20 @@
 #define BASE_FRAME 0
 #define TOOL_FRAME 1
 
+// Action goal statuses.
+// NOTE: the last three are not supported in OceanWATERS, partly
+// because it uses SimpleActionServer.
+#define ACTION_PENDING 0
+#define ACTION_ACTIVE 1
+#define ACTION_PREEMPTED 2
+#define ACTION_SUCCEEDED 3
+#define ACTION_ABORTED 4
+#define ACTION_REJECTED 5
+#define ACTION_PREEMPTING 6
+#define ACTION_RECALLING 7
+#define ACTION_RECALLED 8
+#define ACTION_LOST 9
+
 // Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
 Command log_info (...);
 Command log_warning (...);
