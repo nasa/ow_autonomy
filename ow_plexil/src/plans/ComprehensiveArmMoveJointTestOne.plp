@@ -6,7 +6,8 @@
 // Shoulder yaw - lower limit: -1.56 (although is out of bounds), upper limit: 1.43
 // Shoulder pitch - lower limit: -0.4, upper limit: 2.2 (although is out of bounds)
 // Proximity pitch - lower limit: -3.14. upper limit: 3.14
-// Distance pitch - lower limit: -1.9, upper limit: 3.5 (although leads to no motion planning found error)
+// Distance pitch - lower limit: -1.9, upper limit: 3.5
+// (although leads to no motion planning found error)
 // Hand yaw - lower limit: -3.14, upper limit: 3.14
 // Scoop yaw - lower limit: -3.14, upper limit: 3.14
 
