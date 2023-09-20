@@ -2,12 +2,14 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Unstow and stow the arm repeatedly, while monitoring and printing
+// Pan and tilt the antenna repeatedly, while monitoring and printing
 // action goal state. Looks for just the four supported states.
 // Terminate this plan by injecting a power fault: Low
 // State-Of-Charge, Instantaneous Capacity Loss, or Thermal Failure.
 
 #include "ow-interface.h"
+
+LibraryAction TestAntennaMovement;
 
 ActionGoalStateDemo:
 {
@@ -15,47 +17,57 @@ ActionGoalStateDemo:
 
   Run: Concurrence
   {
-    MoveArm: UncheckedSequence
+    Real PanAngle = 0;
+    Real TiltAngle = 0;
+
+    MoveAntenna: UncheckedSequence
     {
       RepeatCondition !Lookup(PowerFault);
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
+
+      PanAngle = PanAngle + 15;
+      if (PanAngle > 180) PanAngle = PanAngle - 360; endif;
+      TiltAngle = TiltAngle + 5;
+      if (TiltAngle > 45) TiltAngle = TiltAngle - 90; endif;
+      LibraryCall Tilt (Degrees=TiltAngle);
+      Wait 1;
+      LibraryCall Pan (Degrees=PanAngle);
+      Wait 1;
     }
 
     ReportStatus: UncheckedSequence
     {
       RepeatCondition !Lookup(PowerFault);
 
-      if (Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_INACTIVE) {
-        log_info ("ArmUnstow is inactive.");
+      if (Lookup(ActionGoalStatus("Tilt")) == ACTION_INACTIVE) {
+        log_info ("Tilt is inactive.");
       }
-      else if (Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_ACTIVE) {
-        log_info ("ArmUnstow is active.");
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_ACTIVE) {
+        log_info ("Tilt is active.");
       }
-      else if (Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_SUCCEEDED) {
-        log_info ("ArmUnstow is successful.");
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_SUCCEEDED) {
+        log_info ("Tilt is successful.");
       }
-      else if (Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_ABORTED) {
-        log_info ("ArmUnstow is aborted.");
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_ABORTED) {
+        log_info ("Tilt is aborted.");
       }
-      if (Lookup(ActionGoalStatus("ArmStow")) == ACTION_INACTIVE) {
-        log_info ("ArmStow is inactive.");
+      if (Lookup(ActionGoalStatus("Pan")) == ACTION_INACTIVE) {
+        log_info ("Pan is inactive.");
       }
-      else if (Lookup(ActionGoalStatus("ArmStow")) == ACTION_ACTIVE) {
-        log_info ("ArmStow is active.");
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_ACTIVE) {
+        log_info ("Pan is active.");
       }
-      else if (Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED) {
-        log_info ("ArmStow is successful.");
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_SUCCEEDED) {
+        log_info ("Pan is successful.");
       }
-      else if (Lookup(ActionGoalStatus("ArmStow")) == ACTION_ABORTED) {
-        log_info ("ArmStow is aborted.");
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_ABORTED) {
+        log_info ("Pan is aborted.");
       }
       else {
-        log_warning ("Either ArmStow or ArmUnstow are in an unexpected state:");
-        log_warning ("ArmStow is in state ",
-                     Lookup(ActionGoalStatus("ArmStow")));
-        log_warning ("ArmUnstow is in state ",
-                     Lookup(ActionGoalStatus("ArmUnstow")));
+        log_warning ("Either Pan or Tilt are in an unexpected state:");
+        log_warning ("Pan is in state ",
+                     Lookup(ActionGoalStatus("Pan")));
+        log_warning ("Tilt is in state ",
+                     Lookup(ActionGoalStatus("Tilt")));
       }
       endif;
 
