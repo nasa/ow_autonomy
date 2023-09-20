@@ -14,8 +14,9 @@
 #define TOOL_FRAME 1
 
 // Action goal statuses.
-// NOTE: the last three are not supported in OceanWATERS, partly
-// because it uses SimpleActionServer.
+// NOTE: the last five are not supported in OceanWATERS, partly
+// because it uses ROS's SimpleActionServer.
+#define ACTION_INACTIVE -1
 #define ACTION_PENDING 0
 #define ACTION_ACTIVE 1
 #define ACTION_PREEMPTED 2
