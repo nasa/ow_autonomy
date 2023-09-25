@@ -98,21 +98,16 @@ void LanderInterface::initialize()
 
   // Connect to action servers
 
-  connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian,
-                       "/ArmMoveCartesian/status");
+  connectActionServer (m_armMoveCartesianClient, Name_ArmMoveCartesian);
   connectActionServer (m_armMoveCartesianGuardedClient,
-                       Name_ArmMoveCartesianGuarded,
-                       "/ArmMoveCartesianGuarded/status");
-  connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint,
-                       "/ArmMoveJoint/status");
-  connectActionServer (m_armStopClient, Name_ArmStop, "/ArmStop/status");
-  connectActionServer (m_armStowClient, Name_ArmStow, "/ArmStow/status");
-  connectActionServer (m_armUnstowClient, Name_ArmUnstow, "/ArmUnstow/status");
-  connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample,
-                       "/TaskDeliverSample/status");
+                       Name_ArmMoveCartesianGuarded);
+  connectActionServer (m_armMoveJointClient, Name_ArmMoveJoint);
+  connectActionServer (m_armStopClient, Name_ArmStop);
+  connectActionServer (m_armStowClient, Name_ArmStow);
+  connectActionServer (m_armUnstowClient, Name_ArmUnstow);
+  connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample);
   connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
-  connectActionServer (m_cameraCaptureClient, Name_CameraCapture,
-                       "/CameraCapture/status");
+  connectActionServer (m_cameraCaptureClient, Name_CameraCapture);
 
   // Initialize subscribers
 

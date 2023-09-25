@@ -63,20 +63,18 @@ class PlexilInterface
 
   template<typename T>
   void connectActionServer (std::unique_ptr<actionlib::SimpleActionClient<T> >& c,
-			    const std::string& name,
-			    const std::string& topic = "")
+			    const std::string& action)
   {
     if (! c->waitForServer(ros::Duration(10))) {
       // Connection typically happens very fast, so this timeout is
       // only to prevent indefinite wait when an action server is down
       // for some reason.
-      ROS_ERROR ("%s action server did not connect!", name.c_str());
+      ROS_ERROR ("%s action server did not connect!", action.c_str());
     }
-    else if (topic != "") subscribeToActionStatus (topic, name);
+    subscribeToActionStatus (action);
   }
 
-  void subscribeToActionStatus (const std::string& topic,
-				const std::string& operation);
+  void subscribeToActionStatus (const std::string& action);
 
   template <class ActionClient, class Goal, class ResultPtr, class FeedbackPtr>
     void runAction (const std::string& opname,
@@ -113,7 +111,7 @@ class PlexilInterface
   // Callback function in PLEXIL adapter for success/failure of given command.
   std::function<void(int, bool)> m_commandStatusCallback;
   void actionGoalStatusCallback (const actionlib_msgs::GoalStatusArray::ConstPtr&,
-                                 const std::string);
+                                 const std::string& action_name);
 
 };
 

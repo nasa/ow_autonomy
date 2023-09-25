@@ -113,24 +113,15 @@ void OwlatInterface::initialize()
     make_unique<TaskScoopLinearActionClient>(Name_ScoopLinear, true);
 
   // Connect to action servers
-  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface,
-                       "/ArmFindSurface/status");
-  connectActionServer (m_discardSampleClient, Name_Discard,
-                       "/TaskDiscardSample/status");
-  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints,
-                       "/TaskArmMoveJoints/status");
-  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded,
-                       "/TaskArmMoveJointsGuarded/status");
-  connectActionServer (m_armSetToolClient, Name_ArmSetTool,
-                       "/ArmSetTool/status");
-  connectActionServer (m_armTareFTSensorClient, Name_Tare,
-                       "/ArmTareFTSensor/status");
-  connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter,
-                       "/TaskShearBevameter/status");
-  connectActionServer (m_taskPenetrometerClient, Name_Penetrometer,
-                       "/TaskPenetrometer/status");
-  connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear,
-                       "/TaskScoopLinear/status");
+  connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface);
+  connectActionServer (m_discardSampleClient, Name_Discard);
+  connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints);
+  connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded);
+  connectActionServer (m_armSetToolClient, Name_ArmSetTool);
+  connectActionServer (m_armTareFTSensorClient, Name_Tare);
+  connectActionServer (m_taskShearBevameterClient, Name_ShearBevameter);
+  connectActionServer (m_taskPenetrometerClient, Name_Penetrometer);
+  connectActionServer (m_taskScoopLinearClient, Name_ScoopLinear);
 }
 
 
