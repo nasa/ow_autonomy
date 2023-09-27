@@ -5,19 +5,23 @@ this repository.
 PLEXIL plans
 ============
 
-This directory contains PLEXIL plans that implement onboard autonomy for Ocean
-World landers, as supported by the OceanWATERS software testbed. All PLEXIL
-plans for the OWLAT testbed are kept in the `owlat` subdirectory.
+This directory contains PLEXIL plans that implement onboard autonomy
+for Ocean World landers, as supported by the OceanWATERS and OWLAT
+testbeds.  This directory directly contains plans specific to
+OceanWATERS.  Plans shared by OceanWATERS and OWLAT are found in the
+`common` subdirectory. and those specific to OWLAT are found in
+`owlat`.
 
-See ow_plexil/README.md for instructions for selecting and executing plans.
+See ow_plexil/README.md for instructions for selecting and executing
+plans.
 
-Not all of these plans may be executed directly, because of some of them are
-library plans.  Only _top level_ plans may be run directly.  A top level plan is
-one having no parameters, i.e. no `In` or `InOut` variable declarations near the
-top.
+Not all of these plans may be executed directly, because of some of
+them are library plans.  Only _top level_ plans may be run directly.
+A top level plan is one having no parameters, i.e. no `In` or `InOut`
+variable declarations.
 
-Descriptions of some key plans, and other files of interest, are as follows.
-See the comments inside all the plans for more information.
+Descriptions of some key plans, and other files of interest, are as
+follows.  See comments inside the plans for more information.
 
 * ReferenceMission1, ReferenceMission2 : both plans model a portion of
   Sol 0 of the Europa Lander reference mission defined by JPL.  The
@@ -41,8 +45,8 @@ See the comments inside all the plans for more information.
   scoop into the ground, which creates joint over-torquing warnings
   and errors.
 
-* Continuous: non-terminating plan that performs continuous operations, useful
-  as a stress/load test.
+* Continuous: non-terminating plan that performs continuous
+  operations, useful as a stress/load test.
 
 * IdentifySampleLocationDemo: This plan demonstrates the
   IdentifySampleTarget plan which uses the stereocamera to find a
@@ -66,26 +70,12 @@ See the comments inside all the plans for more information.
   - The command is invoked as a SynchronousCommand, which means the
     plan waits for it to complete before the plan itself finishes.
 
-  - A check is made for relevant faults prior to executing the
-    command.  The plan waits for an existing fault to clear before
-    executing the command.  NOTE: an existing fault will block the
-    calling plan; this can be worked around by customizing these
-    plans, e.g. adding a timeout.  The lander operation library plans
-    at the time of this writing are the following.
-
-    - ArmMoveJoint.plp
-    - ArmMoveJoints.plp
-    - Deliver.plp
-    - DigCircular.plp
-    - DigLinear.plp
-    - Discard.plp
-    - Grind.plp
-    - GuardedMove.plp
-    - Pan.plp
-    - Stow.plp
-    - TakePicture.plp
-    - Tilt.plp
-    - Unstow.plp
+  - In some cases, a check is made for relevant faults prior to
+    executing the command.  The plan waits for an existing fault to
+    clear before executing the command.  NOTE: an existing fault will
+    block the calling plan; this can be worked around by customizing
+    these plans, e.g. adding a timeout.  The lander operation library
+    plans at the time of this writing are the following.
 
 * Simulation interface.  The entire simulation interface available to
   PLEXIL, which includes the operations listed in the previous
@@ -99,6 +89,9 @@ See the comments inside all the plans for more information.
   application.  It does not need editing for general use of this
   package.
 
+There are numerous other useful plans in this directory that are not
+described here.  Have a look!
+
 
 Plan Details
 ============
@@ -107,16 +100,14 @@ Plan Details
 
 The following represent the success criteria of the Reference Mission 2 plan:
 - Left running the plan completes
-	- Upon completion, the plan will print "ReferenceMission2 plan
-	complete."
-	- To more easily view this message when it occurs, add the following
- 	after the launch command:<br/>
-	` | grep -i "ReferenceMission2 plan complete."`
-- The plan is interruptable through fault injection, i.e. pauses in
-response to a fault
-	- Faults can be injected via rqt, a python script, or the command line
- ([Fault Injection Tutorial](https://github.com/nasa/ow_simulator/blob/master/ow_faults_injection/README.md))
+  - Upon completion, the plan will print "ReferenceMission2 plan complete."
+  - To more easily view this message when it occurs, add the following
+    after the launch command: ` | grep -i "ReferenceMission2 plan complete."`
 
+- The plan is interruptable through fault injection, i.e. pauses in
+  response to a fault
+  - Faults can be injected via rqt, a python script, or the command
+    line.  See `ow_simulator/ow_faults_injection/README.md
 
 ### IdentifySampleLocationDemo ###
 
@@ -142,15 +133,3 @@ need to first refresh the topic menu in RQT.
   IdentifySampleLocationDemo was succesful.
 - In rare cases no sample points can be found. If this happens success is
   defined by a graceful exit.
-
-### FaultHandlingPatternN ###
-
-Each plan contains comments that describe its behavior and how to test
-the pattern.  Note that these plans do not always behave exactly as
-described within, for two reasons.  First, the library plans Pan,
-Unstow, and Stow currently implement a "permissive" kind of fault
-handling at that level, in that they _wait_ for any fault in progress
-to resolve before commencing.  Second, aborted ROS Actions, which
-result from faults, are not yet detectable in PLEXIL; PLEXIL only
-knows when an action terminates.  These subtleties are subjects for
-future work and refinement.
