@@ -59,13 +59,11 @@ follows.  See comments inside the plans for more information.
   publishes two visualization topics which are described in testing
   plans below.
 
-* FaultHandlingPatternN: A series of illustrative fault-handling patterns.
-
 * Lander operation library.  There is a (library) plan for each lander
-  operation, and each takes the arguments (interface variables) as
-  required for the operation.  While these operations can be directly
-  invoked as PLEXIL commands, these library plans wrap the command to
-  provide the following features:
+  operation (ROS action), and each takes the arguments (interface
+  variables) as required for the operation.  While these operations
+  can be directly invoked as PLEXIL commands, these library plans wrap
+  the command to provide the following features:
 
   - The command is invoked as a SynchronousCommand, which means the
     plan waits for it to complete before the plan itself finishes.
@@ -80,10 +78,14 @@ follows.  See comments inside the plans for more information.
 * Simulation interface.  The entire simulation interface available to
   PLEXIL, which includes the operations listed in the previous
   section, telemetry lookups, and other useful features such as
-  logging functions, are encoded in `ow-interface.h`, which may be
-  included (using a C `#include` statement) in any plan for
-  convenience.
+  logging functions, is declared in `ow-interface.h` and
+  `ow-commands.h`, which may be included (using a C `#include`
+  statement) in any plan for convenience.  Only the former file needs
+  inclusion because it includes the latter.
 
+* FaultHandlingPatternN: A series of illustrative fault-handling patterns.
+
+* 
 * Misc files.  `plexil-defs.h` contains constants used in various
   plans.  `ow-config.xml` is the PLEXIL configuration file for this
   application.  It does not need editing for general use of this
