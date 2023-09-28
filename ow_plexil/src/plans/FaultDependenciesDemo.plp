@@ -2,17 +2,21 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// This plan demonstrates aspects of the Fault Dependencies framework,
+// described in the OceanWATERS user guide at
+// https://github.com/nasa/ow_simulator/wiki/Autonomy, and requires
+// its use.
+
 // The Antenna will Pan, Tilt and then take a picture. If the Pan Fault is active
-// it will only Tilt and Take a Picture. If the Tilt Fault is active it will only 
+// it will only Tilt and Take a Picture. If the Tilt Fault is active it will only
 // Pan and take a picture. If both Pan and Tilt are inoperable, the backup action
 // will begin and unstow/stow the arm repeatably. Camera faults will prevent a picture
-// from being taken until they are cleared. 
+// from being taken until they are cleared.
 
-// NOTE: As of 10/18/2023 The backup action should be robust to faults, but due to the
-// SynchronousCommand bug it will freeze the whole plexil plan if an arm fault is 
-// activated during execution. This is being investigated.
-
-
+// NOTE: As of 10/18/2023, the backup action should be robust to
+// faults, but due to an unknown bug it will freeze the whole plan if
+// an arm fault is activated during execution. This is being
+// investigated.
 
 #include "ow-interface.h"
 
