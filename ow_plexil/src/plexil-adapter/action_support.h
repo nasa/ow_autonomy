@@ -12,12 +12,6 @@
 #include <string>
 #include <functional>
 
-// Time that the Plexil node waits for each action server to be detected.  It
-// typically happens very fast, so this timeout is only to prevent indifinite
-// wait when an action server is down for some reason.
-//
-const auto ACTION_SERVER_TIMEOUT_SECS = 10.0;
-
 // The following action callbacks are essentially stubs that do nothing more
 // than print a short status.  They are used as defaults; any action invocation
 // can substitute another callback.

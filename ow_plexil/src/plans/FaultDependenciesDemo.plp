@@ -1,0 +1,119 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan demonstrates aspects of the Fault Dependencies framework,
+// described in the OceanWATERS user guide at
+// https://github.com/nasa/ow_simulator/wiki/Autonomy, and requires
+// its use.
+
+// The Antenna will Pan, Tilt and then take a picture. If the Pan Fault is active
+// it will only Tilt and Take a Picture. If the Tilt Fault is active it will only
+// Pan and take a picture. If both Pan and Tilt are inoperable, the backup action
+// will begin and unstow/stow the arm repeatably. Camera faults will prevent a picture
+// from being taken until they are cleared.
+
+// NOTE: As of 10/18/2023, the backup action should be robust to
+// faults, but due to an unknown bug it will freeze the whole plan if
+// an arm fault is activated during execution. This is being
+// investigated.
+
+#include "ow-interface.h"
+
+FaultDependenciesDemo:
+{
+
+  Real NewPanAngle = 0;
+  Real NewTiltAngle = 20;
+  Real Count = 0;
+  Boolean BackupAction = false;
+  Boolean CameraFault = false;
+
+  log_info ("Starting FaultDependenciesDemo plan...");
+
+  Run: Concurrence
+  {
+
+    PanTiltPattern: Sequence
+    {
+      StartCondition Lookup(IsOperable("Antenna")) && !BackupAction;
+      RepeatCondition true;
+      Wait 2;
+
+      NewPanAngle = (Lookup(PanDegrees) + 15) mod 360;
+      if NewPanAngle > 180 {
+        NewPanAngle = NewPanAngle - 360;
+      }
+      if Count % 2 == 0{
+        NewTiltAngle = 10;
+      }
+      else{
+        NewTiltAngle = -10;
+      }
+      Count = Count + 1;
+
+      if Lookup(IsOperable("Pan")) && Lookup(IsOperable("Tilt")) {
+        log_info("Panning and Tilting...");
+        LibraryCall PanTiltMoveJoints (PanDegrees=NewPanAngle, TiltDegrees=NewTiltAngle);
+      }
+      elseif Lookup(IsOperable("Tilt")){
+        log_info("Pan Inoperable, executing Tilt only...");
+        LibraryCall Tilt (Degrees=NewTiltAngle);
+      }
+      elseif Lookup(IsOperable("Pan")){
+        log_info("Tilt Inoperable, executing Pan only...");
+        LibraryCall Pan (Degrees=NewPanAngle);
+      }
+      else{
+        log_info("Tilt and Pan Inoperable, beginning backup pattern...");
+        BackupAction = true;
+      }
+
+
+      if Lookup(IsOperable("CameraCapture")){
+        log_info("Taking Picture...");
+        LibraryCall CameraCapture();
+      }
+      else{
+        CameraFault=true;
+      }
+
+      if CameraFault{
+        LibraryCall CameraCapture();
+        if Lookup(IsOperable("CameraCapture")){
+          log_info("Camera now Operable, picture taken");
+          CameraFault = false;
+        }
+        else{
+          CameraFault = true;
+          log_info("WARNING: Camera Is Inoperable, no picture taken.");
+        }
+      }
+    }
+
+    StowingPattern: Sequence
+    {
+      StartCondition BackupAction && Lookup(IsOperable("Arm"));
+      RepeatCondition true;
+      Wait 1;
+
+      if Lookup(IsOperable("ArmUnstow")){
+        LibraryCall ArmUnstow();
+      }
+      else{
+        log_info("WARNING: ArmUnstow Is Inoperable, action skipped.");
+      }
+      if Lookup(IsOperable("ArmUnstow")){
+        LibraryCall ArmStow();
+      }
+      else{
+        log_info("WARNING: ArmStow Is Inoperable, action skipped.");
+      }
+
+      if Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt")){
+        log_info("Stopping backup action, resuming main pattern");
+        BackupAction = false;
+      }
+    }
+  }
+}

@@ -5,7 +5,7 @@
 // Non-terminating plan, intended as a continuous operation test, that
 // repeatedly does panoramic imaging while unstowing and stowing the arm.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 LibraryAction TestAntennaCamera();
 

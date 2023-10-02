@@ -1,0 +1,14 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// In a mission context, Stow should always be preceded by Unstow, for
+// safety.  This is a convenience procedure.
+
+#include "common-interface.h"
+
+SafeStow:
+{
+  LibraryCall ArmUnstow();
+  LibraryCall ArmStow();
+}

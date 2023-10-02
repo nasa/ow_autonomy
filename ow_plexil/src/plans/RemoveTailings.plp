@@ -5,7 +5,7 @@
 // This plan removes the tailings from a trench that assumed to have been dug
 // using given X, Y, and GroundPos.  It deposits them in a predecided location.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 RemoveTailings:
 {
@@ -32,7 +32,6 @@ RemoveTailings:
     // mission procedure would need to find an appropriate dump
     // location.
     LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
-                                   X = 1.5, Y = 0.8, Z = 0.4, Height = 0.0);
-
+                                   Point = #(1.5 0.8 0.4), Height = 0.0);
   }
 }

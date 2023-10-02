@@ -2,39 +2,34 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// If no faults are occurring, this plan will pan 180 degrees,
-// and then unstow and stow the arm.
+// WARNING: This plan cannot work as intended until greater fault/action support
+// is added to the simulator. This serves mostly as a syntactic example.
 
-// If any fault is injected, the plan will pause and wait for resolution.
-// Resolution is defined as the removal of the fault.
+// DESIRED BEHAVIOR: If no faults are present, this plan will pan 180 degrees,
+// unstow and then stow the arm. If a fault is injected, the plan will pause 
+// until resolution.
 
-// Upon resolution, the halted action will not complete,
-// but the plan will continue to the next node.
+// LIMITATIONS: If an arm fault is triggered during Unstow, it will skip the Stow node. 
 
-// If a fault is injected during an operation, that operation will only
+// NOTE: If a fault is injected during an operation, that operation will only
 // halt immediately if the fault injected is associated with it directly,
 // i.e. an antenna fault during panning or an arm fault during
 // unstowing or stowing.
 
-// Otherwise, the pausing will visually become apparent when the next
-// operation does not begin due to it.
 
-#include "plan-interface.h"
-
-LibraryAction InitializeAntennaAndArm ();
+#include "ow-interface.h"
 
 FaultHandlingPattern3:
 {
 
   log_info ("Starting FaultHandlingPattern3 plan...");
 
-  LibraryCall InitializeAntennaAndArm ();
-
-  Image:
+  PanAntenna:
   {
-    Start !Lookup(AntennaFault);
+    Start !Lookup(AntennaPanFault);
+    Invariant !Lookup(AntennaPanFault);
 
-    LibraryCall PanTiltMoveJoints (PanDegrees=180, TiltDegrees=0);
+    LibraryCall Pan (Degrees=180);
   }
 
   Unstow:

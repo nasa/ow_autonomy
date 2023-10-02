@@ -1,0 +1,19 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Test misc actions that don't have a prescribed test sequence in the
+// OWLAT 5.3 user guide.
+
+#include "owlat-interface.h"
+
+TestOwlatMiscActions:
+{
+  log_info ("Starting Owlat Misc Actions test...");
+  LibraryCall CameraCapture ();
+  LibraryCall ArmUnstow();
+  LibraryCall ArmMoveJoint(Relative=false, Joint=1, Angle=0);
+  LibraryCall TaskDeliverSample();
+  LibraryCall SafeStow();
+  log_info ("Finished Owlat Misc Actions test.");
+}

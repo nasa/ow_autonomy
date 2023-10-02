@@ -4,14 +4,13 @@
 
 // Stub for sample analysis, which is out of the scope of OceanWATERS.
 
-#include "plexil_defs.h"
+#include "ow-interface.h"
 
 LibraryAction Downlink();
-Command log_info (...);
 
 SampleAnalysis:
 {
-  In INSTRUMENT_ID inst_id;
+  In Integer inst_id;
 
   log_info ("PLEXIL Stub: Analyzing sample using instrument ", inst_id, "...");
 

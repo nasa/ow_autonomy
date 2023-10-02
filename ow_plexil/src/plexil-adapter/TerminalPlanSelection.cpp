@@ -8,11 +8,9 @@
 
 void TerminalPlanSelection::initialize()
 {
-  //create nodehandle
   m_genericNodeHandle = std::make_unique<ros::NodeHandle>();
   m_plan_running = false;
 
-  //wait for server
   ros::Rate rate(10); // 10 Hz seems appropriate, for now.
   while(ros::ok() &&
         ros::service::exists("/plexil_plan_selection", false) == false) {
@@ -24,7 +22,7 @@ void TerminalPlanSelection::initialize()
     (m_genericNodeHandle->serviceClient<ow_plexil::PlanSelection>
      ("/plexil_plan_selection", this));
 
-  //initialize subscriber
+  // Initialize subscriber
   m_planSelectionStatusSubscriber = std::make_unique<ros::Subscriber>
     (m_genericNodeHandle->
      subscribe("/plexil_plan_selection_status", 20,
@@ -40,18 +38,20 @@ void TerminalPlanSelection::start(bool initial_plan)
 
   ros::Rate rate(10); // 10 Hz seems appropriate, for now.
   std::string input;
-  // loops until terminated by user, prompts them to enter any
+  
+  // Loops until terminated by user, prompts them to enter any
   // additional plans after the previous plan has been run to
   // completion.
   while (ros::ok()) {
     if (m_plan_running == false) {
       // checks to see if previous plan finished
-      std::cout << "\nEnter any additional plan to be run (or use the GUI): "
+      std::cout << "\nEnter a plan to execute (or use the rqt GUI): "
                 << std::endl;
       std::cin >> input;
       std::cin.ignore();
-      // if input is not empty we send the plan to the plan selection
-      // node for execution
+      
+      // If input is not empty we send the plan to the plan selection
+      // node for execution.
       if(input != "") {
         ow_plexil::PlanSelection instruction;
         instruction.request.command = "ADD";
@@ -76,8 +76,8 @@ void TerminalPlanSelection::start(bool initial_plan)
 void TerminalPlanSelection::planSelectionStatusCallback
 (const std_msgs::String::ConstPtr& msg)
 {
-  // if plan is set as complete or failed we know that no plan is
-  // currently running
+  // If plan is set as complete or failed we know that no plan is
+  // currently running.
   if(msg->data.compare("COMPLETE") == 0 ||
      msg->data.find("FAILED") != std::string::npos) {
     m_plan_running = false;

@@ -10,9 +10,7 @@
 // If both antenna and arm faults occurring, the plan waits for resolution.
 // This plan must be terminated with an interrupt, e.g. Control-C.
 
-#include "plan-interface.h"
-
-LibraryAction InitializeAntennaAndArm ();
+#include "ow-interface.h"
 
 FaultHandlingPattern2:
 {
@@ -20,20 +18,29 @@ FaultHandlingPattern2:
 
   log_info ("Starting FaultHandlingPattern2 plan...");
 
-  LibraryCall InitializeAntennaAndArm ();
-
   Run: Concurrence
   {
 
-    Pattern2Image:
+  UncheckedSequence
+  {
+    RepeatCondition true;
+
+    Wait .2;
+
+    Pattern2PanAntenna:
     {
-      Repeat true;
-      Start !Lookup(AntennaFault);
+      Start !Lookup(AntennaPanFault);
+      Exit Lookup(AntennaPanFault);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
 
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      if NewAngle > 180{
+        NewAngle = NewAngle - 360;
+      }
+
+      LibraryCall Pan (Degrees=NewAngle);
     }
+  }
 
     Pattern2UnstowStow:
     {
@@ -41,8 +48,7 @@ FaultHandlingPattern2:
       Start !Lookup(ArmFault);
       Invariant !Lookup(ArmFault);
 
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
+      LibraryCall SafeStow();
     }
   }
 }

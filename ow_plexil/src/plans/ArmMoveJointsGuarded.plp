@@ -4,7 +4,7 @@
 
 // Invoke ROS action ArmMoveJointsGuarded.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 ArmMoveJointsGuarded:
 {

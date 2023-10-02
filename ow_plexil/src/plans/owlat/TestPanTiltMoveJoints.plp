@@ -1,0 +1,17 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Test sequence 4.19.1 in the OWLAT 5.3 user guide, plus one more
+// call so that pan is non-zero.
+
+#include "owlat-interface.h"
+
+TestPanTiltMoveJoints:
+{
+  log_info ("Starting PanTiltMoveJoints test...");
+  // Note that the PLEXIL interfaces uses degrees only.
+  LibraryCall PanTiltMoveJoints (PanDegrees = 0, TiltDegrees = -40.107);
+  LibraryCall PanTiltMoveJoints (PanDegrees = 90.0, TiltDegrees = -45.0);
+  log_info ("Finished PanTiltMoveJoints test.");
+}

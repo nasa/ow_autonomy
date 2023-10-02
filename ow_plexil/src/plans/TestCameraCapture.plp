@@ -7,7 +7,7 @@
 // RQT's image viewer.  A simulation world (e.g. atacama_y1a) that has
 // interesting features at the chosen pan/tilt will also help.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestCameraCapture: UncheckedSequence
 {

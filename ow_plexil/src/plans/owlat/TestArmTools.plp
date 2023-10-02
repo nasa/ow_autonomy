@@ -1,0 +1,18 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Tests the setting of all arm tools.
+
+#include "owlat-interface.h"
+
+LibraryAction TestArmTool (In Integer Tool);
+
+TestArmTools:
+{
+  log_info ("Starting OWLAT arm tool tests...");
+  for (Integer i = 0; i<5; i + 1) {
+    LibraryCall TestArmTool(Tool = i);
+  }
+  log_info ("Finished OWLAT arm tool tests.");
+}

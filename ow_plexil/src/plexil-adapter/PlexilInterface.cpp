@@ -4,20 +4,107 @@
 
 #include "PlexilInterface.h"
 #include "subscriber.h"
+#include <map>
 
 using std::string;
+using std::map;
+using std::make_unique;
+
+///////////////////////// Utilities /////////////////////////
+
+static double normalize_degrees (double angle)
+{
+  static double pi = R2D * M_PI;
+  static double tau = pi * 2.0;
+  double x = fmod(angle + pi, tau);
+  if (x < 0) x += tau;
+  return x - pi;
+}
+
+
+///////////////////////// Action Goal Status Support /////////////////////////
 
 // Dummy operation ID that signifies idle lander operation.
 #define IDLE_ID (-1)
 
+// Duplication of actionlib_msgs/GoalStatus.h with the addition of a
+// NOGOAL status for when the action is not running.
+// NOTE: the last three are not yet supported in the simulator.
+//
+enum ActionGoalStatus {
+  NOGOAL = -1,
+  PENDING = 0,
+  ACTIVE = 1,
+  PREEMPTED = 2,
+  SUCCEEDED = 3,
+  ABORTED = 4,
+  REJECTED = 5,
+  PREEMPTING = 6,
+  RECALLING = 7,
+  RECALLED = 8,
+  LOST = 9
+};
+
+static map<string, int> ActionGoalStatusMap { };
+
+static string status_topic (const string& action)
+{
+  return string("/") + action + "/status";
+}
+
+
+///////////////////////////////// Class Interface ///////////////////////////////
+
+bool PlexilInterface::anglesEquivalent (double deg1, double deg2,
+                                        double tolerance)
+{
+  return fabs(normalize_degrees(deg1 - deg2)) <= tolerance;
+}
+
 PlexilInterface::PlexilInterface ()
-  : m_commandStatusCallback (nullptr)
+  : m_commandStatusCallback (nullptr),
+    m_genericNodeHandle (make_unique<ros::NodeHandle>())
 { }
 
 PlexilInterface::~PlexilInterface ()
 {
   // No memory leak, since memory wasn't allocated.
   m_commandStatusCallback = nullptr;
+}
+
+void PlexilInterface::actionGoalStatusCallback
+(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string& action_name)
+
+// Update ActionGoalStatusMap of action action_name with the status
+// from first goal in GoalStatusArray msg. This is based on the
+// assumption that no action will have more than one goal in our
+// system.
+{
+  if (msg->status_list.size() == 0) {
+    ActionGoalStatusMap[action_name] = NOGOAL;
+    publish ("ActionGoalStatus", static_cast<int>(NOGOAL), action_name);
+  }
+  else { // if (msg->status_list.size() >= 1) {
+    ActionGoalStatus status =
+      static_cast<ActionGoalStatus>(msg->status_list[0].status);
+    ActionGoalStatusMap[action_name] = status;
+    publish ("ActionGoalStatus", static_cast<int>(status), action_name);
+  }
+}
+
+void PlexilInterface::subscribeToActionStatus (const string& action)
+{
+  m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
+      (status_topic(action), 3,
+       boost::bind(&PlexilInterface::actionGoalStatusCallback,
+                   this, _1, action))));
+}
+
+int PlexilInterface::actionGoalStatus (const string& action_name) const
+{
+  return ActionGoalStatusMap[action_name];
 }
 
 bool PlexilInterface::isLanderOperation (const string& name) const

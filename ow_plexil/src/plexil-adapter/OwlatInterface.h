@@ -7,73 +7,55 @@
 
 // Interface to JPL's OWLAT simulator.
 
-// C++
-#include <memory>
-#include <ros/ros.h>
-
-// owl_msgs
-#include <owl_msgs/PanTiltPosition.h>
-
-// ow_plexil
-#include <Value.hh>
-#include "PlexilInterface.h"
-#include "joint_support.h"
+#include "LanderInterface.h"
 
 // OWLAT Sim (installation required)
-#include <owlat_sim_msgs/ARM_UNSTOWAction.h>
-#include <owlat_sim_msgs/ARM_STOWAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_CARTESIANAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_CARTESIAN_GUARDEDAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_JOINTAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_JOINTSAction.h>
-#include <owlat_sim_msgs/ARM_MOVE_JOINTS_GUARDEDAction.h>
-#include <owlat_sim_msgs/ARM_PLACE_TOOLAction.h>
-#include <owlat_sim_msgs/ARM_SET_TOOLAction.h>
-#include <owlat_sim_msgs/ARM_STOPAction.h>
-#include <owlat_sim_msgs/ARM_TARE_FSAction.h>
-#include <owlat_sim_msgs/TASK_PSPAction.h>
-#include <owlat_sim_msgs/TASK_SCOOPAction.h>
-#include <owlat_sim_msgs/ARM_JOINT_ANGLES.h>
-#include <owlat_sim_msgs/ARM_JOINT_ACCELERATIONS.h>
-#include <owlat_sim_msgs/ARM_JOINT_TORQUES.h>
-#include <owlat_sim_msgs/ARM_JOINT_VELOCITIES.h>
-#include <owlat_sim_msgs/ARM_FT_TORQUE.h>
-#include <owlat_sim_msgs/ARM_FT_FORCE.h>
-#include <owlat_sim_msgs/ARM_POSE.h>
+#include <owl_msgs/ArmFindSurfaceAction.h>
+#include <owl_msgs/TaskDiscardSampleAction.h>
+#include <owl_msgs/ArmTareFTSensorAction.h>
+#include <owl_msgs/ArmSetToolAction.h>
+#include <owl_msgs/TaskPSPAction.h>
+#include <owl_msgs/TaskShearBevameterAction.h>
+#include <owl_msgs/TaskPenetrometerAction.h>
+#include <owl_msgs/TaskScoopCircularAction.h>
+#include <owl_msgs/TaskScoopLinearAction.h>
+#include <owl_msgs/ArmMoveJointsAction.h>
+#include <owl_msgs/ArmMoveJointsGuardedAction.h>
+
+// NOTE: The simulator still implements this older message file, and
+// not the newer one in owl_msgs/ArmTool.h.
 #include <owlat_sim_msgs/ARM_TOOL.h>
 
-using OwlatUnstowActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_UNSTOWAction>;
-using OwlatStowActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOWAction>;
-using OwlatArmMoveCartesianActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIANAction>;
-using OwlatArmMoveCartesianGuardedActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_CARTESIAN_GUARDEDAction>;
-using OwlatArmMoveJointActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTAction>;
-using OwlatArmMoveJointsActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTSAction>;
-using OwlatArmMoveJointsGuardedActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_MOVE_JOINTS_GUARDEDAction>;
-using OwlatArmPlaceToolActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_PLACE_TOOLAction>;
-using OwlatArmSetToolActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_SET_TOOLAction>;
-using OwlatArmStopActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_STOPAction>;
-using OwlatArmTareFSActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::ARM_TARE_FSAction>;
-using OwlatTaskPSPActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::TASK_PSPAction>;
-using OwlatTaskScoopActionClient =
-  actionlib::SimpleActionClient<owlat_sim_msgs::TASK_SCOOPAction>;
+using ArmFindSurfaceActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmFindSurfaceAction>;
+using ArmTareFTSensorActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmTareFTSensorAction>;
+using TaskDiscardSampleActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskDiscardSampleAction>;
+using ArmSetToolActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmSetToolAction>;
+using TaskPSPActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskPSPAction>;
+using TaskShearBevameterActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskShearBevameterAction>;
+using TaskPenetrometerActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskPenetrometerAction>;
+using TaskScoopCircularActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopCircularAction>;
+using TaskScoopLinearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::TaskScoopLinearAction>;
+using ArmMoveJointsGuardedActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsGuardedAction>;
+using ArmMoveJointsActionClient =
+  actionlib::SimpleActionClient<owl_msgs::ArmMoveJointsAction>;
 
-class OwlatInterface : public PlexilInterface
+#include <owl_msgs/ArmEndEffectorForceTorque.h>
+
+class OwlatInterface : public LanderInterface
 {
  public:
   static OwlatInterface* instance();
-  OwlatInterface() = default;
+  OwlatInterface();
   ~OwlatInterface() = default;
   OwlatInterface (const OwlatInterface&) = delete;
   OwlatInterface& operator= (const OwlatInterface&) = delete;
@@ -81,140 +63,144 @@ class OwlatInterface : public PlexilInterface
   void initialize();
 
   // Lander interface
-  void owlatUnstow (int id);
-  void owlatStow (int id);
-  void owlatArmMoveCartesian (int frame, bool relative,
-                              const std::vector<double>& position,
-                              const std::vector<double>& orientation,
-                              int id);
-  void owlatArmMoveCartesianGuarded (int frame, bool relative,
-                                     const std::vector<double>& position,
-                                     const std::vector<double>& orientation,
-                                     bool retracting,
-                                     double force_threshold,
-                                     double torque_threshold,int id);
-  void owlatArmMoveJoint (bool relative, int joint, double angle,
-                          int id);
-  void owlatArmMoveJoints (bool relative,
-                           const std::vector<double>& angles,
+  void armFindSurface (int frame,
+                       bool relative,
+                       const std::vector<double>& pos,
+                       const std::vector<double>& normal,
+                       double distance,
+                       double overdrive,
+                       double force_threshold,
+                       double torque_threshold,
+                       int id) override;
+  void taskDiscardSample (int frame, bool relative,
+                          const std::vector<double>& point,
+                          double height, int id) override;
+  void armMoveJoints (bool relative, const std::vector<double>& angles, int id);
+  void armMoveJointsGuarded (bool relative, const std::vector<double>& angles,
+                             double force_threshold, double torque_threshold,
+                             int id);
+  void armSetTool (int tool, int id);
+  void armTareFTSensor (int id);
+  void taskPSP (int frame, bool relative,
+                const std::vector<double>& point,
+                const std::vector<double>& normal,
+                double max_depth, double max_force,
+                int id);
+  void taskPenetrometer (int frame, bool relative,
+                         const std::vector<double>& point,
+                         const std::vector<double>& normal,
+                         double max_depth, double max_force,
+                         int id);
+  void taskShearBevameter (int frame, bool relative,
+                           const std::vector<double>& point,
+                           const std::vector<double>& normal,
+                           double preload, double max_torque,
                            int id);
-  void owlatArmMoveJointsGuarded (bool relative,
-                                  const std::vector<double>& angles,
-                                  bool retracting, double force_threshold,
-                                  double torque_threshold, int id);
-  void owlatArmPlaceTool (int frame,
+  void taskScoopCircular (int frame,
                           bool relative,
-                          const std::vector<double>& position,
+                          const std::vector<double>& point,
                           const std::vector<double>& normal,
-                          double distance, double overdrive,
-                          bool retracting, double force_threshold,
-                          double torque_threshold, int id);
-  void owlatArmSetTool (int tool, int id);
-  void owlatArmStop (int id);
-  void owlatArmTareFS (int id);
-  void owlatTaskPSP (int frame, bool relative, const std::vector<double>& point,
-                     const std::vector<double>& normal, double max_depth,
-                     double max_force, int id);
-  void owlatTaskScoop (int frame, bool relative, const std::vector<double>& point,
-                       const std::vector<double>& normal, int id);
+                          double depth, double scoop_angle,
+                          int id);
+  void taskScoopLinear (int frame,
+                        bool relative,
+                        const std::vector<double>& point,
+                        const std::vector<double>& normal,
+                        double depth, double scoop_angle,
+                        int id);
 
   // Lookups
-  PLEXIL::Value getArmJointAngles() const;
-  PLEXIL::Value getArmJointAccelerations() const;
-  PLEXIL::Value getArmJointTorques() const ;
-  PLEXIL::Value getArmJointVelocities() const;
-  PLEXIL::Value getArmFTTorque() const;
-  PLEXIL::Value getArmFTForce() const;
-  PLEXIL::Value getArmPose() const;
   PLEXIL::Value getArmTool() const;
-  PLEXIL::Value getPSPStopReason() const;
-  PLEXIL::Value getPanDegrees() const;
-  PLEXIL::Value getPanRadians() const;
-  PLEXIL::Value getTiltRadians() const;
-  PLEXIL::Value getTiltDegrees() const;
-  PLEXIL::Value getJointTelemetry (int joint, TelemetryType type) const;
+  bool systemFault () const override;
+  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
-
   // Actions
-  void owlatUnstowAction (int id);
-  void owlatStowAction (int id);
-  void owlatArmMoveCartesianAction (int frame, bool relative,
-                                    const std::vector<double>& position,
-                                    const std::vector<double>& orientation,
-                                    int id);
-  void owlatArmMoveCartesianGuardedAction (int frame, bool relative,
-                                           const std::vector<double>& position,
-                                           const std::vector<double>& orientation,
-                                           bool retracting,
-                                           double force_threshold,
-                                           double torque_threshold,int id);
-  void owlatArmMoveJointAction (bool relative, int joint,
-                                double angle, int id);
-  void owlatArmMoveJointsAction (bool relative, const std::vector<double>& angles,
+  void armFindSurfaceAction (int frame, bool relative,
+                             const std::vector<double>& position,
+                             const std::vector<double>& normal,
+                             double distance, double overdrive,
+                             double force_threshold, double torque_threshold,
+                             int id);
+  void taskDiscardSampleAction (int frame, bool relative,
+                                const std::vector<double>& point,
+                                double height, int id);
+  void armMoveJointsAction (bool relative, const std::vector<double>& angles,
+                            int id);
+  void armMoveJointsGuardedAction (bool relative,
+                                   const std::vector<double>& angles,
+                                   double force_threshold,
+                                   double torque_threshold, int id);
+  void armSetToolAction (int tool, int id);
+  void taskPSPAction (int frame, bool relative,
+                      const std::vector<double>& point,
+                      const std::vector<double>& normal,
+                      double max_depth, double max_force,
+                      int id);
+  void taskShearBevameterAction (int frame, bool relative,
+                                 const std::vector<double>& point,
+                                 const std::vector<double>& normal,
+                                 double preload, double max_torque,
                                  int id);
-  void owlatArmMoveJointsGuardedAction (bool relative,
-                                        const std::vector<double>& angles,
-                                        bool retracting, double force_threshold,
-                                        double torque_threshold, int id);
-  void owlatArmPlaceToolAction (int frame, bool relative,
-                                const std::vector<double>& position,
+  void taskPenetrometerAction (int frame, bool relative,
+                               const std::vector<double>& point,
+                               const std::vector<double>& normal,
+                               double max_depth, double max_force, int id);
+  void taskScoopLinearAction (int frame, bool relative,
+                              const std::vector<double>& point,
+                              const std::vector<double>& normal,
+                              double depth, double length,
+                              int id);
+  void taskScoopCircularAction (int frame, bool relative,
+                                const std::vector<double>& point,
                                 const std::vector<double>& normal,
-                                double distance, double overdrive,
-                                bool retracting, double force_threshold,
-                                double torque_threshold, int id);
-  void owlatArmSetToolAction (int tool, int id);
-  void owlatArmStopAction (int id);
-  void owlatArmTareFSAction (int id);
-  void owlatTaskPSPAction (int frame, bool relative,
-                           const std::vector<double>& point,
-                           const std::vector<double>& normal, double max_depth,
-                           double max_force, int id);
-  void owlatTaskScoopAction (int frame, bool relative,
-                             const std::vector<double>& point,
-                             const std::vector<double>& normal, int id);
+                                double depth, double scoop_angle,
+                                int id);
 
   // Callbacks
-  void armJointAnglesCallback
-  (const owlat_sim_msgs::ARM_JOINT_ANGLES::ConstPtr& msg);
-  void armJointAccelerationsCallback
-  (const owlat_sim_msgs::ARM_JOINT_ACCELERATIONS::ConstPtr&);
-  void armJointTorquesCallback
-  (const owlat_sim_msgs::ARM_JOINT_TORQUES::ConstPtr& msg);
-  void armJointVelocitiesCallback
-  (const owlat_sim_msgs::ARM_JOINT_VELOCITIES::ConstPtr& msg);
-  void armFTTorqueCallback(const owlat_sim_msgs::ARM_FT_TORQUE::ConstPtr& msg);
-  void armFTForceCallback(const owlat_sim_msgs::ARM_FT_FORCE::ConstPtr& msg);
-  void armPoseCallback(const owlat_sim_msgs::ARM_POSE::ConstPtr& msg);
+  void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void armToolCallback(const owlat_sim_msgs::ARM_TOOL::ConstPtr& msg);
-  void panTiltCallback (const owl_msgs::PanTiltPosition::ConstPtr& msg);
+  void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
   // Action Clients
-  std::unique_ptr<OwlatUnstowActionClient> m_owlatUnstowClient;
-  std::unique_ptr<OwlatStowActionClient> m_owlatStowClient;
-  std::unique_ptr<OwlatArmMoveCartesianActionClient> m_owlatArmMoveCartesianClient;
-  std::unique_ptr<OwlatArmMoveCartesianGuardedActionClient> m_owlatArmMoveCartesianGuardedClient;
-  std::unique_ptr<OwlatArmMoveJointActionClient> m_owlatArmMoveJointClient;
-  std::unique_ptr<OwlatArmMoveJointsActionClient> m_owlatArmMoveJointsClient;
-  std::unique_ptr<OwlatArmMoveJointsGuardedActionClient> m_owlatArmMoveJointsGuardedClient;
-  std::unique_ptr<OwlatArmPlaceToolActionClient> m_owlatArmPlaceToolClient;
-  std::unique_ptr<OwlatArmSetToolActionClient> m_owlatArmSetToolClient;
-  std::unique_ptr<OwlatArmStopActionClient> m_owlatArmStopClient;
-  std::unique_ptr<OwlatArmTareFSActionClient> m_owlatArmTareFSClient;
-  std::unique_ptr<OwlatTaskPSPActionClient> m_owlatTaskPSPClient;
-  std::unique_ptr<OwlatTaskScoopActionClient> m_owlatTaskScoopClient;
+  std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
+  std::unique_ptr<TaskDiscardSampleActionClient> m_discardSampleClient;
+  std::unique_ptr<ArmMoveJointsActionClient> m_armMoveJointsClient;
+  std::unique_ptr<ArmMoveJointsGuardedActionClient> m_armMoveJointsGuardedClient;
+  std::unique_ptr<ArmSetToolActionClient> m_armSetToolClient;
+  std::unique_ptr<ArmTareFTSensorActionClient> m_armTareFTSensorClient;
+  std::unique_ptr<TaskPSPActionClient> m_taskPSPClient;
+  std::unique_ptr<TaskShearBevameterActionClient> m_taskShearBevameterClient;
+  std::unique_ptr<TaskPenetrometerActionClient> m_taskPenetrometerClient;
+  std::unique_ptr<TaskScoopCircularActionClient> m_taskScoopCircularClient;
+  std::unique_ptr<TaskScoopLinearActionClient> m_taskScoopLinearClient;
 
   // Member variables
-  std::vector<double> m_arm_joint_angles;
-  std::vector<double> m_arm_joint_accelerations;
-  std::vector<double> m_arm_joint_torques;
-  std::vector<double> m_arm_joint_velocities;
-  std::vector<double> m_arm_ft_torque;
-  std::vector<double> m_arm_ft_force;
-  std::vector<double> m_arm_pose;
-  double m_arm_tool;
-  double m_pan_radians;
-  double m_tilt_radians;
+
+  // System-level faults:
+  FaultMap m_systemErrors = {
+    {"SYSTEM", std::make_pair(
+        owl_msgs::SystemFaultsStatus::SYSTEM,false)},
+    {"ARM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
+    {"ARM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
+    {"TASK_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
+    {"CAM_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_GOAL_ERROR,false)},
+    {"CAM_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAM_EXECUTION_ERROR,false)},
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
+    {"POWER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
+  };
+
+  std::vector<double> m_end_effector_ft;
+  int m_arm_tool;
 };
 
 #endif

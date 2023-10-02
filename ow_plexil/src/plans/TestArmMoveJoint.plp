@@ -9,7 +9,7 @@
 // joint shou pitch (joint 1) is from 0.05 to 2.2
 // joint grinder is from -3.14 to 3.14 (although not relevant in this case)
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestArmMoveJoint:
 {

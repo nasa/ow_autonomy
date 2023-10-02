@@ -1,47 +1,79 @@
 // The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
- 
-// Unstow and stow the arm repeatedly. Pan the antenna
-// in 15 degree increments when 'Unstow' action goal status
-// is 'ACTIVE' and pan the antenna in 15 degree decrements 
-// when 'Stow' action goal status is 'ACTIVE'. 
-// This plan will be terminated if any fault occurs.
 
-#include "plan-interface.h"
+// Pan and tilt the antenna repeatedly, while monitoring and printing
+// action goal state. Looks for just the four supported states.
+// Terminate this plan by injecting a power fault: Low
+// State-Of-Charge, Instantaneous Capacity Loss, or Thermal Failure.
+
+#include "ow-interface.h"
+
+LibraryAction TestAntennaMovement;
 
 ActionGoalStateDemo:
 {
-  Real NewAngle = 0;
-
   log_info ("Starting ActionGoalStateDemo plan...");
 
   Run: Concurrence
   {
-    ExitCondition Lookup(SystemFault);
+    Real PanAngle = 0;
+    Real TiltAngle = 0;
 
-    Pattern2Image:
+    MoveAntenna: UncheckedSequence
     {
-      RepeatCondition true;
-      StartCondition !Lookup(AntennaFault);
+      RepeatCondition !Lookup(PowerFault);
 
-      if (Lookup(ActionGoalStatus("ArmStow")) == 1)
-      {
-        NewAngle = (Lookup(PanDegrees) - 15) mod 360;
-      }
-      else NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-  
-      LibraryCall PanTiltMoveJoints (PanDegrees=NewAngle, TiltDegrees=0);
+      PanAngle = PanAngle + 15;
+      if (PanAngle > 180) PanAngle = PanAngle - 360; endif;
+      TiltAngle = TiltAngle + 5;
+      if (TiltAngle > 45) TiltAngle = TiltAngle - 90; endif;
+      LibraryCall Tilt (Degrees=TiltAngle);
+      Wait 1;
+      LibraryCall Pan (Degrees=PanAngle);
+      Wait 1;
     }
 
-    Pattern2UnstowStow:
+    ReportStatus: UncheckedSequence
     {
-      RepeatCondition true;
-      StartCondition !Lookup(ArmFault);
-      InvariantCondition !Lookup(ArmFault);
+      RepeatCondition !Lookup(PowerFault);
 
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
+      if (Lookup(ActionGoalStatus("Tilt")) == ACTION_INACTIVE) {
+        log_info ("Tilt is inactive.");
+      }
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_ACTIVE) {
+        log_info ("Tilt is active.");
+      }
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_SUCCEEDED) {
+        log_info ("Tilt is successful.");
+      }
+      else if (Lookup(ActionGoalStatus("Tilt")) == ACTION_ABORTED) {
+        log_info ("Tilt is aborted.");
+      }
+      if (Lookup(ActionGoalStatus("Pan")) == ACTION_INACTIVE) {
+        log_info ("Pan is inactive.");
+      }
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_ACTIVE) {
+        log_info ("Pan is active.");
+      }
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_SUCCEEDED) {
+        log_info ("Pan is successful.");
+      }
+      else if (Lookup(ActionGoalStatus("Pan")) == ACTION_ABORTED) {
+        log_info ("Pan is aborted.");
+      }
+      else {
+        log_warning ("Either Pan or Tilt are in an unexpected state:");
+        log_warning ("Pan is in state ",
+                     Lookup(ActionGoalStatus("Pan")));
+        log_warning ("Tilt is in state ",
+                     Lookup(ActionGoalStatus("Tilt")));
+      }
+      endif;
+
+      Wait 1;
     }
   }
+
+  log_info ("ActionGoalStateDemo plan finished.");
 }

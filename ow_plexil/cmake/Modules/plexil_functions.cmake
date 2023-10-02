@@ -27,7 +27,7 @@ function(add_plexil_plans PLAN_SRC_FILES)
 
     add_custom_command(
       TARGET  ${PLEXILC_OUTPUT}
-      COMMAND ${PLEXIL_COMPILER} -o ${PLEXILC_OUTPUT} ${PLANRD}/${PLANWE}${PLANEX}
+      COMMAND ${PLEXIL_COMPILER} -p -o ${PLEXILC_OUTPUT} ${PLANRD}/${PLANWE}${PLANEX}
       DEPENDS ${PLAN}
     )
     list(APPEND PLAN_LIST ${PLEXILC_OUTPUT})

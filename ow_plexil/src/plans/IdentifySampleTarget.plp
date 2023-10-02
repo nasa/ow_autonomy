@@ -8,9 +8,9 @@
 // chooses the best sample point and then uses guarded move to find the exact
 // ground position of that spot.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
-LibraryAction PanAndShoot (In Real PanAngle, In Real TiltAngle);
+LibraryAction PanAndShoot (In Real PanAngle);
 
 IdentifySampleTarget:
 {
@@ -26,13 +26,10 @@ IdentifySampleTarget:
   // Take pictures in front of the lander for processing in
   // identify_sample_location.
 
-  // Tilt used to be done once:
-  //  LibraryCall Tilt(Degrees = c_tilt);
-  // Leaving this here for now in case there are problems with the repeated tilt.
-
-  LibraryCall PanAndShoot(PanAngle = c_pan - delta, TiltAngle = c_tilt);
-  LibraryCall PanAndShoot(PanAngle = c_pan, TiltAngle = c_tilt);
-  LibraryCall PanAndShoot(PanAngle = c_pan + delta, TiltAngle = c_tilt);
+  LibraryCall Tilt(Degrees = c_tilt);
+  LibraryCall PanAndShoot(PanAngle = c_pan - delta);
+  LibraryCall PanAndShoot(PanAngle = c_pan);
+  LibraryCall PanAndShoot(PanAngle = c_pan + delta);
   SynchronousCommand result = identify_sample_location(3, FilterType);
 
   if (isKnown(result[0]) && isKnown(result[1]) && isKnown(result[2])) {

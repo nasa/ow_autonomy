@@ -5,7 +5,7 @@
 // A simple test that collects a sample, discards it, collects again,
 // and delivers it.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 TestDiscardDeliver:
 {
@@ -21,7 +21,7 @@ TestDiscardDeliver:
                                  X = 1.75, Y = 0.1, Z = GP,
                                  Depth = 0.045, Parallel = false);
   LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
-                                 X = 1.5, Y = 0.8, Z = 0.65, Height = 0.1);
+                                 Point = #(1.5 0.8 0.65), Height = 0.1);
   LibraryCall TaskScoopCircular (Frame = 0, Relative = false,
                                  X = 1.75, Y = 0.1, Z = GP,
                                  Depth = 0.045, Parallel = false);

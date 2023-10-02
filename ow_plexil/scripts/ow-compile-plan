@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Simple script for compiling a single PLEXIL plan (.plp file).
+# Compiled version (.plx) is placed in the current deployment
+# directory.  Assumes that the PLEXIL compiler (plexilc) is in the
+# user's search path.
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <filename.plp>"
+    exit 1
+fi
+
+if [ -z "$PLEXIL_PLAN_DIR" ]
+then
+    echo 'Error: environment PLEXIL_PLAN_DIR is not defined, '
+    echo 'which suggests that your workspace is not set up. '
+    echo 'See that your workspace is built and that your '
+    echo 'devel/setup.bash file is sourced.'
+    exit 1
+fi
+
+input_file="$1"
+
+if [ ! -f "${input_file}" ]; then
+    echo "Input file '${input_file}' not found."
+    exit 1
+fi
+
+base_filename=$(basename "$input_file" .plp)
+output_filename="${base_filename}.plx"
+output_directory="$PLEXIL_PLAN_DIR/../../.private/ow_plexil/etc/plexil/"
+output_file="${output_directory}${output_filename}"
+
+# The '-p' option formats the output XML.
+plexilc -p -o "${output_file}" "${input_file}"
+
+# Create a symlink required by catkin
+ln -sf "${output_file}" "$PLEXIL_PLAN_DIR/$output_filename"
+

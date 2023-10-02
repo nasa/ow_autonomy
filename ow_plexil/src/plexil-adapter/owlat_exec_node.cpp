@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     std::string plan(argv[1]);
     initial_plan = plan;
   }
-  if (! OwExecutive::instance()->initialize ("owlat_plans/owlat-config.xml")) {
+  if (! OwExecutive::instance()->initialize ("owlat/owlat-config.xml")) {
     ROS_ERROR("Could not initialize Plexil executive, shutting down.");
     return 1;
   }
@@ -32,8 +32,5 @@ int main(int argc, char* argv[])
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
   ros::spin();
-
-  // Never reached, because killing the process is the only way to terminate
-  // this program.
   return 0;
 }

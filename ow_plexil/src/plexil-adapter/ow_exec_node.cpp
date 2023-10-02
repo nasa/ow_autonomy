@@ -32,8 +32,5 @@ int main(int argc, char* argv[])
   plan_selection.initialize(initial_plan); //initialize pubs, subs, etc
   plan_selection.start(); //begin control loop
   ros::spin();
-
-  // Never reached, because killing the process is the only way to terminate
-  // this program.
   return 0;
 }

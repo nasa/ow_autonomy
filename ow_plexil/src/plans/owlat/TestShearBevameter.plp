@@ -1,0 +1,24 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Test sequence 4.14.1 in the OWLAT 5.3 user guide.
+
+// Fails during bevameter action.  For some reason, the MaxTorque
+// threshold is never reached, and we've tried values as high as 1.0.
+// Reproducable at Ames, but not JPL.  We have given up as of 6/9/23.
+
+#include "owlat-interface.h"
+
+TestShearBevameter:
+{
+  LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=TOOL_BEVAMETER);
+  LibraryCall TaskShearBevameter (Frame = TOOL_FRAME,
+                                  Relative = false,
+                                  Point = #(0 0 0.43),
+                                  Normal = #(0 0 -1),
+                                  Preload = 5.0,
+                                  MaxTorque = 0.1);
+  LibraryCall SafeStow();
+}

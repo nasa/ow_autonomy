@@ -6,7 +6,6 @@ Real Lookup CheckpointTime(...);
 Integer Lookup CheckpointWhen(String);
 String Lookup CheckpointInfo(...);
 Boolean Lookup DidCrash;
-Real Lookup time;
 
 GetInfoIfCrash:{
 

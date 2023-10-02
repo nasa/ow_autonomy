@@ -4,7 +4,7 @@
 
 // Collect a sample from a dug trench and deposit it in the receptacle.
 
-#include "plan-interface.h"
+#include "ow-interface.h"
 
 CollectSample:
 {

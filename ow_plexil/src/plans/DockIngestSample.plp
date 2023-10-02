@@ -5,7 +5,7 @@
 // Delete any sample regolith particles that are in the sample dock.
 // This simulates the emptying of the dock.
 
-#include "lander-commands.h"
+#include "ow-commands.h"
 
 DockIngestSample:
 {
