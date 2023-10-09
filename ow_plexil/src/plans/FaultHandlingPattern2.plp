@@ -2,17 +2,24 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// This plan demonstrates independent fault detection and handling for
+// two concurrent actions.
+
 // Action 1: Pan antenna in 15 degree increments.
 // Action 2: Unstow and stow the arm repeatedly.
 // If no faults are occurring, action 1 and 2 occur simultaneously.
-// If an antenna fault but no arm faults occurring, only action 2 occurs.
-// If an arm fault but no antenna faults occurring, only action 1 occurs.
-// If both antenna and arm faults occurring, the plan waits for resolution.
-// This plan must be terminated with an interrupt, e.g. Control-C.
+// If an antenna pan fault but no arm fault is injected, only action 2 occurs.
+// If an arm fault but no antenna pan fault is injected, only action 1 occurs.
+// If both antenna pan and arm faults are injected, the plan waits for resolution.
+// For now, this plan must be terminated with an interrupt, e.g. Control-C.
+
+// NOTE: the Wait statements in this plan prevent deadlock between the
+// two concurrent nodes, by inducing a macro step (environment
+// processing cycle) that allows the other node to advance.
 
 #include "ow-interface.h"
 
-FaultHandlingPattern2:
+FaultHandlingPattern2: UncheckedSequence
 {
   Real NewAngle = 0;
 
@@ -20,35 +27,37 @@ FaultHandlingPattern2:
 
   Run: Concurrence
   {
-
-  UncheckedSequence
-  {
-    RepeatCondition true;
-
-    Wait .2;
-
-    Pattern2PanAntenna:
-    {
-      Start !Lookup(AntennaPanFault);
-      Exit Lookup(AntennaPanFault);
-
-      NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-
-      if NewAngle > 180{
-        NewAngle = NewAngle - 360;
-      }
-
-      LibraryCall Pan (Degrees=NewAngle);
-    }
-  }
-
-    Pattern2UnstowStow:
+    Antenna: UncheckedSequence
     {
       Repeat true;
-      Start !Lookup(ArmFault);
-      Invariant !Lookup(ArmFault);
 
-      LibraryCall SafeStow();
+      Pan: UncheckedSequence
+      {
+        Start !Lookup(AntennaPanFault);
+        Exit Lookup(AntennaPanFault);
+
+        NewAngle = (Lookup(PanDegrees) + 15) mod 360;
+        if (NewAngle > 180) NewAngle = NewAngle - 360;
+        LibraryCall Pan (Degrees=NewAngle);
+      }
+      Wait 0.1;
+    }
+
+    Arm: UncheckedSequence
+    {
+      Repeat true;
+
+      StowUnstow: UncheckedSequence
+      {
+        Start !Lookup(ArmFault);
+        Exit Lookup(ArmFault);
+
+        LibraryCall SafeStow();
+      }
+      Wait 0.1;
     }
   }
+  
+  // Presently unreachable.
+  log_info ("Finished FaultHandlingPattern2 plan.");
 }
