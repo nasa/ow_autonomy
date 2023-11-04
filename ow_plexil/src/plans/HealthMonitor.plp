@@ -2,11 +2,17 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan monitors the faultDependencies of each subsystem. When a 
-// subsystem becomes inoperable, it prints out a message with the status and cause.
-// Other plans are intended to use the HealthMonitor with the InOut Boolean variables
-// that are updated every second. This is intended to make monitoring faults easiera and
-// less verbose in new plans. 
+// This plan monitors the faultDependencies of each subsystem. When a
+// subsystem becomes inoperable, it prints out a message with the
+// status and cause.  Other plans are intended to use the
+// HealthMonitor with the InOut Boolean variables that are updated
+// every second. This is intended to make monitoring faults easiera
+// and less verbose in new plans.
+
+// NOTE: this plan requires use of the Fault Dependencies framework,
+// which is documented in OceanWATERS user guide at
+// https://github.com/nasa/ow_simulator/wiki/Autonomy.
+
 
 #include "ow-interface.h"
 
@@ -22,7 +28,7 @@ HealthMonitor:
   Boolean PrevAntenna = true;
   Boolean PrevCamera = true;
   Boolean PrevPower = true;
-  
+
   LookupLoop:
   {
     Repeat true;
@@ -33,7 +39,7 @@ HealthMonitor:
     CameraOperable = Lookup(IsOperable("Camera"));
     PowerOperable = Lookup(IsOperable("Power"));
 
-    AllOperable = ArmOperable && 
+    AllOperable = ArmOperable &&
                   AntennaOperable &&
                   CameraOperable &&
                   PowerOperable;
@@ -96,5 +102,3 @@ HealthMonitor:
     }
   }
 }
-
-

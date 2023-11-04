@@ -5,7 +5,11 @@
 // Demo unstows and stows the arm if the Camera is set as operable
 // from the HealthMonitor. If it is inoperable, and the camera is operable
 // it takes photos. If both the Camera and Arm are inoperable, it prints out an
-// error message and waits for them to be operable. 
+// error message and waits for them to be operable.
+
+// NOTE: this plan requires use of the Fault Dependencies framework,
+// which is documented in OceanWATERS user guide at
+// https://github.com/nasa/ow_simulator/wiki/Autonomy.
 
 #include "ow-interface.h"
 

@@ -19,7 +19,8 @@
     </Subsystem>
 
     <Subsystem Name="Arm">
-      <!-- Currently COLLISION, E_STOP, NO_FORCE_DATA and FORCE_TORQUE_LIMIT are not supported in the simulator. -->
+      <!-- Currently COLLISION, E_STOP, NO_FORCE_DATA and
+           FORCE_TORQUE_LIMIT are not supported in the simulator. -->
       <Faults>
         <Fault Name="HARDWARE">
           <Impacts Name="Arm" Type="Subsystem"/>

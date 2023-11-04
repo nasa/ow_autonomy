@@ -29,6 +29,7 @@ static double normalize_degrees (double angle)
 
 // Duplication of actionlib_msgs/GoalStatus.h with the addition of a
 // NOGOAL status for when the action is not running.
+// NOTE: the last three are not yet supported in the simulator.
 //
 enum ActionGoalStatus {
   NOGOAL = -1,
@@ -45,6 +46,11 @@ enum ActionGoalStatus {
 };
 
 static map<string, int> ActionGoalStatusMap { };
+
+static string status_topic (const string& action)
+{
+  return string("/") + action + "/status";
+}
 
 
 ///////////////////////////////// Class Interface ///////////////////////////////
@@ -67,7 +73,7 @@ PlexilInterface::~PlexilInterface ()
 }
 
 void PlexilInterface::actionGoalStatusCallback
-(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string action_name)
+(const actionlib_msgs::GoalStatusArray::ConstPtr& msg, const string& action_name)
 
 // Update ActionGoalStatusMap of action action_name with the status
 // from first goal in GoalStatusArray msg. This is based on the
@@ -76,21 +82,24 @@ void PlexilInterface::actionGoalStatusCallback
 {
   if (msg->status_list.size() == 0) {
     ActionGoalStatusMap[action_name] = NOGOAL;
+    publish ("ActionGoalStatus", static_cast<int>(NOGOAL), action_name);
   }
   else { // if (msg->status_list.size() >= 1) {
-    ActionGoalStatusMap[action_name] = msg->status_list[0].status;
+    ActionGoalStatus status =
+      static_cast<ActionGoalStatus>(msg->status_list[0].status);
+    ActionGoalStatusMap[action_name] = status;
+    publish ("ActionGoalStatus", static_cast<int>(status), action_name);
   }
 }
 
-void PlexilInterface::subscribeToActionStatus (const string& topic,
-					       const string& operation)
+void PlexilInterface::subscribeToActionStatus (const string& action)
 {
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle -> subscribe<actionlib_msgs::GoalStatusArray>
-      (topic, 3,
+      (status_topic(action), 3,
        boost::bind(&PlexilInterface::actionGoalStatusCallback,
-                   this, _1, operation))));
+                   this, _1, action))));
 }
 
 int PlexilInterface::actionGoalStatus (const string& action_name) const

@@ -63,7 +63,9 @@ Command dock_ingest_sample();
 Command light_set_intensity (String side,     // "left" or "right"
 			     Real intensity); // 0.0 to 1.0.  0 is off.
 
-// Simulate fault commands
+// Simulate fault commands.  See TestSimulatedFaults.plp for example
+// usage. The value of 'probability' must be in the range [0..1].
+//
 Boolean Command inject_simulated_fault (String fault_name, Real probability);
 Boolean Command clear_simulated_fault (String fault_name, Real probability);
 

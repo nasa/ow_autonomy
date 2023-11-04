@@ -1,8 +1,11 @@
-This repository contains candidate autonomy components for an Ocean Worlds lander.
+This repository contains candidate autonomy components for OceanWATERS
+(Ocean Worlds Autonomy Testbed for Exploration Research & Simulation).
+Instructions for its installation and use are found in this project's
+main repository, https://github.com/nasa/ow_simulator.
 
 Notices:
 --------
-Copyright © 2020 United States Government as represented by the
+Copyright © 2020-2023 United States Government as represented by the
 Administrator of the National Aeronautics and Space Administration.  All Rights
 Reserved.
 

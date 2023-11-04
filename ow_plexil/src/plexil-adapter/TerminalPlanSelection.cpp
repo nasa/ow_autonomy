@@ -45,7 +45,7 @@ void TerminalPlanSelection::start(bool initial_plan)
   while (ros::ok()) {
     if (m_plan_running == false) {
       // checks to see if previous plan finished
-      std::cout << "\nEnter any additional plan to be run (or use the GUI): "
+      std::cout << "\nEnter a plan to execute (or use the rqt GUI): "
                 << std::endl;
       std::cin >> input;
       std::cin.ignore();
