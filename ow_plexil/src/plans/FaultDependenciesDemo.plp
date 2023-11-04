@@ -5,19 +5,31 @@
 // This plan demonstrates aspects of the Fault Dependencies framework,
 // described in the OceanWATERS user guide at
 // https://github.com/nasa/ow_simulator/wiki/Autonomy, and requires
-// its use.
+// its use.  In particular you must start the executive as follows:
+//
+//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
+//
+// This plan has a main action and a backup action, only one of which
+// should operate at a time, depending on operability (fault) status.
+//
+// The main action is that the antenna will pan, tilt and then take a
+// picture, repeatedly.  If the Pan Fault is active it will only Tilt
+// and Take a Picture. If the Tilt Fault is active it will only Pan
+// and take a picture. If the Camera Fault is active, an image capture
+// will still be attempted, and the final result shown.  If and only
+// if both Pan and Tilt are inoperable, the backup action will begin.
 
-// The Antenna will Pan, Tilt and then take a picture. If the Pan
-// Fault is active it will only Tilt and Take a Picture. If the Tilt
-// Fault is active it will only Pan and take a picture. If both Pan
-// and Tilt are inoperable, the backup action will begin and
-// unstow/stow the arm repeatably. Camera faults will prevent a
-// picture from being taken until they are cleared.
+// The backup action is to unstow/stow the arm repeatedly.  Any arm
+// fault will pause the backup action until the faults are cleared.
+// Whenever the antenna is operable (pan or tilt), the backup action
+// will stop, and main action will resume.
 
-// NOTE: As of 10/18/2023, the backup action should be robust to
-// faults, but due to an unknown bug it will freeze the whole plan if
-// an arm fault is activated during execution. This is being
-// investigated.
+// Note that it may take up to 20 seconds to see the expected reaction
+// to fault injection and clearing, because a ROS action in progress
+// needs to complete.  At present PLEXIL does not have a finer degree
+// of control over ROS actions -- they must run to completion once
+// started.
+
 
 #include "ow-interface.h"
 
