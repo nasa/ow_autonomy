@@ -243,7 +243,7 @@ EuropaMission: Concurrence
     }
 
     log_info ("Europa Mission, Sol 0 finished.");
-    set_boot_ok();
+    set_boot_ok(true, 0);
     SynchronousCommand flush_checkpoints();
     MissionInProgress = false;
   }
