@@ -3,7 +3,8 @@
 // this repository.
 
 // Test misc actions that don't have a prescribed test sequence in the
-// OWLAT 5.3 user guide.
+// OWLAT 0.5.4 user guide.  Note that FaultSet and FaultClear are not
+// yet included, and need a PLEXIL interface.
 
 #include "owlat-interface.h"
 
