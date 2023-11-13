@@ -163,10 +163,11 @@ Boolean Command set_checkpoint (...);
 // Flushes all changes (including set_boot_ok) to disk.
 Boolean Command flush_checkpoints ();
 
-// Sets IsBootOK, returns previous value. Actual:
-//Integer Command set_boot_ok (Boolean state=True, Integer boot=0);
-// Declared as:
-Integer Command set_boot_ok (...);
+// Marks the given boot number is_ok.  This command has optional arguments:
+//   Command set_boot_ok (Boolean state=True, Integer boot=0);
+// But due to a bug in its implementation, it requires at least one of
+// these (either one).  The effective way to declare this command is as follows.
+Command set_boot_ok (...);
 
 // Returns the total number of boots ever logged.
 Integer Lookup NumberOfTotalBoots ();
