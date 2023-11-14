@@ -8,7 +8,9 @@
 // (Note that it is pointing in the antenna's default position).  If
 // the camera is also inoperable, it continues to be tried, since it
 // takes a camera trigger to know if a camera fault persists.  If both
-// the Camera and Arm are inoperable, the plan waits for either to work.
+// the Camera and Arm are inoperable, the plan waits for either to
+// work, though keeps attempting pictures.  If Power is inoperable,
+// the plan ceases activity and waits.
 
 // NOTE: this plan requires use of the Fault Dependencies framework,
 // which is documented in OceanWATERS user guide at
@@ -53,12 +55,13 @@ HealthMonitorDemo: Concurrence
       log_info("Arm not operable, attempting CameraCapture to diagnose...");
       LibraryCall CameraCapture();
     }
-    else {
+    else if PowerGood {
       // Trying CameraCapture because the Camera fault state can only be detected when
       // the camera attempts to take a photo.
       LibraryCall CameraCapture();
-      log_info("Waiting for Camera or Arm to become operable....");
+      log_info("Waiting for Camera or Arm to become operable...");
     }
+    else log_info("Waiting for Power to become operable...");
     endif;
   }
 }
