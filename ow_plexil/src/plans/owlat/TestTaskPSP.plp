@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test sequence 4.12.1 in the OWLAT 5.3 user guide.
+// Test sequence 4.12.1 in the OWLAT 0.5.4 user guide.
 
 #include "owlat-interface.h"
 
@@ -13,8 +13,8 @@ TestTaskPSP:
   LibraryCall ArmSetTool(Tool=TOOL_PSP);
   LibraryCall TaskPSP (Frame = TOOL_FRAME,
                        Relative = false,
-                       Point = #(0 0 0.5 ),
-                       Normal = #(0 0 -1 ),
+                       Point = #(0 0 0.5),
+                       Normal = #(0 0 -1),
                        MaxDepth = 0.3,
                        MaxForce = 10);
   LibraryCall SafeStow();

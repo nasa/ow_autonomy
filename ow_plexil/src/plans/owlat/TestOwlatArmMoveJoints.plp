@@ -2,6 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// Test sequence 4.8.1 in the OWLAT Sim 0.5.4 user guide.
+
 #include "owlat-interface.h"
 
 TestOwlatArmMoveJoints:

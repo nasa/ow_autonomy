@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test sequence 4.15.1 in the OWLAT 5.3 user guide.
+// Test sequence 4.15.1 in the OWLAT 0.5.4 user guide.
 
 #include "owlat-interface.h"
 
@@ -15,7 +15,7 @@ TestOwlatTaskScoopCircular:
                                       Relative = false,
                                       Point = #(0 0 0.43),
                                       Normal = #(0 0 -1),
-                                      Depth = 0.01, // 0.025 caused goal error
+                                      Depth = 0.025,
                                       ScoopAngle = 1.57);
   LibraryCall SafeStow();
   log_info ("Finished TaskScoopCircular test.");
