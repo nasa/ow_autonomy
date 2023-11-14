@@ -2,10 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan unstows and stows the arm if the Camera is set as operable
-// from the HealthMonitor. If it is inoperable, and the camera is operable
-// it takes photos. If both the Camera and Arm are inoperable, it prints out an
-// error message and waits for them to be operable.
+// This plan illustrates a basic use of the HealthMonitor plan. It
+// unstows and stows the arm whenever the arm is operable.  If the arm
+// is unoperable, the camera starts taking photos if it is operable.
+// (Note that it is pointing in the antenna's default position).  If
+// the camera is also inoperable, it continues to be tried, since it
+// takes a camera trigger to know if a camera fault persists.  If both
+// the Camera and Arm are inoperable, the plan waits for either to work.
 
 // NOTE: this plan requires use of the Fault Dependencies framework,
 // which is documented in OceanWATERS user guide at
@@ -35,7 +38,6 @@ HealthMonitorDemo: Concurrence
                                PowerOperable = PowerGood);
   }
 
-  /*
   DemoPattern:
   {
     Repeat true;
@@ -59,5 +61,4 @@ HealthMonitorDemo: Concurrence
     }
     endif;
   }
-  */
 }

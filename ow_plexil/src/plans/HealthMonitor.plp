@@ -16,6 +16,9 @@
 //
 //   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
 
+// Also note that this plan is a preliminary example and could be
+// improved by using a reactive (condition-driven) style rather than
+// polling in a continuous loop.
 
 #include "ow-interface.h"
 
