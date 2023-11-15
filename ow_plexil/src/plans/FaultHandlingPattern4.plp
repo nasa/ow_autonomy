@@ -43,25 +43,19 @@ FaultHandlingPattern4:
 
     LogPanError:
     {
-
       Start !PanDone && Lookup(AntennaFault);
-    
       log_error ("Panning halted due to an antenna fault.");
     }
 
     LogUnstowError:
     {
-
       Start PanDone && !UnstowDone && Lookup(ArmFault);
-    
       log_error ("Unstowing halted due to an arm fault.");
     }
 
     LogStowError:
     {
-
       Start UnstowDone && !StowDone && Lookup(ArmFault);
-    
       log_error ("Stowing halted due to an arm fault.");
     }
 
@@ -69,7 +63,6 @@ FaultHandlingPattern4:
                                  pan_done=PanDone,
                                  unstow_done=UnstowDone,
                                  stow_done=StowDone);
-
   }
 
   log_info ("FaultHandlingPattern4 plan complete.");
