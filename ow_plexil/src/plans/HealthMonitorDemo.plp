@@ -2,26 +2,33 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Demo unstows and stows the arm if the Camera is set as operable
-// from the HealthMonitor. If it is inoperable, and the camera is operable
-// it takes photos. If both the Camera and Arm are inoperable, it prints out an
-// error message and waits for them to be operable.
+// This plan illustrates a basic use of the HealthMonitor plan. It
+// unstows and stows the arm whenever the arm is operable.  If the arm
+// is unoperable, the camera starts taking photos if it is operable.
+// (Note that it is pointing in the antenna's default position).  If
+// the camera is also inoperable, it continues to be tried, since it
+// takes a camera trigger to know if a camera fault persists.  If both
+// the Camera and Arm are inoperable, the plan waits for either to
+// work, though keeps attempting pictures.  If Power is inoperable,
+// the plan ceases activity and waits.
 
 // NOTE: this plan requires use of the Fault Dependencies framework,
 // which is documented in OceanWATERS user guide at
-// https://github.com/nasa/ow_simulator/wiki/Autonomy.
+// https://github.com/nasa/ow_simulator/wiki/Autonomy. In particular
+// you must start the executive with a fault dependencies file, e.g.
+//
+//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
 
 #include "ow-interface.h"
 
 HealthMonitorDemo: Concurrence
 {
-
   Boolean AllGood;
   Boolean ArmGood;
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
-  
+
   log_info("Starting HealthMonitorDemo...");
 
   Monitor:
@@ -38,22 +45,23 @@ HealthMonitorDemo: Concurrence
     Repeat true;
     Wait 3;
 
-    if ArmGood{
+    if ArmGood {
       Invariant ArmGood;
       log_info("Unstowing and stowing arm...");
       LibraryCall ArmUnstow();
       LibraryCall ArmStow();
     }
-    else if CameraGood{
+    else if CameraGood {
       log_info("Arm not operable, attempting CameraCapture to diagnose...");
       LibraryCall CameraCapture();
     }
-    else{
-      // Trying CameraCapture because the Camera fault state can only be detected when 
+    else if PowerGood {
+      // Trying CameraCapture because the Camera fault state can only be detected when
       // the camera attempts to take a photo.
       LibraryCall CameraCapture();
-      log_info("Waiting for Camera or Arm to become operable....");
+      log_info("Waiting for Camera or Arm to become operable...");
     }
+    else log_info("Waiting for Power to become operable...");
+    endif;
   }
-
 }

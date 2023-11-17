@@ -2,17 +2,23 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan monitors the faultDependencies of each subsystem. When a
-// subsystem becomes inoperable, it prints out a message with the
-// status and cause.  Other plans are intended to use the
-// HealthMonitor with the InOut Boolean variables that are updated
-// every second. This is intended to make monitoring faults easiera
-// and less verbose in new plans.
+// This plan is a simple prototype for a rudimentary health monitor
+// for the lander.  It monitors the fault dependencies of each
+// subsystem. When a subsystem becomes inoperable, it prints out a
+// message with the status and cause.  Other plans are intended to use
+// the HealthMonitor with the InOut Boolean variables that are updated
+// every second. This is intended to make monitoring faults easier and
+// less verbose in new plans.
 
 // NOTE: this plan requires use of the Fault Dependencies framework,
 // which is documented in OceanWATERS user guide at
-// https://github.com/nasa/ow_simulator/wiki/Autonomy.
+// https://github.com/nasa/ow_simulator/wiki/Autonomy. In particular
+// you must start the executive with a fault dependencies file, e.g.
+//
+//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
 
+// Note that this plan could be improved by using a reactive
+// (condition-driven) style rather than polling in a continuous timed loop.
 
 #include "ow-interface.h"
 
@@ -24,10 +30,13 @@ HealthMonitor:
   InOut Boolean CameraOperable = true;
   InOut Boolean PowerOperable = true;
 
-  Boolean PrevArm = true;
-  Boolean PrevAntenna = true;
-  Boolean PrevCamera = true;
-  Boolean PrevPower = true;
+  // For simplicity, we initializing these flags true to be sure we
+  // get 'inoperable' messages for any systems that are inoperable,
+  // even though they may have already been inoperable.
+  Boolean ArmPreviouslyWorking = true;
+  Boolean AntennaPreviouslyWorking = true;
+  Boolean CameraPreviouslyWorking = true;
+  Boolean PowerPreviouslyWorking = true;
 
   LookupLoop:
   {
@@ -44,61 +53,69 @@ HealthMonitor:
                   CameraOperable &&
                   PowerOperable;
 
-    if !ArmOperable && PrevArm{
-      if Lookup(IsFaulty("Arm")){
-        log_warning("Health Monitor: Arm is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Arm")));
+    if !ArmOperable && ArmPreviouslyWorking {
+      if Lookup(IsFaulty("Arm")) {
+        log_warning("Health Monitor: Arm isa Inoperable due to the local fault(s): ",
+                    Lookup(ActiveFaults("Arm")));
       }
-      else{
+      else {
         log_warning("Health Monitor: Arm is Inoperable due to non-local fault(s).");
       }
-      PrevArm = false;
+      ArmPreviouslyWorking = false;
     }
-    if ArmOperable && !PrevArm{
-        log_warning("Health Monitor: Arm is now operable.");
-        PrevArm = true;
+    else if ArmOperable && !ArmPreviouslyWorking {
+      log_warning("Health Monitor: Arm is now operable.");
+      ArmPreviouslyWorking = true;
     }
-
-    if !AntennaOperable && PrevAntenna{
-      if Lookup(IsFaulty("Antenna")){
-        log_warning("Health Monitor: Antenna is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Antenna")));
+    endif;
+    
+    if !AntennaOperable && AntennaPreviouslyWorking {
+      if Lookup(IsFaulty("Antenna")) {
+        log_warning("Health Monitor: Antenna is Inoperable due to the local fault(s): ",
+                    Lookup(ActiveFaults("Antenna")));
       }
-      else{
+      else {
         log_warning("Health Monitor: Antenna is Inoperable due to non-local fault(s).");
       }
-      PrevAntenna = false;
+      AntennaPreviouslyWorking = false;
     }
-    if AntennaOperable && !PrevAntenna{
-        log_warning("Health Monitor: Antenna is now operable.");
-        PrevAntenna = true;
+    else if AntennaOperable && !AntennaPreviouslyWorking {
+      log_warning("Health Monitor: Antenna is now operable.");
+      AntennaPreviouslyWorking = true;
     }
+    endif;
 
-    if !CameraOperable && PrevCamera{
-      if Lookup(IsFaulty("Camera")){
-        log_warning("Health Monitor: Camera is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Camera")));
+    if !CameraOperable && CameraPreviouslyWorking {
+      if Lookup(IsFaulty("Camera")) {
+        log_warning("Health Monitor: Camera is Inoperable due to the local fault(s): ",
+                    Lookup(ActiveFaults("Camera")));
       }
-      else{
+      else {
         log_warning("Health Monitor: Camera is Inoperable due to non-local fault(s).");
       }
-      PrevCamera = false;
+      endif;
+      CameraPreviouslyWorking = false;
     }
-    if CameraOperable && !PrevCamera{
-        log_warning("Health Monitor: Camera is now operable.");
-        PrevCamera = true;
+    else if CameraOperable && !CameraPreviouslyWorking {
+      log_warning("Health Monitor: Camera is now operable.");
+      CameraPreviouslyWorking = true;
     }
-
-
-    if !PowerOperable && PrevPower{
-      if Lookup(IsFaulty("Power")){
-        log_warning("Health Monitor: Power is Inoperable due to the local fault(s): ", Lookup(ActiveFaults("Power")));
+    endif;
+    
+    if !PowerOperable && PowerPreviouslyWorking {
+      if Lookup(IsFaulty("Power")) {
+        log_warning("Health Monitor: Power is Inoperable due to the local fault(s): ",
+                    Lookup(ActiveFaults("Power")));
       }
-      else{
+      else {
         log_warning("Health Monitor: Power is Inoperable due to non-local fault(s).");
       }
-      PrevPower = false;
+      PowerPreviouslyWorking = false;
     }
-    if PowerOperable && !PrevPower{
-        log_warning("Health Monitor: Power is now operable.");
-        PrevPower = true;
+    else if PowerOperable && !PowerPreviouslyWorking {
+      log_warning("Health Monitor: Power is now operable.");
+      PowerPreviouslyWorking = true;
     }
+    endif;
   }
 }
