@@ -29,8 +29,8 @@ FaultHandlingPattern3: UncheckedSequence
 
   PanAntenna:
   {
-    Start !Lookup(AntennaPanFault);
-    Invariant !Lookup(AntennaPanFault);
+    Start !Lookup(AntennaFault);
+    Invariant !Lookup(AntennaFault);
 
     log_info ("Starting pan...");
     LibraryCall Pan (Degrees=180);
@@ -64,7 +64,7 @@ FaultHandlingPattern3: UncheckedSequence
   StowSuccess = Stow.outcome == SUCCESS;
 
   log_info ("Outcomes (Pan, Unstow, Stow) = ",
-            PanSuccess, UnstowSuccess, StowSuccess);
+            PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
   log_info ("FaultHandlingPattern3 plan complete.");
 
 }
