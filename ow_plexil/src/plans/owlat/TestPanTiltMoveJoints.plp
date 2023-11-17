@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test sequence 4.19.1 in the OWLAT 5.3 user guide, plus one more
+// Test sequence 4.19.1 in the OWLAT 0.5.4 user guide, plus one more
 // call so that pan is non-zero.
 
 #include "owlat-interface.h"

@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test sequence 4.13.1 in the OWLAT 5.3 user guide.
+// Test sequence 4.13.1 in the OWLAT 0.5.4 user guide.
 
 #include "owlat-interface.h"
 

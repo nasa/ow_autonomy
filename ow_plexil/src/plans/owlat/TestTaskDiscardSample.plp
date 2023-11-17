@@ -2,14 +2,15 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Test sequence 4.18.1 in the OWLAT 5.3 user guide.
+// Test sequence 4.18.1 in the OWLAT 0.5.4 user guide.
 
 #include "owlat-interface.h"
 
 TestTaskDiscardSample:
 {
-  log_info ("Starting TaskDiscardSample test...");
+  log_info ("Starting TaskScoopLinear and TaskDiscardSample test...");
   LibraryCall ArmUnstow();
+  LibraryCall ArmSetTool(Tool=TOOL_SCOOP);
   // Same as in TestOwlatTaskScoopLinear, test sequence 4.16.1
   LibraryCall OwlatTaskScoopLinear (Frame = TOOL_FRAME,
                                     Relative = false,
@@ -22,5 +23,5 @@ TestTaskDiscardSample:
                                  Point = #(0.1 0.2 0.5),
                                  Height = 0.05);
   LibraryCall SafeStow();
-  log_info ("Finished TaskDiscardSample test.");
+  log_info ("Finished TaskScoopLinear and TaskDiscardSample test.");
 }

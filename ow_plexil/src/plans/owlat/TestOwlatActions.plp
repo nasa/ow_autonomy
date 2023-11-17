@@ -3,7 +3,7 @@
 // this repository.
 
 // Tests all OWLAT actions, using (when possible) the test sequences
-// provided in the OWLAT 5.3 user guide.  The order is approximately
+// provided in the OWLAT 0.5.4 user guide.  The order is approximately
 // that of their coverage in the user guide.
 
 #include "owlat-interface.h"
@@ -30,11 +30,9 @@ TestOwlatActions:
   LibraryCall TestOwlatArmFindSurface;
   LibraryCall TestTaskPSP;
   LibraryCall TestTaskPenetrometer;
-  // Does not work. See comments in that plan.
-  //  LibraryCall TestShearBevameter;
+  LibraryCall TestShearBevameter;
   LibraryCall TestOwlatTaskScoopCircular;
-  LibraryCall TestOwlatTaskScoopLinear;
-  LibraryCall TestTaskDiscardSample;
+  LibraryCall TestTaskDiscardSample; // also tests TaskScoopLinear
   LibraryCall TestPanTiltMoveJoints;
   log_info ("Finished OWLAT action test.");
 }

@@ -187,16 +187,20 @@ class OwlatInterface : public LanderInterface
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
     {"TASK_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CAM_GOAL_ERROR", std::make_pair(
-        owl_msgs::SystemFaultsStatus::CAM_GOAL_ERROR,false)},
-    {"CAM_EXECUTION_ERROR", std::make_pair(
-        owl_msgs::SystemFaultsStatus::CAM_EXECUTION_ERROR,false)},
+    {"CAMERA_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
     {"PAN_TILT_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
     {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(
-        owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
+    {"DRILL_GOAL_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::DRILL_GOAL_ERROR,false)},
+    {"DRILL_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::DRILL_EXECUTION_ERROR,false)},
+    {"LANDER_EXECUTION_ERROR", std::make_pair(
+        owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)}
   };
 
   std::vector<double> m_end_effector_ft;
