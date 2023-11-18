@@ -34,20 +34,10 @@ PlexilAdapter::~PlexilAdapter() = default;
 void PlexilAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals)
 {
-  if (! isStateSubscribed (state)) {
-    debugMsg("PlexilAdapter:propagateValueChange", " ignoring " << state);
-    return;
-  }
-  debugMsg("PlexilAdapter:propagateValueChange", " sending " << state);
   OwExecutive::instance()->plexilInterfaceMgr()
     -> handleValueChange (state, vals.front());
   OwExecutive::instance()->plexilInterfaceMgr()
     -> notifyOfExternalEvent();
-}
-
-bool PlexilAdapter::isStateSubscribed(const State& state) const
-{
-  return m_subscribedStates.find(state) != m_subscribedStates.end();
 }
 
 PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,

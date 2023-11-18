@@ -14,7 +14,6 @@
 #include <Value.hh>
 
 // C++
-#include <set>
 #include <vector>
 
 class PlexilAdapter : public PLEXIL::InterfaceAdapter
@@ -33,8 +32,6 @@ public:
 
 protected:
   PlexilAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
-  bool isStateSubscribed (const PLEXIL::State& state) const;
-  std::set<PLEXIL::State> m_subscribedStates;
 };
 
 #endif
