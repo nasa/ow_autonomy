@@ -9,8 +9,6 @@
 
 #include "ow-interface.h"
 
-LibraryAction TestAntennaMovement;
-
 ActionGoalStateDemo:
 {
   log_info ("Starting ActionGoalStateDemo plan...");
