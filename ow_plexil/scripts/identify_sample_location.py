@@ -83,18 +83,18 @@ class IdentifySampleLocation:
           self.sample_location_image = cv_image
           self.uv = uv
 
-      #if succesful we return our point, otherwise we return an empty list
+      # If succesful we return our point, otherwise we return an empty list.
       if self.best_sample_location == None:
-        rospy.loginfo("Could not find valid sample location")
+        rospy.loginfo("identify_sample_location.py: location rejected.")
         self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=None))
       else:
-        #publishes the modified image showing our sample location choice
+        # Publish the modified image showing our sample location choice.
         self.publish_chosen_location_image()
         self.visualize_sample_point(self.best_sample_location)
         self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=True, sample_location=self.best_sample_location ))
 
     else:
-      rospy.loginfo("No images have been recorded")
+      rospy.loginfo("identify_sample_location.py: No images have been recorded.")
       self.sample_location_action_server.set_succeeded(IdentifyLocationResult(success=False, sample_location=None))
 
 
