@@ -18,8 +18,8 @@ IdentifySampleTarget:
   InOut Boolean Parallel;
   In String FilterType;
   Real result[3];
-  Real start_pan = 60;
-  Real pan_limit = 90;
+  Real start_pan = 70;
+  Real pan_limit = 80;
   Real tilt = 50;
   Real tilt_limit = 30;
   Real delta = 5;
