@@ -219,11 +219,8 @@ static void identify_sample_location_done_cb
     SamplePoint.push_back(result->sample_location.x);
     SamplePoint.push_back(result->sample_location.y);
     SamplePoint.push_back(result->sample_location.z);
-    ROS_INFO ("Possible sample location identified at (%f, %f, %f)",
+    ROS_INFO ("Candidate sample location identified at (%f, %f, %f)",
            SamplePoint[0], SamplePoint[1], SamplePoint[2]);
-  }
-  else{
-    ROS_ERROR("Could not get sample point from IdentifySampleLocation");
   }
   GotSampleLocation = true;
 }
