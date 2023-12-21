@@ -6,10 +6,10 @@
 // a relevant fault.
 
 // Pan in 15 degree increments as long as no antenna pan fault is present.  If an
-// antenna pan fault occurs, pause until the fault is removed.  
+// antenna pan fault occurs, pause until the fault is removed.
 
 // This plan terminates on a power fault, e.g. injecting low state of
-// charte, instantaneous capacity loss, or thermal failure.  Note that
+// charge, instantaneous capacity loss, or thermal failure.  Note that
 // a pan in progress must finish first, i.e. clear a pan fault if needed.
 
 #include "ow-interface.h"

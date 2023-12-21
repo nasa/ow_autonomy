@@ -11,15 +11,15 @@
 // If an antenna pan fault but no arm fault is injected, only action 2 occurs.
 // If an arm fault but no antenna pan fault is injected, only action 1 occurs.
 // If both antenna pan and arm faults are injected, the plan waits for resolution.
-// For now, this plan must be terminated with an interrupt, e.g. Control-C.
 
-// NOTE: the Wait statements in this plan prevent deadlock between the
-// two concurrent nodes, by inducing a macro step (environment
-// processing cycle) that allows the other node to advance.
+// This plan terminates on a power fault, e.g. injecting low state of
+// charge, instantaneous capacity loss, or thermal failure.  Note that
+// any actions in progress must finish first, i.e. clear relevant
+// faults if needed.
 
 #include "ow-interface.h"
 
-FaultHandlingPattern2: UncheckedSequence
+FaultHandlingPattern2:
 {
   Real NewAngle = 0;
 
@@ -29,35 +29,32 @@ FaultHandlingPattern2: UncheckedSequence
   {
     Antenna: UncheckedSequence
     {
-      Repeat true;
+      Repeat !Lookup(PowerFault);
 
-      Pan: UncheckedSequence
+      Pan:
       {
         Start !Lookup(AntennaPanFault);
-        Exit Lookup(AntennaPanFault);
+        Invariant !Lookup(AntennaPanFault);
 
         NewAngle = (Lookup(PanDegrees) + 15) mod 360;
         if (NewAngle > 180) NewAngle = NewAngle - 360;
-        LibraryCall Pan (Degrees=NewAngle);
+        LibraryCall Pan (Degrees = NewAngle);
       }
-      Wait 0.1;
     }
 
     Arm: UncheckedSequence
     {
-      Repeat true;
+      Repeat !Lookup(PowerFault);
 
-      StowUnstow: UncheckedSequence
+      StowUnstow:
       {
         Start !Lookup(ArmFault);
-        Exit Lookup(ArmFault);
+        Invariant !Lookup(ArmFault);
 
         LibraryCall SafeStow();
       }
-      Wait 0.1;
     }
   }
-  
-  // Presently unreachable.
+
   log_info ("Finished FaultHandlingPattern2 plan.");
 }
