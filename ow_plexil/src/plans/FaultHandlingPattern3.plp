@@ -2,20 +2,15 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// WARNING: This plan cannot work as intended until greater fault/action support
-// is added to the simulator. This serves mostly as a syntactic example.
+// This plan illustrates the halting and resumption of a sequence in
+// the presence of faults.
 
-// DESIRED BEHAVIOR: If no faults are present, this plan will pan 180 degrees,
-// unstow and then stow the arm. If a fault is injected, the plan will pause
-// until resolution.
-
-// LIMITATIONS: If an arm fault is triggered during Unstow, it will skip the Stow node.
-
-// NOTE: If a fault is injected during an operation, that operation will only
-// halt immediately if the fault injected is associated with it directly,
-// i.e. an antenna fault during panning or an arm fault during
-// unstowing or stowing.
-
+// If no faults are present, this plan will, in sequence, pan the
+// antenna to 180 degrees, unstow the arm, and then stow it. If a
+// fault *relevant* to the current action is injected, the plan will
+// pause until the fault is cleared, and then continue the sequence.
+// Finally it prints the success status of each of these operations
+// (i.e. did the operation complete successfully).
 
 #include "ow-interface.h"
 
@@ -29,12 +24,11 @@ FaultHandlingPattern3: UncheckedSequence
 
   PanAntenna:
   {
-    Start !Lookup(AntennaFault);
-    Invariant !Lookup(AntennaFault);
+    Start !Lookup(AntennaPanFault);
+    Invariant !Lookup(AntennaPanFault);
+    Post Lookup(ActionGoalStatus("Pan")) == ACTION_SUCCEEDED;
 
-    log_info ("Starting pan...");
     LibraryCall Pan (Degrees=180);
-    log_info ("Finished pan.");
   }
 
   PanSuccess = PanAntenna.outcome == SUCCESS;
@@ -43,10 +37,9 @@ FaultHandlingPattern3: UncheckedSequence
   {
     Start !Lookup(ArmFault);
     Invariant !Lookup(ArmFault);
+    Post Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_SUCCEEDED;
 
-    log_info ("Starting unstow...");
     LibraryCall ArmUnstow();
-    log_info ("Finished unstow.");
   }
 
   UnstowSuccess = Unstow.outcome == SUCCESS;
@@ -55,10 +48,9 @@ FaultHandlingPattern3: UncheckedSequence
   {
     Start !Lookup(ArmFault);
     Invariant !Lookup(ArmFault);
+    Post Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED;
 
-    log_info ("Starting stow...");
     LibraryCall ArmStow();
-    log_info ("Finished stow.");
   }
 
   StowSuccess = Stow.outcome == SUCCESS;
@@ -66,5 +58,4 @@ FaultHandlingPattern3: UncheckedSequence
   log_info ("Outcomes (Pan, Unstow, Stow) = ",
             PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
   log_info ("FaultHandlingPattern3 plan complete.");
-
 }

@@ -49,11 +49,6 @@ PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
 
 bool PlexilAdapter::initialize(AdapterConfiguration* config)
 {
-  // Plexil 4.6:
-  // config->defaultRegisterAdapter(this);
-  // Tried this in Plexil 6:
-  //  config->setDefaultCommandHandler(this);
-
   config->registerCommandHandlerFunction("log_info", log_info);
   config->registerCommandHandlerFunction("log_warning", log_warning);
   config->registerCommandHandlerFunction("log_error", log_error);

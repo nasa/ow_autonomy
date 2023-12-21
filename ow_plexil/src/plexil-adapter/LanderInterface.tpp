@@ -27,10 +27,12 @@ void LanderInterface::updateFaultStatus (T1 msg_val, T2& fmap,
     T1 value = entry.second.first;
     bool fault_active = entry.second.second;
     bool faulty = (msg_val & value) == value;
+    if (faulty) {
+      general_fault = true;  // since there's at least one specific fault
+    }
     if (!fault_active && faulty) {
       ROS_WARN ("Fault in %s: %s", component.c_str(), specific_name.c_str());
       fmap[specific_name].second = true;
-      general_fault = true;  // since there's at least one specific fault
       publish (specific_name, true);
       if (m_fault_dependencies) {
         m_fault_dependencies->updateFault(specific_name.c_str(), 1);
@@ -41,6 +43,8 @@ void LanderInterface::updateFaultStatus (T1 msg_val, T2& fmap,
                 component.c_str(),
                 specific_name.c_str());
       fmap[specific_name].second = false;
+      // NOTE: there are many specific_name values that are not
+      // supported Lookups in PLEXIL.
       publish (specific_name, false);
       if (m_fault_dependencies) {
         m_fault_dependencies->updateFault(specific_name.c_str(), 0);
