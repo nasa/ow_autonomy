@@ -81,10 +81,11 @@ using PanTiltMoveJointsActionClient =
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 
-// Maps from specific fault names to the pair <fault value, fault
-// active?>.  PLEXIL would perform a Lookup on the specific fault
-// name, but only those for antenna faults are supported in Release
-// 12.
+// Maps from specific fault names to the pair:
+//    <fault value, fault active?>.
+// PLEXIL can support Lookups on the specific fault name.  In Release
+// 12, only AntennaPanFault and AntennaTiltFault are supported.
+
 using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
 
 class LanderInterface : public PlexilInterface
