@@ -35,7 +35,7 @@ void PlexilAdapter::propagateValueChange (const State& state,
                                           const std::vector<Value>& vals)
 {
   OwExecutive::instance()->plexilInterfaceMgr()
-    -> handleValueChange (state, vals.front());a
+    -> handleValueChange (state, vals.front());
   OwExecutive::instance()->plexilInterfaceMgr()
     -> notifyOfExternalEvent();
 }
