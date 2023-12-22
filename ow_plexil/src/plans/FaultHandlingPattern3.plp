@@ -5,12 +5,12 @@
 // This plan illustrates the halting and resumption of a sequence in
 // the presence of faults.
 
-// If no faults are present, this plan will, in sequence, pan the
+// If no faults are present this plan will, in sequence, pan the
 // antenna to 180 degrees, unstow the arm, and then stow it. If a
 // fault *relevant* to the current action is injected, the plan will
 // pause until the fault is cleared, and then continue the sequence.
-// Finally it prints the success status of each of these operations
-// (i.e. did the operation complete successfully).
+// Finally it prints the success status of each operation (i.e. did it
+// complete successfully).
 
 #include "ow-interface.h"
 
