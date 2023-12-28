@@ -25,10 +25,10 @@
 // will stop, and main action will resume.
 
 // Note that it may take up to 20 seconds to see the expected reaction
-// to fault injection and clearing, because a ROS action in progress
-// needs to complete.  At present PLEXIL does not have a finer degree
-// of control over ROS actions -- they must run to completion once
-// started.
+// to fault injection and clearing, because operations are invoked in
+// a blocking fashion (via SynchronousCommand) and need to complete.
+// At present PLEXIL does not have a finer degree of control over ROS
+// actions -- they must run to completion once started.
 
 
 #include "ow-interface.h"
@@ -49,8 +49,8 @@ FaultDependenciesDemo: UncheckedSequence
 
       PanTiltPattern: UncheckedSequence
       {
-        StartCondition Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt"));
-        ExitCondition !Lookup(IsOperable("Pan")) && !Lookup(IsOperable("Tilt"));
+        //        StartCondition Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt"));
+        //        Invariant Lookup(IsOperable("Pan")) || Lookup(IsOperable("Tilt"));
 
         NewPanAngle = (Lookup(PanDegrees) + 15) mod 360;
 
@@ -100,10 +100,12 @@ FaultDependenciesDemo: UncheckedSequence
       RepeatCondition true;
       StowingPattern: UncheckedSequence
       {
-        StartCondition (!Lookup(IsOperable("Tilt")) &&
-                        !Lookup(IsOperable("Pan")) &&
-                        Lookup(IsOperable("Arm")));
-        ExitCondition !Lookup(IsOperable("Arm"));
+        //        StartCondition (!Lookup(IsOperable("Tilt")) &&
+        //                        !Lookup(IsOperable("Pan")) &&
+        //                        Lookup(IsOperable("Arm")));
+        //        Invariant (Lookup(IsOperable("Arm")) &&
+        //                   !Lookup(IsOperable("Pan")) &&
+        //                   !Lookup(IsOperable("Tilt")));
 
         if Lookup(IsOperable("ArmUnstow")) LibraryCall ArmUnstow();
         else log_warning("ArmUnstow Is Inoperable, action skipped.");
