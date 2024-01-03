@@ -3,8 +3,7 @@
 // this repository.
 
 // Non-terminating plan, intended as a continuous operation test, that
-// repeatedly does panoramic imaging while unstowing and stowing the
-// arm.  NOTE: this plan is not fault-tolerant.
+// repeatedly does panoramic imaging while unstowing and stowing the arm.
 
 #include "ow-interface.h"
 
