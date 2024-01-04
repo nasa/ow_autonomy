@@ -31,13 +31,10 @@ static void angles_equivalent (const State& s, LookupReceiver* r)
 
 PlexilAdapter::~PlexilAdapter() = default;
 
-void PlexilAdapter::propagateValueChange (const State& state,
-                                          const std::vector<Value>& vals)
+void PlexilAdapter::propagateValueChange (const State& state, const Value& val)
 {
-  OwExecutive::instance()->plexilInterfaceMgr()
-    -> handleValueChange (state, vals.front());
-  OwExecutive::instance()->plexilInterfaceMgr()
-    -> notifyOfExternalEvent();
+  OwExecutive::instance()->plexilInterfaceMgr()->handleValueChange (state, val);
+  OwExecutive::instance()->plexilInterfaceMgr()->notifyOfExternalEvent();
 }
 
 PlexilAdapter::PlexilAdapter(AdapterExecInterface& execInterface,
@@ -59,6 +56,7 @@ bool PlexilAdapter::initialize(AdapterConfiguration* config)
   setSubscriber (receiveString);
   setSubscriber (receiveDouble);
   setSubscriber (receiveBoolFromString);
+  setSubscriber (receiveIntFromString);
   setSubscriber (receiveDoubleFromInt);
   setSubscriber (receiveDoubleVector);
   g_adapter = this;

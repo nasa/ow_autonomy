@@ -27,8 +27,7 @@ public:
   virtual bool initialize(PLEXIL::AdapterConfiguration*) override;
   virtual bool start() override;
   virtual void stop() override;
-  void propagateValueChange (const PLEXIL::State&,
-                             const std::vector<PLEXIL::Value>&);
+  void propagateValueChange (const PLEXIL::State&, const PLEXIL::Value&);
 
 protected:
   PlexilAdapter (PLEXIL::AdapterExecInterface&, PLEXIL::AdapterConf*);
