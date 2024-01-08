@@ -6,7 +6,7 @@
 // respect to operability of the arm and camera.
 //
 // 1. If the Arm is operable, it repeatedly unstows and stows.
-//   
+//
 // 2. If the Arm is inoperable, but the Camera is operable, it
 //    repeatedly captures images.
 //
@@ -66,16 +66,17 @@ HealthMonitorDemo:
         LibraryCall ArmUnstow();
         LibraryCall ArmStow();
       }
-      else if CameraGood {
+      elseif CameraGood {
         log_info("Arm not operable, attempting CameraCapture to diagnose...");
         LibraryCall CameraCapture();
       }
-      else {
-        log_info("Waiting for Camera or Arm to become operable....");
+      elseif PowerGood {
         // Trying CameraCapture because the Camera fault state can
         // only be detected when the camera attempts to take a photo.
         LibraryCall CameraCapture();
+        log_info("Waiting for Camera or Arm to become operable...");
       }
+      else log_info("Waiting for Power to become operable...");
       endif;
     }
   }
