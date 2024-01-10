@@ -23,6 +23,7 @@
 #include <owl_msgs/TaskDeliverSampleAction.h>
 #include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
+#include <owl_msgs/FaultClearAction.h>
 
 // owl_msgs - telemetry
 #include <owl_msgs/PanTiltPosition.h>
@@ -80,6 +81,8 @@ using PanTiltMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
+using FaultClearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::FaultClearAction>;
 
 // Maps from fault name to the pair (fault value, is fault in progress?)
 using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
@@ -131,6 +134,8 @@ class LanderInterface : public PlexilInterface
   void taskDeliverSample (int id);
   void panTiltMoveJoints (double pan_degrees, double tilt_degrees, int id);
   void cameraCapture (int id);
+  void faultClear (int fault, int id);
+
   virtual bool systemFault () const = 0;
   bool antennaFault () const;
   bool antennaPanFault () const;
@@ -183,6 +188,7 @@ class LanderInterface : public PlexilInterface
                                       double torque_threshold,
                                       int id);
   void armMoveJointAction (bool relative, int joint, double angle, int id);
+  void faultClearAction (int fault, int id);
   void panTiltMoveJointsAction (double pan_degrees, double tilt_degrees, int id);
 
   // Fault support
@@ -277,7 +283,7 @@ class LanderInterface : public PlexilInterface
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltMoveJointsClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
-
+  std::unique_ptr<FaultClearActionClient> m_faultClearClient;
 };
 
 #include "LanderInterface.tpp"
