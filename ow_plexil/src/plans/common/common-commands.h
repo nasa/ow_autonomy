@@ -49,6 +49,8 @@ Command arm_move_cartesian_guarded (Integer frame,
 
 Command camera_capture ();
 
+Command fault_clear (Integer fault);
+
 // Takes a quaternion for orientation.
 Command arm_move_cartesian_guarded_q (Integer frame,
                                       Boolean relative,
