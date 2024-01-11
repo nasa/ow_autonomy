@@ -7,10 +7,14 @@
 
 // If no faults are present this plan will, in sequence, pan the
 // antenna to 180 degrees, unstow the arm, and then stow it. If a
-// fault *relevant* to the current action is injected, the plan will
-// pause until the fault is cleared, and then continue the sequence.
-// Finally it prints the success status of each operation (i.e. did it
-// complete successfully).
+// fault *relevant* to the current action is injected or present, the
+// plan will pause until the fault is cleared.  The current action
+// will resume if possible (e.g. not timed out) and then the sequence
+// will continue.  Finally the success status of each operation
+// (i.e. did it complete successfully) is printed.
+
+// NOTE: If needed, pan the antenna to 0 degrees manually before
+// starting this plan.
 
 #include "ow-interface.h"
 
@@ -29,8 +33,11 @@ FaultHandlingPattern3: UncheckedSequence
     Post Lookup(ActionGoalStatus("Pan")) == ACTION_SUCCEEDED;
 
     LibraryCall Pan (Degrees=180);
+    log_info ("-- Pan status: ", Lookup(ActionGoalStatus("Pan")));
+    log_info ("-- Success val: ", ACTION_SUCCEEDED);
   }
 
+  log_info ("-- Pan status 2: ", Lookup(ActionGoalStatus("Pan")));
   PanSuccess = PanAntenna.outcome == SUCCESS;
 
   Unstow:
@@ -43,6 +50,8 @@ FaultHandlingPattern3: UncheckedSequence
   }
 
   UnstowSuccess = Unstow.outcome == SUCCESS;
+
+  log_info ("-- Arm Fault: ", Lookup(ArmFault));
 
   Stow:
   {

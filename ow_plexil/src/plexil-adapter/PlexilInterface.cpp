@@ -85,6 +85,7 @@ void PlexilInterface::actionGoalStatusCallback
     publish ("ActionGoalStatus", static_cast<int>(NOGOAL), action_name);
   }
   else { // if (msg->status_list.size() >= 1) {
+    ROS_INFO("---- Action status: ", msg->status_list[0].status);
     ActionGoalStatus status =
       static_cast<ActionGoalStatus>(msg->status_list[0].status);
     ActionGoalStatusMap[action_name] = status;
