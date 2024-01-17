@@ -1,0 +1,57 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+  // Monitor for goal errors
+  // Clear them
+  // Terminate on power fault
+
+  // To test:
+  //  - Start this plan
+  //  - induce goal errors
+  //    - camera: inject fault
+  //    - arm: attempt the impossible
+  //    - pan/tilt: ?
+  //    - task: ?
+
+  // Issues:
+  //   - how will auto-clearing interact with this plan?
+
+#include "common-interface.h"
+
+FaultClearDemo:
+{
+  log_info ("Starting FaultClear demo...");
+
+  Demo: Concurrence
+  {
+    Repeat !Lookup(PowerFault);
+    Exit Lookup(PowerFault);
+
+    ClearArmFault:
+    {
+      Start Lookup(ArmGoalError);
+      LibraryCall FaultClear (fault=ARM_GOAL_ERROR);
+    }
+
+    ClearCameraFault:
+    {
+      Start Lookup(CameraGoalError);
+      LibraryCall FaultClear (fault=CAMERA_GOAL_ERROR);
+    }
+
+    ClearAntennaFault:
+    {
+      Start Lookup(PanTiltGoalError);
+      LibraryCall FaultClear (fault=PAN_TILT_GOAL_ERROR);
+    }
+
+    ClearTaskFault:
+    {
+      Start Lookup(TaskGoalError);
+      LibraryCall FaultClear (fault=TASK_GOAL_ERROR);
+    }
+  }
+
+  log_info ("Finished FaultClear demo.");
+}

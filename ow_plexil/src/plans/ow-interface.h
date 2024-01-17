@@ -10,8 +10,19 @@
 #include "common/common-interface.h"
 #include "ow-commands.h"
 
-// Joint names, defined by their indices in the /joint_states ROS message.
+// System Fault flags for OceanWATERS
+#define NO_FAULT 0
+#define SYSTEM_ERROR 1
+#define ARM_GOAL_ERROR 2
+#define ARM_EXECUTION_ERROR 4
+#define TASK_GOAL_ERROR 8
+#define CAMERA_GOAL_ERROR 16
+#define CAMERA_EXECUTION_ERROR 32
+#define PAN_TILT_GOAL_ERROR 64
+#define PAN_TILT_EXECUTION_ERROR 128
+#define POWER_EXECUTION_ERROR 256
 
+// Joint names, defined by their indices in the /joint_states ROS message.
 #define ANTENNA_PAN    0
 #define ANTENNA_TILT   1
 #define DISTAL_PITCH   2
