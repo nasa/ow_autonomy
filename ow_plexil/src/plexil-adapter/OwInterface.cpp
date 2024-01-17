@@ -168,6 +168,13 @@ void OwInterface::jointStatesCallback
   }
 }
 
+void OwInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
+}
+
+
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -313,12 +320,6 @@ void OwInterface::initialize()
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/system_faults_status", QueueSize,
-                &OwInterface::systemFaultMessageCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
       subscribe("/arm_end_effector_force_torque", QueueSize,
                 &OwInterface::ftCallback, this)));
 
@@ -327,6 +328,12 @@ void OwInterface::initialize()
      (m_genericNodeHandle ->
       subscribe("/joint_states", QueueSize,
                 &OwInterface::jointStatesCallback, this)));
+
+    m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QueueSize,
+                &OwInterface::systemFaultMessageCallback, this)));
 
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface);
   connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints);
@@ -343,15 +350,6 @@ void OwInterface::initialize()
   connectActionServer (m_identifySampleLocationClient,
                        Name_IdentifySampleLocation);
   connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample);
-}
-
-
-///////////////////////// Subscriber Callbacks ///////////////////////////////
-
-void OwInterface::systemFaultMessageCallback
-(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
 

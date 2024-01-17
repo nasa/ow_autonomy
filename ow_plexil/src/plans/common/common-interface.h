@@ -13,19 +13,6 @@
 #define BASE_FRAME 0
 #define TOOL_FRAME 1
 
-// System Fault flags
-
-#define NO_FAULT 0
-#define SYSTEM_ERROR 1
-#define ARM_GOAL_ERROR 2
-#define ARM_EXECUTION_ERROR 4
-#define TASK_GOAL_ERROR 8
-#define CAMERA_GOAL_ERROR 16
-#define CAMERA_EXECUTION_ERROR 32
-#define PAN_TILT_GOAL_ERROR 64
-#define PAN_TILT_EXECUTION_ERROR 128
-#define POWER_EXECUTION_ERROR 256
-
 // Action goal statuses.
 // NOTE: the last five are not supported in OceanWATERS, partly
 // because it uses ROS's SimpleActionServer.
