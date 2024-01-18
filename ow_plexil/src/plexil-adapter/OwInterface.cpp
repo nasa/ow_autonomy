@@ -997,6 +997,26 @@ bool OwInterface::systemFault () const
   return faultActive (m_systemErrors);
 }
 
+bool OwInterface::armGoalError () const
+{
+  return m_systemErrors.at("ArmGoalError").second;
+}
+
+bool OwInterface::cameraGoalError () const
+{
+  return m_systemErrors.at("CameraGoalError").second;
+}
+
+bool OwInterface::panTiltGoalError () const
+{
+  return m_systemErrors.at("PanTiltGoalError").second;
+}
+
+bool OwInterface::taskGoalError () const
+{
+  return m_systemErrors.at("TaskGoalError").second;
+}
+
 vector<double> OwInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;

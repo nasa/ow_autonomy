@@ -16,8 +16,9 @@
 
   // Issues:
   //   - how will auto-clearing interact with this plan?
+  //     - is this an issue with the epic branch?
 
-#include "common-interface.h"
+#include "ow-interface.h"
 
 FaultClearDemo:
 {
@@ -25,30 +26,41 @@ FaultClearDemo:
 
   Demo: Concurrence
   {
-    Repeat !Lookup(PowerFault);
     Exit Lookup(PowerFault);
 
     ClearArmFault:
     {
       Start Lookup(ArmGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Arm goal error.");
       LibraryCall FaultClear (fault=ARM_GOAL_ERROR);
     }
 
     ClearCameraFault:
     {
       Start Lookup(CameraGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Camera goal error.");
       LibraryCall FaultClear (fault=CAMERA_GOAL_ERROR);
     }
 
     ClearAntennaFault:
     {
       Start Lookup(PanTiltGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Pan/Tilt goal error.");
       LibraryCall FaultClear (fault=PAN_TILT_GOAL_ERROR);
     }
 
     ClearTaskFault:
     {
       Start Lookup(TaskGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Task goal error.");
       LibraryCall FaultClear (fault=TASK_GOAL_ERROR);
     }
   }
