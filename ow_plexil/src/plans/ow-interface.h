@@ -99,11 +99,9 @@ LibraryAction HealthMonitor (InOut Boolean AllOperable,
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
-// Faults
-// Returns first 10 faults in a given subsystem, specifying "System" will give you all faults
-String [10] Lookup ActiveFaults(String subsystem_name);
-Boolean Lookup IsOperable(String subsystem_name);
-Boolean Lookup IsFaulty(String subsystem_name);
+
+// Fault-related lookups
+
 Boolean Lookup SystemFault;
 Boolean Lookup AntennaFault;
 Boolean Lookup AntennaPanFault;
@@ -111,6 +109,20 @@ Boolean Lookup AntennaTiltFault;
 Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 Boolean Lookup CameraFault;
+Boolean Lookup ArmGoalError;
+Boolean Lookup CameraGoalError;
+Boolean Lookup PanTiltGoalError;
+Boolean Lookup TaskGoalError;
+
+// The following two require use of the fault dependencies framework.
+
+// Returns first 10 faults in a given subsystem.  Specifying "System"
+// will give you all faults.
+String [10] Lookup ActiveFaults(String subsystem_name);
+
+Boolean Lookup IsOperable(String subsystem_name);
+Boolean Lookup IsFaulty(String subsystem_name);
+
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
