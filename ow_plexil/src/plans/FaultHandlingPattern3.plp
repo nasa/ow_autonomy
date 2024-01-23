@@ -26,6 +26,8 @@ FaultHandlingPattern3: UncheckedSequence
 
   log_info ("Starting FaultHandlingPattern3 plan...");
 
+  log_info ("---- Arm fault before Pan: ", Lookup(ArmFault));
+
   PanAntenna:
   {
     Start !Lookup(AntennaPanFault);
@@ -40,6 +42,9 @@ FaultHandlingPattern3: UncheckedSequence
   log_info ("-- Pan status 2: ", Lookup(ActionGoalStatus("Pan")));
   PanSuccess = PanAntenna.outcome == SUCCESS;
 
+  log_info ("---- Pan status: ", Lookup(ActionGoalStatus("Pan")));
+  log_info ("---- Arm fault before Unstow: ", Lookup(ArmFault));
+
   Unstow:
   {
     Start !Lookup(ArmFault);
@@ -49,21 +54,43 @@ FaultHandlingPattern3: UncheckedSequence
     LibraryCall ArmUnstow();
   }
 
+  log_info ("---- Unstow status: ", Lookup(ActionGoalStatus("ArmUnstow")));
   UnstowSuccess = Unstow.outcome == SUCCESS;
 
-  log_info ("-- Arm Fault: ", Lookup(ArmFault));
+  log_info ("---- Arm fault before Stow: ", Lookup(ArmFault));
 
-  Stow:
+  //  Stow:
+  //  {
+  //    Start !Lookup(ArmFault);
+  //    Invariant !Lookup(ArmFault);
+  //    Post Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED;
+  //
+  //    LibraryCall ArmStow();
+  //  }
+
+  Stow: Concurrence
   {
+    Boolean FaultOccurred = false;
     Start !Lookup(ArmFault);
-    Invariant !Lookup(ArmFault);
-    Post Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED;
+    Post !FaultOccurred;
 
-    LibraryCall ArmStow();
+    CheckForFault:
+    {
+      Skip TheStow.state == FINISHED;
+      Start Lookup(ArmFault);
+      FaultOccurred = true;
+    }
+
+    TheStow:
+    {
+      LibraryCall ArmStow();
+    }
   }
 
   StowSuccess = Stow.outcome == SUCCESS;
 
+  log_info ("---- Stow status: ", Lookup(ActionGoalStatus("Stow")));
+  
   log_info ("Outcomes (Pan, Unstow, Stow) = ",
             PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
   log_info ("FaultHandlingPattern3 plan complete.");
