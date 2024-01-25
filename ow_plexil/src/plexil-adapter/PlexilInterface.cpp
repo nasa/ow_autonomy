@@ -82,18 +82,11 @@ void PlexilInterface::actionGoalStatusCallback
 {
   if (msg->status_list.size() == 0) {
     ActionGoalStatusMap[action_name] = NOGOAL;
-    ROS_WARN_ONCE ("---- There was no goal");
     publish ("ActionGoalStatus", static_cast<int>(NOGOAL), action_name);
   }
   else { // if (msg->status_list.size() >= 1) {
-    ROS_INFO("---- Action status: ", msg->status_list[0].status);
     ActionGoalStatus status =
       static_cast<ActionGoalStatus>(msg->status_list[0].status);
-    ROS_WARN_ONCE ("---- There was a goal");
-    if (status == SUCCEEDED) ROS_WARN_ONCE ("---- %s SUCCEEDED", action_name.c_str());
-    if (status == ABORTED) ROS_WARN_ONCE ("---- %s ABORTED", action_name.c_str());
-    if (status == ACTIVE) ROS_WARN_ONCE ("---- %s ACTIVE", action_name.c_str());
-    if (status == PENDING) ROS_WARN_ONCE ("---- %s PENDING", action_name.c_str());
     ActionGoalStatusMap[action_name] = status;
     publish ("ActionGoalStatus", static_cast<int>(status), action_name);
   }
