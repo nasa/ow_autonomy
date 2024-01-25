@@ -17,10 +17,9 @@
 // executive crashes if a plan ends before a command it had sent
 // returns an acknowledgement (handle).
 
-// CAVEAT: It is possible that the Stow node may start even in the
-// presence of an Arm fault.  This intermittent bug has been
-// investigated but not yet fixed for this release.
-
+// CAVEAT: It is possible that the Stow node may somehow start, or
+// complete with success status, even in the presence of an Arm fault.
+// This intermittent bug has been investigated but not yet fixed.
 
 #include "ow-interface.h"
 
