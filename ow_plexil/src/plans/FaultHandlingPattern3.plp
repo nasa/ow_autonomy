@@ -1,0 +1,79 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan illustrates fault handling in the context of a sequence
+// of nodes.
+
+// If no faults are present, the antenna will pan 180 degrees, after
+// which the arm will unstow and then stow. If a relevant fault is
+// injected during any of these operations, the operation and its
+// associated node will fail, and the next operation/node will not
+// start until its relevant fault is cleared.  The plan ends with a
+// summary of the success of each node.
+
+// Note that the Stow node is coded differently than its predecessors.
+// This is to work around a bug in the PLEXIL system in which the
+// executive crashes if a plan ends before a command it had sent
+// returns an acknowledgement (handle).
+
+// CAVEAT: It is possible that the Stow node may start even in the
+// presence of an Arm fault.  This intermittent bug has been
+// investigated but not yet fixed for this release.
+
+
+#include "ow-interface.h"
+
+FaultHandlingPattern3: UncheckedSequence
+{
+  Boolean PanSuccess;
+  Boolean UnstowSuccess;
+  Boolean StowSuccess;
+
+  log_info ("Starting FaultHandlingPattern3 plan...");
+
+  PanAntenna:
+  {
+    Start !Lookup(AntennaPanFault);
+    Invariant !Lookup(AntennaPanFault);
+
+    LibraryCall Pan (Degrees=180);
+  }
+
+  PanSuccess = PanAntenna.outcome == SUCCESS;
+
+  Unstow:
+  {
+    Start !Lookup(ArmFault);
+    Invariant !Lookup(ArmFault);
+
+    LibraryCall ArmUnstow();
+  }
+
+  UnstowSuccess = Unstow.outcome == SUCCESS;
+
+  Stow: Concurrence
+  {
+    Boolean FaultOccurred = false;
+    Start !Lookup(ArmFault);
+    Post !FaultOccurred;
+
+    CheckForFault:
+    {
+      Skip TheStow.state == FINISHED;
+      Start Lookup(ArmFault);
+      FaultOccurred = true;
+    }
+
+    TheStow:
+    {
+      LibraryCall ArmStow();
+    }
+  }
+
+  StowSuccess = Stow.outcome == SUCCESS;
+
+  log_info ("Outcomes (Pan, Unstow, Stow) = ",
+            PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
+  log_info ("FaultHandlingPattern3 plan complete.");
+}
