@@ -24,6 +24,8 @@ typedef void (* SubscribeString) (const std::string& state_name,
                                   const std::string& val);
 typedef void (* SubscribeDoubleVector) (const std::string& state_name,
                                         const std::vector<double>& vals);
+typedef void (* SubscribeIntFromString) (const std::string& state_name,
+                                          int val, const std::string& arg);
 typedef void (* SubscribeBoolFromString) (const std::string& state_name,
                                           bool val, const std::string& arg);
 typedef void (* SubscribeDoubleFromInt) (const std::string& state_name,
@@ -35,6 +37,7 @@ void setSubscriber (SubscribeInt);
 void setSubscriber (SubscribeDouble);
 void setSubscriber (SubscribeString);
 void setSubscriber (SubscribeDoubleVector);
+void setSubscriber (SubscribeIntFromString);
 void setSubscriber (SubscribeBoolFromString);
 void setSubscriber (SubscribeDoubleFromInt);
 
@@ -44,6 +47,7 @@ void publish (const std::string& state_name, int val);
 void publish (const std::string& state_name, double val);
 void publish (const std::string& state_name, const std::string& val);
 void publish (const std::string& state_name, const std::vector<double>& vals);
+void publish (const std::string& state_name, int val, const std::string& arg);
 void publish (const std::string& state_name, bool val, const std::string& arg);
 void publish (const std::string& state_name, double val, int arg);
 

@@ -21,6 +21,7 @@ static SubscribeDouble SubscriberDouble = nullptr;
 static SubscribeString SubscriberString = nullptr;
 static SubscribeDoubleVector SubscriberDoubleVector = nullptr;
 static SubscribeBoolFromString SubscriberBoolFromString = nullptr;
+static SubscribeIntFromString SubscriberIntFromString = nullptr;
 static SubscribeDoubleFromInt SubscriberDoubleFromInt = nullptr;
 
 void setSubscriber (SubscribeBool s) { SubscriberBool = s; }
@@ -28,6 +29,7 @@ void setSubscriber (SubscribeInt s) { SubscriberInt = s; }
 void setSubscriber (SubscribeDouble s) { SubscriberDouble = s; }
 void setSubscriber (SubscribeString s) { SubscriberString = s; }
 void setSubscriber (SubscribeBoolFromString s) { SubscriberBoolFromString = s; }
+void setSubscriber (SubscribeIntFromString s) { SubscriberIntFromString = s; }
 void setSubscriber (SubscribeDoubleVector s) { SubscriberDoubleVector = s; }
 void setSubscriber (SubscribeDoubleFromInt s) { SubscriberDoubleFromInt = s; }
 
@@ -64,6 +66,11 @@ void publish (const string& state_name, const vector<double>& vals)
 void publish (const string& state_name, bool val, const string& arg)
 {
   SubscriberBoolFromString (state_name, val, arg);
+}
+
+void publish (const string& state_name, int val, const string& arg)
+{
+  SubscriberIntFromString (state_name, val, arg);
 }
 
 void publish (const string& state_name, double val, int arg)

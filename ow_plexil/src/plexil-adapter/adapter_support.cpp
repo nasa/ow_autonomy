@@ -115,17 +115,23 @@ static State create_state (const string& state_name, const vector<Value>& value)
   return state;
 }
 
+// For effeciency, the following two (overloaded) functions assume the
+// g_adapter object has already been initialized.
+
+static void propagate (const State& state, const Value& value)
+{
+  g_adapter->propagateValueChange (state, value);
+}
+
 static void propagate (const State& state, const vector<Value>& value)
 {
-  // For efficiency, assumes initialization of g_adapter!
   g_adapter->propagateValueChange (state, value);
 }
 
 template<class V>
 void receive_value (const std::string& state_name, const V& val)
 {
-  propagate (create_state(state_name, EmptyArgs),
-             std::vector<Value> (1, val));
+  propagate (create_state(state_name, EmptyArgs), val);
 }
 
 template<class V, class A>
@@ -133,8 +139,7 @@ void receive_value_from_arg (const std::string& state_name,
                              const V& val,
                              const A& arg)
 {
-  propagate (create_state(state_name, std::vector<Value> (1, arg)),
-             std::vector<Value> (1, val));
+  propagate (create_state(state_name, std::vector<Value>(1, arg)), val);
 }
 
 void receiveBool (const string& state_name, bool val)
@@ -157,6 +162,11 @@ void receiveString (const string& state_name, const string& val)
   receive_value<string> (state_name, val);
 }
 
+void receiveIntFromString (const string& state_name, int val, const string& arg)
+{
+  receive_value_from_arg<int, string> (state_name, val, arg);
+}
+
 void receiveBoolFromString (const string& state_name, bool val, const string& arg)
 {
   receive_value_from_arg<bool, string> (state_name, val, arg);
@@ -170,12 +180,12 @@ void receiveDoubleFromInt (const string& state_name, double val, int arg)
 void receiveDoubleVector (const string& state_name,
                           const vector<double>& vals)
 {
-  vector<Value> vector_values;
-  for(int i = 0; i < vals.size(); i++){
-    Value temp = Value(vals[i]);
-    vector_values.push_back(temp);
+  vector<Value> v;
+  v.resize(vals.size());
+  for(int i = 0; i < vals.size(); i++) {
+    v[i] = Value(static_cast<Real>(vals[i]));
   }
-  propagate (create_state(state_name, EmptyArgs), vector_values);
+  receive_value<vector<Value> > (state_name, v);
 }
 
 static string log_string (const vector<Value>& args)

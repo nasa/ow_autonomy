@@ -81,7 +81,11 @@ using PanTiltMoveJointsActionClient =
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
 
-// Maps from fault name to the pair (fault value, is fault in progress?)
+// Maps from specific fault names to the pair:
+//    <fault value, fault active?>.
+// PLEXIL can support Lookups on the specific fault name.  In Release
+// 12, only AntennaPanFault and AntennaTiltFault are supported.
+
 using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
 
 class LanderInterface : public PlexilInterface
@@ -157,7 +161,8 @@ class LanderInterface : public PlexilInterface
   template <typename T1, typename T2>
     void updateFaultStatus (T1 msg_val, T2&,
                             const std::string& component_name,
-                            const std::string& state_name); // PLEXIL Lookup name
+                            // Fault's general name as a PLEXIL Lookup name.
+                            const std::string& general_name);
 
   template <typename T>
     bool faultActive (const T& fault_map) const;
@@ -237,21 +242,19 @@ class LanderInterface : public PlexilInterface
         owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
-  const char* FaultPanJointLocked = "PAN_JOINT_LOCKED";
-  const char* FaultTiltJointLocked = "TILT_JOINT_LOCKED";
+  FaultMap m_panTiltErrors =
+    {
+     {"AntennaPanFault",
+      std::make_pair(owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
+     {"AntennaTiltFault",
+      std::make_pair(owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
+    };
 
-  FaultMap m_panTiltErrors = {
-    {FaultPanJointLocked, std::make_pair(
-      owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
-    {FaultTiltJointLocked, std::make_pair(
-      owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
-  };
-
-  const char* FaultNoImage = "NO_IMAGE";
-
-  FaultMap m_cameraErrors = {
-    {FaultNoImage, std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
-  };
+  FaultMap m_cameraErrors =
+    {
+     {"NO_IMAGE",
+      std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
+    };
 
   // Telemetry
 
