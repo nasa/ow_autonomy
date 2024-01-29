@@ -2,58 +2,84 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Demo unstows and stows the arm if the Camera is set as operable
-// from the HealthMonitor. If it is inoperable, and the camera is operable
-// it takes photos. If both the Camera and Arm are inoperable, it prints out an
-// error message and waits for them to be operable.
+// This plan demonstrates the effects of the Health Monitor, with
+// respect to operability of the arm and camera.
+//
+// 1. If the Arm is operable, it repeatedly unstows and stows.
+//
+// 2. If the Arm is inoperable, but the Camera is operable, it
+//    repeatedly captures images.
+//
+// 3. If both the Arm and Camera are inoperable, the plan waits for
+//    either to become operable.
+//
+// The Arm becomes inoperable with the injection of any Arm fault.
+// The Camera becomes inoperable with the injection of a Camera fault.
+// Note that a faulted Camera can be commanded to take an image --
+// this is the only way to detect if the fault has been cleared.
+//
+// This plan is terminated by a power fault, and the quickest means
+// are the low_state_of_charge, instantaneous_capacity_loss, and
+// thermal_failure.
 
 // NOTE: this plan requires use of the Fault Dependencies framework,
 // which is documented in OceanWATERS user guide at
-// https://github.com/nasa/ow_simulator/wiki/Autonomy.
+// https://github.com/nasa/ow_simulator/wiki/Autonomy.  You must start
+// the executive with the fault_dependencies_file option, e.g:
+//
+//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
 
 #include "ow-interface.h"
 
-HealthMonitorDemo: Concurrence
+HealthMonitorDemo:
 {
-
   Boolean AllGood;
   Boolean ArmGood;
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
-  
+
   log_info("Starting HealthMonitorDemo...");
 
-  Monitor:
+  Actions: Concurrence
   {
-    LibraryCall HealthMonitor (AllOperable = AllGood,
-                               ArmOperable = ArmGood,
-                               AntennaOperable = AntennaGood,
-                               CameraOperable = CameraGood,
-                               PowerOperable = PowerGood);
+    Exit Lookup(PowerFault);
+
+    Monitor:
+    {
+      LibraryCall HealthMonitor (AllOperable = AllGood,
+                                 ArmOperable = ArmGood,
+                                 AntennaOperable = AntennaGood,
+                                 CameraOperable = CameraGood,
+                                 PowerOperable = PowerGood);
+    }
+
+    DemoPattern:
+    {
+      Repeat true;
+
+      Wait 3;
+
+      if ArmGood {
+        Invariant ArmGood;
+        log_info("Unstowing and stowing arm...");
+        LibraryCall ArmUnstow();
+        LibraryCall ArmStow();
+      }
+      elseif CameraGood {
+        log_info("Arm not operable, attempting CameraCapture to diagnose...");
+        LibraryCall CameraCapture();
+      }
+      elseif PowerGood {
+        // Trying CameraCapture because the Camera fault state can
+        // only be detected when the camera attempts to take a photo.
+        LibraryCall CameraCapture();
+        log_info("Waiting for Camera or Arm to become operable...");
+      }
+      else log_info("Waiting for Power to become operable...");
+      endif;
+    }
   }
-
-  DemoPattern:
-  {
-    Repeat true;
-    Wait 3;
-
-    if ArmGood{
-      Invariant ArmGood;
-      log_info("Unstowing and stowing arm...");
-      LibraryCall ArmUnstow();
-      LibraryCall ArmStow();
-    }
-    else if CameraGood{
-      log_info("Arm not operable, attempting CameraCapture to diagnose...");
-      LibraryCall CameraCapture();
-    }
-    else{
-      // Trying CameraCapture because the Camera fault state can only be detected when 
-      // the camera attempts to take a photo.
-      LibraryCall CameraCapture();
-      log_info("Waiting for Camera or Arm to become operable....");
-    }
-  }
-
+  
+  log_info("Finished HealthMonitorDemo.");
 }

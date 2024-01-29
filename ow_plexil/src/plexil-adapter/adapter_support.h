@@ -64,6 +64,9 @@ void receiveBool (const std::string& state_name, bool val);
 void receiveInt (const std::string& state_name, int val);
 void receiveDouble (const std::string& state_name, double val);
 void receiveString (const std::string& state_name, const std::string& val);
+void receiveIntFromString (const std::string& state_name,
+                           int val,
+                           const std::string& arg);
 void receiveBoolFromString (const std::string& state_name,
                             bool val,
                             const std::string& arg);

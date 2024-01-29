@@ -306,12 +306,12 @@ bool LanderInterface::antennaFault () const
 
 bool LanderInterface::antennaPanFault () const
 {
-  return m_panTiltErrors.at(FaultPanJointLocked).second;
+  return m_panTiltErrors.at("AntennaPanFault").second;
 }
 
 bool LanderInterface::antennaTiltFault () const
 {
-  return m_panTiltErrors.at(FaultTiltJointLocked).second;
+  return m_panTiltErrors.at("AntennaTiltFault").second;
 }
 
 bool LanderInterface::armFault () const

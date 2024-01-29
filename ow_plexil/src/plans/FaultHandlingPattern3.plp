@@ -2,25 +2,32 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// WARNING: This plan cannot work as intended until greater fault/action support
-// is added to the simulator. This serves mostly as a syntactic example.
+// This plan illustrates fault handling in the context of a sequence
+// of nodes.
 
-// DESIRED BEHAVIOR: If no faults are present, this plan will pan 180 degrees,
-// unstow and then stow the arm. If a fault is injected, the plan will pause 
-// until resolution.
+// If no faults are present, the antenna will pan 180 degrees, after
+// which the arm will unstow and then stow. If a relevant fault is
+// injected during any of these operations, the operation and its
+// associated node will fail, and the next operation/node will not
+// start until its relevant fault is cleared.  The plan ends with a
+// summary of the success of each node.
 
-// LIMITATIONS: If an arm fault is triggered during Unstow, it will skip the Stow node. 
+// Note that the Stow node is coded differently than its predecessors.
+// This is to work around a bug in the PLEXIL system in which the
+// executive crashes if a plan ends before a command it had sent
+// returns an acknowledgement (handle).
 
-// NOTE: If a fault is injected during an operation, that operation will only
-// halt immediately if the fault injected is associated with it directly,
-// i.e. an antenna fault during panning or an arm fault during
-// unstowing or stowing.
-
+// CAVEAT: It is possible that the Stow node may somehow start, or
+// complete with success status, even in the presence of an Arm fault.
+// This intermittent bug has been investigated but not yet fixed.
 
 #include "ow-interface.h"
 
-FaultHandlingPattern3:
+FaultHandlingPattern3: UncheckedSequence
 {
+  Boolean PanSuccess;
+  Boolean UnstowSuccess;
+  Boolean StowSuccess;
 
   log_info ("Starting FaultHandlingPattern3 plan...");
 
@@ -32,22 +39,40 @@ FaultHandlingPattern3:
     LibraryCall Pan (Degrees=180);
   }
 
+  PanSuccess = PanAntenna.outcome == SUCCESS;
+
   Unstow:
   {
     Start !Lookup(ArmFault);
+    Invariant !Lookup(ArmFault);
 
     LibraryCall ArmUnstow();
-
   }
 
-  Stow:
+  UnstowSuccess = Unstow.outcome == SUCCESS;
+
+  Stow: Concurrence
   {
+    Boolean FaultOccurred = false;
     Start !Lookup(ArmFault);
+    Post !FaultOccurred;
 
-    LibraryCall ArmStow();
+    CheckForFault:
+    {
+      Skip TheStow.state == FINISHED;
+      Start Lookup(ArmFault);
+      FaultOccurred = true;
+    }
 
+    TheStow:
+    {
+      LibraryCall ArmStow();
+    }
   }
 
-  log_info ("FaultHandlingPattern3 plan complete.");
+  StowSuccess = Stow.outcome == SUCCESS;
 
+  log_info ("Outcomes (Pan, Unstow, Stow) = ",
+            PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
+  log_info ("FaultHandlingPattern3 plan complete.");
 }

@@ -2,37 +2,37 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
+// This plan illustrates pausing and resuming an action in response to
+// a relevant fault.
+
 // Pan in 15 degree increments as long as no antenna pan fault is present.  If an
-// antenna pan fault occurs, pause until the fault is removed.  This plan must be
-// terminated with an interrupt (e.g. Control-C).
+// antenna pan fault occurs, pause until the fault is removed.
+
+// This plan terminates on a power fault, e.g. injecting low state of
+// charge, instantaneous capacity loss, or thermal failure.  Note that
+// a pan in progress must finish first, i.e. clear a pan fault if needed.
 
 #include "ow-interface.h"
 
 FaultHandlingPattern1:
 {
-  Real NewAngle = 0;
-
   log_info ("Starting FaultHandlingPattern1 plan...");
 
-  UncheckedSequence
+  ManyPans: UncheckedSequence
   {
-    Repeat true;
+    Real NewAngle = 0;
+    Repeat !Lookup(PowerFault);
 
-    Wait .2;
-
-    Pattern1PanAntenna:
+    OnePan:
     {
       Start !Lookup(AntennaPanFault);
-      Exit Lookup(AntennaPanFault);
+      Invariant !Lookup(AntennaPanFault);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-
-      if NewAngle > 180{
-        NewAngle = NewAngle - 360;
-      }
-
-      LibraryCall Pan (Degrees=NewAngle);
+      if (NewAngle > 180) NewAngle = NewAngle - 360;
+      LibraryCall Pan (Degrees = NewAngle);
     }
   }
-}
 
+  log_info ("Finished FaultHandlingPattern1 plan.");
+}
