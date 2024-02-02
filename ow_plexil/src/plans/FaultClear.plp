@@ -17,6 +17,6 @@ FaultClear:
   }
   else {
     log_error ("Invalid argument to FaultClear, ", fault,
-               ". Only goal errors may be cleared by autonomy.");
+               ". Only OceanWATERS goal error flags may be cleared.");
   }
 }

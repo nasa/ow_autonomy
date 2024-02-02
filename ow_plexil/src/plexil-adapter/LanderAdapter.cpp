@@ -375,10 +375,6 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
                                         battery_rul);
   config->registerLookupHandlerFunction("BatteryTemperature", battery_temp);
   config->registerLookupHandlerFunction("ActionGoalStatus", action_goal_status);
-  //  config->registerLookupHandlerFunction("ArmGoalError",
-  //					lookupHandler_function0<>
-  //                                        (*LanderInterface::instance(),
-  //                                         &LanderInterface::armGoalError));
   config->setDefaultLookupHandler(default_lookup_handler);
 
   debugMsg("LanderAdapter", " initialized.");

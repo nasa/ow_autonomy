@@ -80,7 +80,7 @@ LibraryAction TaskPSP (In Integer Frame,
 		       In Real Point[3],
 		       In Real Normal[3],
 		       In Real MaxDepth,
-		       In Real MaxForce);
+                       In Real MaxForce);
 
 LibraryAction TaskShearBevameter (In Integer Frame,
                                   In Boolean Relative,
@@ -96,8 +96,12 @@ LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Real MaxDepth,
                                 In Real MaxForce);
 
-// Telemetry
+LibraryAction OwlatFaultClear (In Integer fault);
 
+
+// Lookups
+
+Boolean Lookup DrillGoalError;
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
 Real Lookup ArmJointTorques;

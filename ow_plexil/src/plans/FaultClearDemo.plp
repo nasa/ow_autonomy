@@ -2,21 +2,24 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-  // Monitor for goal errors
-  // Clear them
-  // Terminate on power fault
+// Demonstrates a very simple usage of the FaultClear action, which is
+// used to clear goal errors (and not execution errors).  Continuously
+// monitors for all categories of goal errors.  When one occurs, it is
+// cleared.  A power fault terminates this plan.
 
-  // To test:
-  //  - Start this plan
-  //  - induce goal errors
-  //    - camera: inject fault
-  //    - arm: attempt the impossible
-  //    - pan/tilt: ?
-  //    - task: ?
+// Arm and Task goal error are automatically induced and cleared.  You
+// can also induce these manually by attempting unreachable joint
+// moves or any Task* action with unreachable locations.
 
-  // Issues:
-  //   - how will auto-clearing interact with this plan?
-  //     - is this an issue with the epic branch?
+// To test the camera, inject the camera fault and start the
+// camera_capture action.
+
+// To test the antenna, try 'rosrun ow_lander pan.py 100'.
+
+// Note that goal errors are associated only with ROS actions, and not
+// other means of controlling lander components such as ad hoc message
+// publishing.
+
 
 #include "ow-interface.h"
 
@@ -28,6 +31,9 @@ FaultClearDemo:
   {
     Exit Lookup(PowerFault);
 
+    // NOTE: the Waits in the fault-clearing nodes is to allow for an
+    // updated goal error flag to be read by the Lookup.
+
     ClearArmFault:
     {
       Start Lookup(ArmGoalError);
@@ -35,6 +41,7 @@ FaultClearDemo:
 
       log_info ("Clearing Arm goal error.");
       LibraryCall FaultClear (fault=ARM_GOAL_ERROR);
+      Wait 1;
     }
 
     ClearCameraFault:
@@ -44,6 +51,7 @@ FaultClearDemo:
 
       log_info ("Clearing Camera goal error.");
       LibraryCall FaultClear (fault=CAMERA_GOAL_ERROR);
+      Wait 1;
     }
 
     ClearAntennaFault:
@@ -53,6 +61,7 @@ FaultClearDemo:
 
       log_info ("Clearing Pan/Tilt goal error.");
       LibraryCall FaultClear (fault=PAN_TILT_GOAL_ERROR);
+      Wait 1;
     }
 
     ClearTaskFault:
@@ -62,6 +71,22 @@ FaultClearDemo:
 
       log_info ("Clearing Task goal error.");
       LibraryCall FaultClear (fault=TASK_GOAL_ERROR);
+      Wait 1;
+    }
+
+    CreateArmFault:
+    {
+      // Note the raw arm commands, thus sent asychnronously.
+      arm_unstow();
+      Wait 3;
+      arm_stop();
+    }
+
+    CreateTaskFault:
+    {
+      Wait 10; // Give previous node a chance to finish.
+      // Note the raw arm commands, thus sent asychnronously.
+      grind (10, 10, 10, 10, true, -0.155);
     }
   }
 
