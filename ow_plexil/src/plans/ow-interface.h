@@ -88,6 +88,8 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
+LibraryAction FaultClear (In Integer fault);
+
 LibraryAction HealthMonitor (InOut Boolean AllOperable,
                              InOut Boolean ArmOperable,
                              InOut Boolean AntennaOperable,
@@ -109,10 +111,6 @@ Boolean Lookup AntennaTiltFault;
 Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 Boolean Lookup CameraFault;
-Boolean Lookup ArmGoalError;
-Boolean Lookup CameraGoalError;
-Boolean Lookup PanTiltGoalError;
-Boolean Lookup TaskGoalError;
 
 // The following two require use of the fault dependencies framework.
 

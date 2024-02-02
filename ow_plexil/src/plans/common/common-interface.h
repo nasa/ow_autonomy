@@ -80,8 +80,6 @@ LibraryAction ArmFindSurface (In Integer Frame,
 
 LibraryAction CameraCapture ();
 
-LibraryAction FaultClear (In Integer fault);
-
 LibraryAction PanTiltMoveJoints (In Real PanDegrees, In Real TiltDegrees);
 
 LibraryAction TaskDeliverSample ();
@@ -113,6 +111,12 @@ Real Lookup ArmJointTorque       (Integer joint);
 Real Lookup BatteryStateOfCharge;
 Real Lookup BatteryRemainingUsefulLife;
 Real Lookup BatteryTemperature;
+
+// Faults
+Boolean Lookup ArmGoalError;
+Boolean Lookup CameraGoalError;
+Boolean Lookup PanTiltGoalError;
+Boolean Lookup TaskGoalError;
 
 // Misc
 
