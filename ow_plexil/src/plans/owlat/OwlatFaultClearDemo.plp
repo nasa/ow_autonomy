@@ -8,10 +8,14 @@
 // appear.
 
 // An arm goal error is induced and cleared.  The remaining goal error
-// types must be induced manually with the FaultSet action.  For
-// example, to induce a Task goal error:
-//
-// rostopic pub /FaultSet/goal owl_msgs/FaultSetActionGoal
+// types must be induced manually with the FaultSet action.  This may
+// be done at the Unix command line by entering 'rostopic pub
+// /FaultSet/goal owl_msgs/FaultSetActionGoal' and pressing tab once
+// or twice.  This should print out a template for the message, for
+// which you can edit the 'fault' field and hen press return.  For
+// example, to inject a Task goal error:
+
+// $ rostopic pub /FaultSet/goal owl_msgs/FaultSetActionGoal
 //   "header:
 //      seq: 0
 //      stamp:
@@ -26,10 +30,9 @@
 //    goal:
 //      fault: 8"
 
-// For convenience, enter "rostopic pub /FaultSet/goal" and press Tab,
-// which creates the structure above in which you need only edit the
-// final 'fault' field.  Goal error values are listed in
-// owlat-interface.h.a
+// Goal error values are listed in owlat-interface.h.  They are 2
+// (arm), 8 (task), 16 (camera), 64 (pan/tilt), and 256 (drill).  No
+// other values will will work here.
 
 // This plan must be terminated with an interrupt (Ctrl-C).
 
