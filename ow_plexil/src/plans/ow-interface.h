@@ -112,7 +112,7 @@ Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 Boolean Lookup CameraFault;
 
-// The following two require use of the fault dependencies framework.
+// The following 3 lookups require use of the fault dependencies framework.
 
 // Returns first 10 faults in a given subsystem.  Specifying "System"
 // will give you all faults.
