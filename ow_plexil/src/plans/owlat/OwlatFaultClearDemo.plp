@@ -15,7 +15,7 @@
 // which you can edit the 'fault' field and hen press return.  For
 // example, to inject a Task goal error:
 
-// $ rostopic pub /FaultSet/goal owl_msgs/FaultSetActionGoal
+// $ rostopic pub --once /FaultSet/goal owl_msgs/FaultSetActionGoal
 //   "header:
 //      seq: 0
 //      stamp:
