@@ -112,12 +112,6 @@ Real Lookup BatteryStateOfCharge;
 Real Lookup BatteryRemainingUsefulLife;
 Real Lookup BatteryTemperature;
 
-// Faults
-Boolean Lookup ArmGoalError;
-Boolean Lookup CameraGoalError;
-Boolean Lookup PanTiltGoalError;
-Boolean Lookup TaskGoalError;
-
 // Misc
 
 Real[6] Lookup ArmEndEffectorForceTorque;

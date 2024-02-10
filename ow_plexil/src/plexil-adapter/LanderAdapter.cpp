@@ -204,16 +204,6 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
-static void fault_clear (Command* cmd, AdapterExecInterface* intf)
-{
-  int fault;
-  const vector<Value>& args = cmd->getArgValues();
-  args[0].getValue (fault);
-  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  LanderAdapter::s_interface->faultClear (fault, g_cmd_id);
-  acknowledge_command_sent(*cr);
-}
-
 static void arm_joint_acceleration (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
@@ -349,7 +339,6 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
   config->registerCommandHandlerFunction("arm_stow", arm_stow);
   config->registerCommandHandlerFunction("arm_unstow", arm_unstow);
   config->registerCommandHandlerFunction("camera_capture", camera_capture);
-  config->registerCommandHandlerFunction("fault_clear", fault_clear);
   config->registerCommandHandlerFunction("pan_tilt_move_joints",
                                          pan_tilt_move_joints);
   config->registerCommandHandlerFunction("task_deliver_sample",

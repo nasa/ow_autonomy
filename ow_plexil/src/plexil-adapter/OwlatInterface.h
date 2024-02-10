@@ -113,11 +113,6 @@ class OwlatInterface : public LanderInterface
   PLEXIL::Value getArmTool() const;
   bool systemFault () const override;
   std::vector<double> getArmEndEffectorFT () const override;
-  bool   armGoalError () const;
-  bool   cameraGoalError () const;
-  bool   panTiltGoalError () const;
-  bool   drillGoalError () const;
-  bool   taskGoalError () const;
 
  private:
   // Actions
@@ -184,27 +179,27 @@ class OwlatInterface : public LanderInterface
 
   // System-level faults:
   FaultMap m_systemErrors = {
-    {"SystemError", std::make_pair(
+    {"SYSTEM", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ArmGoalError", std::make_pair(
+    {"ARM_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ArmExecutionError", std::make_pair(
+    {"ARM_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TaskGoalError", std::make_pair(
+    {"TASK_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CameraGoalError", std::make_pair(
+    {"CAMERA_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CameraExecutionError", std::make_pair(
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PanTiltGoalError", std::make_pair(
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PanTiltExecutionError", std::make_pair(
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"DrillGoalError", std::make_pair(
+    {"DRILL_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::DRILL_GOAL_ERROR,false)},
-    {"DrillExecutionError", std::make_pair(
+    {"DRILL_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::DRILL_EXECUTION_ERROR,false)},
-    {"LanderExecutionError", std::make_pair(
+    {"LANDER_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)}
   };
 

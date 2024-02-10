@@ -10,19 +10,8 @@
 #include "common/common-interface.h"
 #include "ow-commands.h"
 
-// System Fault flags for OceanWATERS
-#define NO_FAULT 0
-#define SYSTEM_ERROR 1
-#define ARM_GOAL_ERROR 2
-#define ARM_EXECUTION_ERROR 4
-#define TASK_GOAL_ERROR 8
-#define CAMERA_GOAL_ERROR 16
-#define CAMERA_EXECUTION_ERROR 32
-#define PAN_TILT_GOAL_ERROR 64
-#define PAN_TILT_EXECUTION_ERROR 128
-#define POWER_EXECUTION_ERROR 256
-
 // Joint names, defined by their indices in the /joint_states ROS message.
+
 #define ANTENNA_PAN    0
 #define ANTENNA_TILT   1
 #define DISTAL_PITCH   2
@@ -88,8 +77,6 @@ LibraryAction TaskScoopLinear (In Integer Frame,
                                In Real Depth,
                                In Real Length);
 
-LibraryAction FaultClear (In Integer fault);
-
 LibraryAction HealthMonitor (InOut Boolean AllOperable,
                              InOut Boolean ArmOperable,
                              InOut Boolean AntennaOperable,
@@ -101,9 +88,11 @@ LibraryAction HealthMonitor (InOut Boolean AllOperable,
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
-
-// Fault-related lookups
-
+// Faults
+// Returns first 10 faults in a given subsystem, specifying "System" will give you all faults
+String [10] Lookup ActiveFaults(String subsystem_name);
+Boolean Lookup IsOperable(String subsystem_name);
+Boolean Lookup IsFaulty(String subsystem_name);
 Boolean Lookup SystemFault;
 Boolean Lookup AntennaFault;
 Boolean Lookup AntennaPanFault;
@@ -111,16 +100,6 @@ Boolean Lookup AntennaTiltFault;
 Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 Boolean Lookup CameraFault;
-
-// The following 3 lookups require use of the fault dependencies framework.
-
-// Returns first 10 faults in a given subsystem.  Specifying "System"
-// will give you all faults.
-String [10] Lookup ActiveFaults(String subsystem_name);
-
-Boolean Lookup IsOperable(String subsystem_name);
-Boolean Lookup IsFaulty(String subsystem_name);
-
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
