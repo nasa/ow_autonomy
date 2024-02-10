@@ -74,19 +74,20 @@ FaultClearDemo:
       Wait 1;
     }
 
+    // Note that the following nodes use asynchonous command calls, so
+    // that subsequent commands can be run before they complete.
+
     CreateArmFault:
     {
-      // Note the raw arm commands, thus sent asychnronously.
       arm_unstow();
-      Wait 3;
-      arm_stop();
+      Wait 3;     // Let run a bit before inducing fault.
+      arm_stop(); // Induce goal error, i.e. the arm won't fully unstow.
+      Wait 10;    // Allow time for commands to finish.
     }
 
     CreateTaskFault:
     {
-      Wait 10; // Give previous node a chance to finish.
-      // Note the raw arm commands, thus sent asychnronously.
-      grind (10, 10, 10, 10, true, -0.155);
+      grind (10, 10, 10, 10, true, -0.155); // unreachable coordinates
     }
   }
 
