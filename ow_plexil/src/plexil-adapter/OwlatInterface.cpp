@@ -575,31 +575,6 @@ bool OwlatInterface::systemFault () const
   return faultActive (m_systemErrors);
 }
 
-bool OwlatInterface::armGoalError () const
-{
-  return m_systemErrors.at("ArmGoalError").second;
-}
-
-bool OwlatInterface::cameraGoalError () const
-{
-  return m_systemErrors.at("CameraGoalError").second;
-}
-
-bool OwlatInterface::panTiltGoalError () const
-{
-  return m_systemErrors.at("PanTiltGoalError").second;
-}
-
-bool OwlatInterface::drillGoalError () const
-{
-  return m_systemErrors.at("DrillGoalError").second;
-}
-
-bool OwlatInterface::taskGoalError () const
-{
-  return m_systemErrors.at("TaskGoalError").second;
-}
-
 vector<double> OwlatInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;

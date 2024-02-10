@@ -37,7 +37,6 @@ const string Name_ArmStop                 = "ArmStop";
 const string Name_ArmStow                 = "ArmStow";
 const string Name_ArmUnstow               = "ArmUnstow";
 const string Name_CameraCapture           = "CameraCapture";
-const string Name_FaultClear              = "FaultClear";
 const string Name_PanTiltMoveJoints       = "PanTiltMoveJoints";
 const string Name_TaskDeliverSample       = "TaskDeliverSample";
 
@@ -49,7 +48,6 @@ static vector<string> LanderOpNames = {
   Name_ArmStow,
   Name_ArmUnstow,
   Name_CameraCapture,
-  Name_FaultClear,
   Name_PanTiltMoveJoints,
   Name_TaskDeliverSample
 };
@@ -93,8 +91,6 @@ void LanderInterface::initialize()
     make_unique<ArmUnstowActionClient>(Name_ArmUnstow, true);
   m_cameraCaptureClient =
     make_unique<CameraCaptureActionClient>(Name_CameraCapture, true);
-  m_faultClearClient =
-    make_unique<FaultClearActionClient>(Name_FaultClear, true);
   m_panTiltMoveJointsClient =
     make_unique<PanTiltMoveJointsActionClient>(Name_PanTiltMoveJoints, true);
   m_taskDeliverSampleClient =
@@ -112,7 +108,6 @@ void LanderInterface::initialize()
   connectActionServer (m_taskDeliverSampleClient, Name_TaskDeliverSample);
   connectActionServer (m_panTiltMoveJointsClient, Name_PanTiltMoveJoints);
   connectActionServer (m_cameraCaptureClient, Name_CameraCapture);
-  connectActionServer (m_faultClearClient, Name_FaultClear);
 
   // Initialize subscribers
 
@@ -537,30 +532,6 @@ void LanderInterface::armUnstow (int id)
   action_thread.detach();
 }
 
-void LanderInterface::faultClear (int fault, int id)
-{
-  if (! markOperationRunning (Name_FaultClear, id)) return;
-  thread action_thread (&LanderInterface::faultClearAction, this, fault, id);
-  action_thread.detach();
-}
-
-void LanderInterface::faultClearAction (int fault, int id)
-{
-  FaultClearGoal goal;
-  goal.fault = fault;
-  std::stringstream args;
-  args << goal.fault;
-  string opname = Name_FaultClear;
-  runAction<actionlib::SimpleActionClient<FaultClearAction>,
-            FaultClearGoal,
-            FaultClearResultConstPtr,
-            FaultClearFeedbackConstPtr>
-    (opname, m_faultClearClient, goal, id,
-     default_action_active_cb (opname, args.str()),
-     default_action_feedback_cb<FaultClearFeedbackConstPtr> (opname),
-     default_action_done_cb<FaultClearResultConstPtr> (opname));
-}
-
 void LanderInterface::panTiltMoveJoints (double pan_degrees,
                                          double tilt_degrees,
                                          int id)
@@ -570,7 +541,6 @@ void LanderInterface::panTiltMoveJoints (double pan_degrees,
                         pan_degrees, tilt_degrees, id);
   action_thread.detach();
 }
-
 
 void LanderInterface::panTiltMoveJointsAction (double pan_degrees,
                                                double tilt_degrees,
@@ -591,7 +561,6 @@ void LanderInterface::panTiltMoveJointsAction (double pan_degrees,
      default_action_feedback_cb<PanTiltMoveJointsFeedbackConstPtr> (opname),
      default_action_done_cb<PanTiltMoveJointsResultConstPtr> (opname));
 }
-
 
 void LanderInterface::cameraCapture (int id)
 {

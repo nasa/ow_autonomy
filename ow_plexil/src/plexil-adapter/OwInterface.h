@@ -134,10 +134,6 @@ class OwInterface : public LanderInterface
   bool   hardTorqueLimitReached (const std::string& joint_name) const;
   bool   softTorqueLimitReached (const std::string& joint_name) const;
   bool   systemFault () const override;
-  bool   armGoalError () const;
-  bool   cameraGoalError () const;
-  bool   panTiltGoalError () const;
-  bool   taskGoalError () const;
   std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
   bool   isOperable (const std::string& subsystem_name) const;
   bool   isFaulty (const std::string& subsystem_name) const;
@@ -185,23 +181,23 @@ class OwInterface : public LanderInterface
 
   // System-level faults
   FaultMap m_systemErrors = {
-    {"SystemError", std::make_pair(
+    {"SYSTEM", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ArmGoalError", std::make_pair(
+    {"ARM_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ArmExecutionError", std::make_pair(
+    {"ARM_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TaskGoalError", std::make_pair(
+    {"TASK_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CameraGoalError", std::make_pair(
+    {"CAMERA_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CameraExecutionError", std::make_pair(
+    {"CAMERA_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PanTiltGoalError", std::make_pair(
+    {"PAN_TILT_GOAL_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PanTiltExecutionError", std::make_pair(
+    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"PowerExecutionError", std::make_pair(
+    {"POWER_EXECUTION_ERROR", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
   bool m_fault_dependencies_on;

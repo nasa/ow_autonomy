@@ -423,22 +423,6 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
                                          &LanderInterface::cameraFault));
-  config->registerLookupHandlerFunction("ArmGoalError",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &OwInterface::armGoalError));
-  config->registerLookupHandlerFunction("CameraGoalError",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &OwInterface::cameraGoalError));
-  config->registerLookupHandlerFunction("PanTiltGoalError",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &OwInterface::panTiltGoalError));
-  config->registerLookupHandlerFunction("TaskGoalError",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &OwInterface::taskGoalError));
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }
