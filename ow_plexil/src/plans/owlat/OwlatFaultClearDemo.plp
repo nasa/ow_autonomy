@@ -1,0 +1,108 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Demonstrates a very simple usage of the FaultClear action, which is
+// used to clear goal errors (and not execution errors).  Continuously
+// monitors for all categories of goal errors, clearing them as they
+// appear.
+
+// An arm goal error is induced and cleared.  The remaining goal error
+// types must be induced manually with the FaultSet action.  This may
+// be done at the Unix command line by entering 'rostopic pub
+// /FaultSet/goal owl_msgs/FaultSetActionGoal' and pressing tab once
+// or twice.  This should print out a template for the message, for
+// which you can edit the 'fault' field and hen press return.  For
+// example, to inject a Task goal error:
+
+// $ rostopic pub --once /FaultSet/goal owl_msgs/FaultSetActionGoal
+//   "header:
+//      seq: 0
+//      stamp:
+//        secs: 0
+//        nsecs: 0
+//      frame_id: ''
+//    goal_id:
+//      stamp:
+//        secs: 0
+//        nsecs: 0
+//      id: ''
+//    goal:
+//      fault: 8"
+
+// Goal error values are listed in owlat-interface.h.  They are 2
+// (arm), 8 (task), 16 (camera), 64 (pan/tilt), and 256 (drill).  No
+// other values will will work here.
+
+// This plan must be terminated with an interrupt (Ctrl-C).
+
+#include "owlat-interface.h"
+
+OwlatFaultClearDemo:
+{
+  log_info ("Starting OwlatFaultClear demo...");
+
+  Demo: Concurrence
+  {
+    // NOTE: the Waits in the fault-clearing nodes is to allow for an
+    // updated goal error flag to be read by the Lookup.
+
+    ClearArmFault:
+    {
+      Start Lookup(ArmGoalError);
+      Repeat true;
+
+      log_info ("Clearing Arm goal error.");
+      LibraryCall OwlatFaultClear (fault=ARM_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearCameraFault:
+    {
+      Start Lookup(CameraGoalError);
+      Repeat true;
+
+      log_info ("Clearing Camera goal error.");
+      LibraryCall OwlatFaultClear (fault=CAMERA_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearAntennaFault:
+    {
+      Start Lookup(PanTiltGoalError);
+      Repeat true;
+
+      log_info ("Clearing Pan/Tilt goal error.");
+      LibraryCall OwlatFaultClear (fault=PAN_TILT_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearDrillFault:
+    {
+      Start Lookup(DrillGoalError);
+      Repeat true;
+
+      log_info ("Clearing Drill goal error.");
+      LibraryCall OwlatFaultClear (fault=DRILL_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearTaskFault:
+    {
+      Start Lookup(TaskGoalError);
+      Repeat true;
+
+      log_info ("Clearing Task goal error.");
+      LibraryCall OwlatFaultClear (fault=TASK_GOAL_ERROR);
+      Wait 1;
+    }
+
+    CreateArmFault:
+    {
+      // Note the raw arm commands, thus sent asychnronously.
+      arm_unstow();
+      Wait 5;
+      arm_stop();
+    }
+  }
+}
