@@ -169,11 +169,13 @@ EuropaMission: Concurrence
                                         Parallel = parallel,
                                         FilterType = "Dark");
 
-      if (! Lookup(GroundFound)) {
-        // Note that the default value of GroundFound is false, so
-        log_error ("Failed to find ground. Stowing arm and stopping.");
-        LibraryCall SafeStow();
-        MissionInProgress = false;
+      if (! isKnown(ground_pos)) {
+        log_warning ("Sampling location could not be found visually. ",
+                     "Using default dig location.");
+        ground_pos = -0.18;
+        trench_x = 1.77;
+        trench_y = -0.08;
+        parallel = true;
       }
 
       DigAndImage: Concurrence {

@@ -18,19 +18,33 @@ IdentifySampleTarget:
   InOut Boolean Parallel;
   In String FilterType;
   Real result[3];
-  Real c_pan = 70;
-  Real c_tilt = 50;
+  Real start_pan = 70;
+  Real pan_limit = 80;
+  Real tilt = 50;
+  Real tilt_limit = 30;
   Real delta = 5;
   Post Lookup (GroundFound);
 
   // Take pictures in front of the lander for processing in
   // identify_sample_location.
 
-  LibraryCall Tilt(Degrees = c_tilt);
-  LibraryCall PanAndShoot(PanAngle = c_pan - delta);
-  LibraryCall PanAndShoot(PanAngle = c_pan);
-  LibraryCall PanAndShoot(PanAngle = c_pan + delta);
-  SynchronousCommand result = identify_sample_location(3, FilterType);
+  while (tilt >= tilt_limit &&
+         (!isKnown(result[0]) ||
+          !isKnown(result[1]) ||
+          !isKnown(result[2]))) {
+    Real pan;
+    pan = start_pan;
+    LibraryCall Tilt(Degrees = tilt);
+    tilt = tilt - delta;
+    while (pan <= pan_limit &&
+           (!isKnown(result[0]) ||
+            !isKnown(result[1]) ||
+            !isKnown(result[2]))) {
+      LibraryCall PanAndShoot(PanAngle = pan);
+      pan = pan + delta;
+      SynchronousCommand result = identify_sample_location(3, FilterType);
+    }
+  }
 
   if (isKnown(result[0]) && isKnown(result[1]) && isKnown(result[2])) {
     // Guarded move is an attempt to find the ground position.  The chosen start
@@ -40,17 +54,17 @@ IdentifySampleTarget:
                              DirX = 0, DirY = 0, DirZ = 1,
                              SearchDistance = 0.5);
 
-    //check for ground position
+    // Check for ground position.
     if (Lookup (GroundFound)) GroundPos = Lookup (GroundPosition);
     else log_error ("IdentifySampleTarget: GuardedMove failed to find ground.");
     endif;
 
-    // The chosen X/Y sampling location, as well as choice for Parallel trench
+    // The chosen X/Y sampling location, as well as choice for Parallel trench.
     X = result[0];
     Y = result[1];
     Parallel = true;  // arbitrary for now
   }
-  else log_error ("IdentifySampleTarget: failed to find one.");
+  else log_warning ("IdentifySampleTarget: failed to find a suitable sample target.");
   endif;
 
 }

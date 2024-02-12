@@ -10,6 +10,21 @@
 #include "../common/common-interface.h"
 #include "owlat-commands.h"
 
+// System Fault flags for OWLAT
+#define NO_FAULT 0
+#define SYSTEM_ERROR 1
+#define ARM_GOAL_ERROR 2
+#define ARM_EXECUTION_ERROR 4
+#define TASK_GOAL_ERROR 8
+#define CAMERA_GOAL_ERROR 16
+#define CAMERA_EXECUTION_ERROR 32
+#define PAN_TILT_GOAL_ERROR 64
+#define PAN_TILT_EXECUTION_ERROR 128
+#define DRILL_GOAL_ERROR 256
+#define DRILL_EXECUTION_ERROR 512
+#define LANDER_EXECUTION_ERROR 1024
+
+// OWLAT end effector tool enumeration
 #define TOOL_NONE 0
 #define TOOL_PSP  1
 #define TOOL_BEVAMETER 2
@@ -65,7 +80,7 @@ LibraryAction TaskPSP (In Integer Frame,
 		       In Real Point[3],
 		       In Real Normal[3],
 		       In Real MaxDepth,
-		       In Real MaxForce);
+                       In Real MaxForce);
 
 LibraryAction TaskShearBevameter (In Integer Frame,
                                   In Boolean Relative,
@@ -81,8 +96,12 @@ LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Real MaxDepth,
                                 In Real MaxForce);
 
-// Telemetry
+LibraryAction OwlatFaultClear (In Integer fault);
 
+
+// Lookups
+
+Boolean Lookup DrillGoalError;
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
 Real Lookup ArmJointTorques;

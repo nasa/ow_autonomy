@@ -16,7 +16,7 @@ RemoveTailings:
 
   // NOTE: These values selected only to save time during testing, as each pass
   // takes several minutes.
-  Real bite_depth = 0.05;
+  Real bite_depth = 0.03;
   Integer num_passes = 2;
 
   for (Integer pass = 1; pass <= num_passes; pass + 1) {

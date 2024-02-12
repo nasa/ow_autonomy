@@ -82,36 +82,38 @@ ReferenceMission1: Concurrence
                                       GroundPos = ground_pos,
                                       Parallel = parallel,
                                       FilterType = "Dark");
-    if (isKnown(ground_pos)) {
-      LibraryCall ArmUnstow();
-      LibraryCall DigTrench (X = trench_x,
-                             Y = trench_y,
-                             GroundPos = ground_pos,
-                             Length = trench_length,
-                             BiteDepth = 0.03,
-                             NumPasses = 2,
-                             Parallel = parallel);
-      LibraryCall RemoveTailings (X = trench_x,
-                                  Y = trench_y,
-                                  GroundPos = ground_pos,
-                                  Parallel = parallel);
-      LibraryCall CollectSample (X = trench_x,
-                                 Y = trench_y,
-                                 GroundPos = ground_pos,
-                                 Depth = 0.1105,
-                                 Length = trench_length,
-                                 Parallel = parallel);
-      LibraryCall SafeStow();
-      LibraryCall DockIngestSample();
-      LibraryCall StartSampleAnalysis;
-      Wait 2;  // Wait for (stubbed) sample analysis to finish.
+    if (! isKnown(ground_pos)) {
+      log_warning ("Sampling location could not be found visually. ",
+                   "Using default dig location.");
+      ground_pos = -0.18;
+      trench_x = 1.77;
+      trench_y = -0.08;
+      parallel = true;
     }
-    else
-    {
-      log_error ("Mission aborted because a sampling location was not found.");
-    }
-    endif
-    MissionInProgress = false;
-    log_info ("Reference Mission 1, Sol 0 complete.");
+    endif;
+    LibraryCall ArmUnstow();
+    LibraryCall DigTrench (X = trench_x,
+                           Y = trench_y,
+                           GroundPos = ground_pos,
+                           Length = trench_length,
+                           BiteDepth = 0.03,
+                           NumPasses = 2,
+                           Parallel = parallel);
+    LibraryCall RemoveTailings (X = trench_x,
+                                Y = trench_y,
+                                GroundPos = ground_pos,
+                                Parallel = parallel);
+    LibraryCall CollectSample (X = trench_x,
+                               Y = trench_y,
+                               GroundPos = ground_pos,
+                               Depth = 0.1105,
+                               Length = trench_length,
+                               Parallel = parallel);
+    LibraryCall SafeStow();
+    LibraryCall DockIngestSample();
+    LibraryCall StartSampleAnalysis;
+    Wait 2;  // Wait for (stubbed) sample analysis to finish.
   }
+  MissionInProgress = false;
+  log_info ("Reference Mission 1, Sol 0 complete.");
 }
