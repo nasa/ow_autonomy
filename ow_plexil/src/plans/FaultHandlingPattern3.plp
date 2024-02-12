@@ -2,15 +2,24 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan illustrates the halting and resumption of a sequence in
-// the presence of faults.
+// This plan illustrates fault handling in the context of a sequence
+// of nodes.
 
-// If no faults are present this plan will, in sequence, pan the
-// antenna to 180 degrees, unstow the arm, and then stow it. If a
-// fault *relevant* to the current action is injected, the plan will
-// pause until the fault is cleared, and then continue the sequence.
-// Finally it prints the success status of each operation (i.e. did it
-// complete successfully).
+// If no faults are present, the antenna will pan 180 degrees, after
+// which the arm will unstow and then stow. If a relevant fault is
+// injected during any of these operations, the operation and its
+// associated node will fail, and the next operation/node will not
+// start until its relevant fault is cleared.  The plan ends with a
+// summary of the success of each node.
+
+// Note that the Stow node is coded differently than its predecessors.
+// This is to work around a bug in the PLEXIL system in which the
+// executive crashes if a plan ends before a command it had sent
+// returns an acknowledgement (handle).
+
+// CAVEAT: It is possible that the Stow node may somehow start, or
+// complete with success status, even in the presence of an Arm fault.
+// This intermittent bug has been investigated but not yet fixed.
 
 #include "ow-interface.h"
 
@@ -26,7 +35,6 @@ FaultHandlingPattern3: UncheckedSequence
   {
     Start !Lookup(AntennaPanFault);
     Invariant !Lookup(AntennaPanFault);
-    Post Lookup(ActionGoalStatus("Pan")) == ACTION_SUCCEEDED;
 
     LibraryCall Pan (Degrees=180);
   }
@@ -37,20 +45,29 @@ FaultHandlingPattern3: UncheckedSequence
   {
     Start !Lookup(ArmFault);
     Invariant !Lookup(ArmFault);
-    Post Lookup(ActionGoalStatus("ArmUnstow")) == ACTION_SUCCEEDED;
 
     LibraryCall ArmUnstow();
   }
 
   UnstowSuccess = Unstow.outcome == SUCCESS;
 
-  Stow:
+  Stow: Concurrence
   {
+    Boolean FaultOccurred = false;
     Start !Lookup(ArmFault);
-    Invariant !Lookup(ArmFault);
-    Post Lookup(ActionGoalStatus("ArmStow")) == ACTION_SUCCEEDED;
+    Post !FaultOccurred;
 
-    LibraryCall ArmStow();
+    CheckForFault:
+    {
+      Skip TheStow.state == FINISHED;
+      Start Lookup(ArmFault);
+      FaultOccurred = true;
+    }
+
+    TheStow:
+    {
+      LibraryCall ArmStow();
+    }
   }
 
   StowSuccess = Stow.outcome == SUCCESS;

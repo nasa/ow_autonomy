@@ -29,7 +29,7 @@ FaultHandlingPattern1:
       Invariant !Lookup(AntennaPanFault);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
-      if NewAngle > 180 NewAngle = NewAngle - 360;
+      if (NewAngle > 180) NewAngle = NewAngle - 360;
       LibraryCall Pan (Degrees = NewAngle);
     }
   }
