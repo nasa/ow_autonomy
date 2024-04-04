@@ -299,6 +299,22 @@ void LanderInterface::armPoseCb (const owl_msgs::ArmPose::ConstPtr& msg)
 
 ////////////////////// Fault support ///////////////////////////////////////
 
+
+bool LanderInterface::armFault () const
+{
+  return faultActive (m_armErrors);
+}
+
+bool LanderInterface::powerFault () const
+{
+  return faultActive (m_powerErrors);
+}
+
+bool LanderInterface::cameraFault () const
+{
+  return faultActive (m_cameraErrors);
+}
+
 bool LanderInterface::antennaFault () const
 {
   return antennaPanError() || antennaTiltError();
@@ -314,19 +330,69 @@ bool LanderInterface::antennaTiltError () const
   return m_panTiltErrors.at("AntennaTiltError").second;
 }
 
-bool LanderInterface::armFault () const
+bool LanderInterface::noImageError () const
 {
-  return faultActive (m_armErrors);
+  return m_cameraErrors.at("NoImageError").second;
 }
 
-bool LanderInterface::powerFault () const
+bool LanderInterface::lowStateOfChargeError () const
 {
-  return faultActive (m_powerErrors);
+  return m_powerErrors.at("LowStateOfChargeError").second;
 }
 
-bool LanderInterface::cameraFault () const
+bool LanderInterface::instantaneousCapacityLossError () const
 {
-  return faultActive (m_cameraErrors);
+  return m_powerErrors.at("InstantaneousCapaciyLossError").second;
+}
+
+bool LanderInterface::thermalError () const
+{
+  return m_powerErrors.at("ThermalError").second;
+}
+
+bool LanderInterface::armHardwareError () const
+{
+  return m_armErrors.at("ArmHardwareError").second;
+}
+
+bool LanderInterface::trajectoryError () const
+{
+  return m_armErrors.at("TrajectoryError").second;
+}
+
+bool LanderInterface::collisionError () const
+{
+  return m_armErrors.at("CollisionError").second;
+}
+
+bool LanderInterface::eStopError () const
+{
+  return m_armErrors.at("EmergencyStopError").second;
+}
+
+bool LanderInterface::positionLimitError () const
+{
+  return m_armErrors.at("PositionLimitError").second;
+}
+
+bool LanderInterface::jointTorqueLimitError () const
+{
+  return m_armErrors.at("JointTorqueLimitError").second;
+}
+
+bool LanderInterface::velocityLimitError () const
+{
+  return m_armErrors.at("VelocityLimitError").second;
+}
+
+bool LanderInterface::noForceDataError () const
+{
+  return m_armErrors.at("NoForceDataError").second;
+}
+
+bool LanderInterface::forceTorqueLimitError () const
+{
+  return m_armErrors.at("ForceTorqueLimitError").second;
 }
 
 

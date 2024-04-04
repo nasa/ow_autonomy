@@ -140,13 +140,28 @@ class LanderInterface : public PlexilInterface
   void taskDeliverSample (int id);
   void panTiltMoveJoints (double pan_degrees, double tilt_degrees, int id);
   void cameraCapture (int id);
+
+  // Support for fault-related Lookups
   virtual bool systemFault () const = 0;
   bool antennaFault () const;
-  bool antennaPanError () const;
-  bool antennaTiltError () const;
   bool armFault () const;
   bool powerFault () const;
   bool cameraFault () const;
+  bool antennaPanError () const;
+  bool antennaTiltError () const;
+  bool noImageError () const;
+  bool lowStateOfChargeError () const;
+  bool instantaneousCapacityLossError () const;
+  bool thermalError () const;
+  bool armHardwareError () const;
+  bool trajectoryError () const;
+  bool collisionError () const;
+  bool eStopError () const;
+  bool positionLimitError () const;
+  bool jointTorqueLimitError () const;
+  bool velocityLimitError () const;
+  bool noForceDataError () const;
+  bool forceTorqueLimitError () const;
 
   // Telemetry
   virtual std::vector<double> getArmEndEffectorFT () const = 0;

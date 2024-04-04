@@ -129,11 +129,23 @@ class OwInterface : public LanderInterface
 
   // State/Lookup interface
   std::vector<double> getEndEffectorFT () const;
-  bool   groundFound () const;
+  bool groundFound () const;
   double groundPosition () const;
-  bool   hardTorqueLimitReached (const std::string& joint_name) const;
-  bool   softTorqueLimitReached (const std::string& joint_name) const;
-  bool   systemFault () const override;
+  bool hardTorqueLimitReached (const std::string& joint_name) const;
+  bool softTorqueLimitReached (const std::string& joint_name) const;
+
+  // Fault-related Lookup support
+  bool systemFault () const override;
+  bool armGoalError () const;
+  bool armExecutionError () const;
+  bool taskGoalError () const;
+  bool cameraGoalError () const;
+  bool cameraExecutionError () const;
+  bool panTiltGoalError () const;
+  bool panTiltExecutionError () const;
+  bool powerExecutionError () const;
+  bool miscSystemError () const;
+
   std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
   bool   isOperable (const std::string& subsystem_name) const;
   bool   isFaulty (const std::string& subsystem_name) const;
@@ -180,10 +192,10 @@ class OwInterface : public LanderInterface
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
   // See detailed explanation of FaultMap in LanderInterface.h
-  
-  FaultMap m_systemErrors = {
-  {  // The first flag covers faults that don't have their own flag.
-     "MiscSystemError", std::make_pair(
+  FaultMap m_systemErrors =
+  {
+    // The first flag covers faults that don't have their own flag.
+    {"MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
     {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
@@ -202,8 +214,10 @@ class OwInterface : public LanderInterface
     {"PowerExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
+  
   bool m_fault_dependencies_on;
 
+  
   // Action clients
 
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;
