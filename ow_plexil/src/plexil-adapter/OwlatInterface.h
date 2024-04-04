@@ -177,29 +177,31 @@ class OwlatInterface : public LanderInterface
 
   // Member variables
 
-  // System-level faults:
+  // See detailed explanation of FaultMap in LanderInterface.h
+  
   FaultMap m_systemErrors = {
-    {"SYSTEM", std::make_pair(
+  {  // The first flag covers faults that don't have their own flag.
+   { "MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(
+    {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ARM_EXECUTION_ERROR", std::make_pair(
+    {"ArmExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(
+    {"TaskGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(
+    {"CameraGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+    {"CameraExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+    {"PanTiltGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+    {"PanTiltExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"DRILL_GOAL_ERROR", std::make_pair(
+    {"DrillGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::DRILL_GOAL_ERROR,false)},
-    {"DRILL_EXECUTION_ERROR", std::make_pair(
+    {"DrillExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::DRILL_EXECUTION_ERROR,false)},
-    {"LANDER_EXECUTION_ERROR", std::make_pair(
+    {"LanderExecutionError", std::make_pair( // fault in the Stewart platform
         owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)}
   };
 

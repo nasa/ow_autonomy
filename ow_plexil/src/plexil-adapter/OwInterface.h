@@ -179,25 +179,27 @@ class OwInterface : public LanderInterface
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
-  // System-level faults
+  // See detailed explanation of FaultMap in LanderInterface.h
+  
   FaultMap m_systemErrors = {
-    {"SYSTEM", std::make_pair(
+  {  // The first flag covers faults that don't have their own flag.
+     "MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(
+    {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ARM_EXECUTION_ERROR", std::make_pair(
+    {"ArmExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(
+    {"TaskGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(
+    {"CameraGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+    {"CameraExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+    {"PanTiltGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+    {"PanTiltExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(
+    {"PowerExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
   bool m_fault_dependencies_on;

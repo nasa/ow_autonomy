@@ -33,8 +33,8 @@ FaultHandlingPattern3: UncheckedSequence
 
   PanAntenna:
   {
-    Start !Lookup(AntennaPanFault);
-    Invariant !Lookup(AntennaPanFault);
+    Start !Lookup(AntennaPanError);
+    Invariant !Lookup(AntennaPanError);
 
     LibraryCall Pan (Degrees=180);
   }

@@ -16,10 +16,10 @@ TestFaults:
     if (Lookup(AntennaFault)) log_warning ("Antenna fault present.");
     else log_info ("Antenna is fine.");
 
-    if (Lookup(AntennaPanFault)) log_warning ("Pan fault present.");
+    if (Lookup(AntennaPanError)) log_warning ("Pan fault present.");
     else log_info ("Pan is fine.");
 
-    if (Lookup(AntennaTiltFault)) log_warning ("Tilt fault present.");
+    if (Lookup(AntennaTiltError)) log_warning ("Tilt fault present.");
     else log_info ("Tilt is fine.");
 
     Wait (2);

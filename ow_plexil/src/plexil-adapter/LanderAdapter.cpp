@@ -366,6 +366,35 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
   config->registerLookupHandlerFunction("ActionGoalStatus", action_goal_status);
   config->setDefaultLookupHandler(default_lookup_handler);
 
+  // General faults
+  config->registerLookupHandlerFunction("AntennaFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaFault));
+  config->registerLookupHandlerFunction("ArmFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::armFault));
+  config->registerLookupHandlerFunction("PowerFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::powerFault));
+  config->registerLookupHandlerFunction("CameraFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::cameraFault));
+
+  // Specific faults
+  config->registerLookupHandlerFunction("AntennaPanError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaPanError));
+  config->registerLookupHandlerFunction("AntennaTiltError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaTiltError));
+
+
   debugMsg("LanderAdapter", " initialized.");
   return PlexilAdapter::initialize (config);
 }

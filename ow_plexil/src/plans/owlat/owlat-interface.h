@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// PLEXIL interface to lander that is OWLAT-specific.
+// OWLAT-specific PLEXIL interface (commands, lookups) and definitions.
 
 #ifndef Owlat_Plan_Interface_H
 #define Owlat_Plan_Interface_H
@@ -81,7 +81,7 @@ LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Real MaxDepth,
                                 In Real MaxForce);
 
-// Telemetry
+////// Telemetry
 
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
@@ -92,5 +92,19 @@ Real Lookup ArmFTForce;
 Integer Lookup ArmTool;
 Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
+
+// OWLAT-specific system faults
+Boolean Lookup ArmGoalError;
+Boolean Lookup ArmExecutionError;
+Boolean Lookup TaskGoalError;
+Boolean Lookup CameraGoalError;
+Boolean Lookup CameraExecutionError;
+Boolean Lookup PanTiltGoalError;
+Boolean Lookup PanTiltExecutionError;
+Boolean Lookup DrillGoalError;
+Boolean Lookup DrillExecutionError;
+Boolean Lookup LanderExecutionError; // fault in Stewart platform
+Boolean Lookup MiscSystemError; // fault not covered by any of the above
+
 
 #endif

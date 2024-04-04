@@ -399,30 +399,6 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
                                          &OwInterface::systemFault));
-  config->registerLookupHandlerFunction("AntennaFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::antennaFault));
-  config->registerLookupHandlerFunction("AntennaPanFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::antennaPanFault));
-  config->registerLookupHandlerFunction("AntennaTiltFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::antennaTiltFault));
-  config->registerLookupHandlerFunction("ArmFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::armFault));
-  config->registerLookupHandlerFunction("PowerFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::powerFault));
-  config->registerLookupHandlerFunction("CameraFault",
-					lookupHandler_function0<>
-                                        (*OwInterface::instance(),
-                                         &LanderInterface::cameraFault));
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }

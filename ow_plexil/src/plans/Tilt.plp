@@ -12,9 +12,9 @@ Tilt:
 
   Boolean FaultDetected = false;
 
-  PostCondition !Lookup(AntennaTiltFault);
+  PostCondition !Lookup(AntennaTiltError);
 
-  if Lookup(AntennaTiltFault)
+  if Lookup(AntennaTiltError)
   {
     log_error ("Command tilt not sent to lander due to active antenna fault(s).");
     FaultDetected = true;
@@ -22,7 +22,7 @@ Tilt:
 
   SendTilt:
   {
-    Start !Lookup(AntennaTiltFault);
+    Start !Lookup(AntennaTiltError);
 
     if FaultDetected
     {

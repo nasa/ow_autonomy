@@ -301,17 +301,17 @@ void LanderInterface::armPoseCb (const owl_msgs::ArmPose::ConstPtr& msg)
 
 bool LanderInterface::antennaFault () const
 {
-  return antennaPanFault() || antennaTiltFault();
+  return antennaPanError() || antennaTiltError();
 }
 
-bool LanderInterface::antennaPanFault () const
+bool LanderInterface::antennaPanError () const
 {
-  return m_panTiltErrors.at("AntennaPanFault").second;
+  return m_panTiltErrors.at("AntennaPanError").second;
 }
 
-bool LanderInterface::antennaTiltFault () const
+bool LanderInterface::antennaTiltError () const
 {
-  return m_panTiltErrors.at("AntennaTiltFault").second;
+  return m_panTiltErrors.at("AntennaTiltError").second;
 }
 
 bool LanderInterface::armFault () const
