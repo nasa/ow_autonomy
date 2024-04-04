@@ -90,12 +90,12 @@ Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
 // Faults
 
-// Returns first 10 faults in a given subsystem, specifying "System" will give you all faults
+// Returns first 10 faults in a given subsystem.
+// Specifying "System" returns all faults.
 String [10] Lookup ActiveFaults(String subsystem_name);
 
 Boolean Lookup IsOperable(String subsystem_name);
 Boolean Lookup IsFaulty(String subsystem_name);
-
 
 // OceanWATERS-specific system faults
 Boolean Lookup ArmGoalError;
@@ -106,7 +106,7 @@ Boolean Lookup CameraExecutionError;
 Boolean Lookup PanTiltGoalError;
 Boolean Lookup PanTiltExecutionError;
 Boolean Lookup PowerExecutionError;
-Boolean Lookup MiscSystemError; // fault not covered by any of the above
+Boolean Lookup MiscSystemError; // for faults not covered explicitly
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
