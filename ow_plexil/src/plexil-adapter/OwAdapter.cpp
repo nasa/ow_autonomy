@@ -241,6 +241,13 @@ static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void activate_comms (Command* cmd, AdapterExecInterface* intf)
+{
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->activateComms(g_cmd_id);
+  acknowledge_command_sent(*cr);
+}
+
 static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
@@ -315,6 +322,8 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                  arm_move_joints_guarded);
   config->registerCommandHandlerFunction("dock_ingest_sample",
                                          dock_ingest_sample);
+  config->registerCommandHandlerFunction("activate_comms",
+                                         activate_comms);
   config->registerCommandHandlerFunction("pan", pan);
   config->registerCommandHandlerFunction("tilt", tilt);
   config->registerCommandHandlerFunction("scoop_circular", scoop_circular);

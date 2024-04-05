@@ -48,6 +48,7 @@ const string Name_ArmMoveJoints          = "ArmMoveJoints";
 const string Name_ArmMoveJointsGuarded   = "ArmMoveJointsGuarded";
 const string Name_CameraSetExposure      = "CameraSetExposure";
 const string Name_Ingest                 = "DockIngestSample";
+const string Name_ActivateComms          = "ActivateComms";
 const string Name_Grind                  = "TaskGrind";
 const string Name_GuardedMove            = "GuardedMove";
 const string Name_IdentifySampleLocation = "IdentifySampleLocation";
@@ -72,6 +73,7 @@ static vector<string> LanderOpNames = {
   Name_Grind,
   Name_CameraSetExposure,
   Name_Ingest,
+  Name_ActivateComms,
   Name_IdentifySampleLocation,
   Name_TaskDiscardSample,
   Name_LightSetIntensity
@@ -296,6 +298,8 @@ void OwInterface::initialize()
     make_unique<CameraSetExposureActionClient>(Name_CameraSetExposure, true);
   m_dockIngestSampleClient =
     make_unique<DockIngestSampleActionClient>(Name_Ingest, true);
+  m_activateCommsClient =
+    make_unique<ActivateCommsActionClient>(Name_ActivateComms, true);
   m_lightSetIntensityClient =
     make_unique<LightSetIntensityActionClient>(Name_LightSetIntensity, true);
   m_identifySampleLocationClient =
@@ -484,6 +488,31 @@ void OwInterface::dockIngestSampleAction (int id)
      default_action_active_cb (Name_Ingest),
      default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Name_Ingest),
      default_action_done_cb<DockIngestSampleResultConstPtr> (Name_Ingest));
+}
+
+void OwInterface::activateComms (int id)
+{
+  if (! markOperationRunning (Name_ActivateComms, id)) return;
+  thread action_thread (&OwInterface::activateComms, this, id);
+  action_thread.detach();
+}
+
+void OwInterface::activateCommsAction (int id)
+{
+  ActivateCommsGoal goal;
+
+  ROS_INFO ("Starting DockIngestSample()");
+
+  runAction<actionlib::SimpleActionClient<ActivateCommsAction>,
+            ActivateCommsGoal,
+            ActivateCommsResultConstPtr,
+            ActivateCommsFeedbackConstPtr>
+    (Name_ActivateComms, m_activateCommsClient, goal, id,
+     default_action_active_cb (Name_ActivateComms),
+     default_action_feedback_cb<ActivateCommsFeedbackConstPtr> (
+      Name_ActivateComms),
+     default_action_done_cb<ActivateCommsResultConstPtr> (
+      Name_ActivateComms));
 }
 
 void OwInterface::scoopLinear (int frame, bool relative,

@@ -37,6 +37,8 @@ LibraryAction CameraSetExposure (In Real Seconds);
 
 LibraryAction DockIngestSample ();
 
+LibraryAction ActivateComms ();
+
 LibraryAction GuardedMove (In Real X,
                            In Real Y,
                            In Real Z,

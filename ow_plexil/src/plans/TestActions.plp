@@ -13,6 +13,9 @@ TestActions: UncheckedSequence
   Real GP = -0.155;  // Ground position
   log_info ("Beginning action test...");
 
+
+  LibraryCall ActivateComms ();
+
   LibraryCall ArmUnstow();
 
   LibraryCall ArmMoveCartesian (Frame = BASE_FRAME,

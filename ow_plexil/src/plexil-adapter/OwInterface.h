@@ -56,6 +56,7 @@ using TaskDiscardSampleActionClient =
 
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
+#include <ow_lander/ActivateCommsAction.h>
 #include <ow_lander/TiltAction.h>
 #include <ow_lander/PanAction.h>
 
@@ -65,7 +66,8 @@ using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using DockIngestSampleActionClient =
   actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
-
+using ActivateCommsActionClient =
+  actionlib::SimpleActionClient<ow_lander::ActivateCommsAction>;
 
 // Telemetry
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
@@ -112,6 +114,7 @@ class OwInterface : public LanderInterface
   void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraSetExposure (double exposure_secs, int id);
   void dockIngestSample (int id);
+  void activateComms (int id);
   void scoopLinear (int frame, bool relative, double x, double y, double z,
                     double depth, double length, int id);
   void scoopCircular (int frame, bool relative, double x, double y, double z,
@@ -172,6 +175,7 @@ class OwInterface : public LanderInterface
                             double depth, bool parallel, int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
+  void activateCommsAction (int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
@@ -216,6 +220,7 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
+  std::unique_ptr<ActivateCommsActionClient> m_activateCommsClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;
