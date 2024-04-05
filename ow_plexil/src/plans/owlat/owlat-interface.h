@@ -94,17 +94,10 @@ Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
 
 // OWLAT-specific system faults
-Boolean Lookup ArmGoalError;
-Boolean Lookup ArmExecutionError;
-Boolean Lookup TaskGoalError;
-Boolean Lookup CameraGoalError;
-Boolean Lookup CameraExecutionError;
-Boolean Lookup PanTiltGoalError;
-Boolean Lookup PanTiltExecutionError;
 Boolean Lookup DrillGoalError;
 Boolean Lookup DrillExecutionError;
 Boolean Lookup LanderExecutionError; // fault in Stewart platform
-Boolean Lookup MiscSystemError; // fault not covered by any of the above
+
 
 
 #endif

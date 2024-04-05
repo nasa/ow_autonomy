@@ -98,15 +98,7 @@ Boolean Lookup IsOperable(String subsystem_name);
 Boolean Lookup IsFaulty(String subsystem_name);
 
 // OceanWATERS-specific system faults
-Boolean Lookup ArmGoalError;
-Boolean Lookup ArmExecutionError;
-Boolean Lookup TaskGoalError;
-Boolean Lookup CameraGoalError;
-Boolean Lookup CameraExecutionError;
-Boolean Lookup PanTiltGoalError;
-Boolean Lookup PanTiltExecutionError;
 Boolean Lookup PowerExecutionError;
-Boolean Lookup MiscSystemError; // for faults not covered explicitly
 
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;

@@ -127,6 +127,16 @@ Boolean Lookup ArmFault;
 Boolean Lookup PowerFault;
 Boolean Lookup CameraFault;
 
+// Specific faults for system
+Boolean Lookup ArmGoalError;
+Boolean Lookup ArmExecutionError;
+Boolean Lookup TaskGoalError;
+Boolean Lookup CameraGoalError;
+Boolean Lookup CameraExecutionError;
+Boolean Lookup PanTiltGoalError;
+Boolean Lookup PanTiltExecutionError;
+Boolean Lookup MiscSystemError;
+
 // Specific faults for antenna
 Boolean Lookup AntennaPanError;
 Boolean Lookup AntennaTiltError;

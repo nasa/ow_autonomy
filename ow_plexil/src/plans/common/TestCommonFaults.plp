@@ -2,19 +2,18 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include "ow-interface.h"
+// This plan sequentially calls every fault lookup common to
+// OceanWATERS and OWLAT.  It is intended to be used as a library call
+// in ../TestOwFaults.plp and ../owlat/TestOwlatFaults.plp, which
+// invoke this plan in a loop to which testbed-specific fault Lookups
+// are added.
 
-TestFaults:
+#include "common-interface.h"
+
+TestCommonFaults:
 {
-  log_info ("Inject faults and observe messages. ",
-            "Type Control-C to exit plan and exec node.");
-
-  TestLoop:
+  Tests:
   {
-    Repeat true;
-
-    log_info ("Polling for faults...");
-
     // System
 
     if (Lookup(SystemFault)) log_warning ("System fault present.");
@@ -61,9 +60,6 @@ TestFaults:
     // Power
 
     if (Lookup(PowerFault)) log_warning ("Power fault present.");
-    if (Lookup(PowerExecutionError)) {
-      log_warning ("Power execution error present.");
-    }
     if (Lookup(LowStateOfChargeError)) {
       log_warning ("Low State of Charge error present.");
     }
@@ -75,7 +71,5 @@ TestFaults:
     // Misc
 
     if (Lookup(MiscSystemError)) log_warning ("Misc system error present.");
-
-    Wait (2);
   }
 }

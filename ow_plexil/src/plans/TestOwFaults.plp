@@ -1,0 +1,32 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan sequentially calls every fault Lookup available in
+// OceanWATERS sim, in a repeating loop.
+
+#include "ow-interface.h"
+LibraryAction TestCommonFaults();
+
+TestOwFaults:
+{
+  log_info ("Inject faults and observe messages. ",
+            "Type Control-C to exit plan and exec node.");
+
+  TestLoop:
+  {
+    Repeat true;
+
+    log_info ("Polling for faults...");
+
+    LibraryCall TestCommonFaults();
+
+    // OceanWATERS-specific faults
+
+    if (Lookup(PowerExecutionError)) {
+      log_warning ("Power execution error present.");
+    }
+
+    Wait (2);
+  }
+}
