@@ -128,7 +128,7 @@ class OwInterface : public LanderInterface
                             double probability) const;
 
   // State/Lookup interface
-  std::vector<double> getEndEffectorFT () const;
+  std::vector<double> getArmEndEffectorFT () const override;
   bool groundFound () const;
   double groundPosition () const;
   bool hardTorqueLimitReached (const std::string& joint_name) const;
@@ -145,11 +145,9 @@ class OwInterface : public LanderInterface
   bool panTiltExecutionError () const;
   bool powerExecutionError () const;
   bool miscSystemError () const;
-
   std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
   bool   isOperable (const std::string& subsystem_name) const;
   bool   isFaulty (const std::string& subsystem_name) const;
-  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,
@@ -214,10 +212,10 @@ class OwInterface : public LanderInterface
     {"PowerExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
-  
+
   bool m_fault_dependencies_on;
 
-  
+
   // Action clients
 
   std::unique_ptr<ArmFindSurfaceActionClient> m_armFindSurfaceClient;

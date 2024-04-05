@@ -436,11 +436,6 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                         (*OwInterface::instance(),
                                          &OwInterface::miscSystemError));
 
-
-
-
-
-
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }

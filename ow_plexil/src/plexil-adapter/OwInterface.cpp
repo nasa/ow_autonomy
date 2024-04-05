@@ -949,10 +949,12 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-vector<double> OwInterface::getEndEffectorFT () const
+vector<double> OwInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
+
+// Faults
 
 vector<string> OwInterface::getActiveFaults (const string& subsystem_name) const
 {
@@ -1042,10 +1044,4 @@ bool OwInterface::powerExecutionError () const
 bool OwInterface::miscSystemError () const
 {
   return m_systemErrors.at("MiscSystemError").second;
-}
-
-
-vector<double> OwInterface::getArmEndEffectorFT () const
-{
-  return m_end_effector_ft;
 }
