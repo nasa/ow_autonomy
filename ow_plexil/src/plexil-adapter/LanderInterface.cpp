@@ -342,7 +342,7 @@ bool LanderInterface::lowStateOfChargeError () const
 
 bool LanderInterface::instantaneousCapacityLossError () const
 {
-  return m_powerErrors.at("InstantaneousCapaciyLossError").second;
+  return m_powerErrors.at("InstantaneousCapacityLossError").second;
 }
 
 bool LanderInterface::thermalError () const
