@@ -2,11 +2,12 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Stub
+// Invokes a dummy communications action.
 
-Command log_info (String);
+#include "ow-interface.h"
 
 DownlinkImage:
 {
   log_info ("Downlinking image...");
+  LibraryCall ActivateComms();
 }

@@ -61,6 +61,7 @@ const string Name_Tilt                   = "Tilt";
 const string Name_TaskDiscardSample      = "TaskDiscardSample";
 
 static vector<string> LanderOpNames = {
+  Name_ActivateComms,
   Name_ArmFindSurface,
   Name_GuardedMove,
   Name_ArmMoveJoints,
@@ -73,7 +74,6 @@ static vector<string> LanderOpNames = {
   Name_Grind,
   Name_CameraSetExposure,
   Name_Ingest,
-  Name_ActivateComms,
   Name_IdentifySampleLocation,
   Name_TaskDiscardSample,
   Name_LightSetIntensity
@@ -280,16 +280,17 @@ void OwInterface::initialize()
 
   // Initialize action clients
 
+  m_activateCommsClient =
+    make_unique<ActivateCommsActionClient>(Name_ActivateComms, true);
   m_armFindSurfaceClient =
     make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-  m_guardedMoveClient =
-    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
   m_armMoveJointsClient =
     make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
   m_armMoveJointsGuardedClient =
-    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded,
-                                                  true);
+    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded, true);
   m_grindClient = make_unique<TaskGrindActionClient>(Name_Grind, true);
+  m_guardedMoveClient =
+    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
   m_scoopCircularClient =
     make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
   m_scoopLinearClient =
@@ -298,8 +299,6 @@ void OwInterface::initialize()
     make_unique<CameraSetExposureActionClient>(Name_CameraSetExposure, true);
   m_dockIngestSampleClient =
     make_unique<DockIngestSampleActionClient>(Name_Ingest, true);
-  m_activateCommsClient =
-    make_unique<ActivateCommsActionClient>(Name_ActivateComms, true);
   m_lightSetIntensityClient =
     make_unique<LightSetIntensityActionClient>(Name_LightSetIntensity, true);
   m_identifySampleLocationClient =
@@ -332,6 +331,7 @@ void OwInterface::initialize()
       subscribe("/joint_states", QueueSize,
                 &OwInterface::jointStatesCallback, this)));
 
+  connectActionServer (m_activateCommsClient, Name_ActivateComms);
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface);
   connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints);
   connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded);
@@ -493,7 +493,7 @@ void OwInterface::dockIngestSampleAction (int id)
 void OwInterface::activateComms (int id)
 {
   if (! markOperationRunning (Name_ActivateComms, id)) return;
-  thread action_thread (&OwInterface::activateComms, this, id);
+  thread action_thread (&OwInterface::activateCommsAction, this, id);
   action_thread.detach();
 }
 
@@ -501,7 +501,7 @@ void OwInterface::activateCommsAction (int id)
 {
   ActivateCommsGoal goal;
 
-  ROS_INFO ("Starting DockIngestSample()");
+  ROS_INFO ("Starting ActivateComms()");
 
   runAction<actionlib::SimpleActionClient<ActivateCommsAction>,
             ActivateCommsGoal,
