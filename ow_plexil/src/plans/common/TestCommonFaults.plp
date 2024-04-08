@@ -1,0 +1,75 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan sequentially calls every fault lookup common to
+// OceanWATERS and OWLAT.  It is intended to be used as a library call
+// in ../TestOwFaults.plp and ../owlat/TestOwlatFaults.plp, which
+// invoke this plan in a loop to which testbed-specific fault Lookups
+// are added.
+
+#include "common-interface.h"
+
+TestCommonFaults:
+{
+  Tests:
+  {
+    // System
+
+    if (Lookup(SystemFault)) log_warning ("System fault present.");
+
+    // Antenna
+
+    if (Lookup(AntennaFault)) log_warning ("Antenna fault present.");
+    if (Lookup(AntennaPanError)) log_warning ("Pan error present.");
+    if (Lookup(AntennaTiltError)) log_warning ("Tilt error present.");
+
+    // Arm
+
+    if (Lookup(ArmFault)) log_warning ("Arm fault present.");
+    if (Lookup(ArmGoalError)) log_warning ("Arm goal error present.");
+    if (Lookup(ArmExecutionError)) log_warning ("Arm execution error present.");
+    if (Lookup(ArmHardwareError)) log_warning ("Arm hardware error present.");
+    if (Lookup(TrajectoryError)) log_warning ("Trajectory error present.");
+    if (Lookup(CollisionError)) log_warning ("Collision error present.");
+    if (Lookup(EmergencyStopError)) log_warning ("Emergency Stop error present.");
+    if (Lookup(PositionLimitError)) log_warning ("Position Limit error present.");
+    if (Lookup(JointTorqueLimitError)) {
+      log_warning ("Joint Torque Limit error present.");
+    }
+    if (Lookup(VelocityLimitError)) log_warning ("Velocity Limit error present.");
+    if (Lookup(NoForceDataError)) log_warning ("No Force Data error present.");
+    if (Lookup(ForceTorqueLimitError)) {
+      log_warning ("Force Torque Limit error present.");
+    }
+
+    // Task
+
+    if (Lookup(TaskGoalError)) log_warning ("Task goal error present.");
+
+    // Camera
+
+    if (Lookup(CameraFault)) log_warning ("Camera fault present.");
+    if (Lookup(CameraGoalError)) log_warning ("Camera goal error present.");
+    if (Lookup(CameraExecutionError)) {
+      log_warning ("Camera execution error present.");
+    }
+
+    if (Lookup(NoImageError)) log_warning ("No-Image error present.");
+
+    // Power
+
+    if (Lookup(PowerFault)) log_warning ("Power fault present.");
+    if (Lookup(LowStateOfChargeError)) {
+      log_warning ("Low State of Charge error present.");
+    }
+    if (Lookup(InstantaneousCapacityLossError)) {
+      log_warning ("Instantaneous Capacity Loss Error error present.");
+    }
+    if (Lookup(ThermalError)) log_warning ("Thermal error present.");
+
+    // Misc
+
+    if (Lookup(MiscSystemError)) log_warning ("Misc system error present.");
+  }
+}

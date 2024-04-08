@@ -947,10 +947,12 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-vector<double> OwInterface::getEndEffectorFT () const
+vector<double> OwInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
+
+// Faults
 
 vector<string> OwInterface::getActiveFaults (const string& subsystem_name) const
 {
@@ -1002,14 +1004,9 @@ bool OwInterface::armGoalError () const
   return m_systemErrors.at("ArmGoalError").second;
 }
 
-bool OwInterface::cameraGoalError () const
+bool OwInterface::armExecutionError () const
 {
-  return m_systemErrors.at("CameraGoalError").second;
-}
-
-bool OwInterface::panTiltGoalError () const
-{
-  return m_systemErrors.at("PanTiltGoalError").second;
+  return m_systemErrors.at("ArmExecutionError").second;
 }
 
 bool OwInterface::taskGoalError () const
@@ -1017,7 +1014,32 @@ bool OwInterface::taskGoalError () const
   return m_systemErrors.at("TaskGoalError").second;
 }
 
-vector<double> OwInterface::getArmEndEffectorFT () const
+bool OwInterface::cameraGoalError () const
 {
-  return m_end_effector_ft;
+  return m_systemErrors.at("CameraGoalError").second;
+}
+
+bool OwInterface::cameraExecutionError () const
+{
+  return m_systemErrors.at("CameraExecutionError").second;
+}
+
+bool OwInterface::panTiltGoalError () const
+{
+  return m_systemErrors.at("PanTiltGoalError").second;
+}
+
+bool OwInterface::panTiltExecutionError () const
+{
+  return m_systemErrors.at("PanTiltExecutionError").second;
+}
+
+bool OwInterface::powerExecutionError () const
+{
+  return m_systemErrors.at("PowerExecutionError").second;
+}
+
+bool OwInterface::miscSystemError () const
+{
+  return m_systemErrors.at("MiscSystemError").second;
 }

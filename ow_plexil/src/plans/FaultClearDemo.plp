@@ -16,9 +16,8 @@
 
 // To test the antenna, try 'rosrun ow_lander pan.py 100'.
 
-// Note that goal errors are associated only with ROS actions, and not
-// other means of controlling lander components such as ad hoc message
-// publishing.
+// Note that goal errors are triggered only by ROS actions, and not by
+// other means of lander control such as ad hoc message publishing.
 
 
 #include "ow-interface.h"

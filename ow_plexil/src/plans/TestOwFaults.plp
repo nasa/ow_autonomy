@@ -2,9 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-#include "ow-interface.h"
+// This plan sequentially calls every fault Lookup available in
+// OceanWATERS sim, in a repeating loop.
 
-TestFaults:
+#include "ow-interface.h"
+LibraryAction TestCommonFaults();
+
+TestOwFaults:
 {
   log_info ("Inject faults and observe messages. ",
             "Type Control-C to exit plan and exec node.");
@@ -13,14 +17,15 @@ TestFaults:
   {
     Repeat true;
 
-    if (Lookup(AntennaFault)) log_warning ("Antenna fault present.");
-    else log_info ("Antenna is fine.");
+    log_info ("Polling for faults...");
 
-    if (Lookup(AntennaPanFault)) log_warning ("Pan fault present.");
-    else log_info ("Pan is fine.");
+    LibraryCall TestCommonFaults();
 
-    if (Lookup(AntennaTiltFault)) log_warning ("Tilt fault present.");
-    else log_info ("Tilt is fine.");
+    // OceanWATERS-specific faults
+
+    if (Lookup(PowerExecutionError)) {
+      log_warning ("Power execution error present.");
+    }
 
     Wait (2);
   }

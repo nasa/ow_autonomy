@@ -12,7 +12,7 @@
 
 // System Fault flags for OceanWATERS
 #define NO_FAULT 0
-#define SYSTEM_ERROR 1
+#define MISC_SYSTEM_ERROR 1
 #define ARM_GOAL_ERROR 2
 #define ARM_EXECUTION_ERROR 4
 #define TASK_GOAL_ERROR 8
@@ -90,6 +90,10 @@ LibraryAction TaskScoopLinear (In Integer Frame,
 
 LibraryAction FaultClear (In Integer fault);
 
+LibraryAction ClearGoalErrors();
+LibraryAction ClearGoalErrorAttempt (In String name, In Integer flag);
+LibraryAction ClearGoalErrorOutcome (In Boolean success, In String name);
+
 LibraryAction HealthMonitor (InOut Boolean AllOperable,
                              InOut Boolean ArmOperable,
                              InOut Boolean AntennaOperable,
@@ -101,29 +105,22 @@ LibraryAction HealthMonitor (InOut Boolean AllOperable,
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
-
-// Fault-related lookups
-
-Boolean Lookup SystemFault;
-Boolean Lookup AntennaFault;
-Boolean Lookup AntennaPanFault;
-Boolean Lookup AntennaTiltFault;
-Boolean Lookup ArmFault;
-Boolean Lookup PowerFault;
-Boolean Lookup CameraFault;
-
-// The following 3 lookups require use of the fault dependencies framework.
-
-// Returns first 10 faults in a given subsystem.  Specifying "System"
-// will give you all faults.
-String [10] Lookup ActiveFaults(String subsystem_name);
-
-Boolean Lookup IsOperable(String subsystem_name);
-Boolean Lookup IsFaulty(String subsystem_name);
-
-
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
+
+
+// Faults
+
+// OceanWATERS-specific system faults
+Boolean Lookup PowerExecutionError;
+
+// The following 3 lookups require use of the fault dependencies framework.
+
+// Returns first 10 faults in a given subsystem.
+// Specifying "System" returns all faults.
+String [10] Lookup ActiveFaults(String subsystem_name);
+Boolean Lookup IsOperable(String subsystem_name);
+Boolean Lookup IsFaulty(String subsystem_name);
 
 #endif
