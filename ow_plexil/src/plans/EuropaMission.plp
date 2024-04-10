@@ -230,6 +230,7 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+      LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
       set_checkpoint("SampleAnalyzed", true, "SampleAnalysis");
       SynchronousCommand flush_checkpoints();
