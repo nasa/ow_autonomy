@@ -163,7 +163,7 @@ ReferenceMission2: Concurrence
       LibraryCall CollectSample (X = trench_x,
                                  Y = trench_y,
                                  GroundPos = ground_pos,
-                                 Depth = 0.1105,
+                                 Depth = 0.08,
                                  Length = trench_length,
                                  Parallel = parallel);
     }
