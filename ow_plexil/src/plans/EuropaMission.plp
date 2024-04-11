@@ -224,7 +224,7 @@ EuropaMission: Concurrence
                                      X = trench_x,
                                      Y = trench_y,
                                      GroundPos = ground_pos,
-                                     Depth = 0.1105,
+                                     Depth = 0.08,
                                      Length = trench_length,
                                      Parallel = parallel);
       set_checkpoint ("SampleCollected", true, "SampleCollection");
@@ -235,6 +235,7 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+      LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
       set_checkpoint("SampleAnalyzed", true, "SampleAnalysis");
       SynchronousCommand flush_checkpoints();
