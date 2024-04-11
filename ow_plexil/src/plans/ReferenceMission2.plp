@@ -145,7 +145,7 @@ ReferenceMission2: Concurrence
                              NumPasses = 2,
                              Parallel = parallel);
     }
-    
+
     Clear:
     {
       Start BatteryOK && NoFaults;
@@ -155,7 +155,7 @@ ReferenceMission2: Concurrence
                                   GroundPos = ground_pos,
                                   Parallel = parallel);
     }
-    
+
     Collect:
     {
       Start BatteryOK && NoFaults;
@@ -163,22 +163,23 @@ ReferenceMission2: Concurrence
       LibraryCall CollectSample (X = trench_x,
                                  Y = trench_y,
                                  GroundPos = ground_pos,
-                                 Depth = 0.1105,
+                                 Depth = 0.08,
                                  Length = trench_length,
                                  Parallel = parallel);
     }
-    
+
     Stow:
     {
       Start BatteryOK && NoFaults;
       log_info ("Stowing Arm");
       LibraryCall SafeStow();
     }
-    
+
     Analyze:
     {
       Start BatteryOK && NoFaults;
       log_info ("Analyzing Sample");
+      LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
     }
 
