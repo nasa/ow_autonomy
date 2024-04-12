@@ -109,11 +109,7 @@ Boolean Lookup SoftTorqueLimitReached (String joint_name);
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
 
-
 // Faults
-
-// OceanWATERS-specific system faults
-Boolean Lookup PowerExecutionError;
 
 // The following 3 lookups require use of the fault dependencies framework.
 
@@ -122,5 +118,8 @@ Boolean Lookup PowerExecutionError;
 String [10] Lookup ActiveFaults(String subsystem_name);
 Boolean Lookup IsOperable(String subsystem_name);
 Boolean Lookup IsFaulty(String subsystem_name);
+
+// OceanWATERS-specific system faults
+Boolean Lookup PowerExecutionError;
 
 #endif

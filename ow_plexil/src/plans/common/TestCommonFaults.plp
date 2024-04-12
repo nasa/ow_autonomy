@@ -21,6 +21,10 @@ TestCommonFaults:
     // Antenna
 
     if (Lookup(AntennaFault)) log_warning ("Antenna fault present.");
+    if (Lookup(PanTiltGoalError)) log_warning ("Pan/Tilt goal error present.");
+    if (Lookup(PanTiltExecutionError)) {
+      log_warning ("Pan/Tilt execution error present.");
+    }
     if (Lookup(AntennaPanError)) log_warning ("Pan error present.");
     if (Lookup(AntennaTiltError)) log_warning ("Tilt error present.");
 
@@ -54,7 +58,6 @@ TestCommonFaults:
     if (Lookup(CameraExecutionError)) {
       log_warning ("Camera execution error present.");
     }
-
     if (Lookup(NoImageError)) log_warning ("No-Image error present.");
 
     // Power
