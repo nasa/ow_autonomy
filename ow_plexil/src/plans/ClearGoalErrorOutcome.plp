@@ -12,7 +12,7 @@ ClearGoalErrorOutcome:
   In Boolean success;
   In String name;
 
-  if (success) log_info(name, "goal error cleared.");
-  else log_warning("Attempt to clear", name, "goal error",
-                   "either failed or was preempted by another", name, "error.");
+  if (success) log_info(name, " goal error cleared.");
+  else log_warning("Attempt to clear ", name, " goal error ",
+                   "either failed or was preempted by another ", name, "error.");
 }

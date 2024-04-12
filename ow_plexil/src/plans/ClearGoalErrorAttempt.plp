@@ -13,6 +13,6 @@ ClearGoalErrorAttempt:
   In String name;
   In Integer flag;
 
-  log_warning (name, "goal error occurred. Attempting to clear it...");
+  log_warning (name, " goal error occurred. Attempting to clear it...");
   LibraryCall FaultClear(fault=flag);
 }
