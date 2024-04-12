@@ -14,7 +14,8 @@ TestActions: UncheckedSequence
   log_info ("Beginning action test...");
 
 
-  LibraryCall ActivateComms ();
+  LibraryCall ActivateComms (Message = "Testing ActivateComms",
+                             DurationSecs = 2);
 
   LibraryCall ArmUnstow();
 

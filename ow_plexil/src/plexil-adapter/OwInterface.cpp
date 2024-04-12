@@ -490,16 +490,17 @@ void OwInterface::dockIngestSampleAction (int id)
      default_action_done_cb<DockIngestSampleResultConstPtr> (Name_Ingest));
 }
 
-void OwInterface::activateComms (int id)
+void OwInterface::activateComms (double duration, int id)
 {
   if (! markOperationRunning (Name_ActivateComms, id)) return;
-  thread action_thread (&OwInterface::activateCommsAction, this, id);
+  thread action_thread (&OwInterface::activateCommsAction, this, duration, id);
   action_thread.detach();
 }
 
-void OwInterface::activateCommsAction (int id)
+void OwInterface::activateCommsAction (double duration, int id)
 {
   ActivateCommsGoal goal;
+  goal.duration = duration;
 
   ROS_INFO ("Starting ActivateComms()");
 

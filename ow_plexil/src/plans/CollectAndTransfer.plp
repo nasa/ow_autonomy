@@ -11,7 +11,6 @@ Real Lookup CollectAndTransferTimeout;
 LibraryAction ImageSampleSite();
 LibraryAction Stub(In String desc);
 LibraryAction Image(In String desc);
-LibraryAction Downlink();
 LibraryAction GetInfoIfCrash(In String CheckpointName,
                              In Boolean IgnoreCrash,
                              InOut Boolean Crashed,
@@ -100,7 +99,8 @@ CollectAndTransfer:
     DownlinkSampleImage:
     {
       SkipCondition LastComplete >= 4;
-      LibraryCall Downlink();
+      LibraryCall ActivateComms (Message = "Downlinking sample image",
+                                 DurationSecs = 3);
       Wait 1;
       set_checkpoint(OurName,true,Lookup(ToString(4,"_",CollectMore)));
       SynchronousCommand flush_checkpoints();

@@ -7,20 +7,19 @@
 // interpretation of the Europa Lander reference mission, and serves mainly as a
 // PLEXIL example.
 
-Real Lookup time;
+#include "ow-interface.h"
+
+//Real Lookup time;
 Real Lookup TrenchTargetTimeout;
 Boolean Lookup TrenchIdentified;
-LibraryAction DownlinkImage();
 LibraryAction Stub(In String desc);
-Command log_error (...);
 
 GetTrenchTarget:
 {
-  Real Time;
-  Time = Lookup(time);
+  //  Real Time;
 
-  // TODO: invoke comms, reset on failure.
-  LibraryCall DownlinkImage();
+  LibraryCall ActivateComms (Message = "Downlinking workspace images",
+                             DurationSecs = 5);
 
   Try {
     GetInfoFromGround:
@@ -28,21 +27,20 @@ GetTrenchTarget:
       Integer numAttempts = 0;
       RepeatCondition AttemptGround.outcome == FAILURE;
       InvariantCondition numAttempts <= 1;
-      Time = Lookup(time);
+      //      Time = Lookup(time);
       AttemptGround:
       {
-        InvariantCondition
-          Time < (AttemptGround.EXECUTING.START +
-                  Lookup(TrenchTargetTimeout));
+        InvariantCondition (Lookup(time) < (AttemptGround.EXECUTING.START +
+                                            Lookup(TrenchTargetTimeout)));
         EndCondition Lookup(TrenchIdentified);
-        LibraryCall Stub(desc="Getting trench target from ground");
+        LibraryCall ActivateComms (Message = "Uplinking sample target location",
+                                   DurationSecs = 2);
         numAttempts = numAttempts + 1;
       }
     }
     GetTrenchTargetOnboard:
     {
-      LibraryCall Stub(desc="Getting trench target onboard");
+      LibraryCall Stub(desc="Computing sample target location onboard");
     }
-    log_error ("Failed to get trench target!");
   }
 }

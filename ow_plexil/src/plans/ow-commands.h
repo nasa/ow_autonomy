@@ -62,7 +62,7 @@ Command camera_set_exposure (Real seconds);
 Command dock_ingest_sample();
 Command light_set_intensity (String side,     // "left" or "right"
 			     Real intensity); // 0.0 to 1.0.  0 is off.
-Command activate_comms();
+Command activate_comms(Real duration_secs);
 
 // Simulate fault commands.  See TestSimulatedFaults.plp for example
 // usage. The value of 'probability' must be in the range [0..1].

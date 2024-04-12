@@ -2,12 +2,19 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Invoke the communications action, which is mostly a dummy -- it
-// just applies an additional power draw for a fixed duration.
+// Stubbed uplink or downlink that issues the given message an invoke
+// a dummy communications action, which only applies an additional
+// power draw for the given duration.
 
-#include "ow-commands.h"
+#include "ow-interface.h"
 
 ActivateComms:
 {
-  SynchronousCommand activate_comms ();
+  In String Message;
+  // NOTE: "Duration" is a PLEXIL keyword and cannot be used here.
+  In Real DurationSecs;
+
+  log_info (Message, "...");
+  SynchronousCommand activate_comms (DurationSecs);
+  log_info ("Uplink/Downlink complete.");
 }

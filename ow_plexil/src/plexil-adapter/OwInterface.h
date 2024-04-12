@@ -114,7 +114,7 @@ class OwInterface : public LanderInterface
   void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraSetExposure (double exposure_secs, int id);
   void dockIngestSample (int id);
-  void activateComms (int id);
+  void activateComms (double duration, int id);
   void scoopLinear (int frame, bool relative, double x, double y, double z,
                     double depth, double length, int id);
   void scoopCircular (int frame, bool relative, double x, double y, double z,
@@ -175,7 +175,7 @@ class OwInterface : public LanderInterface
                             double depth, bool parallel, int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
-  void activateCommsAction (int id);
+  void activateCommsAction (double duration, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,

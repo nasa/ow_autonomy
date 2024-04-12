@@ -243,8 +243,11 @@ static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
 
 static void activate_comms (Command* cmd, AdapterExecInterface* intf)
 {
+  double duration;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (duration);
   unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
-  OwInterface::instance()->activateComms(g_cmd_id);
+  OwInterface::instance()->activateComms(duration, g_cmd_id);
   acknowledge_command_sent(*cr);
 }
 
