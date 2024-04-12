@@ -253,6 +253,56 @@ bool OwlatAdapter::initialize (AdapterConfiguration* config)
                                         (*OwlatInterface::instance(),
                                          &OwlatInterface::taskGoalError));
 
+  // System faults specific to OWLAT
+  config->registerLookupHandlerFunction("SystemFault",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::systemFault));
+  config->registerLookupHandlerFunction("ArmGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::armGoalError));
+  config->registerLookupHandlerFunction("ArmExecutionError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::armExecutionError));
+  config->registerLookupHandlerFunction("TaskGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::taskGoalError));
+  config->registerLookupHandlerFunction("CameraGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::cameraGoalError));
+  config->registerLookupHandlerFunction("CameraExecutionError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::cameraExecutionError));
+  config->registerLookupHandlerFunction("PanTiltGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::panTiltGoalError));
+  config->registerLookupHandlerFunction("PanTiltExecutionError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::panTiltExecutionError));
+  config->registerLookupHandlerFunction("DrillGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::drillGoalError));
+  config->registerLookupHandlerFunction("DrillExecutionError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::drillExecutionError));
+  config->registerLookupHandlerFunction("LanderExecutionError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::landerExecutionError));
+  config->registerLookupHandlerFunction("MiscSystemError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::miscSystemError));
+
   debugMsg("OwlatAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }

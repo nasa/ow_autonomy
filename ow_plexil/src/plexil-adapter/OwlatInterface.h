@@ -62,6 +62,20 @@ class OwlatInterface : public LanderInterface
 
   void initialize();
 
+  // Fault-related Lookup support
+  bool systemFault () const override;
+  bool armGoalError () const;
+  bool armExecutionError () const;
+  bool taskGoalError () const;
+  bool cameraGoalError () const;
+  bool cameraExecutionError () const;
+  bool panTiltGoalError () const;
+  bool panTiltExecutionError () const;
+  bool drillGoalError () const;
+  bool drillExecutionError () const;
+  bool landerExecutionError () const;
+  bool miscSystemError () const;
+
   // Lander interface
   void armFindSurface (int frame,
                        bool relative,
@@ -111,7 +125,6 @@ class OwlatInterface : public LanderInterface
 
   // Lookups
   PLEXIL::Value getArmTool() const;
-  bool systemFault () const override;
   std::vector<double> getArmEndEffectorFT () const override;
   bool   armGoalError () const;
   bool   cameraGoalError () const;
@@ -182,9 +195,11 @@ class OwlatInterface : public LanderInterface
 
   // Member variables
 
-  // System-level faults:
-  FaultMap m_systemErrors = {
-    {"SystemError", std::make_pair(
+  // See detailed explanation of FaultMap in LanderInterface.h
+
+  FaultMap m_systemErrors =
+  {  // The first flag covers faults that don't have their own flag.
+   { "MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
     {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
@@ -204,7 +219,7 @@ class OwlatInterface : public LanderInterface
         owl_msgs::SystemFaultsStatus::DRILL_GOAL_ERROR,false)},
     {"DrillExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::DRILL_EXECUTION_ERROR,false)},
-    {"LanderExecutionError", std::make_pair(
+    {"LanderExecutionError", std::make_pair( // fault in the Stewart platform
         owl_msgs::SystemFaultsStatus::LANDER_EXECUTION_ERROR,false)}
   };
 

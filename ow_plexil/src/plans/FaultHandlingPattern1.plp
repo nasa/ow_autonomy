@@ -25,8 +25,8 @@ FaultHandlingPattern1:
 
     OnePan:
     {
-      Start !Lookup(AntennaPanFault);
-      Invariant !Lookup(AntennaPanFault);
+      Start !Lookup(AntennaPanError);
+      Invariant !Lookup(AntennaPanError);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
       if (NewAngle > 180) NewAngle = NewAngle - 360;

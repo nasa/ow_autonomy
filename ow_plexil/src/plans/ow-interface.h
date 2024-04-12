@@ -101,29 +101,22 @@ LibraryAction HealthMonitor (InOut Boolean AllOperable,
 Boolean Lookup HardTorqueLimitReached (String joint_name);
 Boolean Lookup SoftTorqueLimitReached (String joint_name);
 
-
-// Fault-related lookups
-
-Boolean Lookup SystemFault;
-Boolean Lookup AntennaFault;
-Boolean Lookup AntennaPanFault;
-Boolean Lookup AntennaTiltFault;
-Boolean Lookup ArmFault;
-Boolean Lookup PowerFault;
-Boolean Lookup CameraFault;
-
-// The following 3 lookups require use of the fault dependencies framework.
-
-// Returns first 10 faults in a given subsystem.  Specifying "System"
-// will give you all faults.
-String [10] Lookup ActiveFaults(String subsystem_name);
-
-Boolean Lookup IsOperable(String subsystem_name);
-Boolean Lookup IsFaulty(String subsystem_name);
-
-
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
+
+
+// Faults
+
+// The following 3 lookups require use of the fault dependencies framework.
+
+// Returns first 10 faults in a given subsystem.
+// Specifying "System" returns all faults.
+String [10] Lookup ActiveFaults(String subsystem_name);
+Boolean Lookup IsOperable(String subsystem_name);
+Boolean Lookup IsFaulty(String subsystem_name);
+
+// OceanWATERS-specific system faults
+Boolean Lookup PowerExecutionError;
 
 #endif

@@ -570,6 +570,13 @@ Value OwlatInterface::getArmTool() const
   return(Value(m_arm_tool));
 }
 
+vector<double> OwlatInterface::getArmEndEffectorFT () const
+{
+  return m_end_effector_ft;
+}
+
+// Faults
+
 bool OwlatInterface::systemFault () const
 {
   return faultActive (m_systemErrors);
@@ -580,19 +587,9 @@ bool OwlatInterface::armGoalError () const
   return m_systemErrors.at("ArmGoalError").second;
 }
 
-bool OwlatInterface::cameraGoalError () const
+bool OwlatInterface::armExecutionError () const
 {
-  return m_systemErrors.at("CameraGoalError").second;
-}
-
-bool OwlatInterface::panTiltGoalError () const
-{
-  return m_systemErrors.at("PanTiltGoalError").second;
-}
-
-bool OwlatInterface::drillGoalError () const
-{
-  return m_systemErrors.at("DrillGoalError").second;
+  return m_systemErrors.at("ArmExecutionError").second;
 }
 
 bool OwlatInterface::taskGoalError () const
@@ -600,7 +597,42 @@ bool OwlatInterface::taskGoalError () const
   return m_systemErrors.at("TaskGoalError").second;
 }
 
-vector<double> OwlatInterface::getArmEndEffectorFT () const
+bool OwlatInterface::cameraGoalError () const
 {
-  return m_end_effector_ft;
+  return m_systemErrors.at("CameraGoalError").second;
+}
+
+bool OwlatInterface::cameraExecutionError () const
+{
+  return m_systemErrors.at("CameraExecutionError").second;
+}
+
+bool OwlatInterface::panTiltGoalError () const
+{
+  return m_systemErrors.at("PanTiltGoalError").second;
+}
+
+bool OwlatInterface::panTiltExecutionError () const
+{
+  return m_systemErrors.at("PanTiltExecutionError").second;
+}
+
+bool OwlatInterface::drillGoalError () const
+{
+  return m_systemErrors.at("DrillGoalError").second;
+}
+
+bool OwlatInterface::drillExecutionError () const
+{
+  return m_systemErrors.at("DrillExecutionError").second;
+}
+
+bool OwlatInterface::landerExecutionError () const
+{
+  return m_systemErrors.at("LanderExecutionError").second;
+}
+
+bool OwlatInterface::miscSystemError () const
+{
+  return m_systemErrors.at("MiscSystemError").second;
 }

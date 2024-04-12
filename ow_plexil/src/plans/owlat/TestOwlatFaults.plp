@@ -1,0 +1,42 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// This plan sequentially calls every fault Lookup available in OWLAT
+// sim, in a repeating loop.  Note that there isn't a way to inject
+// faults in OWLAT sim, so you should only see the "Polling for
+// faults..." message.
+
+#include "owlat-interface.h"
+LibraryAction TestCommonFaults();
+
+TestOwlatFaults:
+{
+  log_info ("Inject faults and observe messages. ",
+            "Type Control-C to exit plan and exec node.");
+
+  TestLoop:
+  {
+    Repeat true;
+
+    log_info ("Polling for faults...");
+
+    LibraryCall TestCommonFaults();
+
+    // OWLAT-specific faults
+
+    if (Lookup(DrillGoalError)) {
+      log_warning ("Drill goal error present.");
+    }
+
+    if (Lookup(DrillExecutionError)) {
+      log_warning ("Drill execution error present.");
+    }
+
+    if (Lookup(LanderExecutionError)) {
+      log_warning ("Lander execution error present.");
+    }
+
+    Wait (2);
+  }
+}
