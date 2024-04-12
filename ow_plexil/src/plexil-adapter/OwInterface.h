@@ -128,16 +128,26 @@ class OwInterface : public LanderInterface
                             double probability) const;
 
   // State/Lookup interface
-  std::vector<double> getEndEffectorFT () const;
-  bool   groundFound () const;
+  std::vector<double> getArmEndEffectorFT () const override;
+  bool groundFound () const;
   double groundPosition () const;
-  bool   hardTorqueLimitReached (const std::string& joint_name) const;
-  bool   softTorqueLimitReached (const std::string& joint_name) const;
-  bool   systemFault () const override;
+  bool hardTorqueLimitReached (const std::string& joint_name) const;
+  bool softTorqueLimitReached (const std::string& joint_name) const;
+
+  // Fault-related Lookup support
+  bool systemFault () const override;
+  bool armGoalError () const;
+  bool armExecutionError () const;
+  bool taskGoalError () const;
+  bool cameraGoalError () const;
+  bool cameraExecutionError () const;
+  bool panTiltGoalError () const;
+  bool panTiltExecutionError () const;
+  bool powerExecutionError () const;
+  bool miscSystemError () const;
   std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
   bool   isOperable (const std::string& subsystem_name) const;
   bool   isFaulty (const std::string& subsystem_name) const;
-  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,
@@ -179,28 +189,32 @@ class OwInterface : public LanderInterface
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
-  // System-level faults
-  FaultMap m_systemErrors = {
-    {"SYSTEM", std::make_pair(
+  // See detailed explanation of FaultMap in LanderInterface.h
+  FaultMap m_systemErrors =
+  {
+    // The first flag covers faults that don't have their own flag.
+    {"MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(
+    {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ARM_EXECUTION_ERROR", std::make_pair(
+    {"ArmExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(
+    {"TaskGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(
+    {"CameraGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+    {"CameraExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+    {"PanTiltGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+    {"PanTiltExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(
+    {"PowerExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
+
   bool m_fault_dependencies_on;
+
 
   // Action clients
 

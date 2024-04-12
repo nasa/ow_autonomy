@@ -93,31 +93,72 @@ LibraryAction TaskDiscardSample (In Integer Frame,
 LibraryAction SafeStow();
 
 
-// Lander queries and telemetry
+///////////////////////// Lander queries and telemetry /////////////////////////
 
-// Antenna
+// Antenna state
 Real Lookup PanRadians;
 Real Lookup PanDegrees;
 Real Lookup TiltRadians;
 Real Lookup TiltDegrees;
 
-// Arm Joints
+// Arm Joint state
 Real Lookup ArmJointAcceleration (Integer joint);
 Real Lookup ArmJointVelocity     (Integer joint);
 Real Lookup ArmJointPosition     (Integer joint);
 Real Lookup ArmJointTorque       (Integer joint);
 
-// Battery
+// Battery state
 Real Lookup BatteryStateOfCharge;
 Real Lookup BatteryRemainingUsefulLife;
 Real Lookup BatteryTemperature;
 
-// Misc
-
+// Misc queries
 Real[6] Lookup ArmEndEffectorForceTorque;
 Real[7] Lookup ArmPose;
 Boolean Lookup UsingOceanWATERS;
 Boolean Lookup UsingOWLAT;
+
+// Faults
+
+// General faults: queries if there are *any* faults in these subsystems.
+Boolean Lookup SystemFault;
+Boolean Lookup AntennaFault;
+Boolean Lookup ArmFault;
+Boolean Lookup PowerFault;
+Boolean Lookup CameraFault;
+
+// Specific faults for system
+Boolean Lookup ArmGoalError;
+Boolean Lookup ArmExecutionError;
+Boolean Lookup TaskGoalError;
+Boolean Lookup CameraGoalError;
+Boolean Lookup CameraExecutionError;
+Boolean Lookup PanTiltGoalError;
+Boolean Lookup PanTiltExecutionError;
+Boolean Lookup MiscSystemError;
+
+// Specific faults for antenna
+Boolean Lookup AntennaPanError;
+Boolean Lookup AntennaTiltError;
+
+// Specific faults for camera
+Boolean Lookup NoImageError;
+
+// Specific faults for power
+Boolean Lookup LowStateOfChargeError;
+Boolean Lookup InstantaneousCapacityLossError;
+Boolean Lookup ThermalError;
+
+// Specific faults for arm
+Boolean Lookup ArmHardwareError;
+Boolean Lookup TrajectoryError;
+Boolean Lookup CollisionError;
+Boolean Lookup EmergencyStopError;
+Boolean Lookup PositionLimitError;
+Boolean Lookup JointTorqueLimitError;
+Boolean Lookup VelocityLimitError;
+Boolean Lookup NoForceDataError;
+Boolean Lookup ForceTorqueLimitError;
 
 // Query whether a given operation is running.  Uses the operation names as
 // defined in OwInterface.cpp.  Generally not needed, but supports more

@@ -394,35 +394,48 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                         (*OwInterface::instance(),
                                          &OwInterface::getArmEndEffectorFT));
 
-  // Faults specific to OceanWATERS
+  // System faults specific to OceanWATERS
   config->registerLookupHandlerFunction("SystemFault",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
                                          &OwInterface::systemFault));
-  config->registerLookupHandlerFunction("AntennaFault",
+  config->registerLookupHandlerFunction("ArmGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaFault));
-  config->registerLookupHandlerFunction("AntennaPanFault",
+                                         &OwInterface::armGoalError));
+  config->registerLookupHandlerFunction("ArmExecutionError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaPanFault));
-  config->registerLookupHandlerFunction("AntennaTiltFault",
+                                         &OwInterface::armExecutionError));
+  config->registerLookupHandlerFunction("TaskGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaTiltFault));
-  config->registerLookupHandlerFunction("ArmFault",
+                                         &OwInterface::taskGoalError));
+  config->registerLookupHandlerFunction("CameraGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::armFault));
-  config->registerLookupHandlerFunction("PowerFault",
+                                         &OwInterface::cameraGoalError));
+  config->registerLookupHandlerFunction("CameraExecutionError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::powerFault));
-  config->registerLookupHandlerFunction("CameraFault",
+                                         &OwInterface::cameraExecutionError));
+  config->registerLookupHandlerFunction("PanTiltGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::cameraFault));
+                                         &OwInterface::panTiltGoalError));
+  config->registerLookupHandlerFunction("PanTiltExecutionError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::panTiltExecutionError));
+  config->registerLookupHandlerFunction("PowerExecutionError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::powerExecutionError));
+  config->registerLookupHandlerFunction("MiscSystemError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::miscSystemError));
+
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }
