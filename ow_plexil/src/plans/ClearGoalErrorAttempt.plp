@@ -3,8 +3,8 @@
 // this repository.
 
 // Reports and attempts to clears the given goal error. Verification
-// needs to be done in the calling plan, which was intended to be
-// ClearGoalErrors.plp.
+// needs to be done in the calling plan.
+// Designed as a sub-plan of ClearGoalErrors.plp.
 
 #include "ow-interface.h"
 
