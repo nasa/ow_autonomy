@@ -1,0 +1,76 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Monitors for goal errors indefinitely.  Each time a goal error is
+// encountered, it is reported and then cleared.
+
+#include "ow-interface.h"
+
+ClearGoalErrors:
+{
+  Real FaultClearTimeoutIncrement = 0.1; // seconds
+  Real FaultClearTimeout          = 2.0; // seconds
+
+  log_info ("ClearGoalErrors is running. ",
+            "Goal errors will automatically be cleared.");
+
+  Monitors: Concurrence
+  {
+    PanTiltGoalErrors:
+    {
+      Repeat true;
+      Start Lookup(PanTiltGoalError);
+
+      LibraryCall ClearGoalErrorAttempt (name="Pan/Tilt", flag=PAN_TILT_GOAL_ERROR);
+      while (Lookup(PanTiltGoalError) &&
+             Lookup(time) < Self.EXECUTING.START + FaultClearTimeout) {
+        Wait FaultClearTimeoutIncrement;
+      }
+      LibraryCall ClearGoalErrorOutcome (success = !Lookup(PanTiltGoalError),
+                                         name = "Pan/Tilt");
+    }
+
+    ArmGoalErrors:
+    {
+      Repeat true;
+      Start Lookup(ArmGoalError);
+
+      LibraryCall ClearGoalErrorAttempt (name="Arm", flag=ARM_GOAL_ERROR);
+      while (Lookup(ArmGoalError) &&
+             Lookup(time) < Self.EXECUTING.START + FaultClearTimeout) {
+        Wait FaultClearTimeoutIncrement;
+      }
+      LibraryCall ClearGoalErrorOutcome (success = !Lookup(ArmGoalError),
+                                         name = "Arm");
+    }
+
+    CameraGoalErrors:
+    {
+      Repeat true;
+      Start Lookup(CameraGoalError);
+
+      LibraryCall ClearGoalErrorAttempt (name="Camera", flag=CAMERA_GOAL_ERROR);
+      while (Lookup(CameraGoalError) &&
+             Lookup(time) < Self.EXECUTING.START + FaultClearTimeout) {
+        Wait FaultClearTimeoutIncrement;
+      }
+      LibraryCall ClearGoalErrorOutcome (success = !Lookup(CameraGoalError),
+                                         name = "Camera");
+    }
+
+    TaskGoalErrors:
+    {
+      Repeat true;
+      Start Lookup(TaskGoalError);
+
+      LibraryCall ClearGoalErrorAttempt (name="Task", flag=TASK_GOAL_ERROR);
+      while (Lookup(TaskGoalError) &&
+             Lookup(time) < Self.EXECUTING.START + FaultClearTimeout) {
+        Wait FaultClearTimeoutIncrement;
+      }
+      LibraryCall ClearGoalErrorOutcome (success = !Lookup(TaskGoalError),
+                                         name = "Task");
+    }
+  }
+}

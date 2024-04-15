@@ -1,0 +1,18 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Report success or failure in clearing a given goal error.
+// Designed as a sub-plan of ClearGoalErrors.plp.
+
+#include "ow-interface.h"
+
+ClearGoalErrorOutcome:
+{
+  In Boolean success;
+  In String name;
+
+  if (success) log_info(name, " goal error cleared.");
+  else log_warning("Attempt to clear ", name, " goal error ",
+                   "either failed or was preempted by another ", name, "error.");
+}

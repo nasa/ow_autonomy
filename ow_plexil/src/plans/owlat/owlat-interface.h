@@ -98,6 +98,9 @@ LibraryAction TaskPenetrometer (In Integer Frame,
 
 LibraryAction OwlatFaultClear (In Integer fault);
 
+
+////////////////////////////////// Telemetry ////////////////////////////////////
+
 // Lookups
 
 Boolean Lookup DrillGoalError;

@@ -12,7 +12,7 @@
 
 // System Fault flags for OceanWATERS
 #define NO_FAULT 0
-#define SYSTEM_ERROR 1
+#define MISC_SYSTEM_ERROR 1
 #define ARM_GOAL_ERROR 2
 #define ARM_EXECUTION_ERROR 4
 #define TASK_GOAL_ERROR 8
@@ -90,6 +90,10 @@ LibraryAction TaskScoopLinear (In Integer Frame,
 
 LibraryAction FaultClear (In Integer fault);
 
+LibraryAction ClearGoalErrors();
+LibraryAction ClearGoalErrorAttempt (In String name, In Integer flag);
+LibraryAction ClearGoalErrorOutcome (In Boolean success, In String name);
+
 LibraryAction HealthMonitor (InOut Boolean AllOperable,
                              InOut Boolean ArmOperable,
                              InOut Boolean AntennaOperable,
@@ -104,7 +108,6 @@ Boolean Lookup SoftTorqueLimitReached (String joint_name);
 // Relevant with GuardedMove only:
 Boolean Lookup GroundFound;
 Real    Lookup GroundPosition;
-
 
 // Faults
 

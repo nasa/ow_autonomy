@@ -62,6 +62,11 @@ ReferenceMission1: Concurrence
                             battery_charge_ok = BatteryChargeOK,
                             all_ok = BatteryOK);
 
+  // As of Release 13, goal errors are not automatically cleared by
+  // the simulator.  Add this call to any plan where this may be
+  // important, running it concurrently with the other nodes.
+  LibraryCall ClearGoalErrors();
+
   Mission:
   {
     // These 4 variables are assigned in the call to IdentifySampleTarget.
