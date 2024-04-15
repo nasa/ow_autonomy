@@ -25,7 +25,6 @@ LibraryAction ImageLandingSite(In String InstanceName,
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
-LibraryAction Downlink;
 LibraryAction Image (In String desc);
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
@@ -217,7 +216,8 @@ EuropaMission: Concurrence
                                   GroundPos = ground_pos,
                                   Parallel = parallel);
       LibraryCall Image(desc="trench");
-      LibraryCall Downlink;
+      LibraryCall ActivateComms (Message = "Downlinking trench image",
+                                 DurationSecs = 3);
 
       LibraryCall CollectAndTransfer(IgnoreCrash = false,
                                      InstanceName="MissionSol1",
