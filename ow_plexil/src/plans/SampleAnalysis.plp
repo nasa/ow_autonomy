@@ -6,13 +6,12 @@
 
 #include "ow-interface.h"
 
-LibraryAction Downlink();
-
 SampleAnalysis:
 {
   In Integer inst_id;
 
   log_info ("PLEXIL Stub: Analyzing sample using instrument ", inst_id, "...");
 
-  LibraryCall Downlink();
+  LibraryCall ActivateComms (Message = "Downlinking sample analysis",
+                             DurationSecs = 2);
 }

@@ -241,6 +241,16 @@ static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void activate_comms (Command* cmd, AdapterExecInterface* intf)
+{
+  double duration;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (duration);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->activateComms(duration, g_cmd_id);
+  acknowledge_command_sent(*cr);
+}
+
 static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
@@ -308,13 +318,16 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
   LanderAdapter::s_interface = OwInterface::instance();
 
   // Commands
-  config->registerCommandHandlerFunction("grind", grind);
-  config->registerCommandHandlerFunction("guarded_move", guarded_move);
+  config->registerCommandHandlerFunction("activate_comms", activate_comms);
   config->registerCommandHandlerFunction("arm_move_joints", arm_move_joints);
   config->registerCommandHandlerFunction("arm_move_joints_guarded",
-                                 arm_move_joints_guarded);
+                                         arm_move_joints_guarded);
+  config->registerCommandHandlerFunction("camera_set_exposure",
+                                         camera_set_exposure);
   config->registerCommandHandlerFunction("dock_ingest_sample",
                                          dock_ingest_sample);
+  config->registerCommandHandlerFunction("grind", grind);
+  config->registerCommandHandlerFunction("guarded_move", guarded_move);
   config->registerCommandHandlerFunction("pan", pan);
   config->registerCommandHandlerFunction("tilt", tilt);
   config->registerCommandHandlerFunction("scoop_circular", scoop_circular);
@@ -323,8 +336,6 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                          pan_tilt_cartesian);
   config->registerCommandHandlerFunction("identify_sample_location",
                                          identify_sample_location);
-  config->registerCommandHandlerFunction("camera_set_exposure",
-                                         camera_set_exposure);
   config->registerCommandHandlerFunction("light_set_intensity",
                                          light_set_intensity);
   // Note: the following two are simulation utilities and not valid
