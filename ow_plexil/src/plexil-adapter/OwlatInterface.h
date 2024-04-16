@@ -126,6 +126,11 @@ class OwlatInterface : public LanderInterface
   // Lookups
   PLEXIL::Value getArmTool() const;
   std::vector<double> getArmEndEffectorFT () const override;
+  bool   armGoalError () const;
+  bool   cameraGoalError () const;
+  bool   panTiltGoalError () const;
+  bool   drillGoalError () const;
+  bool   taskGoalError () const;
 
  private:
   // Actions

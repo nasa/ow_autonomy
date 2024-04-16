@@ -232,6 +232,26 @@ bool OwlatAdapter::initialize (AdapterConfiguration* config)
   config->registerLookupHandlerFunction("UsingOceanWATERS",
 					lookupHandler_constant<bool>(false));
   config->registerLookupHandlerFunction("ArmTool", arm_tool);
+  config->registerLookupHandlerFunction("ArmGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::armGoalError));
+  config->registerLookupHandlerFunction("CameraGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::cameraGoalError));
+  config->registerLookupHandlerFunction("PanTiltGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::panTiltGoalError));
+  config->registerLookupHandlerFunction("DrillGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::drillGoalError));
+  config->registerLookupHandlerFunction("TaskGoalError",
+					lookupHandler_function0<>
+                                        (*OwlatInterface::instance(),
+                                         &OwlatInterface::taskGoalError));
 
   // System faults specific to OWLAT
   config->registerLookupHandlerFunction("SystemFault",

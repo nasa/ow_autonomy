@@ -73,6 +73,11 @@ ReferenceMission2: Concurrence
   LibraryCall MonitorFaults (continue = MissionInProgress,
                              all_ok = NoFaults);
 
+  // As of Release 13, goal errors are not automatically cleared by
+  // the simulator.  Add this call to any plan where this may be
+  // important, running it concurrently with the other nodes.
+  LibraryCall ClearGoalErrors();
+
   WaitForHealth:
   {
     Repeat MissionInProgress;
