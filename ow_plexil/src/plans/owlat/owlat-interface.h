@@ -103,7 +103,6 @@ LibraryAction OwlatFaultClear (In Integer fault);
 
 // Lookups
 
-Boolean Lookup DrillGoalError;
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
 Real Lookup ArmJointTorques;
@@ -118,7 +117,5 @@ Real Lookup ShearBevameterStopReason;
 Boolean Lookup DrillGoalError;
 Boolean Lookup DrillExecutionError;
 Boolean Lookup LanderExecutionError; // fault in Stewart platform
-
-
 
 #endif

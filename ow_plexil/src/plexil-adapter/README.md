@@ -14,5 +14,5 @@ This directory contains C++ classes and code implementing:
 See README.md in the parent directory for broader information, as well as build
 and run instructions.
 
-*The testbeds are OceanWATERS and JPL's OWLAT Simulator, which is
- proprietary, closed-source software.
+*The testbeds are OceanWATERS and JPL's OWLAT Simulator.  The latter
+ is proprietary, closed-source software.
