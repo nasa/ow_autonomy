@@ -114,11 +114,13 @@ ReferenceMission1: Concurrence
                                Depth = 0.08,
                                Length = trench_length,
                                Parallel = parallel);
-    LibraryCall SafeStow();
+    Finish: Concurrence
+    {
+      LibraryCall StartSampleAnalysis;
+      LibraryCall SafeStow();
+    }
     LibraryCall DockIngestSample();
-    LibraryCall StartSampleAnalysis;
-    Wait 2;  // Wait for (stubbed) sample analysis to finish.
+    MissionInProgress = false;
+    log_info ("Reference Mission 1, Sol 0 complete.");
   }
-  MissionInProgress = false;
-  log_info ("Reference Mission 1, Sol 0 complete.");
 }

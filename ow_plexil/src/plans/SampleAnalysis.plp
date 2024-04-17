@@ -2,7 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Stub for sample analysis, which is out of the scope of OceanWATERS.
+// Stub for sample analysis, whose details are out of the scope of the
+// OceanWATERS project.
 
 #include "ow-interface.h"
 

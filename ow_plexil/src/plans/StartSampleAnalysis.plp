@@ -7,7 +7,7 @@
 // finishes.  We could do more here, such as monitor its execution (e.g. time,
 // energy, temperature) and abort it if needed.
 
-// This declaration should work, but for some reason does not.
+// NOTE: The following declaration should work, but for some reason does not:
 // String Command StartPlan(String plan_name, ...);
 
 String Command StartPlan(...);
