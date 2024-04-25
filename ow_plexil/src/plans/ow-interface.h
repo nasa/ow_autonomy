@@ -92,6 +92,7 @@ LibraryAction TaskScoopLinear (In Integer Frame,
 
 LibraryAction FaultClear (In Integer fault);
 
+LibraryAction GoalErrorMonitor (In Boolean continue);
 LibraryAction ClearGoalErrors();
 LibraryAction ClearGoalErrorAttempt (In String name, In Integer flag);
 LibraryAction ClearGoalErrorOutcome (In Boolean success, In String name);
