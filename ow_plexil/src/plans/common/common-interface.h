@@ -28,7 +28,23 @@
 #define ACTION_RECALLED 8
 #define ACTION_LOST 9
 
-// Utility commands; issue ROS_INFO, ROS_WARN, and ROS_ERROR, respectively.
+// PLEXIL utilities for starting plans asynchronously ("launching" or
+// "spawning" them).
+
+// Spawns a given plan.  The first argument (required) is a string
+// specifying the plan (node) name, the remaining arguments (optional)
+// are the node's arguments (In and InOut variables, given
+// positionally).  E.g. StartPlan("AddEntry", "John", 23).  The
+// returned value is an ID for the spawned plan.
+String Command StartPlan(...);
+
+// Terminate a plan that was launched earlier with StartPlan.  The id
+// is the value that was returned by StartPlan.
+Command ExitPlan(String id);
+
+
+// Utility commands; issue ROS_INFO, ROS_WARN, ROS_ERROR, and
+// ROS_DEBUG, respectively.
 Command log_info (...);
 Command log_warning (...);
 Command log_error (...);

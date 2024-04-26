@@ -52,15 +52,17 @@ HealthMonitorDemo:
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
-
+  String id;
+  
   log_info("Starting HealthMonitorDemo...");
+  id = StartPlan ("ClearGoalErrors");
 
   Actions: Concurrence
   {
     Exit Lookup(PowerFault);
 
     LibraryCall ClearGoalErrors();
-    
+
     Monitor:
     {
       LibraryCall HealthMonitor (AllOperable = AllGood,
@@ -96,6 +98,7 @@ HealthMonitorDemo:
       endif;
     }
   }
-  
+
+  ExitPlan (id);
   log_info("Finished HealthMonitorDemo.");
 }

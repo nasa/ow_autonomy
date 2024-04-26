@@ -1,4 +1,4 @@
-// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+/ The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
@@ -19,7 +19,9 @@
 
 // CAVEAT: It is possible that the Stow node may somehow start, or
 // complete with success status, even in the presence of an Arm fault.
-// This intermittent bug has been investigated but not yet fixed.
+// It is also possible that the plan hangs with certain combinations
+// of fault injection.  These hard-to-reproduce bugs need
+// investigation.
 
 #include "ow-interface.h"
 
@@ -28,8 +30,10 @@ FaultHandlingPattern3: UncheckedSequence
   Boolean PanSuccess;
   Boolean UnstowSuccess;
   Boolean StowSuccess;
+  String id;
 
   log_info ("Starting FaultHandlingPattern3 plan...");
+  id = StartPlan ("ClearGoalErrors");
 
   PanAntenna:
   {
@@ -74,5 +78,6 @@ FaultHandlingPattern3: UncheckedSequence
 
   log_info ("Outcomes (Pan, Unstow, Stow) = ",
             PanSuccess, " ", UnstowSuccess, " ", StowSuccess);
+  ExitPlan (id);
   log_info ("FaultHandlingPattern3 plan complete.");
 }
