@@ -2,16 +2,18 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// NOTE: As of 4/17/24 this plan is broken, probably because the
-// simulator no longer automatically clears goal errors.  Arm actions
-// are indefinitely attempted.  This occurs with or without the
-// just-added call to ClearGoalErrors().
-
-// NOTE: Another long-standing problem with this plan is that the
-// executive node often crashes after the plan is terminated with a
-// power fault.  This is due to a bug in the PLEXIL executive that
+// NOTE: As of 4/27/24 a long-standing problem with this plan is that
+// the executive node often crashes after the plan is terminated with
+// a power fault.  This is due to a bug in the PLEXIL executive that
 // will crash it if a command handle is received after the plan
 // terminates.
+
+// NOTE: this plan requires use of the Fault Dependencies framework,
+// which is documented in OceanWATERS user guide at
+// https://github.com/nasa/ow_simulator/wiki/Autonomy.  You must start
+// the executive with the fault_dependencies_file option, e.g:
+//
+//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
 
 // This plan demonstrates the effects of the Health Monitor, with
 // respect to operability of the arm and camera.
@@ -33,15 +35,8 @@
 // are the low_state_of_charge, instantaneous_capacity_loss, and
 // thermal_failure.
 
-// IMPORTANT NOTE: goal errors are effectively ignored
-// (i.e. automatically cleared) for now.
-
-// NOTE: this plan requires use of the Fault Dependencies framework,
-// which is documented in OceanWATERS user guide at
-// https://github.com/nasa/ow_simulator/wiki/Autonomy.  You must start
-// the executive with the fault_dependencies_file option, e.g:
-//
-//   roslaunch ow_plexil ow_exec.launch fault_dependencies_file:="FaultDependenciesModel.xml"
+// NOTE: goal errors are effectively ignored (i.e. automatically
+// cleared) for now.
 
 #include "ow-interface.h"
 
@@ -52,15 +47,15 @@ HealthMonitorDemo:
   Boolean AntennaGood;
   Boolean CameraGood;
   Boolean PowerGood;
+  String id;
 
   log_info("Starting HealthMonitorDemo...");
+  id = StartPlan ("ClearGoalErrors");
 
   Actions: Concurrence
   {
     Exit Lookup(PowerFault);
 
-    LibraryCall ClearGoalErrors();
-    
     Monitor:
     {
       LibraryCall HealthMonitor (AllOperable = AllGood,
@@ -96,6 +91,7 @@ HealthMonitorDemo:
       endif;
     }
   }
-  
+
+  ExitPlan (id);
   log_info("Finished HealthMonitorDemo.");
 }

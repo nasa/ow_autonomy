@@ -12,18 +12,21 @@
 // If an arm fault but no antenna pan fault is injected, only action 1 occurs.
 // If both antenna pan and arm faults are injected, the plan waits for resolution.
 
-// This plan terminates on a power fault, e.g. injecting low state of
-// charge, instantaneous capacity loss, or thermal failure.  Note that
-// any actions in progress must finish first, i.e. clear relevant
-// faults if needed.
+// This plan terminates on a power fault, e.g. by injecting low state
+// of charge, instantaneous capacity loss, or thermal failure.  Note
+// that because the Pan and SafeStow plans are synchronous, any
+// actions in progress must finish first, i.e. antenna and arm faults
+// must be cleared before the power fault is heeded.
 
 #include "ow-interface.h"
 
 FaultHandlingPattern2:
 {
   Real NewAngle = 0;
+  String id;
 
   log_info ("Starting FaultHandlingPattern2 plan...");
+  id = StartPlan ("ClearGoalErrors");
 
   Run: Concurrence
   {
@@ -56,5 +59,6 @@ FaultHandlingPattern2:
     }
   }
 
+  ExitPlan (id);
   log_info ("Finished FaultHandlingPattern2 plan.");
 }

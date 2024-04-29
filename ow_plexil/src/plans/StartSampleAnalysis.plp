@@ -2,15 +2,13 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// This plan "spawns" another plan that does the analysis, just for a single
-// instrument for now.  The spawned plan's execution persists after this one
-// finishes.  We could do more here, such as monitor its execution (e.g. time,
-// energy, temperature) and abort it if needed.
+// This plan "spawns" (asynchonously starts) another plan that does
+// the analysis, just for a single instrument for now.  The spawned
+// plan's execution persists after this one finishes.  We could do
+// more here, such as monitor its execution (e.g. time, energy,
+// temperature) and abort it if needed.
 
-// NOTE: The following declaration should work, but for some reason does not:
-// String Command StartPlan(String plan_name, ...);
-
-String Command StartPlan(...);
+#include "ow-interface.h"
 
 StartSampleAnalysis:
 {
