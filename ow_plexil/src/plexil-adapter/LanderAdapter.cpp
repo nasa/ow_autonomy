@@ -204,6 +204,16 @@ static void camera_capture (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void fault_clear (Command* cmd, AdapterExecInterface* intf)
+{
+  int fault;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (fault);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  LanderAdapter::s_interface->faultClear (fault, g_cmd_id);
+  acknowledge_command_sent(*cr);
+}
+
 static void arm_joint_acceleration (const State& state, LookupReceiver* r)
 {
   const vector<PLEXIL::Value>& args = state.parameters();
@@ -339,6 +349,7 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
   config->registerCommandHandlerFunction("arm_stow", arm_stow);
   config->registerCommandHandlerFunction("arm_unstow", arm_unstow);
   config->registerCommandHandlerFunction("camera_capture", camera_capture);
+  config->registerCommandHandlerFunction("fault_clear", fault_clear);
   config->registerCommandHandlerFunction("pan_tilt_move_joints",
                                          pan_tilt_move_joints);
   config->registerCommandHandlerFunction("task_deliver_sample",
@@ -364,8 +375,88 @@ bool LanderAdapter::initialize (AdapterConfiguration* config)
                                         battery_rul);
   config->registerLookupHandlerFunction("BatteryTemperature", battery_temp);
   config->registerLookupHandlerFunction("ActionGoalStatus", action_goal_status);
-  config->setDefaultLookupHandler(default_lookup_handler);
 
+  // General faults
+  config->registerLookupHandlerFunction("AntennaFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaFault));
+  config->registerLookupHandlerFunction("ArmFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::armFault));
+  config->registerLookupHandlerFunction("PowerFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::powerFault));
+  config->registerLookupHandlerFunction("CameraFault",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::cameraFault));
+
+  // Specific faults
+  config->registerLookupHandlerFunction("AntennaPanError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaPanError));
+  config->registerLookupHandlerFunction("AntennaTiltError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::antennaTiltError));
+  config->registerLookupHandlerFunction("NoImageError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::noImageError));
+  config->registerLookupHandlerFunction("LowStateOfChargeError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::lowStateOfChargeError));
+  config->registerLookupHandlerFunction("InstantaneousCapacityLossError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::instantaneousCapacityLossError));
+  config->registerLookupHandlerFunction("ThermalError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::thermalError));
+  config->registerLookupHandlerFunction("ArmHardwareError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::armHardwareError));
+  config->registerLookupHandlerFunction("TrajectoryError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::trajectoryError));
+  config->registerLookupHandlerFunction("CollisionError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::collisionError));
+  config->registerLookupHandlerFunction("EmergencyStopError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::eStopError));
+  config->registerLookupHandlerFunction("PositionLimitError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::positionLimitError));
+  config->registerLookupHandlerFunction("JointTorqueLimitError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::jointTorqueLimitError));
+  config->registerLookupHandlerFunction("VelocityLimitError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::velocityLimitError));
+  config->registerLookupHandlerFunction("NoForceDataError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::noForceDataError));
+  config->registerLookupHandlerFunction("ForceTorqueLimitError",
+					lookupHandler_function0<>
+                                        (*s_interface,
+                                         &LanderInterface::forceTorqueLimitError));
+
+  config->setDefaultLookupHandler(default_lookup_handler);
   debugMsg("LanderAdapter", " initialized.");
   return PlexilAdapter::initialize (config);
 }

@@ -1,0 +1,20 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Stubbed uplink or downlink that issues the given message an invoke
+// a dummy communications action, which only applies an additional
+// power draw for the given duration.
+
+#include "ow-interface.h"
+
+ActivateComms:
+{
+  In String Message;
+  // NOTE: "Duration" is a PLEXIL keyword and cannot be used here.
+  In Real DurationSecs;
+
+  log_info (Message, "...");
+  SynchronousCommand activate_comms (DurationSecs);
+  log_info ("Uplink/Downlink complete.");
+}

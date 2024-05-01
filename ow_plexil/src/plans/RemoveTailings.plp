@@ -16,7 +16,7 @@ RemoveTailings:
 
   // NOTE: These values selected only to save time during testing, as each pass
   // takes several minutes.
-  Real bite_depth = 0.05;
+  Real bite_depth = 0.03;
   Integer num_passes = 2;
 
   for (Integer pass = 1; pass <= num_passes; pass + 1) {
@@ -32,6 +32,6 @@ RemoveTailings:
     // mission procedure would need to find an appropriate dump
     // location.
     LibraryCall TaskDiscardSample (Frame = 0, Relative = false,
-                                   Point = #(1.5 0.8 0.4), Height = 0.0);
+                                   Point = #(1.5 0.8 -0.172), Height = 0.7);
   }
 }

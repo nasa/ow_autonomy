@@ -62,6 +62,11 @@ ReferenceMission1: Concurrence
                             battery_charge_ok = BatteryChargeOK,
                             all_ok = BatteryOK);
 
+  // As of Release 13, goal errors are not automatically cleared by
+  // the simulator.  Add this call to any plan where this may be
+  // important, running it concurrently with the other nodes.
+  LibraryCall GoalErrorMonitor (continue = MissionInProgress);
+
   Mission:
   {
     // These 4 variables are assigned in the call to IdentifySampleTarget.
@@ -82,35 +87,39 @@ ReferenceMission1: Concurrence
                                       GroundPos = ground_pos,
                                       Parallel = parallel,
                                       FilterType = "Dark");
-    if (isKnown(ground_pos)) {
-      LibraryCall ArmUnstow();
-      LibraryCall DigTrench (X = trench_x,
-                             Y = trench_y,
-                             GroundPos = ground_pos,
-                             Length = trench_length,
-                             BiteDepth = 0.03,
-                             NumPasses = 2,
-                             Parallel = parallel);
-      LibraryCall RemoveTailings (X = trench_x,
-                                  Y = trench_y,
-                                  GroundPos = ground_pos,
-                                  Parallel = parallel);
-      LibraryCall CollectSample (X = trench_x,
-                                 Y = trench_y,
-                                 GroundPos = ground_pos,
-                                 Depth = 0.1105,
-                                 Length = trench_length,
-                                 Parallel = parallel);
-      LibraryCall SafeStow();
-      LibraryCall DockIngestSample();
-      LibraryCall StartSampleAnalysis;
-      Wait 2;  // Wait for (stubbed) sample analysis to finish.
+    if (! isKnown(ground_pos)) {
+      log_warning ("Sampling location could not be found visually. ",
+                   "Using default dig location.");
+      ground_pos = -0.18;
+      trench_x = 1.77;
+      trench_y = -0.08;
+      parallel = true;
     }
-    else
+    endif;
+    LibraryCall ArmUnstow();
+    LibraryCall DigTrench (X = trench_x,
+                           Y = trench_y,
+                           GroundPos = ground_pos,
+                           Length = trench_length,
+                           BiteDepth = 0.03,
+                           NumPasses = 2,
+                           Parallel = parallel);
+    LibraryCall RemoveTailings (X = trench_x,
+                                Y = trench_y,
+                                GroundPos = ground_pos,
+                                Parallel = parallel);
+    LibraryCall CollectSample (X = trench_x,
+                               Y = trench_y,
+                               GroundPos = ground_pos,
+                               Depth = 0.08,
+                               Length = trench_length,
+                               Parallel = parallel);
+    Finish: Concurrence
     {
-      log_error ("Mission aborted because a sampling location was not found.");
+      LibraryCall StartSampleAnalysis;
+      LibraryCall SafeStow();
     }
-    endif
+    LibraryCall DockIngestSample();
     MissionInProgress = false;
     log_info ("Reference Mission 1, Sol 0 complete.");
   }

@@ -56,6 +56,7 @@ using TaskDiscardSampleActionClient =
 
 #include <ow_lander/GuardedMoveAction.h>
 #include <ow_lander/DockIngestSampleAction.h>
+#include <ow_lander/ActivateCommsAction.h>
 #include <ow_lander/TiltAction.h>
 #include <ow_lander/PanAction.h>
 
@@ -65,7 +66,8 @@ using PanActionClient = actionlib::SimpleActionClient<ow_lander::PanAction>;
 using TiltActionClient = actionlib::SimpleActionClient<ow_lander::TiltAction>;
 using DockIngestSampleActionClient =
   actionlib::SimpleActionClient<ow_lander::DockIngestSampleAction>;
-
+using ActivateCommsActionClient =
+  actionlib::SimpleActionClient<ow_lander::ActivateCommsAction>;
 
 // Telemetry
 #include <owl_msgs/ArmEndEffectorForceTorque.h>
@@ -112,6 +114,7 @@ class OwInterface : public LanderInterface
   void panTiltCartesian (int frame, double x, double y, double z, int id);
   void cameraSetExposure (double exposure_secs, int id);
   void dockIngestSample (int id);
+  void activateComms (double duration, int id);
   void scoopLinear (int frame, bool relative, double x, double y, double z,
                     double depth, double length, int id);
   void scoopCircular (int frame, bool relative, double x, double y, double z,
@@ -128,16 +131,26 @@ class OwInterface : public LanderInterface
                             double probability) const;
 
   // State/Lookup interface
-  std::vector<double> getEndEffectorFT () const;
-  bool   groundFound () const;
+  std::vector<double> getArmEndEffectorFT () const override;
+  bool groundFound () const;
   double groundPosition () const;
-  bool   hardTorqueLimitReached (const std::string& joint_name) const;
-  bool   softTorqueLimitReached (const std::string& joint_name) const;
-  bool   systemFault () const override;
+  bool hardTorqueLimitReached (const std::string& joint_name) const;
+  bool softTorqueLimitReached (const std::string& joint_name) const;
+
+  // Fault-related Lookup support
+  bool systemFault () const override;
+  bool armGoalError () const;
+  bool armExecutionError () const;
+  bool taskGoalError () const;
+  bool cameraGoalError () const;
+  bool cameraExecutionError () const;
+  bool panTiltGoalError () const;
+  bool panTiltExecutionError () const;
+  bool powerExecutionError () const;
+  bool miscSystemError () const;
   std::vector<std::string> getActiveFaults (const std::string& subsystem) const;
   bool   isOperable (const std::string& subsystem_name) const;
   bool   isFaulty (const std::string& subsystem_name) const;
-  std::vector<double> getArmEndEffectorFT () const override;
 
  private:
   void armFindSurfaceAction (int frame, bool relative,
@@ -172,6 +185,7 @@ class OwInterface : public LanderInterface
                             double depth, bool parallel, int id);
   void cameraSetExposureAction (double exposure_secs, int id);
   void dockIngestSampleAction (int id);
+  void activateCommsAction (double duration, int id);
   void lightSetIntensityAction (const std::string& side, double intensity, int id);
   void jointStatesCallback (const sensor_msgs::JointState::ConstPtr&);
   void antennaOp (const std::string& opname, double degrees,
@@ -179,28 +193,32 @@ class OwInterface : public LanderInterface
   void ftCallback (const owl_msgs::ArmEndEffectorForceTorque::ConstPtr&);
   void systemFaultMessageCallback (const owl_msgs::SystemFaultsStatus::ConstPtr& msg);
 
-  // System-level faults
-  FaultMap m_systemErrors = {
-    {"SYSTEM", std::make_pair(
+  // See detailed explanation of FaultMap in LanderInterface.h
+  FaultMap m_systemErrors =
+  {
+    // The first flag covers faults that don't have their own flag.
+    {"MiscSystemError", std::make_pair(
         owl_msgs::SystemFaultsStatus::SYSTEM,false)},
-    {"ARM_GOAL_ERROR", std::make_pair(
+    {"ArmGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_GOAL_ERROR,false)},
-    {"ARM_EXECUTION_ERROR", std::make_pair(
+    {"ArmExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::ARM_EXECUTION_ERROR,false)},
-    {"TASK_GOAL_ERROR", std::make_pair(
+    {"TaskGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::TASK_GOAL_ERROR,false)},
-    {"CAMERA_GOAL_ERROR", std::make_pair(
+    {"CameraGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_GOAL_ERROR,false)},
-    {"CAMERA_EXECUTION_ERROR", std::make_pair(
+    {"CameraExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::CAMERA_EXECUTION_ERROR,false)},
-    {"PAN_TILT_GOAL_ERROR", std::make_pair(
+    {"PanTiltGoalError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_GOAL_ERROR,false)},
-    {"PAN_TILT_EXECUTION_ERROR", std::make_pair(
+    {"PanTiltExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::PAN_TILT_EXECUTION_ERROR,false)},
-    {"POWER_EXECUTION_ERROR", std::make_pair(
+    {"PowerExecutionError", std::make_pair(
         owl_msgs::SystemFaultsStatus::POWER_EXECUTION_ERROR,false)}
   };
+
   bool m_fault_dependencies_on;
+
 
   // Action clients
 
@@ -216,6 +234,7 @@ class OwInterface : public LanderInterface
   std::unique_ptr<TaskScoopLinearActionClient> m_scoopLinearClient;
   std::unique_ptr<CameraSetExposureActionClient> m_cameraSetExposureClient;
   std::unique_ptr<DockIngestSampleActionClient> m_dockIngestSampleClient;
+  std::unique_ptr<ActivateCommsActionClient> m_activateCommsClient;
   std::unique_ptr<LightSetIntensityActionClient> m_lightSetIntensityClient;
   std::unique_ptr<IdentifySampleLocationActionClient> m_identifySampleLocationClient;
   std::unique_ptr<TaskDiscardSampleActionClient> m_taskDiscardSampleClient;

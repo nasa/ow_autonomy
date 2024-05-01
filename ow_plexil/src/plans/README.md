@@ -15,10 +15,11 @@ OceanWATERS.  Plans shared by OceanWATERS and OWLAT are found in the
 See ow_plexil/README.md for instructions for selecting and executing
 plans.
 
-Not all of these plans may be executed directly, because of some of
-them are library plans.  Only _top level_ plans may be run directly.
-A top level plan is one having no parameters, i.e. no `In` or `InOut`
-variable declarations.
+Not all of these plans may be executed directly.  Only _top level_
+plans may be run directly.  A top level plan is one having no
+parameters, i.e. no `In` or `InOut` variable declarations.  Other
+plans are used strictly as _library plans_, i.e. invoked by
+`LibraryCall`.
 
 Descriptions of some key plans, and other files of interest, are as
 follows.  See comments inside the plans for more information.
@@ -78,14 +79,12 @@ follows.  See comments inside the plans for more information.
 * Simulation interface.  The entire simulation interface available to
   PLEXIL, which includes the operations listed in the previous
   section, telemetry lookups, and other useful features such as
-  logging functions, is declared in `ow-interface.h` and
-  `ow-commands.h`, which may be included (using a C `#include`
-  statement) in any plan for convenience.  Only the former file needs
-  inclusion because it includes the latter.
+  logging functions, is declared in `ow-interface.h` which may be
+  included (using a C `#include` statement) in any plan for
+  convenience.
 
 * FaultHandlingPatternN: A series of illustrative fault-handling patterns.
 
-* 
 * Misc files.  `plexil-defs.h` contains constants used in various
   plans.  `ow-config.xml` is the PLEXIL configuration file for this
   application.  It does not need editing for general use of this

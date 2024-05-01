@@ -25,7 +25,6 @@ LibraryAction ImageLandingSite(In String InstanceName,
 LibraryAction InterogateSurface;
 LibraryAction GetTrenchTarget;
 LibraryAction Excavation;
-LibraryAction Downlink;
 LibraryAction Image (In String desc);
 LibraryAction IdentifySampleTarget (InOut Real X,
                                     InOut Real Y,
@@ -69,6 +68,11 @@ EuropaMission: Concurrence
                             battery_life_ok = BatteryLifeOK,
                             battery_charge_ok = BatteryChargeOK,
                             all_ok = BatteryOK);
+
+  // As of Release 13, goal errors are not automatically cleared by
+  // the simulator.  Add this call to any plan where this may be
+  // important, running it concurrently with the other nodes.
+  LibraryCall GoalErrorMonitor (continue = MissionInProgress);
 
   Mission:
   {
@@ -169,11 +173,13 @@ EuropaMission: Concurrence
                                         Parallel = parallel,
                                         FilterType = "Dark");
 
-      if (! Lookup(GroundFound)) {
-        // Note that the default value of GroundFound is false, so
-        log_error ("Failed to find ground. Stowing arm and stopping.");
-        LibraryCall SafeStow();
-        MissionInProgress = false;
+      if (! isKnown(ground_pos)) {
+        log_warning ("Sampling location could not be found visually. ",
+                     "Using default dig location.");
+        ground_pos = -0.18;
+        trench_x = 1.77;
+        trench_y = -0.08;
+        parallel = true;
       }
 
       DigAndImage: Concurrence {
@@ -210,14 +216,15 @@ EuropaMission: Concurrence
                                   GroundPos = ground_pos,
                                   Parallel = parallel);
       LibraryCall Image(desc="trench");
-      LibraryCall Downlink;
+      LibraryCall ActivateComms (Message = "Downlinking trench image",
+                                 DurationSecs = 3);
 
       LibraryCall CollectAndTransfer(IgnoreCrash = false,
                                      InstanceName="MissionSol1",
                                      X = trench_x,
                                      Y = trench_y,
                                      GroundPos = ground_pos,
-                                     Depth = 0.1105,
+                                     Depth = 0.08,
                                      Length = trench_length,
                                      Parallel = parallel);
       set_checkpoint ("SampleCollected", true, "SampleCollection");
@@ -228,6 +235,7 @@ EuropaMission: Concurrence
     {
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleAnalyzed")))));
+      LibraryCall DockIngestSample();
       LibraryCall StartSampleAnalysis;
       set_checkpoint("SampleAnalyzed", true, "SampleAnalysis");
       SynchronousCommand flush_checkpoints();

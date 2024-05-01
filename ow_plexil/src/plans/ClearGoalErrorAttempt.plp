@@ -1,0 +1,18 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Reports and attempts to clears the given goal error. Verification
+// needs to be done in the calling plan.
+// Designed as a sub-plan of ClearGoalErrors.plp.
+
+#include "ow-interface.h"
+
+ClearGoalErrorAttempt:
+{
+  In String name;
+  In Integer flag;
+
+  log_warning (name, " goal error occurred. Attempting to clear it...");
+  LibraryCall FaultClear(fault=flag);
+}

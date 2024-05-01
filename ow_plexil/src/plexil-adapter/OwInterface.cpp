@@ -48,6 +48,7 @@ const string Name_ArmMoveJoints          = "ArmMoveJoints";
 const string Name_ArmMoveJointsGuarded   = "ArmMoveJointsGuarded";
 const string Name_CameraSetExposure      = "CameraSetExposure";
 const string Name_Ingest                 = "DockIngestSample";
+const string Name_ActivateComms          = "ActivateComms";
 const string Name_Grind                  = "TaskGrind";
 const string Name_GuardedMove            = "GuardedMove";
 const string Name_IdentifySampleLocation = "IdentifySampleLocation";
@@ -60,6 +61,7 @@ const string Name_Tilt                   = "Tilt";
 const string Name_TaskDiscardSample      = "TaskDiscardSample";
 
 static vector<string> LanderOpNames = {
+  Name_ActivateComms,
   Name_ArmFindSurface,
   Name_GuardedMove,
   Name_ArmMoveJoints,
@@ -168,6 +170,13 @@ void OwInterface::jointStatesCallback
   }
 }
 
+void OwInterface::systemFaultMessageCallback
+(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
+{
+  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
+}
+
+
 
 //////////////////// GuardedMove Action support ////////////////////////////////
 
@@ -219,11 +228,8 @@ static void identify_sample_location_done_cb
     SamplePoint.push_back(result->sample_location.x);
     SamplePoint.push_back(result->sample_location.y);
     SamplePoint.push_back(result->sample_location.z);
-    ROS_INFO ("Possible sample location identified at (%f, %f, %f)",
+    ROS_INFO ("Candidate sample location identified at (%f, %f, %f)",
            SamplePoint[0], SamplePoint[1], SamplePoint[2]);
-  }
-  else{
-    ROS_ERROR("Could not get sample point from IdentifySampleLocation");
   }
   GotSampleLocation = true;
 }
@@ -281,16 +287,17 @@ void OwInterface::initialize()
 
   // Initialize action clients
 
+  m_activateCommsClient =
+    make_unique<ActivateCommsActionClient>(Name_ActivateComms, true);
   m_armFindSurfaceClient =
     make_unique<ArmFindSurfaceActionClient>(Name_ArmFindSurface, true);
-  m_guardedMoveClient =
-    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
   m_armMoveJointsClient =
     make_unique<ArmMoveJointsActionClient>(Name_ArmMoveJoints, true);
   m_armMoveJointsGuardedClient =
-    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded,
-                                                  true);
+    make_unique<ArmMoveJointsGuardedActionClient>(Name_ArmMoveJointsGuarded, true);
   m_grindClient = make_unique<TaskGrindActionClient>(Name_Grind, true);
+  m_guardedMoveClient =
+    make_unique<GuardedMoveActionClient>(Name_GuardedMove, true);
   m_scoopCircularClient =
     make_unique<TaskScoopCircularActionClient>(Name_TaskScoopCircular, true);
   m_scoopLinearClient =
@@ -316,12 +323,6 @@ void OwInterface::initialize()
   m_subscribers.push_back
     (make_unique<ros::Subscriber>
      (m_genericNodeHandle ->
-      subscribe("/system_faults_status", QueueSize,
-                &OwInterface::systemFaultMessageCallback, this)));
-
-  m_subscribers.push_back
-    (make_unique<ros::Subscriber>
-     (m_genericNodeHandle ->
       subscribe("/arm_end_effector_force_torque", QueueSize,
                 &OwInterface::ftCallback, this)));
 
@@ -331,6 +332,13 @@ void OwInterface::initialize()
       subscribe("/joint_states", QueueSize,
                 &OwInterface::jointStatesCallback, this)));
 
+    m_subscribers.push_back
+    (make_unique<ros::Subscriber>
+     (m_genericNodeHandle ->
+      subscribe("/system_faults_status", QueueSize,
+                &OwInterface::systemFaultMessageCallback, this)));
+
+  connectActionServer (m_activateCommsClient, Name_ActivateComms);
   connectActionServer (m_armFindSurfaceClient, Name_ArmFindSurface);
   connectActionServer (m_armMoveJointsClient, Name_ArmMoveJoints);
   connectActionServer (m_armMoveJointsGuardedClient, Name_ArmMoveJointsGuarded);
@@ -346,15 +354,6 @@ void OwInterface::initialize()
   connectActionServer (m_identifySampleLocationClient,
                        Name_IdentifySampleLocation);
   connectActionServer (m_taskDiscardSampleClient, Name_TaskDiscardSample);
-}
-
-
-///////////////////////// Subscriber Callbacks ///////////////////////////////
-
-void OwInterface::systemFaultMessageCallback
-(const owl_msgs::SystemFaultsStatus::ConstPtr& msg)
-{
-  updateFaultStatus (msg->value, m_systemErrors, "SYSTEM", "SystemFault");
 }
 
 
@@ -487,6 +486,32 @@ void OwInterface::dockIngestSampleAction (int id)
      default_action_active_cb (Name_Ingest),
      default_action_feedback_cb<DockIngestSampleFeedbackConstPtr> (Name_Ingest),
      default_action_done_cb<DockIngestSampleResultConstPtr> (Name_Ingest));
+}
+
+void OwInterface::activateComms (double duration, int id)
+{
+  if (! markOperationRunning (Name_ActivateComms, id)) return;
+  thread action_thread (&OwInterface::activateCommsAction, this, duration, id);
+  action_thread.detach();
+}
+
+void OwInterface::activateCommsAction (double duration, int id)
+{
+  ActivateCommsGoal goal;
+  goal.duration = duration;
+
+  ROS_INFO ("Starting ActivateComms()");
+
+  runAction<actionlib::SimpleActionClient<ActivateCommsAction>,
+            ActivateCommsGoal,
+            ActivateCommsResultConstPtr,
+            ActivateCommsFeedbackConstPtr>
+    (Name_ActivateComms, m_activateCommsClient, goal, id,
+     default_action_active_cb (Name_ActivateComms),
+     default_action_feedback_cb<ActivateCommsFeedbackConstPtr> (
+      Name_ActivateComms),
+     default_action_done_cb<ActivateCommsResultConstPtr> (
+      Name_ActivateComms));
 }
 
 void OwInterface::scoopLinear (int frame, bool relative,
@@ -952,10 +977,12 @@ bool OwInterface::softTorqueLimitReached (const string& joint_name) const
           JointsAtSoftTorqueLimit.end());
 }
 
-vector<double> OwInterface::getEndEffectorFT () const
+vector<double> OwInterface::getArmEndEffectorFT () const
 {
   return m_end_effector_ft;
 }
+
+// Faults
 
 vector<string> OwInterface::getActiveFaults (const string& subsystem_name) const
 {
@@ -1002,7 +1029,47 @@ bool OwInterface::systemFault () const
   return faultActive (m_systemErrors);
 }
 
-vector<double> OwInterface::getArmEndEffectorFT () const
+bool OwInterface::armGoalError () const
 {
-  return m_end_effector_ft;
+  return m_systemErrors.at("ArmGoalError").second;
+}
+
+bool OwInterface::armExecutionError () const
+{
+  return m_systemErrors.at("ArmExecutionError").second;
+}
+
+bool OwInterface::taskGoalError () const
+{
+  return m_systemErrors.at("TaskGoalError").second;
+}
+
+bool OwInterface::cameraGoalError () const
+{
+  return m_systemErrors.at("CameraGoalError").second;
+}
+
+bool OwInterface::cameraExecutionError () const
+{
+  return m_systemErrors.at("CameraExecutionError").second;
+}
+
+bool OwInterface::panTiltGoalError () const
+{
+  return m_systemErrors.at("PanTiltGoalError").second;
+}
+
+bool OwInterface::panTiltExecutionError () const
+{
+  return m_systemErrors.at("PanTiltExecutionError").second;
+}
+
+bool OwInterface::powerExecutionError () const
+{
+  return m_systemErrors.at("PowerExecutionError").second;
+}
+
+bool OwInterface::miscSystemError () const
+{
+  return m_systemErrors.at("MiscSystemError").second;
 }

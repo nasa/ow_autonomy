@@ -23,6 +23,7 @@
 #include <owl_msgs/TaskDeliverSampleAction.h>
 #include <owl_msgs/PanTiltMoveJointsAction.h>
 #include <owl_msgs/CameraCaptureAction.h>
+#include <owl_msgs/FaultClearAction.h>
 
 // owl_msgs - telemetry
 #include <owl_msgs/PanTiltPosition.h>
@@ -80,12 +81,19 @@ using PanTiltMoveJointsActionClient =
   actionlib::SimpleActionClient<owl_msgs::PanTiltMoveJointsAction>;
 using CameraCaptureActionClient =
   actionlib::SimpleActionClient<owl_msgs::CameraCaptureAction>;
+using FaultClearActionClient =
+  actionlib::SimpleActionClient<owl_msgs::FaultClearAction>;
 
-// Maps from specific fault names to the pair:
+// FaultMap: maps from "specific fault" names to the pair:
 //    <fault value, fault active?>.
-// PLEXIL can support Lookups on the specific fault name.  In Release
-// 12, only AntennaPanFault and AntennaTiltFault are supported.
-
+//
+// Specific faults are suffixed "Error" to distinguish them from
+// "general" faults such as ArmFault (which signifies the presence of
+// any of the arm-related specific faults).  PLEXIL can support
+// Lookups on the specific fault name, simply by providing a Lookup
+// declaration.  The specific faults not supported by the simulator
+// are currently not declared or accessible in a PLEXIL plan.
+//
 using FaultMap = std::map<std::string,std::pair<uint64_t, bool>>;
 
 class LanderInterface : public PlexilInterface
@@ -135,13 +143,29 @@ class LanderInterface : public PlexilInterface
   void taskDeliverSample (int id);
   void panTiltMoveJoints (double pan_degrees, double tilt_degrees, int id);
   void cameraCapture (int id);
+  void faultClear (int fault, int id);
+
+  // Support for fault-related Lookups
   virtual bool systemFault () const = 0;
   bool antennaFault () const;
-  bool antennaPanFault () const;
-  bool antennaTiltFault () const;
   bool armFault () const;
   bool powerFault () const;
   bool cameraFault () const;
+  bool antennaPanError () const;
+  bool antennaTiltError () const;
+  bool noImageError () const;
+  bool lowStateOfChargeError () const;
+  bool instantaneousCapacityLossError () const;
+  bool thermalError () const;
+  bool armHardwareError () const;
+  bool trajectoryError () const;
+  bool collisionError () const;
+  bool eStopError () const;
+  bool positionLimitError () const;
+  bool jointTorqueLimitError () const;
+  bool velocityLimitError () const;
+  bool noForceDataError () const;
+  bool forceTorqueLimitError () const;
 
   // Telemetry
   virtual std::vector<double> getArmEndEffectorFT () const = 0;
@@ -188,6 +212,7 @@ class LanderInterface : public PlexilInterface
                                       double torque_threshold,
                                       int id);
   void armMoveJointAction (bool relative, int joint, double angle, int id);
+  void faultClearAction (int fault, int id);
   void panTiltMoveJointsAction (double pan_degrees, double tilt_degrees, int id);
 
   // Fault support
@@ -212,47 +237,50 @@ class LanderInterface : public PlexilInterface
   void armPoseCb (const owl_msgs::ArmPose::ConstPtr&);
   void panTiltCb (const owl_msgs::PanTiltPosition::ConstPtr&);
 
+  // See detailed explanation of FaultMap above.
+
   FaultMap m_armErrors = {
-    {"HARDWARE", std::make_pair(
+    {"ArmHardwareError", std::make_pair(
         owl_msgs::ArmFaultsStatus::HARDWARE, false)},
-    {"TRAJECTORY_GENERATION", std::make_pair(
+    {"TrajectoryError", std::make_pair(
         owl_msgs::ArmFaultsStatus::TRAJECTORY_GENERATION, false)},
-    {"COLLISION", std::make_pair(
+    {"CollisionError", std::make_pair(
         owl_msgs::ArmFaultsStatus::COLLISION, false)},
-    {"E_STOP", std::make_pair(
+    {"EmergencyStopError", std::make_pair(
         owl_msgs::ArmFaultsStatus::E_STOP, false)},
-    {"POSITION_LIMIT", std::make_pair(
+    {"PositionLimitError", std::make_pair(
         owl_msgs::ArmFaultsStatus::POSITION_LIMIT, false)},
-    {"JOINT_TORQUE_LIMIT", std::make_pair(
+    {"JointTorqueLimitError", std::make_pair(
         owl_msgs::ArmFaultsStatus::JOINT_TORQUE_LIMIT, false)},
-    {"VELOCITY_LIMIT", std::make_pair(
+    {"VelocityLimitError", std::make_pair(
         owl_msgs::ArmFaultsStatus::VELOCITY_LIMIT, false)},
-    {"NO_FORCE_DATA", std::make_pair(
+    {"NoForceDataError", std::make_pair(
         owl_msgs::ArmFaultsStatus::NO_FORCE_DATA, false)},
-    {"FORCE_TORQUE_LIMIT", std::make_pair(
+    {"ForceTorqueLimitError", std::make_pair(
         owl_msgs::ArmFaultsStatus::FORCE_TORQUE_LIMIT, false)},
   };
 
-  FaultMap m_powerErrors = {
-    {"LOW_STATE_OF_CHARGE", std::make_pair(
+  FaultMap m_powerErrors =
+  {
+    {"LowStateOfChargeError", std::make_pair(
         owl_msgs::PowerFaultsStatus::LOW_STATE_OF_CHARGE, false)},
-    {"INSTANTANEOUS_CAPACITY_LOSS", std::make_pair(
+    {"InstantaneousCapacityLossError", std::make_pair(
         owl_msgs::PowerFaultsStatus::INSTANTANEOUS_CAPACITY_LOSS, false)},
-    {"THERMAL_FAULT", std::make_pair(
+    {"ThermalError", std::make_pair(
         owl_msgs::PowerFaultsStatus::THERMAL_FAULT, false)}
   };
 
   FaultMap m_panTiltErrors =
     {
-     {"AntennaPanFault",
+     {"AntennaPanError",
       std::make_pair(owl_msgs::PanTiltFaultsStatus::PAN_JOINT_LOCKED, false)},
-     {"AntennaTiltFault",
+     {"AntennaTiltError",
       std::make_pair(owl_msgs::PanTiltFaultsStatus::TILT_JOINT_LOCKED, false)}
     };
 
   FaultMap m_cameraErrors =
     {
-     {"NO_IMAGE",
+     {"NoImageError",
       std::make_pair(owl_msgs::CameraFaultsStatus::NO_IMAGE, false)}
     };
 
@@ -280,7 +308,7 @@ class LanderInterface : public PlexilInterface
   std::unique_ptr<TaskDeliverSampleActionClient> m_taskDeliverSampleClient;
   std::unique_ptr<PanTiltMoveJointsActionClient> m_panTiltMoveJointsClient;
   std::unique_ptr<CameraCaptureActionClient> m_cameraCaptureClient;
-
+  std::unique_ptr<FaultClearActionClient> m_faultClearClient;
 };
 
 #include "LanderInterface.tpp"

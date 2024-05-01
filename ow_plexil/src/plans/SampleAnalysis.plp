@@ -2,11 +2,10 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Stub for sample analysis, which is out of the scope of OceanWATERS.
+// Stub for sample analysis, whose details are out of the scope of the
+// OceanWATERS project.
 
 #include "ow-interface.h"
-
-LibraryAction Downlink();
 
 SampleAnalysis:
 {
@@ -14,5 +13,6 @@ SampleAnalysis:
 
   log_info ("PLEXIL Stub: Analyzing sample using instrument ", inst_id, "...");
 
-  LibraryCall Downlink();
+  LibraryCall ActivateComms (Message = "Downlinking sample analysis",
+                             DurationSecs = 2);
 }

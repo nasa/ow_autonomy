@@ -8,15 +8,20 @@
 // Pan in 15 degree increments as long as no antenna pan fault is present.  If an
 // antenna pan fault occurs, pause until the fault is removed.
 
-// This plan terminates on a power fault, e.g. injecting low state of
-// charge, instantaneous capacity loss, or thermal failure.  Note that
-// a pan in progress must finish first, i.e. clear a pan fault if needed.
+// This plan terminates on a power fault, e.g. by injecting low state
+// of charge, instantaneous capacity loss, or thermal failure.  Note
+// that because the Pan plan is synchronous, a pan in progress must
+// finish first, i.e. an antenna pan fault must be cleared before the
+// power fault is heeded.
 
 #include "ow-interface.h"
 
 FaultHandlingPattern1:
 {
+  String id;
+
   log_info ("Starting FaultHandlingPattern1 plan...");
+  id = StartPlan ("ClearGoalErrors");
 
   ManyPans: UncheckedSequence
   {
@@ -25,8 +30,8 @@ FaultHandlingPattern1:
 
     OnePan:
     {
-      Start !Lookup(AntennaPanFault);
-      Invariant !Lookup(AntennaPanFault);
+      Start !Lookup(AntennaPanError);
+      Invariant !Lookup(AntennaPanError);
 
       NewAngle = (Lookup(PanDegrees) + 15) mod 360;
       if (NewAngle > 180) NewAngle = NewAngle - 360;
@@ -34,5 +39,6 @@ FaultHandlingPattern1:
     }
   }
 
+  ExitPlan (id);
   log_info ("Finished FaultHandlingPattern1 plan.");
 }

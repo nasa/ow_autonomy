@@ -2,13 +2,8 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// Check for a variety of faults at regular intervals, and set a general health
-// variable accordingly.
-
-
-// Note that the fault queries (lookups) are for categories of faults, but that
-// the exact faults (outlined in ../plexil-adapter/OwInterface.h) are not yet
-// detectable in PLEXIL.
+// Check for the presence of general faults at a regular interval, and
+// set a general health variable accordingly.
 
 #include "ow-interface.h"
 

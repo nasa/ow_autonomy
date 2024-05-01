@@ -2,7 +2,7 @@
 // Research and Simulation can be found in README.md in the root directory of
 // this repository.
 
-// PLEXIL interface to lander that is OWLAT-specific.
+// OWLAT-specific PLEXIL interface (commands, lookups) and definitions.
 
 #ifndef Owlat_Plan_Interface_H
 #define Owlat_Plan_Interface_H
@@ -10,6 +10,21 @@
 #include "../common/common-interface.h"
 #include "owlat-commands.h"
 
+// System Fault flags for OWLAT
+#define NO_FAULT 0
+#define SYSTEM_ERROR 1
+#define ARM_GOAL_ERROR 2
+#define ARM_EXECUTION_ERROR 4
+#define TASK_GOAL_ERROR 8
+#define CAMERA_GOAL_ERROR 16
+#define CAMERA_EXECUTION_ERROR 32
+#define PAN_TILT_GOAL_ERROR 64
+#define PAN_TILT_EXECUTION_ERROR 128
+#define DRILL_GOAL_ERROR 256
+#define DRILL_EXECUTION_ERROR 512
+#define LANDER_EXECUTION_ERROR 1024
+
+// OWLAT end effector tool enumeration
 #define TOOL_NONE 0
 #define TOOL_PSP  1
 #define TOOL_BEVAMETER 2
@@ -65,7 +80,7 @@ LibraryAction TaskPSP (In Integer Frame,
 		       In Real Point[3],
 		       In Real Normal[3],
 		       In Real MaxDepth,
-		       In Real MaxForce);
+                       In Real MaxForce);
 
 LibraryAction TaskShearBevameter (In Integer Frame,
                                   In Boolean Relative,
@@ -81,7 +96,12 @@ LibraryAction TaskPenetrometer (In Integer Frame,
                                 In Real MaxDepth,
                                 In Real MaxForce);
 
-// Telemetry
+LibraryAction OwlatFaultClear (In Integer fault);
+
+
+////////////////////////////////// Telemetry ////////////////////////////////////
+
+// Lookups
 
 Real Lookup ArmJointAngles;
 Real Lookup ArmJointAccelerations;
@@ -92,5 +112,10 @@ Real Lookup ArmFTForce;
 Integer Lookup ArmTool;
 Real Lookup PSPStopReason;
 Real Lookup ShearBevameterStopReason;
+
+// OWLAT-specific system faults
+Boolean Lookup DrillGoalError;
+Boolean Lookup DrillExecutionError;
+Boolean Lookup LanderExecutionError; // fault in Stewart platform
 
 #endif

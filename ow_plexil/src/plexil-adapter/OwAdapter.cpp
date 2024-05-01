@@ -241,6 +241,16 @@ static void dock_ingest_sample (Command* cmd, AdapterExecInterface* intf)
   acknowledge_command_sent(*cr);
 }
 
+static void activate_comms (Command* cmd, AdapterExecInterface* intf)
+{
+  double duration;
+  const vector<Value>& args = cmd->getArgValues();
+  args[0].getValue (duration);
+  unique_ptr<CommandRecord>& cr = new_command_record(cmd, intf);
+  OwInterface::instance()->activateComms(duration, g_cmd_id);
+  acknowledge_command_sent(*cr);
+}
+
 static void light_set_intensity (Command* cmd, AdapterExecInterface* intf)
 {
   bool valid_args = true;
@@ -308,13 +318,16 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
   LanderAdapter::s_interface = OwInterface::instance();
 
   // Commands
-  config->registerCommandHandlerFunction("grind", grind);
-  config->registerCommandHandlerFunction("guarded_move", guarded_move);
+  config->registerCommandHandlerFunction("activate_comms", activate_comms);
   config->registerCommandHandlerFunction("arm_move_joints", arm_move_joints);
   config->registerCommandHandlerFunction("arm_move_joints_guarded",
-                                 arm_move_joints_guarded);
+                                         arm_move_joints_guarded);
+  config->registerCommandHandlerFunction("camera_set_exposure",
+                                         camera_set_exposure);
   config->registerCommandHandlerFunction("dock_ingest_sample",
                                          dock_ingest_sample);
+  config->registerCommandHandlerFunction("grind", grind);
+  config->registerCommandHandlerFunction("guarded_move", guarded_move);
   config->registerCommandHandlerFunction("pan", pan);
   config->registerCommandHandlerFunction("tilt", tilt);
   config->registerCommandHandlerFunction("scoop_circular", scoop_circular);
@@ -323,8 +336,6 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                          pan_tilt_cartesian);
   config->registerCommandHandlerFunction("identify_sample_location",
                                          identify_sample_location);
-  config->registerCommandHandlerFunction("camera_set_exposure",
-                                         camera_set_exposure);
   config->registerCommandHandlerFunction("light_set_intensity",
                                          light_set_intensity);
   // Note: the following two are simulation utilities and not valid
@@ -394,35 +405,48 @@ bool OwAdapter::initialize (AdapterConfiguration* config)
                                         (*OwInterface::instance(),
                                          &OwInterface::getArmEndEffectorFT));
 
-  // Faults specific to OceanWATERS
+  // System faults specific to OceanWATERS
   config->registerLookupHandlerFunction("SystemFault",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
                                          &OwInterface::systemFault));
-  config->registerLookupHandlerFunction("AntennaFault",
+  config->registerLookupHandlerFunction("ArmGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaFault));
-  config->registerLookupHandlerFunction("AntennaPanFault",
+                                         &OwInterface::armGoalError));
+  config->registerLookupHandlerFunction("ArmExecutionError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaPanFault));
-  config->registerLookupHandlerFunction("AntennaTiltFault",
+                                         &OwInterface::armExecutionError));
+  config->registerLookupHandlerFunction("TaskGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::antennaTiltFault));
-  config->registerLookupHandlerFunction("ArmFault",
+                                         &OwInterface::taskGoalError));
+  config->registerLookupHandlerFunction("CameraGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::armFault));
-  config->registerLookupHandlerFunction("PowerFault",
+                                         &OwInterface::cameraGoalError));
+  config->registerLookupHandlerFunction("CameraExecutionError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::powerFault));
-  config->registerLookupHandlerFunction("CameraFault",
+                                         &OwInterface::cameraExecutionError));
+  config->registerLookupHandlerFunction("PanTiltGoalError",
 					lookupHandler_function0<>
                                         (*OwInterface::instance(),
-                                         &LanderInterface::cameraFault));
+                                         &OwInterface::panTiltGoalError));
+  config->registerLookupHandlerFunction("PanTiltExecutionError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::panTiltExecutionError));
+  config->registerLookupHandlerFunction("PowerExecutionError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::powerExecutionError));
+  config->registerLookupHandlerFunction("MiscSystemError",
+					lookupHandler_function0<>
+                                        (*OwInterface::instance(),
+                                         &OwInterface::miscSystemError));
+
   debugMsg("OwAdapter", " initialized.");
   return LanderAdapter::initialize (config);
 }

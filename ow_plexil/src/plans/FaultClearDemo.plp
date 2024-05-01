@@ -1,0 +1,94 @@
+// The Notices and Disclaimers for Ocean Worlds Autonomy Testbed for Exploration
+// Research and Simulation can be found in README.md in the root directory of
+// this repository.
+
+// Demonstrates a very simple usage of the FaultClear action, which is
+// used to clear goal errors (and not execution errors).  Continuously
+// monitors for all categories of goal errors.  When one occurs, it is
+// cleared.  A power fault terminates this plan.
+
+// Arm and Task goal error are automatically induced and cleared.  You
+// can also induce these manually by attempting unreachable joint
+// moves or any Task* action with unreachable locations.
+
+// To test the camera, inject the camera fault and start the
+// camera_capture action.
+
+// To test the antenna, try 'rosrun ow_lander pan.py 100'.
+
+// Note that goal errors are triggered only by ROS actions, and not by
+// other means of lander control such as ad hoc message publishing.
+
+
+#include "ow-interface.h"
+
+FaultClearDemo:
+{
+  log_info ("Starting FaultClear demo...");
+
+  Demo: Concurrence
+  {
+    Exit Lookup(PowerFault);
+
+    // NOTE: the Waits in the fault-clearing nodes is to allow for an
+    // updated goal error flag to be read by the Lookup.
+
+    ClearArmFault:
+    {
+      Start Lookup(ArmGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Arm goal error.");
+      LibraryCall FaultClear (fault=ARM_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearCameraFault:
+    {
+      Start Lookup(CameraGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Camera goal error.");
+      LibraryCall FaultClear (fault=CAMERA_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearAntennaFault:
+    {
+      Start Lookup(PanTiltGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Pan/Tilt goal error.");
+      LibraryCall FaultClear (fault=PAN_TILT_GOAL_ERROR);
+      Wait 1;
+    }
+
+    ClearTaskFault:
+    {
+      Start Lookup(TaskGoalError);
+      Repeat !Lookup(PowerFault);
+
+      log_info ("Clearing Task goal error.");
+      LibraryCall FaultClear (fault=TASK_GOAL_ERROR);
+      Wait 1;
+    }
+
+    // Note that the following nodes use asynchonous command calls, so
+    // that subsequent commands can be run before they complete.
+
+    CreateArmFault:
+    {
+      arm_unstow();
+      Wait 3;     // Let run a bit before inducing fault.
+      arm_stop(); // Induce goal error, i.e. the arm won't fully unstow.
+      Wait 10;    // Allow time for commands to finish.
+    }
+
+    CreateTaskFault:
+    {
+      grind (10, 10, 10, 10, true, -0.155); // unreachable coordinates
+    }
+  }
+
+  log_info ("Finished FaultClear demo.");
+}

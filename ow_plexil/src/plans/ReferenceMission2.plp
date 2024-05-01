@@ -73,6 +73,11 @@ ReferenceMission2: Concurrence
   LibraryCall MonitorFaults (continue = MissionInProgress,
                              all_ok = NoFaults);
 
+  // As of Release 13, goal errors are not automatically cleared by
+  // the simulator.  Add this call to any plan where this may be
+  // important, running it concurrently with the other nodes.
+  LibraryCall GoalErrorMonitor (continue = MissionInProgress);
+
   WaitForHealth:
   {
     Repeat MissionInProgress;
@@ -116,69 +121,73 @@ ReferenceMission2: Concurrence
                                         Parallel = parallel,
                                         FilterType = "Dark");
     }
-    if (Lookup(GroundFound)) {
-      Unstow:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Unstowing Arm");
-        LibraryCall ArmUnstow;
-      }
 
-      Dig:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Digging Trench");
-        LibraryCall DigTrench (X = trench_x,
-                               Y = trench_y,
-                               GroundPos = ground_pos,
-                               Length = trench_length,
-                               BiteDepth = 0.03,
-                               NumPasses = 2,
-                               Parallel = parallel);
-      }
-      Clear:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Removing Tailings");
-        LibraryCall RemoveTailings (X = trench_x,
-                                    Y = trench_y,
-                                    GroundPos = ground_pos,
-                                    Parallel = parallel);
-      }
-      Collect:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Collecting Sample");
-        LibraryCall CollectSample (X = trench_x,
-                                   Y = trench_y,
-                                   GroundPos = ground_pos,
-                                   Depth = 0.1105,
-                                   Length = trench_length,
-                                   Parallel = parallel);
-      }
-      Stow:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Stowing Arm");
-        LibraryCall SafeStow();
-      }
-      Analyze:
-      {
-        Start BatteryOK && NoFaults;
-        log_info ("Analyzing Sample");
-        LibraryCall StartSampleAnalysis;
-      }
+    if (! isKnown(ground_pos)) {
+      log_warning ("Sampling location could not be found visually. ",
+                   "Using default dig location.");
+      ground_pos = -0.18;
+      trench_x = 1.77;
+      trench_y = -0.08;
+      parallel = true;
     }
-    else {
-     log_error ("Failed to find ground, aborting.");
-     FailStow:
-     {
-       Start BatteryOK && NoFaults;
-       log_info ("Stowing Arm");
-       LibraryCall SafeStow();
-     }
+
+    Unstow:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Unstowing Arm");
+      LibraryCall ArmUnstow;
     }
-    endif;
+
+    Dig:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Digging Trench");
+      LibraryCall DigTrench (X = trench_x,
+                             Y = trench_y,
+                             GroundPos = ground_pos,
+                             Length = trench_length,
+                             BiteDepth = 0.03,
+                             NumPasses = 2,
+                             Parallel = parallel);
+    }
+
+    Clear:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Removing Tailings");
+      LibraryCall RemoveTailings (X = trench_x,
+                                  Y = trench_y,
+                                  GroundPos = ground_pos,
+                                  Parallel = parallel);
+    }
+
+    Collect:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Collecting Sample");
+      LibraryCall CollectSample (X = trench_x,
+                                 Y = trench_y,
+                                 GroundPos = ground_pos,
+                                 Depth = 0.08,
+                                 Length = trench_length,
+                                 Parallel = parallel);
+    }
+
+    Stow:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Stowing Arm");
+      LibraryCall SafeStow();
+    }
+
+    Analyze:
+    {
+      Start BatteryOK && NoFaults;
+      log_info ("Analyzing Sample");
+      LibraryCall DockIngestSample();
+      LibraryCall StartSampleAnalysis;
+    }
+
     log_info ("ReferenceMission2 plan complete.");
     MissionInProgress = false;
   }
