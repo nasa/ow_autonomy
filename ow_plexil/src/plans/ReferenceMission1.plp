@@ -86,7 +86,7 @@ ReferenceMission1: Concurrence
                                       Y = trench_y,
                                       GroundPos = ground_pos,
                                       Parallel = parallel,
-                                      FilterType = "Dark");
+                                      FilterType = "Brown");
     if (! isKnown(ground_pos)) {
       log_warning ("Sampling location could not be found visually. ",
                    "Using default dig location.");
