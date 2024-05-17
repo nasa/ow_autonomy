@@ -160,7 +160,7 @@ EuropaMission: Concurrence
       // ground_pos, parallel, and the GroundFound lookup) is not persistent.
       // In other words, there is no checkpointing within this node -- the
       // entire node would be repeated if a crash occurred during its execution.
-      // Jira OW-657 is for making this plan fully interrutpable.
+      // Jira OW-657 is for making this plan fully interruptible.
 
       SkipCondition
         (DidCrash && !Lookup(IsBootOK(Lookup(CheckpointWhen("SampleCollected")))));
