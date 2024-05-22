@@ -48,7 +48,7 @@ TestActions: UncheckedSequence
   LibraryCall ArmFindSurface (Frame = BASE_FRAME,
                               Relative = false,
                               Position = #(1.75 0.1 -0.155),
-                              Normal = #(0 0 -1),
+                              Normal = #(0 0 1),
                               Distance = 0.2,
                               Overdrive = 0.05,
                               ForceThreshold = 200,
