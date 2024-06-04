@@ -27,7 +27,7 @@ TestArmFindSurface:
   LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
                               Position = #(1.45 -0.4 0.25),
-                              Normal = #(0 0 -1),
+                              Normal = #(0 0 1),
                               Distance = Distance,
                               Overdrive = Overdrive,
                               ForceThreshold = ForceThreshold,
@@ -37,7 +37,7 @@ TestArmFindSurface:
   LibraryCall ArmFindSurface (Frame = BASE_FRAME, // default
                               Relative = false,  // default
                               Position = #(1.45 -0.4 0),
-                              Normal = #(0 0 -1),
+                              Normal = #(0 0 1),
                               Distance = Distance,
                               Overdrive = Overdrive,
                               ForceThreshold = ForceThreshold,
